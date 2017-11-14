@@ -1,0 +1,29 @@
+{    
+	"my_ip": "192.168.1.102",		
+	"message_bus": "amqp://admin:mypass@192.168.1.102:5672/",	
+	"iot_discovery_url": "http://192.168.1.102:8071/ngsi9",
+	"my_role": "EdgeNode",
+	"my_capacity":{
+		"cpu": 6,
+		"memory": 2000,
+		"tasks": 10
+	},	   
+	"physical_location":{
+		"longitude": 139.734077,        
+		"latitude": 35.679052,        
+		"section": "01",
+		"district": "02",
+		"city": "Tokyo"
+	},	
+	"logical_location": {
+		"node_no": 7,
+		"site_no": 7,	 			
+		"layer_no": 2,
+		"parent_site_no": 2
+	},
+	"logging": {
+		"info":"stdout"
+	}
+}
+
+

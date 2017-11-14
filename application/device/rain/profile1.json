@@ -1,0 +1,12 @@
+{
+    "discoveryURL": "http://127.0.0.1:8071/ngsi9",
+    "myIP": "127.0.0.1",
+    "myPort": 8082,
+    "location": {
+        "latitude": 35.742752,
+        "longitude": 139.685090
+    },
+    "iconURL": "/img/camera.png",
+	"type": "RainSensor",
+	"id": "01"	
+}

@@ -1,0 +1,162 @@
+# to showcase the REST  APIs of fastDiscovery
+swagger: "2.0"
+info:
+  title: NGSI9 API
+  description: REST APIs for fastDiscovery in FogFlow
+  version: "1.0.0"
+# the domain of the service
+host: localhost:8071
+# array of all schemes that your API supports
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json  
+basePath: /ngsi9
+paths:
+  /registerContext:
+    post:
+      tags:
+        - Register Context
+      summary: to register the availability information of context entities
+      parameters:
+        - name: body
+          in: body
+          description: payload information
+          required: true
+          schema:
+            $ref: "#/definitions/RegisterContextRequest"
+      responses:
+        200:     
+            description: "he"
+            
+definitions:
+  RegisterContextRequest:
+    properties:
+      contextRegistrations:
+        type: array
+        items:
+          $ref: "#/definitions/ContextRegistration"
+      duration:
+        type: string      
+        example: "9PM"
+      registrationId:
+        type: string
+        example: "001"
+        
+  ContextRegistration:
+    properties:
+      entities:
+        type: array
+        items: 
+          $ref: "#/definitions/EntityId"
+        example:
+          -
+            id: "001"  
+            type: "car"
+            isPattern: true
+          -
+            id: "002"  
+            type: "car"
+            isPattern: true
+      attributes:
+        type: array
+        items:
+          $ref: "#/definitions/ContextRegistrationAttribute"
+      metadata:
+        type: array
+        items:
+          $ref: "#/definitions/ContextMetadata"
+      providingApplication:
+        type: string
+
+  ContextRegistrationAttribute:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      isDomain:
+        type: boolean
+      metadata:
+        type: array
+        items:
+          $ref: "#/definitions/ContextMetadata"
+
+  ContextMetadata:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      value:
+        type: object
+  
+
+  EntityId:
+    properties:
+      id: 
+        type: string
+      type:
+        type: string
+      isPattern:
+        type: boolean
+
+
+  Nearby:
+    properties:  
+      latitude:
+        type: number
+        format: float
+      longitude:
+        type: number
+        format: float
+      limit:
+        type: number  
+        format: int64
+
+  Point:
+    properties:  
+      latitude:
+        type: number
+        format: float
+      longitude:
+        type: number
+        format: float
+
+  Circle:
+    properties:  
+      centerLatitude:
+        type: number
+        format: float
+      centerLongitude:
+        type: number
+        format: float
+      radius:
+        type: number  
+        format: float
+
+  Segment:
+    properties:
+      nwCorner:
+        type: string
+      seCorner:
+        type: string
+
+  Vertex:
+    properties:
+      latitude:
+        type: number
+        format: float
+      longitude:
+        type: number
+        format: float
+
+  VertexList:
+    type: array
+    items:
+      "$ref": "#/definitions/Vertex"
+    minItems: 4
+      
+        

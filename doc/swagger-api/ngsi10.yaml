@@ -1,0 +1,496 @@
+# to showcase the REST  APIs of fastDiscovery
+swagger: "2.0"
+info:
+  title: NGSI10 API
+  description: REST APIs for thinBroker in FogFlow
+  version: "1.0.0"
+# the domain of the service
+host: localhost:8070
+# array of all schemes that your API supports
+schemes:
+  - http
+consumes:
+  - application/json
+produces:
+  - application/json  
+basePath: /ngsi10
+paths:
+  /contextEntities:
+    get:
+      tags:
+      - "Convenience Operations"        
+      summary: to retrieve all context entities from a nearby thinBroker
+      responses:
+        200:     
+            description: "OK"
+            schema:
+              $ref: "#/definitions/EntityIdList"
+
+  /contextEntities/{eid}:
+    get:
+      tags:
+      - "Convenience Operations"       
+      summary: to retrieve a specific context entity from a nearby thinBroker
+      parameters:
+        - in: path
+          name: eid
+          description: the id of the retrieved entity
+          required: true          
+          type: string
+      responses:
+        200:     
+            description: "OK"
+            schema:
+              $ref: "#/definitions/ContextElement"
+        404:     
+            description: "not found"
+
+  /contextEntities/{eid}/{attr}:
+    get:
+      tags:
+      - "Convenience Operations"       
+      summary: to retrieve a specific attribute of a specific context entity
+      parameters:
+        - in: path
+          name: eid # the id of the retrieved entity
+          required: true          
+          type: string
+        - in: path
+          name: attr # the name of the retrieved attribute
+          required: true          
+          type: string
+      responses:
+        200:     
+            description: "OK"
+            schema:
+              $ref: "#/definitions/ContextAttribute"
+        404:     
+            description: "not found"
+
+
+  /updateContext:
+    post: 
+      tags:
+      - "Standardized Operations"    
+      summary: to send a context update    
+      parameters:
+        - name: body
+          in: body
+          description: payload information
+          schema:
+            $ref: "#/definitions/UpdateContextRequest"
+      responses:
+        200:     
+            description: "OK"          
+            schema:
+              $ref: "#/definitions/UpdateContextResponse"          
+
+
+  /queryContext:
+    post: 
+      tags:
+      - "Standardized Operations"       
+      summary: to send a context update    
+      parameters:
+        - name: body
+          in: body
+          description: payload information
+          schema:
+            $ref: "#/definitions/QueryContextRequest"
+      responses:
+        200:     
+            description: "OK"          
+            schema:
+              $ref: "#/definitions/QueryContextResponse"
+          
+  /subscribeContext:
+    post: 
+      tags:
+      - "Standardized Operations"         
+      summary: to subscribe context updates    
+      parameters:
+        - in: header
+          name: Destination
+          description: its value is "orion-broker" when the NOTIFY receiver is Orion Broker
+          type: string
+          required: false
+        - in: header
+          name: Require-Reliability
+          description: set it to "true" when NOTIFY must be confirmed to be received
+          type: string
+          required: false          
+        - name: body
+          in: body
+          description: payload information
+          schema:
+            $ref: "#/definitions/SubscribeContextRequest"
+      responses:
+        200:     
+            description: "OK"          
+            schema:
+              $ref: "#/definitions/SubscribeContextResponse"
+          
+  /unsubscribeContext:
+    post: 
+      tags:
+      - "Standardized Operations"       
+      summary: to subscribe context updates    
+      parameters:
+        - name: body
+          in: body
+          description: payload information
+          schema:
+            $ref: "#/definitions/UnsubscribeContextRequest"
+      responses:
+        200:     
+            description: "OK"          
+            schema:
+              $ref: "#/definitions/UnsubscribeContextResponse"
+
+  /notifyContext:
+    post: 
+      tags:
+      - "Standardized Operations"        
+      summary: to subscribe context updates    
+      parameters:
+        - name: body
+          in: body
+          description: payload information
+          schema:
+            $ref: "#/definitions/NotifyContextRequest"
+      responses:
+        200:     
+            description: "OK"          
+            schema:
+              $ref: "#/definitions/NotifyContextResponse"
+
+definitions:
+  UpdateContextRequest:
+    required: [contextElements, updateAction]  
+    properties:
+      contextElements:
+        type: array
+        items:
+          $ref: "#/definitions/ContextElement"
+        example:  
+            - entityId: 
+                  id: "001"
+                  type: "car"
+                  isPattern: false
+              attributes:
+                - name: "brand"
+                  type: "string"
+                  contextValue: "BMW"
+              domainMetadata:
+                - name: "location"
+                  type: "point"
+                  value:
+                      latitude: 49.406393 
+                      longitude: 8.684208
+                      
+      updateAction:
+        type: string
+        example: "UPDATE"
+        
+
+  UpdateContextResponse:
+    properties:    
+      contextResponses:
+        type: array
+        items:
+          $ref: "#/definitions/ContextElementResponse"
+      StatusCode:
+        $ref: "#/definitions/StatusCode"
+
+  QueryContextRequest:
+    required: [entities]    
+    properties:    
+      entities:
+        type: array
+        items:
+          $ref: "#/definitions/EntityId"
+      attributes:
+        type: array
+        items:
+          type: string
+      restriction:
+          $ref: "#/definitions/Restriction"
+    example:  
+      entities:
+        - id: "001"
+          type: "car"
+          isPattern: false
+      attributes: 
+        - "brand"
+      restriction:
+        scopes:
+          - scopeType: "circle"
+            scopeValue: 
+              centerLatitude:  49.406393
+              centerLongitude: 8.684208
+              radius: 200
+              
+          
+  QueryContextResponse:
+    properties:     
+      contextResponses:
+        type: array
+        items:
+          $ref: "#/definitions/ContextElementResponse"
+      errorCode:
+        $ref: "#/definitions/StatusCode"
+
+
+  SubscribeContextRequest:
+    required: [entities, reference]    
+    properties:
+      entities:
+        type: array
+        items:
+          $ref: "#/definitions/EntityId"
+      attributes:
+        type: array
+        items:
+          type: string
+      restriction:
+          $ref: "#/definitions/Restriction"
+      notifyConditions:
+          $ref: "#/definitions/NotifyCondition"
+      reference:
+        type: string
+      duration:
+        type: string
+      throttling:
+        type: string
+    example:
+      entities:
+        - id: "001"
+          type: "car"
+          isPattern: false
+      attributes: 
+        - "brand"
+      restriction:
+        scopes:
+          - scopeType: "circle"
+            scopeValue: 
+              centerLatitude:  49.406393
+              centerLongitude: 8.684208
+              radius: 200      
+      reference: "http://127.0.0.6000"
+      
+  SubscribeContextResponse:
+    properties:   
+      subscribeResponse:
+        $ref: "#/definitions/SubscribeResponse"
+      subscribeError:
+        $ref: "#/definitions/SubscribeError"
+
+  SubscribeResponse: 
+    properties:     
+      subscriptionId:
+        type: string
+      duration:
+        type: string
+      throttling:
+        type: string
+
+  SubscribeError:
+    properties:     
+      subscriptionId:
+        type: string
+      errorCode:
+        $ref: "#/definitions/StatusCode"
+
+  UnsubscribeContextRequest:
+    required: [subscriptionId]    
+    properties:         
+      subscriptionId:
+        type: string
+
+  UnsubscribeContextResponse:
+    required: [subscriptionId]    
+    properties:     
+      subscriptionId:
+        type: string
+      statusCode:
+        $ref: "#/definitions/StatusCode"
+
+  NotifyContextRequest:
+    required: [subscriptionId, originator]    
+    properties:     
+      subscriptionId:
+        type: string
+      originator:
+        type: string
+      contextResponses:
+        type: array
+        items:
+          $ref: "#/definitions/ContextElementResponse"
+          
+  NotifyContextResponse:
+    properties:         
+      responseCode:
+        $ref: "#/definitions/StatusCode"
+
+  ContextElementResponse:
+    properties:  
+      contextElement:
+        $ref: "#/definitions/ContextElement"
+      statusCode:
+        $ref: "#/definitions/StatusCode"
+        
+  Restriction:
+    properties:    
+      attributeExpression:
+        type: string
+      scopes:
+        type: array
+        items:
+          $ref: "#/definitions/OperationScope"
+        
+  OperationScope:
+    description: to define a scope for context query or subscription
+    properties:    
+      scopeType:
+        type: string
+        description: extendable, but currently only support geo-scope (such as segment, cirecle, point, polygon, nearby) and stringQuery (such as "contexMeta1=X;contextMeta2=Y")
+      scopeValue:
+        type: object
+
+  NotifyCondition:
+    properties:      
+      type:
+        type: string
+      condValueList:
+        type: array
+        items:
+          type: string
+      restriction:
+        type: string
+        
+  StatusCode:
+    properties:
+      code:
+        type: number
+        format: int
+      reasonPhrase:
+        type: string
+      details:
+        type: string
+        
+  ContextElement:
+    properties:
+      entityId:
+        $ref: "#/definitions/EntityId"
+      attributes:
+        type: array
+        items:
+          $ref: "#/definitions/ContextAttribute"
+      domainMetadata:
+        type: array
+        items:
+          $ref: "#/definitions/ContextMetadata"        
+      attributeDomainName:
+        type: string
+    
+  EntityId:
+    properties:
+      id: 
+        type: string
+        example: "001"
+      type:
+        type: string
+        example: "car"
+      isPattern:
+        type: boolean
+        example: false
+        
+  ContextAttribute:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      contextValue:
+        type: object
+      metadata:
+        type: array
+        items:
+          $ref: "#/definitions/ContextMetadata"
+
+  ContextMetadata:
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      value:
+        type: object
+  
+
+  EntityIdList:
+    properties:  
+      num: 
+        type: number
+        format: int
+      ids:
+        type: array
+        items:
+          type: string
+    
+  Nearby:
+    properties:  
+      latitude:
+        type: number
+        format: float
+      longitude:
+        type: number
+        format: float
+      limit:
+        type: number  
+        format: int64
+
+  Point:
+    properties:  
+      latitude:
+        type: number
+        format: float
+      longitude:
+        type: number
+        format: float
+
+  Circle:
+    properties:  
+      centerLatitude:
+        type: number
+        format: float
+      centerLongitude:
+        type: number
+        format: float
+      radius:
+        type: number  
+        format: float
+
+  Segment:
+    properties:
+      nwCorner:
+        type: string
+      seCorner:
+        type: string
+
+  Vertex:
+    properties:
+      latitude:
+        type: number
+        format: float
+      longitude:
+        type: number
+        format: float
+
+  VertexList:
+    type: array
+    items:
+      "$ref": "#/definitions/Vertex"
+    minItems: 4
+      
+        

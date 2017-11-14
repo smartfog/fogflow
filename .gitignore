@@ -1,0 +1,7 @@
+*.exe~
+*.doctree
+*.pickle
+*.exe
+node_modules
+doc/en/_build/
+doc/en/source/figures/~$figures.pptx

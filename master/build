@@ -1,0 +1,3 @@
+go get
+CGO_ENABLED=0 go build -a 
+docker build -t "fogflow/master" .

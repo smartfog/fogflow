@@ -1,0 +1,19 @@
+{
+    "name": "task_designer",
+    "version": "1.0.0",
+    "description": "web portal for users to manage the system and applications",
+    "author": "Bin Cheng<bin.cheng@neclab.eu>",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js"
+    },
+    "dependencies": {
+        "request": "*",        
+        "express": "*",
+        "axios": "*",
+        "multer": "*",
+        "logops": "*",
+        "socket.io": "*",        
+        "body-parser": "*"        
+    }
+}

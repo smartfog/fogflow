@@ -1,0 +1,10 @@
+{
+    "discoveryURL":"http://192.168.1.102:8071/ngsi9",    
+    "location": {
+        "latitude": 35.692221,
+        "longitude": 139.709059
+    },
+    "iconURL": "/img/shop.png",    
+	"type": "PowerPanel",
+	"id": "01"	
+}

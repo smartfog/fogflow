@@ -1,0 +1,17 @@
+version: "2"
+services:
+    broker:
+        image: fogflow/broker
+        ports:
+            - 8070:8070   
+    worker:
+        image: fogflow/worker
+        environment:
+            - myip=192.168.1.102          
+            - discoveryURL="http://192.168.1.102:8071/ngsi9"
+            - rabbitmq="amqp://admin:mypass@192.168.1.102:5672/"             
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock        
+
+            
+            
