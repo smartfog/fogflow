@@ -42,7 +42,12 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 	}
 
 	if registerCtxReq.RegistrationId == "" {
-		registrationID := uuid.NewV4().String()
+		u1, err := uuid.NewV4()
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		registrationID := u1.String()
 		registerCtxReq.RegistrationId = registrationID
 	}
 
@@ -202,7 +207,12 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	}
 
 	// generate a new subscription id
-	subID := uuid.NewV4().String()
+	u1, err := uuid.NewV4()
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	subID := u1.String()
 
 	subscribeCtxAvailabilityReq.SubscriptionId = subID
 

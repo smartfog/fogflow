@@ -46,7 +46,14 @@ func generateTaskInstances(root *TaskNode, streams []*ContextObject, restriction
 	instances := make([]*TaskInstance, 0)
 	for _, value := range values {
 		instance := TaskInstance{}
-		instance.ID = root.Task.Name + "." + uuid.NewV4().String()
+
+		uid, err := uuid.NewV4()
+		if err != nil {
+			fmt.Printf("Something went wrong: %s", err)
+			return instances
+		}
+
+		instance.ID = root.Task.Name + "." + uid.String()
 		instance.TaskNode = root
 
 		// update the set of restrictions for all sub tasks

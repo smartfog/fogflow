@@ -45,7 +45,14 @@ type ThinBroker struct {
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
-	tb.MyID = uuid.NewV4().String()
+	myid, err := uuid.NewV4()
+	if err != nil {
+		ERROR.Println("FAILED TO GENERATE A UNIQUE ID")
+		return
+	}
+
+	tb.MyID = myid.String()
+
 	tb.MyURL = "http://" + cfg.Host + ":" + strconv.Itoa(cfg.Port) + "/ngsi10"
 	tb.myEntityId = "SysComponent.IoTBroker." + tb.MyID
 
@@ -531,7 +538,12 @@ func (tb *ThinBroker) SubscribeContext(w rest.ResponseWriter, r *rest.Request) {
 	}
 
 	// new SubscriptionID
-	subID := uuid.NewV4().String()
+	u1, err := uuid.NewV4()
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	subID := u1.String()
 
 	// send out the response
 	subResp := SubscribeContextResponse{}
