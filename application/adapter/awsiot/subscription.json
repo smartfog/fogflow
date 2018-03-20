@@ -1,0 +1,10 @@
+{
+    "entities": [
+        {
+            "type": "DeviceProfile.awsiot",
+            "id": "Stream.awsiot.light.001",
+            "isPattern": false
+        }
+    ],
+    "reference": "http://127.0.0.1:8080"
+}
