@@ -208,7 +208,7 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 	hostConfig := docker.HostConfig{}
 
 	hostConfig.NetworkMode = "host"
-	hostConfig.AutoRemove = false
+	hostConfig.AutoRemove = true
 
 	if functionCode != "" {
 		fileName := "/tmp/" + taskID

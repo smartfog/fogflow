@@ -1,5 +1,8 @@
-API of IoT Discovery
+API of fastDiscovery
 ======================
+
+
+fastDiscovery in FogFlow is a centralized component to support standardized NGSI9 interface for the management of context availability. 
 
 
 `REST API documented at SwaggerHub`_
