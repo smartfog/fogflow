@@ -8,12 +8,12 @@
         "start": "node main.js"
     },
     "dependencies": {
-        "request": "*",        
+        "request": "*",
         "express": "*",
         "axios": "*",
         "multer": "*",
         "logops": "*",
-        "socket.io": "*",        
-        "body-parser": "*"        
+        "socket.io": "*",
+        "body-parser": "*"
     }
 }
