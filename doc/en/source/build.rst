@@ -26,6 +26,22 @@ Install dependencies
   		nodejs -v    #output 	v6.10.2
   		npm -v       #output  3.10.10
 
+#. To be able to run docker without sudo
+
+
+	.. note:: all the scripts are prepared under the assumption that you can run docker without sudo. To enable this, please execute the following 
+	   commands. After that, you have to logout and then login again.
+
+	.. code-block:: bash	
+
+		# add the docker group if it doesn't already exist:
+		sudo groupadd docker
+		
+		# add the connected user "$USER" to the docker group.
+		sudo gpasswd -a $USER docker
+		
+		# log out/in to activate the changes to groups
+
 
 #. To set the environment variable GOPATH
 
