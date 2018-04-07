@@ -371,9 +371,10 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 func (e *Executor) configurateTask(port string, commands []interface{}) bool {
 	taskAdminURL := fmt.Sprintf("http://%s:%s/admin", e.workerCfg.MyIP, port)
 
-	INFO.Println(taskAdminURL)
-
 	jsonText, _ := json.Marshal(commands)
+
+	INFO.Println(taskAdminURL)
+	INFO.Printf("configuration: %s\r\n", string(jsonText))
 
 	req, _ := http.NewRequest("POST", taskAdminURL, bytes.NewBuffer(jsonText))
 	req.Header.Set("Content-Type", "application/json")
@@ -390,10 +391,9 @@ func (e *Executor) configurateTask(port string, commands []interface{}) bool {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
 	body, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println("response Body:", string(body))
+	INFO.Println("task on port ", port, " has been configured with parameters ", jsonText)
+	INFO.Println("response Body:", string(body))
 
 	return true
 }

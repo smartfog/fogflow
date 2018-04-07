@@ -33,6 +33,9 @@ type Master struct {
 	operatorList      map[string][]DockerImage
 	operatorList_lock sync.RWMutex
 
+	//to manage the orchestration of fog functions
+	functionMgr *FunctionMgr
+
 	//to manage the orchestration of service topology
 	topologyMgr *TopologyMgr
 
@@ -75,6 +78,10 @@ func (master *Master) Start(configuration *Config) {
 		}
 	}
 
+	// initialize the manager for both fog function and service topology
+	master.functionMgr = NewFogFunctionMgr(master)
+	master.functionMgr.Init()
+
 	master.topologyMgr = NewTopologyMgr(master)
 	master.topologyMgr.Init()
 
@@ -86,6 +93,7 @@ func (master *Master) Start(configuration *Config) {
 	master.myURL = "http://" + configuration.MyIP + ":" + strconv.Itoa(configuration.AgentPort)
 	master.agent.Start()
 	master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
+	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
 	// start the message consumer
 	go func() {
@@ -210,6 +218,10 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 		master.topologyMgr.handleTopologyUpdate(notifyCtxReq.ContextResponses, sid)
 	case "Requirement":
 		master.topologyMgr.handleRequirementUpdate(notifyCtxReq.ContextResponses, sid)
+
+	//input-driven service orchestration for serverless function
+	case "FogFunction":
+		master.functionMgr.handleFogFunctionUpdate(notifyCtxReq.ContextResponses, sid)
 	}
 }
 
@@ -273,6 +285,66 @@ func (master *Master) queryWorkers() []*ContextObject {
 	}
 
 	return ctxObjects
+}
+
+func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
+	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY=========")
+
+	subID := notifyCtxAvailReq.SubscriptionId
+
+	var action string
+	switch notifyCtxAvailReq.ErrorCode.Code {
+	case 201:
+		action = "CREATE"
+	case 301:
+		action = "UPDATE"
+	case 410:
+		action = "DELETE"
+	}
+
+	for _, registrationResp := range notifyCtxAvailReq.ContextRegistrationResponseList {
+		registration := registrationResp.ContextRegistration
+		for _, entity := range registration.EntityIdList {
+			// convert context registration to entity registration
+			entityRegistration := master.contextRegistration2EntityRegistration(&entity, &registration)
+			master.functionMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
+		}
+	}
+}
+
+func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
+	entityRegistration := EntityRegistration{}
+
+	entityRegistration.ID = entityId.ID
+	entityRegistration.Type = entityId.Type
+	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+
+	for _, attribute := range ctxRegistration.ContextRegistrationAttributes {
+		entityRegistration.AttributesList[attribute.Name] = attribute
+	}
+
+	entityRegistration.MetadataList = make(map[string]ContextMetadata)
+	for _, ctxmeta := range ctxRegistration.Metadata {
+		entityRegistration.MetadataList[ctxmeta.Name] = ctxmeta
+	}
+
+	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
+
+	return &entityRegistration
+}
+
+func (master *Master) subscribeContextAvailability(availabilitySubscription *SubscribeContextAvailabilityRequest) string {
+
+	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
+
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.IoTDiscoveryURL}
+	subscriptionId, err := client.SubscribeContextAvailability(availabilitySubscription)
+	if err != nil {
+		ERROR.Println(err)
+		return ""
+	}
+
+	return subscriptionId
 }
 
 //

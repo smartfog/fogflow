@@ -53,6 +53,7 @@ func (w *Worker) Start(config *Config) bool {
 
 		if err == nil && selectedBroker != "" {
 			w.cfg.BrokerURL = selectedBroker
+			INFO.Println("find out a nearby broker ", selectedBroker)
 			break
 		} else {
 			if err != nil {
