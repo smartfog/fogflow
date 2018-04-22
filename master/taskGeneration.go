@@ -9,8 +9,13 @@ import (
 	. "fogflow/common/ngsi"
 )
 
+type Constraint struct {
+	key   string
+	value interface{}
+}
+
 func GenerateExcutionPlan(rootTask *TaskNode, streamObjects []*ContextObject) []*TaskInstance {
-	restrictions := make(map[string]interface{})
+	restrictions := make([]Constraint, 0)
 	rootInstances := generateTaskInstances(rootTask, streamObjects, restrictions)
 
 	return rootInstances
@@ -36,7 +41,7 @@ func SubtractExecutionPlan(currentPlan []*TaskInstance, previousPlan []*TaskInst
 	return newTaskInstanceList
 }
 
-func generateTaskInstances(root *TaskNode, streams []*ContextObject, restrictions map[string]interface{}) []*TaskInstance {
+func generateTaskInstances(root *TaskNode, streams []*ContextObject, restrictions []Constraint) []*TaskInstance {
 	values := searchUniqueValuesInScope(root.Task.Granularity, restrictions, streams)
 
 	INFO.Printf("restrictions: %v\n", restrictions)
@@ -57,11 +62,14 @@ func generateTaskInstances(root *TaskNode, streams []*ContextObject, restriction
 		instance.TaskNode = root
 
 		// update the set of restrictions for all sub tasks
-		newRestrictions := make(map[string]interface{})
-		for k, v := range restrictions {
-			newRestrictions[k] = v
-		}
-		newRestrictions[root.Task.Granularity] = value
+		newRestrictions := make([]Constraint, 0)
+		copy(newRestrictions, restrictions)
+
+		newConstraint := Constraint{}
+		newConstraint.key = root.Task.Granularity
+		newConstraint.value = value
+
+		newRestrictions = append(newRestrictions, newConstraint)
 
 		// go through all child task with the updated restrictions
 		for _, childtask := range root.Children {
@@ -80,7 +88,7 @@ func generateTaskInstances(root *TaskNode, streams []*ContextObject, restriction
 	return instances
 }
 
-func configurateTask(instance *TaskInstance, restrictions map[string]interface{}, streams []*ContextObject) {
+func configurateTask(instance *TaskInstance, restrictions []Constraint, streams []*ContextObject) {
 	configurateOutputs(instance, restrictions)
 	configurateInputs(instance, restrictions, streams)
 }
@@ -88,7 +96,7 @@ func configurateTask(instance *TaskInstance, restrictions map[string]interface{}
 //
 // configure the input streams for the current task instance
 //
-func configurateInputs(instance *TaskInstance, restrictions map[string]interface{}, streams []*ContextObject) {
+func configurateInputs(instance *TaskInstance, restrictions []Constraint, streams []*ContextObject) {
 	instance.Inputs = make([]InputStream, 0)
 
 	for _, stream := range instance.TaskNode.Task.InputStreams {
@@ -98,15 +106,17 @@ func configurateInputs(instance *TaskInstance, restrictions map[string]interface
 		onetype.URLs = make(map[string]string)
 
 		if instance.Children == nil || len(instance.Children) == 0 { // at the lowest layer, without any children
-			conditions := make(map[string]interface{})
+			conditions := make([]Constraint, 0)
 
 			if stream.Shuffling != "broadcast" {
-				for k, v := range restrictions {
-					conditions[k] = v
-				}
+				copy(conditions, restrictions)
 			}
 
-			conditions["type"] = stream.Topic
+			newConstraint := Constraint{}
+			newConstraint.key = "type"
+			newConstraint.value = stream.Topic
+
+			conditions = append(conditions, newConstraint)
 
 			streamSet := getMatchedStreams(conditions, streams)
 			INFO.Printf("condition to select streams : %+v\n", conditions)
@@ -140,13 +150,14 @@ func configurateInputs(instance *TaskInstance, restrictions map[string]interface
 //
 // configure the output streams for the current task instance
 //
-func configurateOutputs(instance *TaskInstance, restrictions map[string]interface{}) {
+func configurateOutputs(instance *TaskInstance, restrictions []Constraint) {
 	instance.Outputs = make([]OutputStream, 0)
 
 	prefix := ""
-	for _, v := range restrictions {
-		prefix += fmt.Sprintf(".%v", v)
+	for _, constraint := range restrictions {
+		prefix += fmt.Sprintf(".%v", constraint.value)
 	}
+
 	for _, item := range instance.TaskNode.Task.OutputStreams {
 		out := OutputStream{}
 		out.Type = item.Topic
@@ -156,7 +167,7 @@ func configurateOutputs(instance *TaskInstance, restrictions map[string]interfac
 	}
 }
 
-func searchUniqueValuesInScope(granularity string, restrictions map[string]interface{}, streams []*ContextObject) []interface{} {
+func searchUniqueValuesInScope(granularity string, restrictions []Constraint, streams []*ContextObject) []interface{} {
 	INFO.Println("************RESTRICTION: ", restrictions)
 	INFO.Println(granularity)
 
@@ -203,7 +214,7 @@ func searchUniqueValuesInScope(granularity string, restrictions map[string]inter
 	return uniqueValues
 }
 
-func getMatchedStreams(restrictions map[string]interface{}, streams []*ContextObject) []*StreamProfile {
+func getMatchedStreams(restrictions []Constraint, streams []*ContextObject) []*StreamProfile {
 	// find out all streams that fit the restrictions
 	INFO.Printf("============= restriction %+v===", restrictions)
 
@@ -228,11 +239,14 @@ func getMatchedStreams(restrictions map[string]interface{}, streams []*ContextOb
 	return fits
 }
 
-func IsMatchedWithRestrictions(stream *ContextObject, restrictions map[string]interface{}) bool {
+func IsMatchedWithRestrictions(stream *ContextObject, restrictions []Constraint) bool {
 	fmt.Printf("====stream object %v \n====", stream)
 	fmt.Printf("====restrictions %v \n====", restrictions)
 
-	for k, v := range restrictions {
+	for _, constraint := range restrictions {
+		k := constraint.key
+		v := constraint.value
+
 		if k == "*" || k == "all" {
 			continue
 		}
