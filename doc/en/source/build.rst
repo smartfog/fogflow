@@ -11,6 +11,9 @@ Install dependencies
 	- install git client: please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-git-on-ubuntu-16-04
 	
 	- install docker engine: please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+	
+		.. note:: all the scripts are prepared under the assumption that you can run docker without sudo.
+	
 
 	- install the latest version of golang(>v1.9): please download and install it according to the information at https://golang.org/doc/install
 
@@ -25,22 +28,6 @@ Install dependencies
 		go version   #output  go version go1.9 linux/amd64 
   		nodejs -v    #output 	v6.10.2
   		npm -v       #output  3.10.10
-
-#. To be able to run docker without sudo
-
-
-	.. note:: all the scripts are prepared under the assumption that you can run docker without sudo. To enable this, please execute the following 
-	   commands. After that, you have to logout and then login again.
-
-	.. code-block:: bash	
-
-		# add the docker group if it doesn't already exist:
-		sudo groupadd docker
-		
-		# add the connected user "$USER" to the docker group.
-		sudo gpasswd -a $USER docker
-		
-		# log out/in to activate the changes to groups
 
 
 #. To set the environment variable GOPATH
@@ -81,9 +68,11 @@ Build IoT Discovery
 			# build the source code
 			go build
 	
-	- to build the docker image
+	- to build the docker image, 
 
 		.. code-block:: bash			
+		
+			# you can simply run ./build  to perform the following commands
 		
 			# download its third-party library dependencies
 			go get
@@ -91,7 +80,7 @@ Build IoT Discovery
 			CGO_ENABLED=0 go build -a
 			# create the docker image; you might have to use sudo to run this command 
 			# if your docker user is not in the sudo group
-			docker build -t "fogflow/discovery" .			
+			docker build -t "fogflow/discovery" .										
 		
 			
 Build IoT Broker
@@ -111,6 +100,8 @@ Build IoT Broker
 	- to build the docker image
 		
 		.. code-block:: bash			
+		
+			# you can simply run ./build  to perform the following commands		
 				
 			# download its third-party library dependencies
 			go get
@@ -140,6 +131,8 @@ Build Topology Master
 		
 		.. code-block:: bash							
 		
+			# you can simply run ./build  to perform the following commands		
+					
 			# download its third-party library dependencies
 			go get
 			# build the source code and link all libraries statically
@@ -167,6 +160,8 @@ Build Worker
 	- to build the docker image
 		
 		.. code-block:: bash	
+					
+			# you can simply run ./build  to perform the following commands									
 			
 			# download its third-party library dependencies
 			go get
@@ -193,6 +188,8 @@ Build Task Designer
 	- to build the docker image
 		
 		.. code-block:: bash	
+		
+			# you can simply run ./build  to perform the following commands					
 
 			# install all required libraries
 			npm install

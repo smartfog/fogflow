@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"strings"
 	"sync"
 
 	. "fogflow/common/datamodel"
@@ -62,8 +63,9 @@ type FunctionTask struct {
 }
 
 type InputEntity struct {
-	ID   string
-	Type string
+	ID       string
+	Type     string
+	Location Point
 }
 
 type EntityRegistration struct {
@@ -72,6 +74,17 @@ type EntityRegistration struct {
 	AttributesList       map[string]ContextRegistrationAttribute
 	MetadataList         map[string]ContextMetadata
 	ProvidingApplication string
+}
+
+func (registredEntity *EntityRegistration) getLocation() Point {
+	for _, domainMeta := range registredEntity.MetadataList {
+		if domainMeta.Name == "location" && domainMeta.Type == "point" {
+			location := domainMeta.Value.(Point)
+			return location
+		}
+	}
+
+	return Point{0.0, 0.0}
 }
 
 func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
@@ -431,6 +444,19 @@ func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *Inp
 	return deploymentActions
 }
 
+func (flow *FogFlow) getLocationOfInputs(taskID string) []Point {
+	locations := make([]Point, 0)
+
+	hashID := strings.TrimPrefix(taskID, flow.Function.Name)
+	task := flow.ExecutionPlan[hashID]
+
+	for _, input := range task.Inputs {
+		locations = append(locations, input.Location)
+	}
+
+	return locations
+}
+
 func (flow *FogFlow) updateDeploymentPlan(scheduledTask *ScheduledTaskInstance) {
 	flow.DeploymentPlan[scheduledTask.ID] = scheduledTask
 }
@@ -569,6 +595,9 @@ func (flow *FogFlow) searchRelevantEntities(group *GroupInfo) []InputEntity {
 				inputEntity := InputEntity{}
 				inputEntity.ID = entityRegistration.ID
 				inputEntity.Type = entityRegistration.Type
+
+				//the location metadata will be used later to decide where to deploy the fog function instance
+				inputEntity.Location = entityRegistration.getLocation()
 
 				entities = append(entities, inputEntity)
 			}
@@ -826,24 +855,22 @@ func (fMgr *FunctionMgr) HandleContextAvailabilityUpdate(subID string, entityAct
 	for _, deploymentAction := range deploymentActions {
 		switch deploymentAction.ActionType {
 		case "ADD_TASK":
-			//figure out where to deploy the new task
 			INFO.Printf("add task %+v\r\n", deploymentAction.ActionInfo)
 
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
 
-			// query the location information of all available inputs
-			locations := make([]Point, 0)
+			// figure out where to deploy this task instance
+			taskID := scheduledTaskInstance.ID
 
-			// to do
-
-			// determine where to assign the deployment action
+			// find out the worker close to the available inputs
+			locations := fogflow.getLocationOfInputs(taskID)
 			scheduledTaskInstance.WorkerID = fMgr.master.SelectWorker(locations)
 
 			if scheduledTaskInstance.WorkerID != "" {
 				fMgr.master.DeployTask(&scheduledTaskInstance)
 			}
 
-			// update where the task has been assigned in the deployment plan
+			// update the deployment plan
 			fogflow.updateDeploymentPlan(&scheduledTaskInstance)
 
 		case "REMOVE_TASK":

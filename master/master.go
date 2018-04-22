@@ -430,7 +430,6 @@ func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
 //
 // the shared functions for function manager and topology manager to call
 //
-
 func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 	query := QueryContextRequest{}
 
