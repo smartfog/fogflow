@@ -5,7 +5,7 @@
         "username": "postgres",
         "password": "postgres",
         "host": "127.0.0.1",
-        "port": 5433,
+        "port": 5432,
         "dbname": "ngsi9",
         "tables": [
             "CREATE TABLE entity_tab (eid text,  type text, isPattern text, providerURL text);",
@@ -15,11 +15,11 @@
             "CREATE TABLE geo_circle_tab (eid text, name text, type text, center geometry, radius float);"
         ]
     },
-	"logging":{
-		"info":"stdout",        
-		"error":"stderr",
-	        "protocol": "stdout",
-        	"debug": "stdout"
-	}
+    "logging":{
+	"info":"stdout",        
+	"error":"stderr",
+        "protocol": "stdout",
+       	"debug": "stdout"
+    }
 }
 
