@@ -19,12 +19,15 @@ Start the cloud part of FogFlow
 
 	.. code-block:: bash
 	
-		# set the environment variable HOST_IP, which is the IP address to be accessible from outside
+		# set the environment variable HOST_IP, which is the external IP address of your current machine
 		export HOST_IP=AAA.BBB.CCC.DDD
 
 		# go to the folder where the docker-compose.ymal is located
 		cd fogflow/deployment/core 
   		docker-compose up
+
+	.. note:: HOST_IP needs to be accessible from any fog node where workers are running
+
 
 Check the status of the FogFlow services in the cloud
 ------------------------------------------------------
