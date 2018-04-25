@@ -15,7 +15,7 @@ we can start all FogFlow core components in the cloud using docker-compose:
 Start the cloud part of FogFlow
 -----------------------------------------------
 
-.. note:: please install Docker Compose according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
+please install Docker Compose according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
 
 	.. code-block:: bash
 	
@@ -26,7 +26,7 @@ Start the cloud part of FogFlow
 		cd fogflow/deployment/core 
   		docker-compose up
 
-	.. note:: HOST_IP needs to be accessible from any fog node where workers are running
+.. note:: HOST_IP needs to be accessible from any fog node where workers are running
 
 
 Check the status of the FogFlow services in the cloud
