@@ -290,6 +290,8 @@ func (master *Master) queryWorkers() []*ContextObject {
 func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
 	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY=========")
 
+	DEBUG.Print("received raw availability notify: %+v\r\n", notifyCtxAvailReq)
+
 	subID := notifyCtxAvailReq.SubscriptionId
 
 	var action string
@@ -315,20 +317,33 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
 	entityRegistration := EntityRegistration{}
 
-	entityRegistration.ID = entityId.ID
-	entityRegistration.Type = entityId.Type
-	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+	ctxObj := master.RetrieveContextEntity(entityId.ID)
 
-	for _, attribute := range ctxRegistration.ContextRegistrationAttributes {
-		entityRegistration.AttributesList[attribute.Name] = attribute
+	entityRegistration.ID = ctxObj.Entity.ID
+	entityRegistration.Type = ctxObj.Entity.Type
+
+	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+	for attrName, attrValue := range ctxObj.Attributes {
+		attributeRegistration := ContextRegistrationAttribute{}
+		attributeRegistration.Name = attrName
+		attributeRegistration.Type = attrValue.Type
+
+		entityRegistration.AttributesList[attrName] = attributeRegistration
 	}
 
 	entityRegistration.MetadataList = make(map[string]ContextMetadata)
-	for _, ctxmeta := range ctxRegistration.Metadata {
-		entityRegistration.MetadataList[ctxmeta.Name] = ctxmeta
+	for metaname, ctxmeta := range ctxObj.Metadata {
+		cm := ContextMetadata{}
+		cm.Name = metaname
+		cm.Type = ctxmeta.Type
+		cm.Value = ctxmeta.Value
+
+		entityRegistration.MetadataList[metaname] = cm
 	}
 
 	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
+
+	DEBUG.Print("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
 
 	return &entityRegistration
 }

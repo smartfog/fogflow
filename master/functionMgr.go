@@ -337,6 +337,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 
 			//generate a deployment action
 			DEBUG.Printf("new task %+v\r\n", task)
+			DEBUG.Printf("hashID %s, taskID %s\r\n", hashID, task.TaskID)
 
 			taskInstance := ScheduledTaskInstance{}
 
@@ -447,7 +448,12 @@ func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *Inp
 func (flow *FogFlow) getLocationOfInputs(taskID string) []Point {
 	locations := make([]Point, 0)
 
-	hashID := strings.TrimPrefix(taskID, flow.Function.Name)
+	INFO.Println("taskID", taskID)
+
+	hashID := strings.TrimPrefix(taskID, flow.Function.Name+".")
+
+	INFO.Println("hasID of this task instance in the table = ", hashID)
+
 	task := flow.ExecutionPlan[hashID]
 
 	for _, input := range task.Inputs {
@@ -598,6 +604,9 @@ func (flow *FogFlow) searchRelevantEntities(group *GroupInfo) []InputEntity {
 
 				//the location metadata will be used later to decide where to deploy the fog function instance
 				inputEntity.Location = entityRegistration.getLocation()
+
+				DEBUG.Printf("ENTITY REGISTRATION %+v\r\n", entityRegistration)
+				DEBUG.Printf("received input ENTITY %+v\r\n", inputEntity)
 
 				entities = append(entities, inputEntity)
 			}
