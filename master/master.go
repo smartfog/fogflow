@@ -319,26 +319,31 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 
 	ctxObj := master.RetrieveContextEntity(entityId.ID)
 
-	entityRegistration.ID = ctxObj.Entity.ID
-	entityRegistration.Type = ctxObj.Entity.Type
+	if ctxObj == nil {
+		entityRegistration.ID = entityId.ID
+		entityRegistration.Type = entityId.Type
+	} else {
+		entityRegistration.ID = ctxObj.Entity.ID
+		entityRegistration.Type = ctxObj.Entity.Type
 
-	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
-	for attrName, attrValue := range ctxObj.Attributes {
-		attributeRegistration := ContextRegistrationAttribute{}
-		attributeRegistration.Name = attrName
-		attributeRegistration.Type = attrValue.Type
+		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+		for attrName, attrValue := range ctxObj.Attributes {
+			attributeRegistration := ContextRegistrationAttribute{}
+			attributeRegistration.Name = attrName
+			attributeRegistration.Type = attrValue.Type
 
-		entityRegistration.AttributesList[attrName] = attributeRegistration
-	}
+			entityRegistration.AttributesList[attrName] = attributeRegistration
+		}
 
-	entityRegistration.MetadataList = make(map[string]ContextMetadata)
-	for metaname, ctxmeta := range ctxObj.Metadata {
-		cm := ContextMetadata{}
-		cm.Name = metaname
-		cm.Type = ctxmeta.Type
-		cm.Value = ctxmeta.Value
+		entityRegistration.MetadataList = make(map[string]ContextMetadata)
+		for metaname, ctxmeta := range ctxObj.Metadata {
+			cm := ContextMetadata{}
+			cm.Name = metaname
+			cm.Type = ctxmeta.Type
+			cm.Value = ctxmeta.Value
 
-		entityRegistration.MetadataList[metaname] = cm
+			entityRegistration.MetadataList[metaname] = cm
+		}
 	}
 
 	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
