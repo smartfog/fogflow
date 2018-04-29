@@ -488,6 +488,7 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	master.operatorList_lock.RLock()
 	for _, image := range master.operatorList[operatorName] {
 		DEBUG.Println(image.TargetedOSType, image.TargetedHWType)
+		DEBUG.Println(wProfile.OSType, wProfile.HWType)
 		if image.TargetedOSType == wProfile.OSType && image.TargetedHWType == wProfile.HWType {
 			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
 		}
