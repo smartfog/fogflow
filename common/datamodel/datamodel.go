@@ -219,6 +219,8 @@ type WorkerProfile struct {
 	PLocation PhysicalLocation
 	LLocation LogicalLocation
 	Capacity  int
+	OSType    string
+	HWType    string
 }
 
 type StreamProfile struct {

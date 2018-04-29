@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -31,6 +32,9 @@ func (w *Worker) Start(config *Config) bool {
 	w.profile.Capacity = 10
 	w.profile.PLocation = config.PLocation
 	w.profile.LLocation = config.LLocation
+
+	w.profile.OSType = runtime.GOOS
+	w.profile.HWType = runtime.GOARCH
 
 	w.allTasks = make(map[string]*ScheduledTaskInstance)
 

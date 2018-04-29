@@ -408,6 +408,11 @@ func (master *Master) onTaskUpdate(from string, update *TaskUpdate) {
 //
 func (master *Master) DeployTasks(taskInstances []*ScheduledTaskInstance) {
 	for _, pScheduledTaskInstance := range taskInstances {
+		// convert the operator name into the name of a proper docker image for the assigned worker
+		operatorName := (*pScheduledTaskInstance).DockerImage
+		assignedWorkerID := (*pScheduledTaskInstance).WorkerID
+		(*pScheduledTaskInstance).DockerImage = master.DetermineDockerImage(operatorName, assignedWorkerID)
+
 		taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: pScheduledTaskInstance.WorkerID + ".", From: master.myID, PayLoad: *pScheduledTaskInstance}
 		INFO.Println(taskMsg)
 		master.communicator.Publish(&taskMsg)
@@ -471,6 +476,26 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 
 		return nil
 	}
+}
+
+//
+// to select the right docker image of an operator for the selected worker
+//
+func (master *Master) DetermineDockerImage(operatorName string, wID string) string {
+	selectedDockerImageName := ""
+
+	wProfile := master.workers[wID]
+	master.operatorList_lock.RLock()
+	for _, image := range master.operatorList[operatorName] {
+		DEBUG.Println(image.TargetedOSType, image.TargetedHWType)
+		if image.TargetedOSType == wProfile.OSType && image.TargetedHWType == wProfile.HWType {
+			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
+		}
+	}
+
+	master.operatorList_lock.RUnlock()
+
+	return selectedDockerImageName
 }
 
 //
