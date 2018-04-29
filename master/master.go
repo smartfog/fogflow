@@ -489,7 +489,19 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	for _, image := range master.operatorList[operatorName] {
 		DEBUG.Println(image.TargetedOSType, image.TargetedHWType)
 		DEBUG.Println(wProfile.OSType, wProfile.HWType)
-		if image.TargetedOSType == wProfile.OSType && image.TargetedHWType == wProfile.HWType {
+
+		hwType := "X86"
+		osType := "Linux"
+
+		if wProfile.HWType == "arm" {
+			hwType = "ARM"
+		}
+
+		if wProfile.OSType == "linux" {
+			osType = "Linux"
+		}
+
+		if image.TargetedOSType == osType && image.TargetedHWType == hwType {
 			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
 		}
 	}
