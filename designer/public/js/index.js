@@ -685,74 +685,60 @@ function showDockerImage()
 function initDockerImageList()
 {
     var imageList = [{
-        name: "nodejs",
+        name: "fogflow/nodejs",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "nodejs",
         prefetched: false
     },{
-        name: "python",
+        name: "fogflow/python",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "python",
         prefetched: false
     },{
-        name: "counter",
+        name: "fogflow/counter",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "counter",
         prefetched: false
     },{
-        name: "anomaly",
+        name: "fogflow/anomaly",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "anomaly",
         prefetched: false
     },{
-        name: "sum",
+        name: "fogflow/car",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
-        operatorName: "sum",
+        operatorName: "car",
         prefetched: false
     },{
-        name: "facecounter",
+        name: "fogflow/recommender",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
-        operatorName: "facecounter",
+        operatorName: "recommender",
         prefetched: false
     },{
-        name: "facefinder",
+        name: "fogflow/privatesite",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
-        operatorName: "facefinder",
+        operatorName: "privatesite",
         prefetched: false
     },{
-        name: "geohash",
+        name: "fogflow/publicsite",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
-        operatorName: "geohash",
-        prefetched: false
-    },{
-        name: "controller",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "controller",
-        prefetched: false
-    },{
-        name: "predictor",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "predictor",
+        operatorName: "publicsite",
         prefetched: false
     }
     ];

@@ -1,5 +1,5 @@
 FROM scratch
 ADD worker  /
-ADD config.json /
+#ADD config.json /
 CMD ["/worker"]
 

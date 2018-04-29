@@ -1,0 +1,68 @@
+version: "2"
+services:
+    designer:
+        image: fogflow/designer
+        environment:
+            - agentIP=${HOST_IP}           
+            - discoveryURL=http://${HOST_IP}:8071/ngsi9
+            - brokerURL=http://${HOST_IP}:8070/ngsi10
+        ports:
+            - 8080:8080
+            - 1030:1030
+        depends_on: 
+            - discovery
+            - broker
+    discovery:
+        image: fogflow/discovery
+        ports:
+            - 8071:8071
+        environment:
+            - postgresql_host=${HOST_IP}
+            - postgresql_port=5432
+        depends_on: 
+            - postgis
+    broker:
+        image: fogflow/broker
+        ports:
+            - 8070:8070 
+        environment:
+            - host=${HOST_IP}
+            - discoveryURL=http://${HOST_IP}:8071/ngsi9
+        depends_on: 
+            - discovery
+    master:
+        image: fogflow/master
+        links:
+            - rabbitmq        
+        environment:
+            - myip=${HOST_IP}           
+            - discoveryURL=http://${HOST_IP}:8071/ngsi9
+            - rabbitmq=amqp://admin:mypass@${HOST_IP}:5672/
+        ports:
+            - 1060:1060 
+        depends_on: 
+            - rabbitmq
+            - discovery
+            - broker     
+    worker1:
+        image: fogflow/worker
+        volumes:
+            - ./config1.json:/config.json                
+            - /var/run/docker.sock:/var/run/docker.sock        
+
+    worker2:
+        image: fogflow/worker
+        volumes:
+            - ./config2.json:/config.json        
+            - /var/run/docker.sock:/var/run/docker.sock                    
+            
+    postgis:
+        image: mdillon/postgis
+        ports:
+            - 5432:5432        
+    rabbitmq:
+        image: tutum/rabbitmq
+        ports:
+            - 5672:5672
+        environment:
+            - RABBITMQ_PASS=mypass   

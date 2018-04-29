@@ -1,2 +1,2 @@
 npm install
-docker build -t "anomaly"  .
+docker build -t "fogflow/anomaly"  .
