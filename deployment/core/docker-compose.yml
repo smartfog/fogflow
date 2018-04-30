@@ -44,15 +44,6 @@ services:
             - rabbitmq
             - discovery
             - broker     
-    worker:
-        image: fogflow/worker
-        environment:
-            - myip=${HOST_IP}           
-            - discoveryURL=http://${HOST_IP}:8071/ngsi9
-            - rabbitmq=amqp://admin:mypass@${HOST_IP}:5672/
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock        
-            
     postgis:
         image: mdillon/postgis
         ports:
