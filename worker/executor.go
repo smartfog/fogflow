@@ -208,7 +208,7 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 	hostConfig := docker.HostConfig{}
 
 	hostConfig.NetworkMode = "host"
-	hostConfig.AutoRemove = true
+	hostConfig.AutoRemove = e.workerCfg.ContainerAutoRemove
 
 	if functionCode != "" {
 		fileName := "/tmp/" + taskID
@@ -268,15 +268,15 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	if e.workerCfg.Registry.IsConfigured() == true {
 		dockerImage = e.workerCfg.Registry.ServerAddress + "/" + dockerImage
+	}
 
-		INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
+	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
 
-		// to fetch the docker image if it does not exist locally
-		_, pullError := e.PullImage(dockerImage, "latest")
-		if pullError != nil {
-			ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
-			return false
-		}
+	// to fetch the docker image if it does not exist locally
+	_, pullError := e.PullImage(dockerImage, "latest")
+	if pullError != nil {
+		ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
+		return false
 	}
 
 	taskCtx := taskContext{}

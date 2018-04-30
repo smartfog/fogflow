@@ -53,15 +53,16 @@ func (r *RegistryConfiguration) IsConfigured() bool {
 //Current configuration struct, maxQueueDepth sets the maximum number of unacknowledged mesages
 //for a client. Listeners is a slice of ListenerConfigs
 type Config struct {
-	MyIP         string                `json:"my_ip"`
-	MessageBus   string                `json:"message_bus"`
-	DiscoveryURL string                `json:"iot_discovery_url"`
-	MyRole       string                `json:"my_role"`
-	Registry     RegistryConfiguration `json:"registry,omitempty"`
-	BrokerURL    string                `json:"broker_url"` // known from IoT Discovery
-	PLocation    PhysicalLocation      `json:"physical_location"`
-	LLocation    LogicalLocation       `json:"logical_location"`
-	Log          Logging               `json:"logging"`
+	MyIP                string                `json:"my_ip"`
+	MessageBus          string                `json:"message_bus"`
+	DiscoveryURL        string                `json:"iot_discovery_url"`
+	MyRole              string                `json:"my_role"`
+	ContainerAutoRemove bool                  `json:"container_autoremove"`
+	Registry            RegistryConfiguration `json:"registry,omitempty"`
+	BrokerURL           string                `json:"broker_url"` // known from IoT Discovery
+	PLocation           PhysicalLocation      `json:"physical_location"`
+	LLocation           LogicalLocation       `json:"logical_location"`
+	Log                 Logging               `json:"logging"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{
