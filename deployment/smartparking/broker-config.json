@@ -1,0 +1,19 @@
+{
+    "port": 8080,
+    "websocket": 8090,    
+    "host": "155.54.239.141", 
+    "discoveryURL": "http://discovery:443/ngsi9", 		
+	"physical_location":{
+		"longitude": 139.709059,
+		"latitude": 35.692221,
+		"section": "01",
+		"district": "02",
+		"city": "Tokyo"
+	},			
+	"logging":{
+		"info":"stdout",
+		"error":"stderr",
+        	"protocol": "stdout",
+        	"debug": "discard"
+	}			
+}

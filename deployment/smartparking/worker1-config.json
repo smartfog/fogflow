@@ -1,22 +1,23 @@
 {    
 	"my_ip": "155.54.239.141",		
-	"message_bus": "amqp://admin:mypass@155.54.239.141:5672/",	
-	"iot_discovery_url": "http://155.54.239.141:8071/ngsi9",
+	"message_bus": "amqp://admin:mypass@rabbitmq:5672/",	
+	"iot_discovery_url": "http://discovery:443/ngsi9",
 	"my_role": "EdgeNode",
+	"container_autoremove": false,        
 	"my_capacity":{
 		"cpu": 6,
 		"memory": 2000,
 		"tasks": 10
 	},	    
 	"physical_location":{
-		"longitude": 138.463377,
-		"latitude": 37.009163,
+		"longitude": 139.463377,
+		"latitude": 36.009163,
 		"section": "01",
 		"district": "02",
 		"city": "Tokyo"
 	},	
 	"logical_location": {
-		"node_no": 3,
+		"node_no": 1,
 		"site_no": 2,	 			
 		"layer_no": 2,
 		"parent_site_no": 1

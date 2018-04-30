@@ -1,5 +1,4 @@
 FROM mhart/alpine-node
 WORKDIR /app
 ADD . /app
-EXPOSE 8080
 ENTRYPOINT [ "node", "main.js" ]
