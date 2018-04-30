@@ -1,5 +1,5 @@
 {    
-	"my_ip": "155.54.239.141",		
+	"my_ip": "195.37.154.32",		
 	"message_bus": "amqp://admin:mypass@195.37.154.32:5672/",	
 	"iot_discovery_url": "http://195.37.154.32:8071/ngsi9",
 	"my_role": "EdgeNode",
