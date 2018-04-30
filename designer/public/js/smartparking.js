@@ -11,11 +11,12 @@ var iconImage = null;
 var iconImageFileName = null;
 
 var curMap = null;
-var myCenter = new L.LatLng(35.70, 139.78);
+var myCenter = new L.LatLng(37.990905, -1.131133);
 var timerID = null;
-    
+
+   
 addMenuItem('ProcessingFlow', showProcessingFlows);  
-addMenuItem('SmartParking', showMobility);      
+addMenuItem('SmartParking', showParking);      
 
 //connect to the socket.io server via the NGSI proxy module
 var ngsiproxy = new NGSIProxy();
@@ -80,21 +81,21 @@ function showProcessingFlows()
     $('#info').html('to show the logical data processing flows behind this service');
        
     var html = '';
-    html += '<div><img src="/img/flow-smartawning.png"></img></div>';    
+    html += '<div><img src="/img/smart-parking.png"></img></div>';    
     
     $('#content').html(html);	
 }
 
 
-function showMobility() 
+function showParking() 
 {
     $('#info').html('to show the map with all devices and edges');    
 
     var html = '';
     
-    //html += '<div style="margin-bottom: 10px;">';
-    //html += '<button id="ResetCar" type="button" class="btn btn-default">Reset</button>';        
-    //html += '</div>';
+    html += '<div style="margin-bottom: 10px;">';
+    html += '<button id="ResetCar" type="button" class="btn btn-default">Reset</button>';        
+    html += '</div>';
     
     html += '<div id="map"  style="width: 800px; height: 600px"></div>';                
    
@@ -110,94 +111,14 @@ function showMobility()
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
 
-    // show the grid layer    
-    drawGeoHashGrid(map);
-
     // show edge nodes on the map
     displayEdgeNodeOnMap(map);
-    
-    // show all rain sensors on the map
-    displayRainSensorOnMap(map);  
-        
-    // show all awning devices on the map
-    displayAwningOnMap(map); 
-    
-    // show cloud on the map
-    drawCloud(map);
-    
+       
     // show moving car
     drawConnectedCar(map);
 
     // remember the created map
     curMap = map;
-}
-
-function showMap() 
-{    
-    var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    var osm = L.tileLayer(osmUrl, {maxZoom: 13, zoom: 13});    
-    var map = new L.Map('map', {layers: [osm], 
-                                center: myCenter, 
-                                zoom: 13,
-                                zoomControl:false});
-                                
-    //map.scrollWheelZoom.disable();                                
-
-    var drawnItems = new L.FeatureGroup();
-    map.addLayer(drawnItems);
-
-    // show the grid layer    
-    drawGeoHashGrid(map);
-
-    // show edge nodes on the map
-    displayEdgeNodeOnMap(map);
-    
-    // show all rain sensors on the map
-    displayRainSensorOnMap(map);  
-        
-    // show all awning devices on the map
-    displayAwningOnMap(map);  
-
-    // remember the created map
-    curMap = map;
-}
-
-function drawGeoHashGrid(map)
-{
-    var layerGroup = L.layerGroup();
-
-    var layers = ['xn77', 'xn76'];
-    var rectStyle = {
-        color: "blue",
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0,
-        lineCap: 'butt'
-    };    
-    
-    for(var i=0; i<layers.length; i++) {
-        var hashPrefix = layers[i];
-        
-        var range = Object.keys( BASE32_CODES_DICT );    
-        range.forEach( function( n ){
-            var hash = '' + hashPrefix + n;
-            var box = geohash.decode_bbox( '' + hash );
-            var bbox = { minlat: box[0], minlng: box[1], maxlat: box[2], maxlng: box[3] };
-    
-            var bounds = L.latLngBounds(
-                L.latLng( bbox.maxlat, bbox.minlng ),
-                L.latLng( bbox.minlat, bbox.maxlng )
-            );
-
-            //console.log( hash, bbox, bounds );            
-            var poly = L.rectangle( bounds, rectStyle );
-            poly.bindPopup(hash);
-            poly.addTo( layerGroup );        
-                        
-        });        
-    }
-    
-    map.addLayer( layerGroup );    
 }
 
 function displayEdgeNodeOnMap(map)
@@ -237,8 +158,6 @@ function displayEdgeNodeOnMap(map)
     });     
 }
 
-
-
 function showRunningTasks()
 {
 	var clickMarker = this;
@@ -265,142 +184,6 @@ function showRunningTasks()
         console.log(error);
         console.log('failed to query task');
     }); 	
-}
-
-function displayRainSensorOnMap(map)
-{
-    var queryReq = {}
-    queryReq.entities = [{id:'Device.RainSensor.*', isPattern: true}];
-    client.queryContext(queryReq).then( function(devices) {
-        console.log(devices);
-        
-        for(var i=0; i<devices.length; i++){
-            var device = devices[i];                
-            var iconImag = device.attributes.iconURL.value;            
-            var icon = L.icon({
-                iconUrl: iconImag,
-                iconSize: [48, 48]
-            });                  
-            
-            latitude = device.metadata.location.value.latitude;
-            longitude = device.metadata.location.value.longitude;
-            deviceId = device.entityId.id;
-            
-            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: icon});
-            marker.addTo(map).bindPopup(deviceId);                 
-        }            
-                
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to query context');
-    });     
-}
-
-
-function displayAwningOnMap(map)
-{
-    var queryReq = {}
-    queryReq.entities = [{id:'Device.SmartAwning.*', isPattern: true}];
-    client.queryContext(queryReq).then( function(devices) {
-        console.log(devices);
-        
-        for(var i=0; i<devices.length; i++){
-            var device = devices[i];    
-            
-            iconImag = device.attributes.iconURL.value;            
-            var edgeIcon = L.icon({
-                iconUrl: iconImag,
-                iconSize: [48, 48]
-            });                  
-            
-            latitude = device.metadata.location.value.latitude;
-            longitude = device.metadata.location.value.longitude;
-            deviceId = device.entityId.id;
-            
-            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
-            marker.addTo(map).bindPopup(deviceId);                 
-        }            
-                
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to query context');
-    });     
-}
-
-    
-function showDeviceMap() 
-{
-    var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    var osm = L.tileLayer(osmUrl, {maxZoom: 13, zoom: 13});    
-    var map = new L.Map('map', {layers: [osm], 
-                                center: myCenter, 
-                                zoom: 13,
-                                zoomControl:false});
-                                
-    map.scrollWheelZoom.disable();   
-    
-	var drawnItems = new L.FeatureGroup();
-	map.addLayer(drawnItems);
-
-    var cameraIcon = L.icon({
-        iconUrl: '/img/location.png',
-        iconSize: [48, 48]
-    });    
-    
-	var drawControl = new L.Control.Draw({
-		draw: {
-			position: 'topleft',
-			polyline: false,            
-			polygon: false,
-            rectangle: false,
-			circle: false,
-            marker: {
-                zIndexOffset: 2000,
-                repeatMode: true,
-                icon: cameraIcon
-            }
-		},
-		edit: false
-	});
-	map.addControl(drawControl);
-
-	map.on('draw:created', function (e) {
-		var type = e.layerType, layer = e.layer;
-        
-		if (type === 'marker') {
-			console.log(layer.getLatLng());
-            locationOfNewDevice = layer.getLatLng();
-		}        
-
-        drawnItems.clearLayers();
-		drawnItems.addLayer(layer);        
-	}); 
-    
-    // show geohash layer    
-    drawGeoHashGrid(map);
-                                 
-    // show edge nodes on the map
-    displayEdgeNodeOnMap(map);
-    
-    // show all rain sensors on the map
-    displayRainSensorOnMap(map);  
-        
-    // show all awning devices on the map
-    displayAwningOnMap(map);       
-}
-
-function drawCloud(map)
-{
-    var latitude = 35.723102;
-    var longitude = 139.755363;
-    
-    var cloudIcon = L.icon({
-        iconUrl: '/photo/cloud.png',
-        iconSize: [150, 150]
-    });    
-            
-    var marker = L.marker(new L.LatLng(latitude, longitude), {icon: cloudIcon});
-    marker.addTo(map);   
 }
 
 function drawConnectedCar(map)
