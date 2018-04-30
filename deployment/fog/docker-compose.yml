@@ -1,20 +1,10 @@
 version: "2"
 services:
-    broker:
-        image: fogflow/broker
-        ports:
-            - 8070:8070
-        environment:
-            - host=155.54.239.141
-            - discoveryURL=http://195.37.154.32:8071/ngsi9
     worker:
         image: fogflow/worker
-        environment:
-            - myip=155.54.239.141
-            - discoveryURL=http://195.37.154.32:8071/ngsi9
-            - rabbitmq=amqp://admin:mypass@195.37.154.32:5672/             
         volumes:
-            - /var/run/docker.sock:/var/run/docker.sock        
+            - ./config.json:/config.json
+            - /var/run/docker.sock:/var/run/docker.sock
 
             
             

@@ -3,6 +3,7 @@
 	"message_bus": "amqp://admin:mypass@195.37.154.32:5672/",	
 	"iot_discovery_url": "http://195.37.154.32:8071/ngsi9",
 	"my_role": "EdgeNode",
+	"container_autoremove": false,        
 	"my_capacity":{
 		"cpu": 6,
 		"memory": 2000,
