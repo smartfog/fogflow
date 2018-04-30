@@ -1,6 +1,6 @@
 {
 	"message_bus": "amqp://admin:mypass@rabbitmq:5672/",
-	"my_ip": "195.37.154.32",		
+	"my_ip": "155.54.239.141",		
 	"ngsi_agent_port": 1060,		
 	"iot_discovery_url": "http://discovery:8071/ngsi9",
 	"physical_location":{

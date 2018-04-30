@@ -1,7 +1,7 @@
 {
     "port": 8070,
     "websocket": 8090,    
-    "host": "195.37.154.32", 
+    "host": "155.54.239.141", 
     "discoveryURL": "http://discovery:8071/ngsi9", 		
 	"physical_location":{
 		"longitude": 139.709059,
@@ -13,7 +13,7 @@
 	"logging":{
 		"info":"stdout",
 		"error":"stderr",
-        	"protocol": "stdout",
-        	"debug": "discard"
+        "protocol": "stdout",
+        "debug": "discard"
 	}			
 }
