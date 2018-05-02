@@ -14,8 +14,61 @@ var curMap = null;
 var myCenter = new L.LatLng(37.990905, -1.131133);
 var timerID = null;
 
+var recommendedParkingSite = null;
+var carMarker = null;
+
+var privateParkingSites = [
+{
+    id: "001",
+    location: {
+        latitude: 37.997849,
+        longitude: -1.124129
+    },
+    iconURL: "/img/parkingsite.png",    
+    datasource: "http://fiware-dev.inf.um.es:1026/v2/"
+},{
+    id: "002",
+    location: {
+        latitude: 37.991524, 
+        longitude: -1.115503
+    },
+    iconURL: "/img/parkingsite.png",        
+    datasource: "http://fiware-dev.inf.um.es:1026/v2/"
+},{
+    id: "003",
+    location: {
+        latitude: 37.986957, 
+        longitude: -1.128292
+    },
+    iconURL: "/img/parkingsite.png",        
+    datasource: "http://fiware-dev.inf.um.es:1026/v2/"
+}];
+
+var publicParkingSites = [
+{
+    id: "006",
+    location: {
+        latitude: 38.000011, 
+        longitude: -1.128464
+    },
+    iconURL: "/img/parkingsite.png",        
+    datasource: "http://fiware-dev.inf.um.es:1026/v2/"
+},{
+    id: "007",
+    location: {
+        latitude: 38.009850, 
+        longitude:  -1.142369
+    },
+    iconURL: "/img/parkingsite.png",        
+    datasource: "http://fiware-dev.inf.um.es:1026/v2/"
+}];
+
+
+
    
 addMenuItem('ProcessingFlow', showProcessingFlows);  
+addMenuItem('DigitalTwin', showTwins);      
+addMenuItem('RunningTask', showTasks);      
 addMenuItem('SmartParking', showParking);      
 
 //connect to the socket.io server via the NGSI proxy module
@@ -26,10 +79,18 @@ ngsiproxy.setNotifyHandler(handleNotify);
 var client = new NGSI10Client(config.brokerURL);
 subscribeResult();
 
+initParkingSite();
+
 showProcessingFlows();
 
 $(window).on('hashchange', function() {
     var hash = window.location.hash;
+    
+    if(hash != '#SmartParking' && timerID != null) {
+        console.log('terminate the current timer ' + timerID + ' when switch the menu items');
+        clearInterval(timerID);
+    }
+    
     selectMenuItem(location.hash.substring(1));
 });
 
@@ -50,7 +111,11 @@ function selectMenuItem(name) {
 function subscribeResult()
 {
     var subscribeCtxReq = {};    
-    subscribeCtxReq.entities = [{type: 'ChildFound', isPattern: true}];
+    subscribeCtxReq.entities = [{        
+        id : 'Twin.ConnectedCar.01', 
+        type: 'ConnectedCar',
+        isPattern: false}];
+    subscribeCtxReq.attributes = ['RecommendedParkingSite'];        
     subscribeCtxReq.reference =  'http://' + config.agentIP + ':' + config.agentPort;
     
     client.subscribeContext(subscribeCtxReq).then( function(subscriptionId) {
@@ -64,15 +129,67 @@ function subscribeResult()
 function handleNotify(contextObj)
 {
     console.log(contextObj);
-    
-    if (curRequirement != null) {
-        personsFound.push(contextObj);
+
+    if( contextObj.attributes.RecommendedParkingSite == null ) {
+        return
     }
+    
+    recommendedParkingSite = contextObj.attributes.RecommendedParkingSite.value;  
 	
 	var hash = window.location.hash;
-	if (hash == '#Result') {
-        updateResult();    
+	if (hash == '#SmartParking') {
+        console.log("recommend parking site " + recommendedParkingSite);
+        updateRecommendationResult();    
 	}
+}
+
+function updateRecommendationResult()
+{
+    var message = '<b>you can park at <font color="red">' +  recommendedParkingSite  + '</font></b>';
+    carMarker.bindPopup(message, {closeOnClick: false});
+    carMarker.openPopup();        
+}
+
+function initParkingSite() 
+{
+    // for private parking sites
+    for(var i=0; i<privateParkingSites.length; i++) {
+        var privatesite = privateParkingSites[i];
+        createParkingSiteEntity(privatesite, "PrivateSite");
+    }    
+    
+    // for public parking sites    
+    for(var i=0; i<publicParkingSites.length; i++) {
+        var publicsite = publicParkingSites[i];
+        createParkingSiteEntity(publicsite, "PublicSite");        
+    }           
+}
+
+function createParkingSiteEntity(site, siteType)
+{        
+    var siteEntity = {};
+    
+    siteEntity.entityId = {
+        id : 'Twin.ParkingSite.' + site.id, 
+        type: siteType,
+        isPattern: false
+    };
+    
+    siteEntity.attributes = {};   
+    siteEntity.attributes.iconURL = {type: 'string', value: site.iconURL};    
+    siteEntity.attributes.datasource = {type: 'string', value: site.datasource};
+    
+    siteEntity.metadata = {};	
+    siteEntity.metadata.location = {
+        type:'point',
+        value: site.location
+    };
+    
+    client.updateContext(siteEntity).then( function(data) {
+        console.log(data);                
+    }).catch( function(error) {
+        console.log('failed to create a parking site entity');
+    });           
 }
 
 
@@ -86,27 +203,164 @@ function showProcessingFlows()
     $('#content').html(html);	
 }
 
+function showTwins() 
+{
+    $('#info').html('list of all digital twins and each of them is a virtual entity');        
+
+    var html = '<div id="twinList"></div>';
+	$('#content').html(html);            
+    updateTwinList();   
+}
+
+function updateTwinList()
+{
+    var queryReq = {}
+    queryReq.entities = [{id:'Twin.*', isPattern: true}];           
+    
+    client.queryContext(queryReq).then( function(twinList) {
+        console.log(twinList);
+        displayTwinList(twinList);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query context');
+    });    
+}
+
+function displayTwinList(twins) 
+{
+    if(twins == null || twins.length == 0){
+        $('#twinList').html('');           
+        return        
+    }
+    
+    var html = '<table class="table table-striped table-bordered table-condensed">';
+   
+    html += '<thead><tr>';
+    html += '<th>ID</th>';
+    html += '<th>Type</th>';
+    html += '<th>Attributes</th>';
+    html += '<th>DomainMetadata</th>';    
+    html += '</tr></thead>';    
+       
+    for(var i=0; i<twins.length; i++){
+        var twin = twins[i];
+		
+        html += '<tr>'; 
+		html += '<td>' + twin.entityId.id + '<br>';
+		html += '<button id="remove-' + twin.entityId.id + '" type="button" class="btn btn-default">remove</button>';        
+		html += '</td>';
+		html += '<td>' + twin.entityId.type + '</td>'; 
+		html += '<td>' + JSON.stringify(twin.attributes) + '</td>';        
+		html += '<td>' + JSON.stringify(twin.metadata) + '</td>';
+		html += '</tr>';	                        
+	}
+       
+    html += '</table>';  
+    
+	$('#twinList').html(html);   
+    
+    // associate a click handler to generate twin profile on request
+    for(var i=0; i<twins.length; i++){
+        var twin = twins[i];
+        console.log(twin.entityId.id);
+        		
+        var removeButton = document.getElementById('remove-' + twin.entityId.id);
+        removeButton.onclick = function(d) {
+            var myProfile = d;
+            return function(){
+                removeDigitalTwin(myProfile);
+            };
+        }(twin);		
+	}     
+}
+
+
+function removeDigitalTwin(deviceObj)
+{
+    var entityid = {
+        id : deviceObj.entityId.id, 
+        isPattern: false
+    };	    
+    
+    client.deleteContext(entityid).then( function(data) {
+        console.log('remove the digital twin');
+		
+        // show the updated digital twin list
+        showTwins();				
+    }).catch( function(error) {
+        console.log('failed to cancel a requirement');
+    });      
+}
+
+
+function showTasks() 
+{
+    $('#info').html('list of all triggerred function tasks');
+            
+    var queryReq = {}
+    queryReq.entities = [{type:'Task', isPattern: true}];
+    queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'topology=system'}]}    
+
+    client.queryContext(queryReq).then( function(taskList) {
+        console.log(taskList);
+        displayTaskList(taskList);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query task');
+    });        
+}
+
+
+function displayTaskList(tasks) 
+{
+    $('#info').html('list of all function tasks that have been triggerred');
+
+    if(tasks.length == 0) {
+        $('#content').html('');
+        return;
+    }          
+
+    var html = '<table class="table table-striped table-bordered table-condensed">';
+   
+    html += '<thead><tr>';
+    html += '<th>ID</th>';
+    html += '<th>Type</th>';
+    html += '<th>Attributes</th>';	
+    html += '<th>DomainMetadata</th>';		
+    html += '</tr></thead>';    
+
+    for(var i=0; i<tasks.length; i++){
+        var task = tasks[i];
+        html += '<tr>';
+		html += '<td>' + task.entityId.id + '</td>';
+		html += '<td>' + task.entityId.type + '</td>'; 
+		html += '<td>' + JSON.stringify(task.attributes) + '</td>';        
+		html += '<td>' + JSON.stringify(task.metadata) + '</td>';
+		html += '</tr>';			
+	}
+       
+    html += '</table>';            
+	
+	$('#content').html(html);      
+}
+
 
 function showParking() 
 {
-    $('#info').html('to show the map with all devices and edges');    
+    $('#info').html('to illustrate the smart parking use case for Murcia');    
 
     var html = '';
-    
-    html += '<div style="margin-bottom: 10px;">';
-    html += '<button id="ResetCar" type="button" class="btn btn-default">Reset</button>';        
-    html += '</div>';
-    
+        
     html += '<div id="map"  style="width: 800px; height: 600px"></div>';                
    
     $('#content').html(html);       
     
     var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    var osm = L.tileLayer(osmUrl, {maxZoom: 13, zoom: 13});    
+    var osm = L.tileLayer(osmUrl, {maxZoom: 15, zoom: 13});    
     var map = new L.Map('map', {layers: [osm], 
                                 center: myCenter, 
                                 zoom: 13,
-                                zoomControl:false});
+                                zoomControl:true});
                                 
     var drawnItems = new L.FeatureGroup();
     map.addLayer(drawnItems);
@@ -116,9 +370,12 @@ function showParking()
        
     // show moving car
     drawConnectedCar(map);
+    
+    // display parking sites
+    displayParkingSites(map);
 
     // remember the created map
-    curMap = map;
+    curMap = map;    
 }
 
 function displayEdgeNodeOnMap(map)
@@ -187,14 +444,14 @@ function showRunningTasks()
 }
 
 function drawConnectedCar(map)
-{    
+{
     var taxiIcon = L.icon({
         iconUrl: '/img/taxi.png',
         iconSize: [80, 80]
     });    
-                   
-    var path = [[35.722266, 139.725322], [35.722266, 139.801368]];    
-    var carMarker = L.Marker.movingMarker(path, [10000], {autostart: false, loop: true} );    
+    
+    var path = [[37.996655, -1.150094], [37.984174, -1.141039]];    
+    carMarker = L.Marker.movingMarker(path, [10000], {autostart: false, loop: true} );    
     carMarker.options.icon = taxiIcon;    
     
     map.addLayer(carMarker);
@@ -222,31 +479,53 @@ function drawConnectedCar(map)
     carMarker.openPopup();        
 }
 
+function displayParkingSites(map)
+{    
+    var queryReq = {}
+    queryReq.entities = [{id:'Twin.ParkingSite.*', isPattern: true}];
+    client.queryContext(queryReq).then( function(sites) {
+        console.log(sites);
+        
+        for(var i=0; i<sites.length; i++){
+            var site = sites[i];                
+            var iconImag = site.attributes.iconURL.value;            
+            var icon = L.icon({
+                iconUrl: iconImag,
+                iconSize: [48, 48]
+            });                  
+            
+            latitude = site.metadata.location.value.latitude;
+            longitude = site.metadata.location.value.longitude;
+            siteId = site.entityId.id;
+            
+            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: icon});
+            marker.addTo(map).bindPopup(siteId);                 
+        }            
+                
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query context');
+    });  
+}
+
 function updateMobileObject(location)
 {   
     //register a new device
     var movingCarObject = {};
 
     movingCarObject.entityId = {
-        id : 'Device.ConnectedCar.01', 
+        id : 'Twin.ConnectedCar.01', 
         type: 'ConnectedCar',
         isPattern: false
     };
 
     movingCarObject.attributes = {};   
     movingCarObject.attributes.iconURL = {type: 'string', value: '/img/taxi.png'};
-    movingCarObject.attributes.pullbased = {type: 'boolean', value: false};   	
 	movingCarObject.attributes.location = {
         type: 'point',
         value: {'latitude': location.lat, 'longitude': location.lng}
     };    		 
-    
-    if (location.lng > 139.748122 && location.lng < 139.765496) {
-        movingCarObject.attributes.raining = {type: 'boolean', value: true};   	            
-    } else {
-        movingCarObject.attributes.raining = {type: 'boolean', value: false};   	                    
-    }    
-            
+                
     movingCarObject.metadata = {};    
     movingCarObject.metadata.location = {
         type: 'point',
@@ -259,115 +538,7 @@ function updateMobileObject(location)
         console.log('failed to update car object');
     });   
     
-    console.log('observation of mobile sensor, raining = ', movingCarObject.attributes.raining);    
 }
-
-function readIconImage(input) 
-{
-    console.log('read icon image');
-    if( input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            //var filename = $('#image_file').val();
-            iconImage = e.target.result;
-        }
-        reader.readAsDataURL(input.files[0]);
-        iconImageFileName = input.files[0].name;
-    }    
-}
-
-function readContentImage(input)
-{
-    console.log('read content image'); 
-    if( input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            contentImage = e.target.result;
-        }
-        reader.readAsDataURL(input.files[0]);
-        contentImageFileName = input.files[0].name;
-    }      
-}
-
-function registerNewDevice() 
-{    
-    console.log('register a new device'); 
-
-    // take the inputs    
-    var id = $('#deviceID').val();
-    console.log(id);
-    
-    var type = $('#deviceType option:selected').val();
-    console.log(type);        
-    
-    if( id == '' || type == '' || locationOfNewDevice == null) {
-        alert('please provide the required inputs');
-        return;
-    }    
-    
-    console.log(locationOfNewDevice);
-    
-    //set up the the icon image according to the device type
-    if (type == 'RainSensor') {
-        iconImageFileName = 'rainsensor.png';
-    } else if (type == 'SmartAwning') {
-        iconImageFileName = 'awning.png';
-    }
-        
-    //register a new device
-    var newDeviceObject = {};
-
-    newDeviceObject.entityId = {
-        id : 'Device.' + type + '.' + id, 
-        type: type,
-        isPattern: false
-    };
-
-    newDeviceObject.attributes = {};   
-    newDeviceObject.attributes.id = {type: 'string', value: id};    
-    newDeviceObject.attributes.iconURL = {type: 'string', value: '/img/' + iconImageFileName};
-    newDeviceObject.attributes.pullbased = {type: 'boolean', value: false};   
-	
-	newDeviceObject.attributes.location = {
-        type: 'point',
-        value: {'latitude': locationOfNewDevice.lat, 'longitude': locationOfNewDevice.lng}
-    };    		 
-            
-    newDeviceObject.metadata = {};    
-    newDeviceObject.metadata.location = {
-        type: 'point',
-        value: {'latitude': locationOfNewDevice.lat, 'longitude': locationOfNewDevice.lng}
-    };               
-
-    client.updateContext(newDeviceObject).then( function(data) {
-        console.log(data);        
-        showDevices();
-    }).catch( function(error) {
-        console.log('failed to register the new device object');
-    });          
-}
-       
-    
-function autoIDGenerator()
-{
-    var id = uuid();
-    $('#deviceID').val(id);                   
-}        
-
-
-function uuid() {
-    var uuid = "", i, random;
-    for (i = 0; i < 32; i++) {
-        random = Math.random() * 16 | 0;
-        if (i == 8 || i == 12 || i == 16 || i == 20) {
-            uuid += "-"
-        }
-        uuid += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
-    }
-    
-    return uuid;
-} 
-
 
 });
 

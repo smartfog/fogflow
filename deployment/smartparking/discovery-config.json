@@ -1,5 +1,5 @@
 {
-    "myport": 8071,
+    "myport": 443,
     "postgresql": {
         "dbreset": true,
         "username": "postgres",

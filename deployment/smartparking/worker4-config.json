@@ -10,14 +10,14 @@
 		"tasks": 10
 	},	    
 	"physical_location":{
-		"longitude": -1.120129,
-		"latitude": 37.990849,
+		"longitude": -1.136748,
+		"latitude": 38.014846, 
 		"section": "01",
 		"district": "02",
 		"city": "Tokyo"
 	},	
 	"logical_location": {
-		"node_no": 1,
+		"node_no": 4,
 		"site_no": 2,	 			
 		"layer_no": 2,
 		"parent_site_no": 1

@@ -713,11 +713,11 @@ function initDockerImageList()
         operatorName: "anomaly",
         prefetched: false
     },{
-        name: "fogflow/car",
+        name: "fogflow/connectedcar",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
-        operatorName: "car",
+        operatorName: "connectedcar",
         prefetched: false
     },{
         name: "fogflow/recommender",

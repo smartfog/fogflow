@@ -5,7 +5,7 @@ services:
         volumes:
             - ./designer-config.json:/app/config.json                
         ports:
-            - 8080:8080
+            - 80:80
             - 1030:1030
         depends_on: 
             - discovery
@@ -15,7 +15,7 @@ services:
         volumes:
             - ./discovery-config.json:/config.json                        
         ports:
-            - 8071:8071
+            - 443:443
         depends_on: 
             - postgis
     broker:
@@ -23,7 +23,7 @@ services:
         volumes:
             - ./broker-config.json:/config.json                        
         ports:
-            - 8070:8070
+            - 8080:8080
         depends_on: 
             - discovery
     master:
@@ -42,6 +42,21 @@ services:
         image: fogflow/worker
         volumes:
             - ./worker1-config.json:/config.json                
+            - /var/run/docker.sock:/var/run/docker.sock                    
+    worker2:
+        image: fogflow/worker
+        volumes:
+            - ./worker2-config.json:/config.json                
+            - /var/run/docker.sock:/var/run/docker.sock                    
+    worker3:
+        image: fogflow/worker
+        volumes:
+            - ./worker3-config.json:/config.json                
+            - /var/run/docker.sock:/var/run/docker.sock                    
+    worker4:
+        image: fogflow/worker
+        volumes:
+            - ./worker4-config.json:/config.json                
             - /var/run/docker.sock:/var/run/docker.sock                    
     postgis:
         image: mdillon/postgis
