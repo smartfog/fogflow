@@ -429,6 +429,11 @@ func (master *Master) TerminateTasks(instances []*ScheduledTaskInstance) {
 }
 
 func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
+	// convert the operator name into the name of a proper docker image for the assigned worker
+	operatorName := (*taskInstance).DockerImage
+	assignedWorkerID := (*taskInstance).WorkerID
+	(*taskInstance).DockerImage = master.DetermineDockerImage(operatorName, assignedWorkerID)
+
 	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.myID, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
