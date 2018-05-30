@@ -1,0 +1,11 @@
+FROM golang:1.9
+WORKDIR /go/src/
+COPY *.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o broker  .
+
+FROM alpine:latest  
+RUN apk --no-cache add ca-certificates
+WORKDIR /
+COPY --from=0 /go/src/broker/app .
+CMD ["/broker"]
+

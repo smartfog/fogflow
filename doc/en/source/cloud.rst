@@ -15,7 +15,8 @@ we can start all FogFlow core components in the cloud using docker-compose:
 Start the cloud part of FogFlow
 -----------------------------------------------
 
-please install Docker Compose according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
+please install Docker CE according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+and also Docker Compose according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
 
 	.. code-block:: bash
 	

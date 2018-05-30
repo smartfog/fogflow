@@ -10,7 +10,7 @@ Install dependencies
 
 	- install git client: please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-git-on-ubuntu-16-04
 	
-	- install docker engine: please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+	- install Docker CE: please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 	
 		.. note:: all the scripts are prepared under the assumption that you can run docker without sudo.
 	
