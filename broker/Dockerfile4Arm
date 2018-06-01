@@ -1,4 +1,4 @@
 FROM scratch
-ADD broker  /
+ADD broker_arm  /broker
 CMD ["/broker"]
 
