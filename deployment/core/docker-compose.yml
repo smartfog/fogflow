@@ -3,7 +3,7 @@ services:
     designer:
         image: fogflow/designer
         volumes:
-            - ./designer-config.json:/app/config.json                
+            - ./config.json:/app/config.json                
         ports:
             - 8080:8080
             - 1030:1030
@@ -13,7 +13,7 @@ services:
     discovery:
         image: fogflow/discovery
         volumes:
-            - ./discovery-config.json:/config.json                        
+            - ./config.json:/config.json                        
         ports:
             - 8071:8071
         depends_on: 
@@ -21,7 +21,7 @@ services:
     broker:
         image: fogflow/broker
         volumes:
-            - ./broker-config.json:/config.json                        
+            - ./config.json:/config.json                        
         ports:
             - 8070:8070
         depends_on: 
@@ -29,7 +29,7 @@ services:
     master:
         image: fogflow/master
         volumes:
-            - ./master-config.json:/config.json                        
+            - ./config.json:/config.json                        
         links:
             - rabbitmq        
         ports:
@@ -41,7 +41,7 @@ services:
     cloud_worker:
         image: fogflow/worker
         volumes:
-            - ./worker-config.json:/config.json                
+            - ./config.json:/config.json                
             - /var/run/docker.sock:/var/run/docker.sock                    
     postgis:
         image: mdillon/postgis

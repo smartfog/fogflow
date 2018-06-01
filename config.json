@@ -41,5 +41,9 @@
     },
     "worker": {
         "container_autoremove": false       
-    }
+    },
+    "designer": {
+        "webSrvPort": 8080,
+        "agentPort": 1030               
+    }    
 }

@@ -2,10 +2,16 @@ var request = require('request');
 var express =   require('express');
 var multer  =   require('multer');
 var fs = require('fs');
-var config = require('./config.json')
+var globalConfigFile = require('./config.json')
 var app     =   express();
 var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
 var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
+
+
+var config = globalConfigFile.designer;
+config.discoveryURL = globalConfigFile.discoveryURL;
+config.brokerURL = 'http://' + globalConfigFile.host + ':' + globalConfigFile.broker.port + '/ngsi10';
+config.agentIP = globalConfigFile.host;
 
 // all subscriptions that expect data forwarding
 var subscriptions = {};
