@@ -1,0 +1,31 @@
+{
+    "host": "195.37.154.32", 
+    "discoveryURL": "http://195.37.154.32:8071/ngsi9", 		
+    "message_bus": "amqp://admin:mypass@195.37.154.32:5672/",    
+	"physical_location":{
+		"longitude": 139.709059,
+		"latitude": 36.692221,
+		"section": "01",
+		"district": "02",
+		"city": "Tokyo"
+	},	
+	"logical_location": {
+		"node_no": 2,
+		"site_no": 3,	 			
+		"layer_no": 2,
+		"parent_site_no": 1
+	},    		
+	"logging":{
+		"info":"stdout",
+		"error":"stderr",
+        	"protocol": "stdout",
+        	"debug": "discard"
+	},
+    "broker": {
+        "port": 8890,
+        "websocket": 8890        
+    },    
+    "worker": {
+        "container_autoremove": false       
+    }
+}
