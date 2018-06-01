@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,24 +11,31 @@ import (
 	"syscall"
 
 	"github.com/ant0ine/go-json-rest/rest"
+
+	. "fogflow/common/config"
 )
 
 func main() {
 	cfgFile := flag.String("f", "config.json", "A configuration file")
 	flag.Parse()
-	config := CreateConfig(*cfgFile)
+	config, err := LoadConfig(*cfgFile)
+	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
+		fmt.Println("please specify the configuration file, for example, \r\n\t./discovery -f config.json")
+		os.Exit(-1)
+	}
 
 	// overwrite the configuration with environment variables
 	if hostip, exist := os.LookupEnv("postgresql_host"); exist {
-		config.Database.Host = hostip
+		config.Discovery.DBCfg.Host = hostip
 	}
 	if port, exist := os.LookupEnv("postgresql_port"); exist {
-		config.Database.Port, _ = strconv.Atoi(port)
+		config.Discovery.DBCfg.Port, _ = strconv.Atoi(port)
 	}
 
 	// initialize IoT Discovery
 	iotDiscovery := FastDiscovery{}
-	iotDiscovery.Init(&config.Database)
+	iotDiscovery.Init(&config.Discovery.DBCfg)
 
 	// start REST API server
 	router, err := rest.MakeRouter(
@@ -67,8 +75,8 @@ func main() {
 	api.SetApp(router)
 
 	go func() {
-		INFO.Printf("Starting IoT Discovery on port %d\n", config.MyPort)
-		panic(http.ListenAndServe(":"+strconv.Itoa(config.MyPort), api.MakeHandler()))
+		INFO.Printf("Starting IoT Discovery on port %d\n", config.Discovery.Port)
+		panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
 	}()
 
 	// wait for Control +C to quit

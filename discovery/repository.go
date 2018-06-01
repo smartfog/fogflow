@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/lib/pq"
 
+	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
 )
 

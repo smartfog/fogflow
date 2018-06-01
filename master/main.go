@@ -2,32 +2,30 @@ package main
 
 import (
 	"flag"
-	"math/rand"
+	"fmt"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
-)
 
-func generateRandomNum() string {
-	return strconv.Itoa(rand.Intn(100))
-}
+	. "fogflow/common/config"
+)
 
 func main() {
 	configurationFile := flag.String("f", "config.json", "A configuration file")
-	myID := flag.String("i", "", "the id of this worker node")
-
 	flag.Parse()
-
-	config := CreateConfig(*configurationFile)
-
-	if *myID == "" {
-		*myID = generateRandomNum()
+	config, err := LoadConfig(*configurationFile)
+	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
+		fmt.Println("please specify the configuration file, for example, \r\n\t./master -f config.json")
+		os.Exit(-1)
 	}
+
+	myID := strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// overwrite the configuration with environment variables
 	if value, exist := os.LookupEnv("myip"); exist {
-		config.MyIP = value
+		config.Host = value
 	}
 	if value, exist := os.LookupEnv("discoveryURL"); exist {
 		config.IoTDiscoveryURL = value
@@ -36,7 +34,7 @@ func main() {
 		config.MessageBus = value
 	}
 
-	master := Master{myID: *myID}
+	master := Master{id: myID}
 	master.Start(&config)
 
 	c := make(chan os.Signal, 1)

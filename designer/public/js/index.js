@@ -194,7 +194,6 @@ function displayWorker(workers)
    
     html += '<thead><tr>';
     html += '<th>ID</th>';	
-    html += '<th>Role</th>';	    
     html += '<th>Attributes</th>';
     html += '<th>DomainMetadata</th>';    
     html += '</tr></thead>';    
@@ -204,7 +203,6 @@ function displayWorker(workers)
 		
         html += '<tr>'; 
 		html += '<td>' + worker.entityId.id + '</td>';
-		html += '<td>' + worker.metadata.role.value + '</td>';        
 		html += '<td>' + JSON.stringify(worker.attributes) + '</td>';
 		html += '<td>' + JSON.stringify(worker.metadata) + '</td>';
 		html += '</tr>';	

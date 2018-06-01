@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"math"
 
+	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
 )

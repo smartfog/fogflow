@@ -3,17 +3,26 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
+
+	. "fogflow/common/config"
 )
 
 func main() {
 	cfgFile := flag.String("f", "config.json", "A configuration file")
 	flag.Parse()
-	config := CreateConfig(*cfgFile)
+	config, err := LoadConfig(*cfgFile)
+	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
+		fmt.Println("please specify the configuration file, for example, \r\n\t./broker -f config.json")
+		os.Exit(-1)
+	}
 
 	// overwrite the configuration with environment variables
 	if value, exist := os.LookupEnv("host"); exist {
@@ -25,6 +34,8 @@ func main() {
 	if value, exist := os.LookupEnv("mylocation"); exist {
 		json.Unmarshal([]byte(value), &config.PLocation)
 	}
+
+	myID := strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// check if IoT Discovery is ready
 	for {
@@ -43,7 +54,7 @@ func main() {
 	}
 
 	// initialize broker
-	broker := ThinBroker{}
+	broker := ThinBroker{id: myID}
 	broker.Start(&config)
 
 	// start the REST API server

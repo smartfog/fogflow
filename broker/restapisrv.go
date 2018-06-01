@@ -7,6 +7,8 @@ import (
 	"strconv"
 
 	"github.com/ant0ine/go-json-rest/rest"
+
+	. "fogflow/common/config"
 )
 
 type RestApiSrv struct {
@@ -58,8 +60,8 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 	api.SetApp(router)
 
 	go func() {
-		INFO.Printf("Starting IoT Broker on %d\n", cfg.Port)
-		panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Port), api.MakeHandler()))
+		INFO.Printf("Starting IoT Broker on %d\n", cfg.Broker.Port)
+		panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.Port), api.MakeHandler()))
 	}()
 }
 

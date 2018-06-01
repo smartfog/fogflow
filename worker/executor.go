@@ -16,6 +16,7 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 
+	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
 )
@@ -36,11 +37,12 @@ type pullResult struct {
 type Executor struct {
 	client        *docker.Client
 	workerCfg     *Config
+	brokerURL     string
 	taskInstances map[string]*taskContext
 	taskMap_lock  sync.RWMutex
 }
 
-func (e *Executor) Init(cfg *Config) bool {
+func (e *Executor) Init(cfg *Config, selectedBrokerURL string) bool {
 	// for Windows
 	if runtime.GOOS == "windows" {
 		endpoint := os.Getenv("DOCKER_HOST")
@@ -70,6 +72,7 @@ func (e *Executor) Init(cfg *Config) bool {
 	}
 
 	e.workerCfg = cfg
+	e.brokerURL = selectedBrokerURL
 
 	e.taskInstances = make(map[string]*taskContext)
 	return true
@@ -117,10 +120,10 @@ func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
 	fmt.Printf("options : %+v\r\n", opts)
 
 	auth := docker.AuthConfiguration{}
-	auth.Username = e.workerCfg.Registry.Username
-	auth.Password = e.workerCfg.Registry.Password
-	auth.Email = e.workerCfg.Registry.Email
-	auth.ServerAddress = e.workerCfg.Registry.ServerAddress
+	auth.Username = e.workerCfg.Worker.Registry.Username
+	auth.Password = e.workerCfg.Worker.Registry.Password
+	auth.Email = e.workerCfg.Worker.Registry.Email
+	auth.ServerAddress = e.workerCfg.Worker.Registry.ServerAddress
 
 	fmt.Printf("options : %+v\r\n", auth)
 
@@ -208,7 +211,7 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 	hostConfig := docker.HostConfig{}
 
 	hostConfig.NetworkMode = "host"
-	hostConfig.AutoRemove = e.workerCfg.ContainerAutoRemove
+	hostConfig.AutoRemove = e.workerCfg.Worker.ContainerAutoRemove
 
 	if functionCode != "" {
 		fileName := "/tmp/" + taskID
@@ -266,8 +269,8 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
 
-	if e.workerCfg.Registry.IsConfigured() == true {
-		dockerImage = e.workerCfg.Registry.ServerAddress + "/" + dockerImage
+	if e.workerCfg.Worker.Registry.IsConfigured() == true {
+		dockerImage = e.workerCfg.Worker.Registry.ServerAddress + "/" + dockerImage
 
 		// to fetch the docker image
 		_, pullError := e.PullImage(dockerImage, "latest")
@@ -303,13 +306,13 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// set broker URL
 	setBrokerCmd := make(map[string]interface{})
 	setBrokerCmd["command"] = "CONNECT_BROKER"
-	setBrokerCmd["brokerURL"] = e.workerCfg.BrokerURL
+	setBrokerCmd["brokerURL"] = e.brokerURL
 	commands = append(commands, setBrokerCmd)
 
 	// pass the reference URL to the task so that the task can issue context subscription as well
 	setReferenceCmd := make(map[string]interface{})
 	setReferenceCmd["command"] = "SET_REFERENCE"
-	setReferenceCmd["url"] = "http://" + e.workerCfg.MyIP + ":" + freePort
+	setReferenceCmd["url"] = "http://" + e.workerCfg.Host + ":" + freePort
 	commands = append(commands, setReferenceCmd)
 
 	// set output stream
@@ -367,7 +370,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 }
 
 func (e *Executor) configurateTask(port string, commands []interface{}) bool {
-	taskAdminURL := fmt.Sprintf("http://%s:%s/admin", e.workerCfg.MyIP, port)
+	taskAdminURL := fmt.Sprintf("http://%s:%s/admin", e.workerCfg.Host, port)
 
 	jsonText, _ := json.Marshal(commands)
 
@@ -413,7 +416,7 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 	ctxObj.Metadata["topology"] = ValueObject{Type: "string", Value: task.ServiceName}
 	ctxObj.Metadata["worker"] = ValueObject{Type: "string", Value: task.WorkerID}
 
-	client := NGSI10Client{IoTBrokerURL: e.workerCfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.UpdateContext(&ctxObj)
 	if err != nil {
 		fmt.Println(err)
@@ -430,7 +433,7 @@ func (e *Executor) updateTask(taskID string, status string) {
 	ctxObj.Attributes = make(map[string]ValueObject)
 	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: status}
 
-	client := NGSI10Client{IoTBrokerURL: e.workerCfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.UpdateContext(&ctxObj)
 	if err != nil {
 		fmt.Println(err)
@@ -443,7 +446,7 @@ func (e *Executor) deregisterTask(taskID string) {
 	entity.Type = "Task"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: e.workerCfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		fmt.Println(err)
@@ -467,11 +470,11 @@ func (e *Executor) subscribeInputStream(agentPort string, streamType string, str
 	subscription.Entities = make([]EntityId, 0)
 	subscription.Entities = append(subscription.Entities, newEntity)
 
-	subscription.Reference = "http://" + e.workerCfg.MyIP + ":" + agentPort
+	subscription.Reference = "http://" + e.workerCfg.Host + ":" + agentPort
 
 	fmt.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 
-	client := NGSI10Client{IoTBrokerURL: e.workerCfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	sid, err := client.SubscribeContext(&subscription, true)
 	if err != nil {
 		fmt.Println(err)
@@ -482,7 +485,7 @@ func (e *Executor) subscribeInputStream(agentPort string, streamType string, str
 }
 
 func (e *Executor) unsubscribeInputStream(sid string) error {
-	client := NGSI10Client{IoTBrokerURL: e.workerCfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.UnsubscribeContext(sid)
 	if err != nil {
 		fmt.Println(err)
@@ -493,7 +496,7 @@ func (e *Executor) unsubscribeInputStream(sid string) error {
 }
 
 func (e *Executor) deleteOuputStream(eid *EntityId) error {
-	client := NGSI10Client{IoTBrokerURL: e.workerCfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.DeleteContext(eid)
 	if err != nil {
 		fmt.Println(err)

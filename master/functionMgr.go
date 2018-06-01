@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
 )

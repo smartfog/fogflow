@@ -9,12 +9,13 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/satori/go.uuid"
 
+	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
 )
 
 type ThinBroker struct {
-	MyID            string
+	id              string
 	MyLocation      PhysicalLocation
 	MyURL           string
 	IoTDiscoveryURL string
@@ -45,16 +46,8 @@ type ThinBroker struct {
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
-	myid, err := uuid.NewV4()
-	if err != nil {
-		ERROR.Println("FAILED TO GENERATE A UNIQUE ID")
-		return
-	}
-
-	tb.MyID = myid.String()
-
-	tb.MyURL = "http://" + cfg.Host + ":" + strconv.Itoa(cfg.Port) + "/ngsi10"
-	tb.myEntityId = "SysComponent.IoTBroker." + tb.MyID
+	tb.MyURL = "http://" + cfg.Host + ":" + strconv.Itoa(cfg.Broker.Port) + "/ngsi10"
+	tb.myEntityId = "Broker." + tb.id
 
 	tb.IoTDiscoveryURL = cfg.IoTDiscoveryURL
 	tb.MyLocation = cfg.PLocation

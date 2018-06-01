@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
 )
 

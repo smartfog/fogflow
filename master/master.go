@@ -9,6 +9,8 @@ import (
 	. "fogflow/common/communicator"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
+
+	. "fogflow/common/config"
 )
 
 type Master struct {
@@ -16,7 +18,7 @@ type Master struct {
 
 	BrokerURL string
 
-	myID         string
+	id           string
 	myURL        string
 	messageBus   string
 	discoveryURL string
@@ -89,8 +91,8 @@ func (master *Master) Start(configuration *Config) {
 	master.registerMyself()
 
 	// start the NGSI agent
-	master.agent = &NGSIAgent{Port: configuration.AgentPort}
-	master.myURL = "http://" + configuration.MyIP + ":" + strconv.Itoa(configuration.AgentPort)
+	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort}
+	master.myURL = "http://" + configuration.Host + ":" + strconv.Itoa(configuration.Master.AgentPort)
 	master.agent.Start()
 	master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
@@ -101,13 +103,13 @@ func (master *Master) Start(configuration *Config) {
 		cfg.Broker = configuration.MessageBus
 		cfg.Exchange = "fogflow"
 		cfg.ExchangeType = "topic"
-		cfg.DefaultQueue = "master" + master.myID
-		cfg.BindingKeys = []string{"master." + master.myID + ".", "heartbeat.*"}
+		cfg.DefaultQueue = "master" + master.id
+		cfg.BindingKeys = []string{"master." + master.id + ".", "heartbeat.*"}
 
 		// create the communicator with the broker info and topics
 		master.communicator = NewCommunicator(&cfg)
 		for {
-			retry, err := master.communicator.StartConsuming("master"+master.myID, master)
+			retry, err := master.communicator.StartConsuming("master"+master.id, master)
 			if retry {
 				INFO.Printf("Going to retry launching the rabbitmq. Error: %v", err)
 			} else {
@@ -145,7 +147,7 @@ func (master *Master) Quit() {
 func (master *Master) registerMyself() {
 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = "SysComponent.Master." + master.myID
+	ctxObj.Entity.ID = "Master." + master.id
 	ctxObj.Entity.Type = "Master"
 	ctxObj.Entity.IsPattern = false
 
@@ -165,7 +167,7 @@ func (master *Master) registerMyself() {
 
 func (master *Master) unregisterMyself() {
 	entity := EntityId{}
-	entity.ID = "Master." + master.myID
+	entity.ID = "Master." + master.id
 	entity.Type = "Master"
 	entity.IsPattern = false
 
@@ -263,7 +265,7 @@ func (master *Master) prefetchDockerImages(imageList []DockerImage) {
 
 	for _, worker := range workers {
 		workerID := worker.Entity.ID
-		taskMsg := SendMessage{Type: "prefetch_image", RoutingKey: workerID + ".", From: master.myID, PayLoad: imageList}
+		taskMsg := SendMessage{Type: "prefetch_image", RoutingKey: workerID + ".", From: master.id, PayLoad: imageList}
 		master.communicator.Publish(&taskMsg)
 	}
 }
@@ -413,7 +415,7 @@ func (master *Master) DeployTasks(taskInstances []*ScheduledTaskInstance) {
 		assignedWorkerID := (*pScheduledTaskInstance).WorkerID
 		(*pScheduledTaskInstance).DockerImage = master.DetermineDockerImage(operatorName, assignedWorkerID)
 
-		taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: pScheduledTaskInstance.WorkerID + ".", From: master.myID, PayLoad: *pScheduledTaskInstance}
+		taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: pScheduledTaskInstance.WorkerID + ".", From: master.id, PayLoad: *pScheduledTaskInstance}
 		INFO.Println(taskMsg)
 		master.communicator.Publish(&taskMsg)
 	}
@@ -422,7 +424,7 @@ func (master *Master) DeployTasks(taskInstances []*ScheduledTaskInstance) {
 func (master *Master) TerminateTasks(instances []*ScheduledTaskInstance) {
 	INFO.Println("to terminate all scheduled tasks, ", len(instances))
 	for _, instance := range instances {
-		taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: instance.WorkerID + ".", From: master.myID, PayLoad: *instance}
+		taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: instance.WorkerID + ".", From: master.id, PayLoad: *instance}
 		INFO.Println(taskMsg)
 		master.communicator.Publish(&taskMsg)
 	}
@@ -434,25 +436,25 @@ func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
 	assignedWorkerID := (*taskInstance).WorkerID
 	(*taskInstance).DockerImage = master.DetermineDockerImage(operatorName, assignedWorkerID)
 
-	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.myID, PayLoad: *taskInstance}
+	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) TerminateTask(taskInstance *ScheduledTaskInstance) {
-	taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.myID, PayLoad: *taskInstance}
+	taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) AddInputEntity(flowInfo FlowInfo) {
-	taskMsg := SendMessage{Type: "ADD_INPUT", RoutingKey: flowInfo.WorkerID + ".", From: master.myID, PayLoad: flowInfo}
+	taskMsg := SendMessage{Type: "ADD_INPUT", RoutingKey: flowInfo.WorkerID + ".", From: master.id, PayLoad: flowInfo}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
-	taskMsg := SendMessage{Type: "REMOVE_INPUT", RoutingKey: flowInfo.WorkerID + ".", From: master.myID, PayLoad: flowInfo}
+	taskMsg := SendMessage{Type: "REMOVE_INPUT", RoutingKey: flowInfo.WorkerID + ".", From: master.id, PayLoad: flowInfo}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
 }

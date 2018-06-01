@@ -5,6 +5,7 @@ import (
 
 	"github.com/satori/go.uuid"
 
+	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
 )

@@ -1,12 +1,12 @@
-package main
+package config
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 
 	. "fogflow/common/datamodel"
 )
@@ -18,31 +18,57 @@ var (
 	DEBUG    *log.Logger
 )
 
-//The default output for all the loggers is set to ioutil.Discard
-func init() {
-	INFO = log.New(ioutil.Discard, "", 0)
-	PROTOCOL = log.New(ioutil.Discard, "", 0)
-	ERROR = log.New(ioutil.Discard, "", 0)
-	DEBUG = log.New(ioutil.Discard, "", 0)
+type DatabaseCfg struct {
+	DBReset  bool   `json:"dbreset"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	DBname   string `json:"dbname"`
 }
 
-type RepositoryCfg struct {
-	URL     string `json:"url"`
-	Backend string `json:"backend"`
+type RegistryConfiguration struct {
+	Username      string `json:"username,omitempty"`
+	Password      string `json:"password,omitempty"`
+	Email         string `json:"email,omitempty"`
+	ServerAddress string `json:"serveraddress,omitempty"`
+}
+
+func (r *RegistryConfiguration) IsConfigured() bool {
+	if r.Username != "" && r.Password != "" && r.Email != "" && r.ServerAddress != "" {
+		return true
+	}
+
+	return false
 }
 
 type Config struct {
+	Host            string           `json:"host"`
+	IoTDiscoveryURL string           `json:"discoveryURL"`
 	MessageBus      string           `json:"message_bus"`
-	MyIP            string           `json:"my_ip"`
-	AgentPort       int              `json:"ngsi_agent_port"`
-	IoTDiscoveryURL string           `json:"iot_discovery_url"`
 	PLocation       PhysicalLocation `json:"physical_location"`
+	LLocation       LogicalLocation  `json:"logical_location"`
 	Logging         struct {
 		Info     string `json:"info"`
 		Protocol string `json:"protocol"`
 		Errlog   string `json:"error"`
 		Debug    string `json:"debug"`
 	} `json:"logging"`
+	Discovery struct {
+		Port  int         `json:"port"`
+		DBCfg DatabaseCfg `json:"postgresql"`
+	} `json:"discovery"`
+	Broker struct {
+		Port          int `json:"port"`
+		WebSocketPort int `json:"websocket"`
+	} `json:"broker"`
+	Master struct {
+		AgentPort int `json:"ngsi_agent_port"`
+	} `json:"master"`
+	Worker struct {
+		Registry            RegistryConfiguration `json:"registry,omitempty"`
+		ContainerAutoRemove bool                  `json:"container_autoremove"`
+	} `json:"worker"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{
@@ -89,19 +115,15 @@ func ParseConfig(confFile string, confVar *Config) error {
 	return nil
 }
 
-func CreateConfig(configFile string) Config {
+func LoadConfig(configFile string) (Config, error) {
 	var config Config
 
-	if configFile == "" {
-		config.MessageBus = "amqp://guest:guest@localhost:5672/"
-	} else {
-		err := ParseConfig(configFile, &config)
-		if err != nil {
-			os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
-		}
+	abspath, _ := filepath.Abs(configFile)
+	err := ParseConfig(abspath, &config)
+	if err != nil {
+		return config, err
 	}
 
 	config.SetLogTargets()
-
-	return config
+	return config, nil
 }

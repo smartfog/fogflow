@@ -5,7 +5,16 @@ import (
 	"fmt"
 
 	_ "github.com/lib/pq"
+
+	. "fogflow/common/config"
 )
+
+var DBTables = []string{
+	"CREATE TABLE entity_tab (eid text,  type text, isPattern text, providerURL text);",
+	"CREATE TABLE attr_tab (eid text, name text, type text, isDomain text);",
+	"CREATE TABLE metadata_tab (eid text, name text, type text, value text);",
+	"CREATE TABLE geo_box_tab (eid text, name text, type text, box geometry);",
+	"CREATE TABLE geo_circle_tab (eid text, name text, type text, center geometry, radius float);"}
 
 // check if the specified database exists
 func checkDatabase(dbcfg *DatabaseCfg) (bool, error) {
@@ -72,7 +81,7 @@ func createDatabase(dbcfg *DatabaseCfg) {
 		panic(err)
 	}
 
-	for _, SQLstatement := range dbcfg.Tables {
+	for _, SQLstatement := range DBTables {
 		_, err = dbconn.Exec(SQLstatement)
 		if err != nil {
 			panic(err)

@@ -4,29 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
-	"strconv"
 	"time"
 
 	. "fogflow/common/communicator"
+	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
 	. "fogflow/common/ngsi"
 )
 
 type Worker struct {
-	id           string
-	communicator *Communicator
-	ticker       *time.Ticker
-	executor     *Executor
-	allTasks     map[string]*ScheduledTaskInstance
-	cfg          *Config
-	profile      WorkerProfile
+	id                string
+	communicator      *Communicator
+	ticker            *time.Ticker
+	executor          *Executor
+	allTasks          map[string]*ScheduledTaskInstance
+	cfg               *Config
+	selectedBrokerURL string
+	profile           WorkerProfile
 }
 
 func (w *Worker) Start(config *Config) bool {
 	w.cfg = config
-
-	// construct a unique ID for this edge node based on its logical location
-	w.id = "SysComponent.Worker." + strconv.Itoa(w.cfg.LLocation.SiteNo) + strconv.Itoa(w.cfg.LLocation.NodeNo)
 
 	w.profile.WID = w.id
 	w.profile.Capacity = 10
@@ -52,11 +50,10 @@ func (w *Worker) Start(config *Config) bool {
 		nearby.Longitude = w.cfg.PLocation.Longitude
 		nearby.Limit = 1
 
-		client := NGSI9Client{IoTDiscoveryURL: w.cfg.DiscoveryURL}
+		client := NGSI9Client{IoTDiscoveryURL: w.cfg.IoTDiscoveryURL}
 		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
-
 		if err == nil && selectedBroker != "" {
-			w.cfg.BrokerURL = selectedBroker
+			w.selectedBrokerURL = selectedBroker
 			INFO.Println("find out a nearby broker ", selectedBroker)
 			break
 		} else {
@@ -73,7 +70,7 @@ func (w *Worker) Start(config *Config) bool {
 
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	w.executor.Init(w.cfg)
+	w.executor.Init(w.cfg, w.selectedBrokerURL)
 
 	// create the communicator with the broker info and topics
 	w.communicator = NewCommunicator(&cfg)
@@ -113,7 +110,7 @@ func (w *Worker) Quit() {
 func (w *Worker) publishMyself() {
 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = w.id
+	ctxObj.Entity.ID = "Worker." + w.id
 	ctxObj.Entity.Type = "Worker"
 	ctxObj.Entity.IsPattern = false
 
@@ -128,9 +125,8 @@ func (w *Worker) publishMyself() {
 	mylocation.Latitude = w.cfg.PLocation.Latitude
 	mylocation.Longitude = w.cfg.PLocation.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
-	ctxObj.Metadata["role"] = ValueObject{Type: "string", Value: w.cfg.MyRole}
 
-	client := NGSI10Client{IoTBrokerURL: w.cfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
 	err := client.UpdateContext(&ctxObj)
 	if err != nil {
 		fmt.Println(err)
@@ -139,11 +135,11 @@ func (w *Worker) publishMyself() {
 
 func (w *Worker) unpublishMyself() {
 	entity := EntityId{}
-	entity.ID = w.id
+	entity.ID = "Worker." + w.id
 	entity.Type = "Worker"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: w.cfg.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		fmt.Println(err)
@@ -352,7 +348,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 func (w *Worker) onPrefetchImage(imageList []DockerImage) {
 	for _, dockerImage := range imageList {
 		INFO.Println("I am going to fetch the docker image", dockerImage.ImageName)
-		imageURL := w.cfg.Registry.ServerAddress + "/" + dockerImage.ImageName
+		imageURL := w.cfg.Worker.Registry.ServerAddress + "/" + dockerImage.ImageName
 		w.executor.PullImage(imageURL, dockerImage.ImageTag)
 	}
 }

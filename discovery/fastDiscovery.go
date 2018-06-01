@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/satori/go.uuid"
 
+	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
 )
 

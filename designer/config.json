@@ -1,7 +1,7 @@
 {
     "webSrvPort": 80,
-    "discoveryURL": "http://155.54.239.141:443/ngsi9",        
-    "brokerURL": "http://155.54.239.141:8080/ngsi10",
-    "agentIP": "155.54.239.141",
+    "discoveryURL": "http://127.0.0.1:8071/ngsi9",        
+    "brokerURL": "http://127.0.0.1:8070/ngsi10",
+    "agentIP": "127.0.0.1",
     "agentPort": 1030
 }

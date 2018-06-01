@@ -3,9 +3,14 @@ package main
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"flag"
+	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+
+	. "fogflow/common/config"
 )
 
 func generateID(text string) string {
@@ -15,21 +20,30 @@ func generateID(text string) string {
 }
 
 func main() {
-	config := LoadConfig()
+	configurationFile := flag.String("f", "config.json", "A configuration file")
+	flag.Parse()
+	config, err := LoadConfig(*configurationFile)
+	if err != nil {
+		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
+		fmt.Println("please specify the configuration file, for example, \r\n\t./worker -f config.json")
+		os.Exit(-1)
+	}
 
 	// overwrite the configuration with environment variables
 	if value, exist := os.LookupEnv("myip"); exist {
-		config.MyIP = value
+		config.Host = value
 	}
 	if value, exist := os.LookupEnv("discoveryURL"); exist {
-		config.DiscoveryURL = value
+		config.IoTDiscoveryURL = value
 	}
 	if value, exist := os.LookupEnv("rabbitmq"); exist {
 		config.MessageBus = value
 	}
 
+	myID := strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
+
 	// start the worker to deal with tasks
-	var worker = &Worker{}
+	var worker = &Worker{id: myID}
 	ok := worker.Start(&config)
 	if ok == false {
 		ERROR.Println("failed to start the worker instance")
