@@ -103,13 +103,13 @@ func (master *Master) Start(configuration *Config) {
 		cfg.Broker = configuration.MessageBus
 		cfg.Exchange = "fogflow"
 		cfg.ExchangeType = "topic"
-		cfg.DefaultQueue = "master" + master.id
-		cfg.BindingKeys = []string{"master." + master.id + ".", "heartbeat.*"}
+		cfg.DefaultQueue = master.id
+		cfg.BindingKeys = []string{master.id + ".", "heartbeat.*"}
 
 		// create the communicator with the broker info and topics
 		master.communicator = NewCommunicator(&cfg)
 		for {
-			retry, err := master.communicator.StartConsuming("master"+master.id, master)
+			retry, err := master.communicator.StartConsuming(master.id, master)
 			if retry {
 				INFO.Printf("Going to retry launching the rabbitmq. Error: %v", err)
 			} else {
@@ -147,7 +147,7 @@ func (master *Master) Quit() {
 func (master *Master) registerMyself() {
 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = "Master." + master.id
+	ctxObj.Entity.ID = master.id
 	ctxObj.Entity.Type = "Master"
 	ctxObj.Entity.IsPattern = false
 
@@ -167,7 +167,7 @@ func (master *Master) registerMyself() {
 
 func (master *Master) unregisterMyself() {
 	entity := EntityId{}
-	entity.ID = "Master." + master.id
+	entity.ID = master.id
 	entity.Type = "Master"
 	entity.IsPattern = false
 

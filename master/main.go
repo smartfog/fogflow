@@ -21,7 +21,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	myID := strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
+	myID := "Master." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// overwrite the configuration with environment variables
 	if value, exist := os.LookupEnv("myip"); exist {

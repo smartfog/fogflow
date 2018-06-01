@@ -110,7 +110,7 @@ func (w *Worker) Quit() {
 func (w *Worker) publishMyself() {
 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = "Worker." + w.id
+	ctxObj.Entity.ID = w.id
 	ctxObj.Entity.Type = "Worker"
 	ctxObj.Entity.IsPattern = false
 
@@ -135,7 +135,7 @@ func (w *Worker) publishMyself() {
 
 func (w *Worker) unpublishMyself() {
 	entity := EntityId{}
-	entity.ID = "Worker." + w.id
+	entity.ID = w.id
 	entity.Type = "Worker"
 	entity.IsPattern = false
 

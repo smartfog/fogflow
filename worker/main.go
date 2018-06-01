@@ -40,7 +40,7 @@ func main() {
 		config.MessageBus = value
 	}
 
-	myID := strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
+	myID := "Worker." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// start the worker to deal with tasks
 	var worker = &Worker{id: myID}

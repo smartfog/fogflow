@@ -310,15 +310,17 @@ func (tMgr *TopologyMgr) queryEdgeNodes() []*ContextObject {
 	entity.IsPattern = true
 	query.Entities = append(query.Entities, entity)
 
-	restriction := Restriction{}
-	restriction.Scopes = make([]OperationScope, 0)
+	/*
+		restriction := Restriction{}
+		restriction.Scopes = make([]OperationScope, 0)
 
-	scope := OperationScope{}
-	scope.Type = "stringQuery"
-	scope.Value = "role=EdgeNode"
-	restriction.Scopes = append(restriction.Scopes, scope)
+		scope := OperationScope{}
+		scope.Type = "stringQuery"
+		scope.Value = "role=EdgeNode"
+		restriction.Scopes = append(restriction.Scopes, scope)
 
-	query.Restriction = restriction
+		query.Restriction = restriction
+	*/
 
 	client := NGSI10Client{IoTBrokerURL: tMgr.master.BrokerURL}
 	ctxObjects, err := client.QueryContext(&query, nil)

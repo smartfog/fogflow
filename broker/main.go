@@ -35,7 +35,7 @@ func main() {
 		json.Unmarshal([]byte(value), &config.PLocation)
 	}
 
-	myID := strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
+	myID := "Broker." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// check if IoT Discovery is ready
 	for {
