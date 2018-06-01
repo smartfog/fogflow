@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime"
+	"strconv"
 	"time"
 
 	. "fogflow/common/communicator"
@@ -43,26 +44,32 @@ func (w *Worker) Start(config *Config) bool {
 	cfg.DefaultQueue = w.id
 	cfg.BindingKeys = []string{w.id + ".*"}
 
-	// find a nearby IoT Broker
-	for {
-		nearby := NearBy{}
-		nearby.Latitude = w.cfg.PLocation.Latitude
-		nearby.Longitude = w.cfg.PLocation.Longitude
-		nearby.Limit = 1
+	// if no broker is configured in the configuration file, the worker needs to find a nearby IoT Broker
+	// otherwise, just use the configured broker
+	if config.Broker.Port != 0 {
+		w.selectedBrokerURL = "http://" + config.Host + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
+	} else {
+		// find a nearby IoT Broker
+		for {
+			nearby := NearBy{}
+			nearby.Latitude = w.cfg.PLocation.Latitude
+			nearby.Longitude = w.cfg.PLocation.Longitude
+			nearby.Limit = 1
 
-		client := NGSI9Client{IoTDiscoveryURL: w.cfg.IoTDiscoveryURL}
-		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
-		if err == nil && selectedBroker != "" {
-			w.selectedBrokerURL = selectedBroker
-			INFO.Println("find out a nearby broker ", selectedBroker)
-			break
-		} else {
-			if err != nil {
-				ERROR.Println(err)
+			client := NGSI9Client{IoTDiscoveryURL: w.cfg.IoTDiscoveryURL}
+			selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
+			if err == nil && selectedBroker != "" {
+				w.selectedBrokerURL = selectedBroker
+				INFO.Println("find out a nearby broker ", selectedBroker)
+				break
+			} else {
+				if err != nil {
+					ERROR.Println(err)
+				}
+
+				INFO.Println("continue to look up a nearby IoT broker")
+				time.Sleep(5 * time.Second)
 			}
-
-			INFO.Println("continue to look up a nearby IoT broker")
-			time.Sleep(5 * time.Second)
 		}
 	}
 
