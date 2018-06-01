@@ -73,7 +73,16 @@ func (w *Worker) Start(config *Config) bool {
 		}
 	}
 
-	w.publishMyself()
+	for {
+		err := w.publishMyself()
+		if err != nil {
+			INFO.Println("wait for the assigned broker to be ready")
+			time.Sleep(5 * time.Second)
+		} else {
+			INFO.Println("annouce myself to the nearby broker")
+			break
+		}
+	}
 
 	// start the executor to interact with docker
 	w.executor = &Executor{}
@@ -114,7 +123,7 @@ func (w *Worker) Quit() {
 	fmt.Println("stop consuming the messages")
 }
 
-func (w *Worker) publishMyself() {
+func (w *Worker) publishMyself() error {
 	ctxObj := ContextObject{}
 
 	ctxObj.Entity.ID = w.id
@@ -135,9 +144,7 @@ func (w *Worker) publishMyself() {
 
 	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
 	err := client.UpdateContext(&ctxObj)
-	if err != nil {
-		fmt.Println(err)
-	}
+	return err
 }
 
 func (w *Worker) unpublishMyself() {
