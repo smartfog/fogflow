@@ -1,2 +1,7 @@
 * linguist-vendored
 *.go linguist-vendored=false
+*.go filter=spabs
+*.py filter=spabs
+*.js filter=spabs
+*.json filter=spabs
+
