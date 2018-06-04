@@ -1,28 +1,28 @@
 {
     "host": "195.37.154.32", 
-    "discoveryURL": "http://195.37.154.32:8071/ngsi9", 		
+    "discoveryURL": "http://195.37.154.32:443/ngsi9",       
     "message_bus": "amqp://admin:mypass@195.37.154.32:5672/",    
-	"physical_location":{
-		"longitude": 139.709059,
-		"latitude": 35.692221,
-		"section": "01",
-		"district": "02",
-		"city": "Tokyo"
-	},	
-	"logical_location": {
-		"node_no": 2,
-		"site_no": 2,	 			
-		"layer_no": 2,
-		"parent_site_no": 1
-	},    		
-	"logging":{
-		"info":"stdout",
-		"error":"stderr",
-        	"protocol": "stdout",
-        	"debug": "discard"
-	},
+    "physical_location":{
+        "longitude": 139.709059,
+        "latitude": 35.692221,
+        "section": "01",
+        "district": "02",
+        "city": "Tokyo"
+    },  
+    "logical_location": {
+        "node_no": 2,
+        "site_no": 2,               
+        "layer_no": 2,
+        "parent_site_no": 1
+    },          
+    "logging":{
+        "info":"stdout",
+        "error":"stderr",
+            "protocol": "stdout",
+            "debug": "discard"
+    },
     "discovery": {
-        "port": 8071,
+        "port": 443,
         "postgresql": {
             "dbreset": true,
             "username": "postgres",
@@ -33,17 +33,17 @@
         }    
     },
     "broker": {
-        "port": 8070,
+        "port": 8080,
         "websocket": 8090        
     },    
     "master": {
-        "ngsi_agent_port": 1060		    
+        "ngsi_agent_port": 1060         
     },
     "worker": {
         "container_autoremove": false       
     },
     "designer": {
-        "webSrvPort": 8080,
+        "webSrvPort": 80,
         "agentPort": 1030               
     }    
 }
