@@ -1,4 +1,7 @@
 FogFlow
+
+|build-status| |docs|
+
 ===========
 FogFlow is a standard-based data processing framework for service providers to easily programming and managing IoT services over cloud and edges. Below are the motivation, functionalities, and benefits of FogFlow. 
 
