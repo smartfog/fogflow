@@ -5,7 +5,7 @@ services:
         volumes:
             - ./config.json:/config.json
         ports:
-            - 8890:8890            
+            - 8080:8080            
     worker:
         image: fogflow/worker
         volumes:

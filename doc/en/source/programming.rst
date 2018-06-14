@@ -85,19 +85,20 @@ Dynamic dataflow execution over cloud and edges
 ------------------------------------------------
 
 On receiving a requirement, Topology Master creates a dataflow execution graph and then deploys them over the cloud and edges. 
-The main procedure is illutrated by the following figure, including two major steps. 
+The main procedure is illustrated by the following figure, including two major steps. 
 
 .. figure:: figures/service-topology.png
    :scale: 100 %
    :alt: map to buried treasure
 
 * from *service topology* to *execution plan*: done by the task generation algorithm of Topology Master. 
-The generated execution plan includes:1) which part of service topology is triggered; 
+The generated execution plan includes:
+1) which part of service topology is triggered; 
 2) how many instances need to be created for each triggered task;
-3) and how each task instance should be configured with its intput streams and output streams. 
+3) and how each task instance should be configured with its input streams and output streams. 
 
 * from *execution plan* to *deployment plan*: done by the task assignment algorithm of Topology Master.
-The generated deployment plan determines which task instance should be assgined to which worker (in the cloud or at edges),  
+The generated deployment plan determines which task instance should be assigned to which worker (in the cloud or at edges),  
 according to certain optimization objectives. Currently, the task assignment in FogFlow is optimized to reduce across-node data traffic
 without overloading any edge node. 
 

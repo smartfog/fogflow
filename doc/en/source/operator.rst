@@ -24,7 +24,7 @@ How to program an operator
 Once you download the nodejs template, you can follow the framework to implement your own application logic. 
 Overall, you need to know the following important things: 
 
-* what is the main logic part of the provided tempalte?
+* what is the main logic part of the provided template?
 
 	The following code block shows the main logic part of our provided nodejs template.
 	It uses two libraries: ngsiclient.js and ngsiagent.js. 
@@ -73,7 +73,7 @@ Overall, you need to know the following important things:
 	
 	
 	
-* how to initialize something when your applicaiton starts?
+* how to initialize something when your application starts?
 
 .. code-block:: javascript
 
@@ -168,7 +168,7 @@ Overall, you need to know the following important things:
     function setReferenceURL(cmd) 
     {
         myReferenceURL = cmd.referenceURL   
-        console.log('your application can subscribe addtional inputs under the reference URL: ', myReferenceURL);
+        console.log('your application can subscribe additional inputs under the reference URL: ', myReferenceURL);
     }
             
 
@@ -200,7 +200,7 @@ Overall, you need to know the following important things:
 		}	
 	}
 
-* how to send an update within your applicaiton?
+* how to send an update within your application?
 
 	For any generate results, your application can publish them by sending NGSI updates to the given IoT broker
 	The given IoT broker and the entity type to be used for publishing your generate results 
@@ -272,7 +272,7 @@ Overall, you need to know the following important things:
 	If your application needs some third-party libraries, please specify them and their version numbers in "package.json". 
 	
 
-* how to subscribe addtional inputs if your applicaiton needs?
+* how to subscribe additional inputs if your application needs?
 
 
 
@@ -300,7 +300,7 @@ and then issue a subscribe request to the known Cloud IoT broker.
 
 The step is the following: 
 
-#. run your application indepent from FogFlow
+#. run your application out of FogFlow
 
 	.. code-block:: bash
 		

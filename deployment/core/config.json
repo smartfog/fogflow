@@ -1,7 +1,7 @@
 {
-    "host": "195.37.154.32", 
-    "discoveryURL": "http://195.37.154.32:443/ngsi9",       
-    "message_bus": "amqp://admin:mypass@195.37.154.32:5672/",    
+    "host": "155.54.239.141", 
+    "discoveryURL": "http://155.54.239.141:443/ngsi9",       
+    "message_bus": "amqp://admin:mypass@155.54.239.141:5672/",    
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221,
@@ -10,8 +10,8 @@
         "city": "Tokyo"
     },  
     "logical_location": {
-        "node_no": 2,
-        "site_no": 2,               
+        "node_no": 1,
+        "site_no": 1,               
         "layer_no": 2,
         "parent_site_no": 1
     },          

@@ -1,5 +1,5 @@
-What is required to design, implement, and use a service
-========================================================
+What is required to design, implement, and use an IoT service
+===============================================================
 
 In FogFlow a service is represented by a service topology, which consists of a set of linked data processing tasks. 
 Therefore, we have to carefully consider how we can decompose the entire data processing logic into multiple small tasks
@@ -9,24 +9,24 @@ Here we outline what needs to be done from the design and implementation phase t
 Design phase
 --------------
 
-During the design phase we can take a top-down approach to think about how your entire service logic can be divied into small tasks. 
+During the design phase we can take a top-down approach to think about how your entire service logic can be divided into small tasks. 
 
 #. Analyze the major data processing part in your service
 
-	Basically we consider the entire data processing part as a black box and then start to define what are the input data 
+	Basically we consider the entire data processing part as a black box and then start to define what the input data are
 	and what are the output results to be produced. 
 
 #. Break down the major data processing part into small pieces (data processing tasks)
 
 	We can follow a data-driven approach to check for each output what are the required inputs and data processing logics. 
-	Meanwhile, we can check if we can break the data processing logic into small tasks mainly for two purposers: 
+	Meanwhile, we can check if we can break the data processing logic into small tasks mainly for two purposes: 
 	1) the intermediate results can be shared across various tasks to produce different outputs;
 	2) tasks can be smaller so that they can be dynamically migrated between edges and clouds. 
 	
 
 #. Verify the entire data processing flows with inputs and outputs
 
-	After having the seperated tasks of the data processing logic in your service application,
+	After having the separated tasks of the data processing logic in your service application,
 	you can start to verify how they can be specified based on the FogFlow programming model, 
 	mainly by checking if each task can be described with the FogFlow task specification, 
 	such as input or output data stream types, task granularity; 
@@ -72,7 +72,7 @@ As illustrated by the following diagram, the following steps are required to imp
 	
 	- register the dockerized operator image via FogFlow Task Designer
 		
-	- registery the dockerized operator image by sending a NGSI update to the FogFlow Context Management system
+	- register the dockerized operator image by sending a NGSI update to the FogFlow Context Management system
 	
 	More details can be seen in :ref:`operator-registration`. 
 	
@@ -85,7 +85,7 @@ As illustrated by the following diagram, the following steps are required to imp
 	
 	- register a service topology via FogFlow Task Designer
 		
-	- registery a service topology by sending a NGSI update to the FogFlow Context Management system
+	- register a service topology by sending a NGSI update to the FogFlow Context Management system
 	
 	More details can be seen in :ref:`topology-registration`. 
 

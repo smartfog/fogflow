@@ -16,7 +16,7 @@ in the cloud:
 * **RabbitMQ**: AMQP-based message bus for exchanging the control commands between Topology Master and Workers
 * **Task Designer**: noodejs-based web server to provide the web-based interfaces for system management and showing demo use cases 
  
-The following components are made accessibe from the outside, via their listening ports under the same public IP (IP-core): 
+The following components are made accessible from the outside, via their listening ports under the same public IP (IP-core): 
 
 * **IoT Discovery**: 8071
 * **IoT Broker(cloud)**: 8070
@@ -27,7 +27,7 @@ The following components are made accessibe from the outside, via their listenin
 Fog node
 -----------
 A fog node must deploy a worker and install docker-engine to run task instances. 
-Normally, it is also required to deploy a IoT broker at each fog node
+Normally, it is also required to deploy an IoT broker at each fog node
 so that the data flow exchanged between task instances on the fog node can be done locally. 
 However, the IoT Broker at edge node is optional. 
 

@@ -10,7 +10,7 @@ If you encounter other problems, please `let us know`_.
 * fog node is behind NAT
 
 If your fog node is behind NAT or a firewall that blocks any incoming notify to your IoT Broker at edge, your fog node can not work properly. 
-We are going to support this type of setup in the neary future. 
+We are going to support this type of setup in the near future. 
 
 
 

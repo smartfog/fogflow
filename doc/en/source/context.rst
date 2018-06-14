@@ -3,11 +3,11 @@ Distributed context management
 
 The context management system is designed to provide a global view for all system components and running task instances 
 to query, subscribe, and update context entities via the unified data model and the communication protocol *NGSI*. 
-It plays an very important role to support the standard-based edge programming model in FogFlow. 
+It plays a very important role to support the standard-based edge programming model in FogFlow. 
 As compared to other existing brokers like MQTT-based Mosquitto or Apache Kafka, 
 the distributed context management system in FogFlow has the following features: 
 
-* seperating context availability and context entity
+* separating context availability and context entity
 * providing separated and standardized interfaces to manage both context data (via NGSI10) and context availability (via NGSI9). 
 * supporting not only ID-based and topic-based query and subscription but also geoscope-based query and subscription
 
@@ -27,7 +27,7 @@ IoT Broker
 -------------
 The IoT Broker in Fogflow is very light-weight, because it keeps only the lastest value of each context entity
 and saves each entity data directly in the system memory. 
-This bringes high throughput and low latency for the data trasfer from context produers to context consumers. 
+This brings high throughput and low latency for the data transfer from context produers to context consumers. 
 
 Each IoT Broker manages a portion of the context data and registers data to the shared IoT Discovery.
 However, all IoT Brokers can equally provide any requested context entity via NGSI10 

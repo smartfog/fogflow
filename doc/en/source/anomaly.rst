@@ -2,7 +2,7 @@ In-shop anomaly detection for retails
 =========================================
 
 This use case study is for retail stores to detect abnormal energy consumption in real-time.
-As illustrated in the followign picture, a retail company has a large number of shops distributed in different locations. 
+As illustrated in the following picture, a retail company has a large number of shops distributed in different locations. 
 For each shop, a Raspberry Pi device (edge node) is deployed to monitor the power consumption from all PowerPanels 
 in the shop. Once an abnormal power usage is detected on the edge, 
 the alarm mechanism in the shop is triggered to inform the shop owner. 
@@ -38,7 +38,7 @@ There are two types of result consumers: (1) a dashboard service in the cloud, w
 Specified service topology
 ----------------------------
 
-Using the grahical editor provided by FogFlow task designer, 
+Using the graphical editor provided by FogFlow task designer, 
 we define the following service topology for this use case. 
 
 .. figure:: figures/retail-topology.png

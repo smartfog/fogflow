@@ -29,7 +29,7 @@ centralized service components to be deployed in the cloud
 
 - **Task Designer**: provide the web-based interface for service providers to specify, register, and manage their tasks and service topologies;
 
-- **Topology Master**: igure out when and which task should be instantiated, dynamically configure them, and also decide where to deploy them over cloud and edges;
+- **Topology Master**: figure out when and which task should be instantiated, dynamically configure them, and also decide where to deploy them over cloud and edges;
 
 - **IoT Discovery**: manage all registered context availability information, including its ID, entity type, attribute list, and metadata; allow other components to query and subscribe their interested context availability information via NGSI9 
 

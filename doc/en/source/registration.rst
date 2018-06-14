@@ -11,13 +11,13 @@ This can be done in one of the following two ways.
 .. note:: Please notice that each operator must have a unique name but the same operator can be associated with multiple docker images, 
 			each of which is for one specific hardware or operating system but for implementing the same data processing logic. 
 			During the runtime, FogFlow will select a proper docker image to run a scheduled task on an edge node, 
-			based on the executuion environment of the edge node. 
+			based on the execution environment of the edge node. 
 
 
 Register it via FogFlow Task Designer
 --------------------------------------------------------------
 
-The following picture shows the list of all registered operator docker images and the key imformation of each image. 
+The following picture shows the list of all registered operator docker images and the key information of each image. 
 
 .. figure:: figures/operator-registry-list.png
    :scale: 100 %

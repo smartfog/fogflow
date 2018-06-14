@@ -39,7 +39,7 @@ Run both Worker and IoT Broker at the fog node
 	- start native Worker and IoT Broker on the fog node
 	
 		#. if you have not compiled them from the source code, 
-			you need to download the exectuable files, currently ARM and Linux based version are provided
+			you need to download the executable files, currently ARM and Linux based version are provided
 		 	for a ARM device like raspberry pi, please use fog-arm6.zip; 
 			for any x86 Linux machine, please use fog-linux64.zip
 			
@@ -92,7 +92,7 @@ Run only Worker at the light-weight fog node
 -------------------------------------------------
 
 		#.  if you have not compiled them from the source code, 
-			you need to download the exectuable files, currently ARM and Linux based version are provided
+			you need to download the executable files, currently ARM and Linux based version are provided
 		 	for a ARM device like raspberry pi, please use fog-arm6.zip; 
 			for any x86 Linux machine, please use fog-linux64.zip
 			
