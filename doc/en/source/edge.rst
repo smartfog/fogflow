@@ -1,4 +1,4 @@
-Start a fog node at edges
+Start an edge node
 ==========================
 
 Install Docker Engine 

@@ -79,4 +79,20 @@ body {
     stroke-opacity: 1;
 }
 
+.footerStyle
+{
+    background-color: linear-gradient(to bottom, #f8f8f8, #ffffff);
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 100px;
+    width: 100%;
+    overflow: hidden;    
+	margin-top: 20px;
+	padding-top: 20px;
+	font-size: 11px;
+	text-align: center;
+}
+
+
 

@@ -24,12 +24,10 @@ The following components are made accessible from the outside, via their listeni
 * **Task Designer**: 8080
 
 
-Fog node
+Edge node
 -----------
-A fog node must deploy a worker and install docker-engine to run task instances. 
-Normally, it is also required to deploy an IoT broker at each fog node
-so that the data flow exchanged between task instances on the fog node can be done locally. 
-However, the IoT Broker at edge node is optional. 
+An edge node must provide the docker execution environment. Each edge node needs to run a worker and an IoT broker. 
+Physically, an edge node could be an IoT gateway, a virtual machine, or even an end-point device that supports docker.  
 
 
 Registry service
