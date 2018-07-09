@@ -82,9 +82,7 @@ body {
 .footerStyle
 {
     background-color: linear-gradient(to bottom, #f8f8f8, #ffffff);
-    position: absolute;
-    left: 0;
-    bottom: 0;
+    position: relative;
     height: 100px;
     width: 100%;
     overflow: hidden;    
