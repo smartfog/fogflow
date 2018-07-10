@@ -1,7 +1,7 @@
 .. _flow-task:
 
-Data flow processing
-====================
+Context-driven data flows
+============================
 
 In FogFlow each worker is an agent to perform the following two type of deployment actions assigned by Topology Master. 
 

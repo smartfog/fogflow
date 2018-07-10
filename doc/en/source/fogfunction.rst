@@ -1,7 +1,5 @@
-.. _topology-registration:
-
-How to define and register a service topology
-=============================================
+Fog function
+=====================================================
 
 Currently, FogFlow provides the following two ways for service developers to specify and register a service topology. 
 
