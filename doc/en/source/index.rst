@@ -33,6 +33,7 @@ What is FogFlow?
     overview.rst
     context.rst
     processing.rst
+    concept.rst    
     programming.rst
     servicetopology.rst
     fogfunction.rst
@@ -40,9 +41,8 @@ What is FogFlow?
 
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorial for System Operators
+    :caption: Tutorial for Platform Operators
     :numbered:    
-    
 
     cloud.rst
     edge.rst
