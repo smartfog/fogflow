@@ -22,6 +22,8 @@ What is FogFlow?
     setup.rst
     example1.rst
     example2.rst
+    example3.rst
+    example4.rst        
    
 .. toctree::
     :maxdepth: 1
