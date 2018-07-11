@@ -1,5 +1,6 @@
-Start core components in the cloud
-===========================================
+*****************************************
+Start all core components in the cloud
+*****************************************
 
 Once the following docker images are generated at the local host, 
 we can start all FogFlow core components in the cloud using docker-compose:
@@ -11,40 +12,82 @@ we can start all FogFlow core components in the cloud using docker-compose:
 * **Task Designer**: fogflow/designer
 
 
+Install Docker CE and Docker Compose on your Linux machine
+===============================================================
 
-Start the cloud part of FogFlow
------------------------------------------------
+    .. important::
+    
+        To install Docker CE, please refer to |install_docker|, required version 18.03.1-ce, *please also allow your user to execute the Docker Command without Sudo*
 
-please install Docker CE according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
-and also Docker Compose according to the information at https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
+            .. |install_docker| raw:: html
 
-	.. code-block:: bash
-	
-		# set the environment variable HOST_IP, which is the external IP address of your current machine
-		export HOST_IP=AAA.BBB.CCC.DDD
+                <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04" target="_blank">How to install Docker</a>
 
-		# go to the folder where the docker-compose.ymal is located
-		cd fogflow/deployment/core 
-  		docker-compose up
+        To install Docker Compose, please refer to |install_docker_compose|, required version 2.4.2
 
-.. note:: HOST_IP needs to be accessible from any fog node where workers are running
+            .. |install_docker_compose| raw:: html
+
+                <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04" target="_blank">How to install Docker Compose</a>
+
+Download the deployment script and the configuration file
+===============================================================
+
+    .. parsed-literal::
+         
+          #download the deployment script
+          wget https://raw.githubusercontent.com/smartfog/fogflow/master/deployment/core/docker-compose.yml
+          
+          #download the configuration file          
+          wget https://raw.githubusercontent.com/smartfog/fogflow/master/deployment/core/config.json
 
 
-Check the status of the FogFlow services in the cloud
-------------------------------------------------------
+Change the configuration file according to your local environment
+====================================================================
 
-Open the link http://HOST_IP:8080 in your browser to check the status of all FogFlow running components in the cloud. 
+    As a simple change, you only need to replace the IP address with your own host IP in three places, as illustrated in the following figure. 
 
-If everything goes well, you can see the following page from this link. 
+    .. important:: **HOST_IP** is the IP address of your Linux machine. 
+    
+    We also assume that you can use the default port numbers for various FogFlow components. 
+    More specially, the following ports are required.    
+        - 80: for Designer to provide the FogFlow web portal
+        - 443: for Discovery
+        - 8080: for Broker   
+        - 5672: for RabbitMQ 
+  
+    .. figure:: figures/configuration.png
+       :scale: 100 %
 
-.. figure:: figures/designer.png
-   :scale: 100 %
-   :alt: map to buried treasure
 
-Further more, you should be able to see the status of all core components running in the cloud, 
-from the menu items on the left side of the System Management page. 
+Run the downloaded script
+===============================================================
 
-.. figure:: figures/status.png
-   :scale: 100 %
-   :alt: map to buried treasure
+     .. parsed-literal::
+
+          #pull the required docker images and create their containers, only required for the first time
+          docker-compose create
+          
+          #start the FogFlow system 
+          docker-compose start
+
+          #command to stop the FogFlow system
+          docker-compose stop  #no need for the following steps
+
+
+Test the FogFlow dashboard
+===============================================================
+
+    Open the link "http://HOST_IP" in your browser to check the status of all FogFlow running components in the cloud. 
+
+    If everything goes well, you should be able to see the following page from this link. 
+
+    .. figure:: figures/designer.png
+       :scale: 100 %
+
+    Furthermore, you should be able to see the status of all core components running in the cloud, 
+    from the menu items on the left side of the System Management page. 
+
+    .. figure:: figures/status.png
+       :scale: 100 %
+
 

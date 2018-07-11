@@ -45,6 +45,7 @@ Change the configuration file according to your local environment
     As a simple change, you only need to replace the IP address with your own host IP in three places, as illustrated in the following figure. 
 
     .. important:: **HOST_IP** is the IP address of your Linux machine. 
+    
     We also assume that you can use the default port numbers for various FogFlow components. 
     More specially, the following ports are required.    
         - 80: for Designer to provide the FogFlow web portal
