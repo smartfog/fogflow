@@ -1,125 +1,79 @@
 Start an edge node
 ==========================
 
+Typically, an FogFlow edge node needs to deploy a Worker and an IoT broker. 
+The Edge IoT Broker at the edge node can establish the data flows between all task instances launched on the same edge node. 
+However, this Edge IoT Broker is optional, 
+especially when the edge node is a very constrained device that can only support a few tasks without any data dependency. 
+
+Here are the steps to start an FogFlow edge node: 
+
 Install Docker Engine 
 ------------------------
 
-To install docker engine, please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+.. note:: Docker engine must be installed on each edge node, because all task instances in FogFlow will be launched within a docker container.
 
-.. note:: Docker engine must be installed on each fog node, because all task instances in FogFlow will be instantiated within a docker container
+    To install Docker CE, please refer to |install_docker|, required version 18.03.1-ce, *please also allow your user to execute the Docker Command without Sudo*
 
+      .. |install_docker| raw:: html
 
-Typically, a fog node needs to deploy a Worker and an IoT broker. 
-The IoT Broker at the fog node can establish the data flows between all task instances launched on the same edge node. 
-However, this Edge IoT Broker is optional, 
-especially when the fog node is very light-weight and can only support a few tasks without any data dependency. 
+         <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04" target="_blank">How to install Docker</a>
 
 
-Run both Worker and IoT Broker at the fog node
+Download the deployment script 
 -------------------------------------------------
 
-	- start dockerized Worker and IoT Broker by using a docker compose script
-	
-		#. before starting the script (fogflow/deployment/fog/docker-compose.yml), 
-		 	please change its configuration accordingly, as shown by the following picture. 
-		  	The main required change is the IP address of FogFlow core services in the cloud, 
-		  	such as IoT Discovery, RabbitMQ
+    .. parsed-literal::
+         
+          #download the deployment scripts
+          wget https://raw.githubusercontent.com/smartfog/fogflow/master/deployment/edge/start.sh
+          wget https://raw.githubusercontent.com/smartfog/fogflow/master/deployment/edge/stop.sh 
+          
+          #make them executable
+          chmod +x start.sh  stop.sh       
+          
 
-			.. figure:: figures/fog-node.png
- 			  :scale: 100 %
- 			  :alt: map to buried treasure
-	
-		#. start the docker-compose.yml script to launch Worker and IoT Broker(Edge)
-		
-			.. code-block:: bash
-			
-				cd fogflow/deployment/fog 
-  				docker-compose up
-	
-	- start native Worker and IoT Broker on the fog node
-	
-		#. if you have not compiled them from the source code, 
-			you need to download the executable files, currently ARM and Linux based version are provided
-		 	for a ARM device like raspberry pi, please use fog-arm6.zip; 
-			for any x86 Linux machine, please use fog-linux64.zip
-			
-			.. code-block:: bash
-			
-				// for ARM-based fog node
-				wget https://github.com/smartfog/fogflow/blob/master/deployment/fog/download/arm6/fog-arm6.zip
-				
-				// for Linux-based fog node (64bits, x86 processor architecture)
-				wget https://github.com/smartfog/fogflow/blob/master/deployment/fog/download/linux64/fog-linux64.zip
-				
-			
-		#. unzip the download zip file
-		
-			
-			.. code-block:: bash
-			
-				unzip  fog-x.zip	
-	
-		#. change the configuration file of IoT Broker(Edge): 
-		
-			- "host": to be the IP address of the fog node 
-			- "discoveryURL": change it to the accessible IP address of IoT Discovery in the cloud
-			- physical_location: set the geo-location of the fog node
-	
-		#. start IoT Broker(Edge)
-		
-			.. code-block:: bash
-			
-				cd fog-arm6/broker 
-				./broker
-
-		#. change the configuration file of Worker: 
-		
-			- "my_ip": to be the IP address of the fog node 
-			- "message_bus": to be the HOST_IP address of the RabbitMQ in the cloud
-			- "iot_discovery_url": change it to the accessible IP address of IoT Discovery in the cloud
-			- physical_location: set the geo-location of the fog node
-
-
-		#. start Worker(Edge)
-		
-			.. code-block:: bash
-			
-				cd fog-arm6/worker
-				./worker
-		
-
-Run only Worker at the light-weight fog node
+Download the default configuration file 
 -------------------------------------------------
 
-		#.  if you have not compiled them from the source code, 
-			you need to download the executable files, currently ARM and Linux based version are provided
-		 	for a ARM device like raspberry pi, please use fog-arm6.zip; 
-			for any x86 Linux machine, please use fog-linux64.zip
-			
-			.. code-block:: bash
-			
-				wget
-				
-			
-		#. unzip the download zip file
-		
-			
-			.. code-block:: bash
-			
-				unzip  fog-x.zip	
-		
-	
-		#. change the configuration file of Worker: 
-		
-			- "my_ip": to be the IP address of the fog node 
-			- "message_bus": to be the HOST_IP address of the RabbitMQ in the cloud
-			- "iot_discovery_url": change it to the accessible IP address of IoT Discovery in the cloud
-			- physical_location: set the geo-location of the fog node
+    .. parsed-literal::
+         
+         
+          #download the configuration file          
+          wget https://raw.githubusercontent.com/smartfog/fogflow/master/deployment/edge/config.json
 
 
-		#. start Worker(Edge)
-		
-			.. code-block:: bash
-			
-				cd fog-arm6/worker
-				./worker
+Change the configuration file accordingly
+-------------------------------------------------
+
+The following picture shows the configurations you need to chane accordingly to your own environment. 
+
+    .. figure:: figures/edgecfg.png
+       :scale: 100 %
+
+Start both Edge IoT Broker and FogFlow Worker
+-------------------------------------------------
+
+    .. note:: if the edge node is ARM-basd, please attach arm as the command parameter
+
+    .. parsed-literal::
+
+          #start both components in the same script
+          ./start.sh 
+        
+          # if the edge node is ARM-basd, please attach arm as the command parameter
+          #./start.sh  arm
+          
+
+
+Stop both Edge IoT Broker and FogFlow Worker
+-------------------------------------------------
+
+
+     .. parsed-literal::
+
+          #stop both components in the same script
+          ./stop.sh 
+
+
+        
