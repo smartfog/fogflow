@@ -11,13 +11,13 @@ Here are the steps to start an FogFlow edge node:
 Install Docker Engine 
 ------------------------
 
-.. note:: Docker engine must be installed on each edge node, because all task instances in FogFlow will be launched within a docker container.
+    .. note:: Docker engine must be installed on each edge node, because all task instances in FogFlow will be launched within a docker container.
 
-    To install Docker CE, please refer to |install_docker|, required version 18.03.1-ce, *please also allow your user to execute the Docker Command without Sudo*
+        To install Docker CE, please refer to |install_docker|, required version 18.03.1-ce, *please also allow your user to execute the Docker Command without Sudo*
 
-      .. |install_docker| raw:: html
+          .. |install_docker| raw:: html
 
-         <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04" target="_blank">How to install Docker</a>
+             <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04" target="_blank">How to install Docker</a>
 
 
 Download the deployment script 

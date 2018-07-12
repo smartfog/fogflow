@@ -1,5 +1,5 @@
 *****************************************
-Define and launch a service topology
+Define and test a service topology
 *****************************************
 
 
