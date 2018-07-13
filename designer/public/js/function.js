@@ -36,6 +36,7 @@ addMenuItem('Function', showFunction);
 addMenuItem('Task', showTask);  
 addMenuItem('Editor', showEditor);  
 
+
 showEditor();
 
 // the list of all registered operators
@@ -615,6 +616,5 @@ function openEditor(fogfunctionEntity)
 }
 
 });
-
 
 
