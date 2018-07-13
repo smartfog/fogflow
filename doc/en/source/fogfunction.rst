@@ -9,8 +9,7 @@ Define and register a service topology via FogFlow Task Designer
 The following picture shows the graphical user interface to specify a service topology. 
 
 .. figure:: figures/topology-ui.png
-   :scale: 100 %
-   :alt: map to buried treasure
+   :width: 100 %
 
 As seen in the picture, the following important information must be provided. 
 
@@ -49,8 +48,7 @@ As seen in the picture, the following important information must be provided.
 
 
 .. figure:: figures/task-profile.png
-   :scale: 100 %
-   :alt: map to buried treasure
+   :width: 100 %
 
 Define and register a service topology programmatically by sending a NGSI update 
 ---------------------------------------------------------------------------------

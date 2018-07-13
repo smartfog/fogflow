@@ -64,8 +64,7 @@ On receiving a requirement, Topology Master creates a dataflow execution graph a
 The main procedure is illustrated by the following figure, including two major steps. 
 
 .. figure:: figures/service-topology.png
-   :scale: 100 %
-   :alt: map to buried treasure
+   :width: 100 %
 
 * from *service topology* to *execution plan*: done by the task generation algorithm of Topology Master. 
 The generated execution plan includes:
