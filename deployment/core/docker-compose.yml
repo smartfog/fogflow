@@ -41,6 +41,7 @@ services:
     cloud_worker:
         image: fogflow/worker
         volumes:
+            - /tmp:/tmp        
             - ./config.json:/config.json                
             - /var/run/docker.sock:/var/run/docker.sock                    
     postgis:

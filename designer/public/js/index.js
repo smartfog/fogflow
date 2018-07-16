@@ -688,7 +688,7 @@ function initDockerImageList()
         hwType: "X86",
         osType: "Linux",
         operatorName: "nodejs",
-        prefetched: false
+        prefetched: true
     },{
         name: "fogflow/python",
         tag: "latest",
