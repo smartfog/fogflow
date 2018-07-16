@@ -20,5 +20,4 @@ For example, each worker takes the following steps to start a task instance.
 
 
 .. figure:: figures/launching-task.png
-   :scale: 100 %
-   :alt: map to buried treasure
+   :width: 100 %

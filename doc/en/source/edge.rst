@@ -49,7 +49,7 @@ Change the configuration file accordingly
 The following picture shows the configurations you need to chane accordingly to your own environment. 
 
     .. figure:: figures/edgecfg.png
-       :scale: 100 %
+       :width: 100 %
 
 Start both Edge IoT Broker and FogFlow Worker
 -------------------------------------------------

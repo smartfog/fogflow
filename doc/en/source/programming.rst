@@ -21,7 +21,7 @@ and it can also optionally define a specific geo-scope to filter out data source
 for applying the triggered processing logic.
 
 .. figure:: figures/topology-orchestration.png
-   :scale: 100 %
+   :width: 100 %
 
 
 Fog Function
@@ -44,6 +44,6 @@ With the fog function programming model, FogFlow can support serverless computin
 
 
 .. figure:: figures/function-orchestration.png
-   :scale: 100 %
+   :width: 100 %
 
 

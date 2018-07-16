@@ -54,7 +54,7 @@ Change the configuration file according to your local environment
         - 5672: for RabbitMQ 
   
     .. figure:: figures/configuration.png
-       :scale: 100 %
+       :width: 100 %
 
 
 Run the downloaded script
@@ -80,13 +80,13 @@ Test the FogFlow dashboard
     If everything goes well, you should be able to see the following page from this link. 
 
     .. figure:: figures/designer.png
-       :scale: 100 %
+       :width: 100 %
 
     Furthermore, you should be able to see the status of all core components running in the cloud, 
     from the menu items on the left side of the System Management page. 
 
     .. figure:: figures/status.png
-       :scale: 100 %
+       :width: 100 %
 
 
 
