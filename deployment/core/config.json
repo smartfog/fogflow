@@ -1,7 +1,7 @@
 {
     "host": "155.54.239.141", 
     "discoveryURL": "http://155.54.239.141:443/ngsi9",       
-    "message_bus": "amqp://admin:mypass@155.54.239.141:5672/",    
+    "message_bus": "amqp://admin:mypass@155.54.239.141:5672",    
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221,
