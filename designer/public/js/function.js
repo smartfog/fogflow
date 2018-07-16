@@ -5,7 +5,7 @@ var handlers = {};
 var CurrentScene = null;
 
 var template = {};
-template.javascript = 'exports.handler = function(context, publish){  \r\n \t // TODO implement \r\n \t publish("Hello from fogflow"); \r\n }; ';
+template.javascript = 'exports.handler = function(contextEntity, publish, query, subscribe){  \r\n \t // TODO implement \r\n \t publish("Hello from fogflow"); \r\n }; ';
 template.python = 'define handler(context): \r\n \t # write your own code to do data processing  \r\n \t # return the generated context entities to be published as outputs';
 
 var myFogFunctionExamples = [

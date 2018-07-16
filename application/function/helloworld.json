@@ -1,0 +1,27 @@
+{
+   "type":"docker",
+   "code":"",
+   "dockerImage":"privatesite",
+   "name":"PrivateSite",
+   "user":"fogflow",
+   "inputTriggers":[
+      {
+         "name":"selector2",
+         "selectedAttributeList":[
+            "all"
+         ],
+         "groupedAttributeList":[
+            "id"
+         ],
+         "conditionList":[
+            {
+               "type":"EntityType",
+               "value":"PrivateSite"
+            }
+         ]
+      }
+   ],
+   "outputAnnotators":[
+
+   ]
+}

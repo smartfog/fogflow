@@ -1,7 +1,0 @@
-[{
-	"command": "CONNECT_BROKER",
-	"brokerURL": "http://127.0.0.1:8070/ngsi10"
-},{
-    "command": "SET_REFERENCE",
-    "url": "http://127.0.0.1:8080"
-}]
