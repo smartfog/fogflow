@@ -5,6 +5,56 @@ Define and trigger a fog function
 Define a "hello world" fog function 
 -----------------------------------------------
 
+create a fog function from the FogFlow editor 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+annotate its input 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+provide the code of your own function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    .. code-block:: javascript
+    
+        exports.handler = function(contextEntity, publish, query, subscribe) {
+            console.log("enter into the user-defined fog function");
+        
+            if (contextEntity == null) {
+                return;
+            }
+            if (contextEntity.attributes == null) {
+                return;
+            }
+        
+            var updateEntity = {};
+            updateEntity.entityId = {
+                id: "Stream.result.001",
+                type: 'result',
+                isPattern: false
+            };
+            updateEntity.attributes = {};
+            updateEntity.attributes.city = {
+                type: 'string',
+                value: 'Heidelberg'
+            };
+        
+            updateEntity.metadata = {};
+            updateEntity.metadata.location = {
+                type: 'point',
+                value: {
+                    'latitude': 33.0,
+                    'longitude': -1.0
+                }
+            };
+        
+            publish(updateEntity);
+            console.log("publish: ", updateEntity);
+        
+        };
+
+submit your fog function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
 
 
 Trigger your "hello world" fog function 

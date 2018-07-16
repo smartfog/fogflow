@@ -362,7 +362,6 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 func (w *Worker) onPrefetchImage(imageList []DockerImage) {
 	for _, dockerImage := range imageList {
 		INFO.Println("I am going to fetch the docker image", dockerImage.ImageName)
-		imageURL := w.cfg.Worker.Registry.ServerAddress + "/" + dockerImage.ImageName
-		w.executor.PullImage(imageURL, dockerImage.ImageTag)
+		w.executor.PullImage(dockerImage.ImageName, dockerImage.ImageTag)
 	}
 }

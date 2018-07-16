@@ -112,20 +112,24 @@ func (e *Executor) InspectImage(dockerImage string) {
 }
 
 func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
+	auth := docker.AuthConfiguration{}
+
+	if e.workerCfg.Worker.Registry.IsConfigured() == true {
+		auth.Username = e.workerCfg.Worker.Registry.Username
+		auth.Password = e.workerCfg.Worker.Registry.Password
+		auth.Email = e.workerCfg.Worker.Registry.Email
+		auth.ServerAddress = e.workerCfg.Worker.Registry.ServerAddress
+		dockerImage = e.workerCfg.Worker.Registry.ServerAddress + "/" + dockerImage
+	}
+
+	fmt.Printf("options : %+v\r\n", auth)
+
 	opts := docker.PullImageOptions{
 		Repository: dockerImage,
 		Tag:        tag,
 	}
 
 	fmt.Printf("options : %+v\r\n", opts)
-
-	auth := docker.AuthConfiguration{}
-	auth.Username = e.workerCfg.Worker.Registry.Username
-	auth.Password = e.workerCfg.Worker.Registry.Password
-	auth.Email = e.workerCfg.Worker.Registry.Email
-	auth.ServerAddress = e.workerCfg.Worker.Registry.ServerAddress
-
-	fmt.Printf("options : %+v\r\n", auth)
 
 	err := e.client.PullImage(opts, auth)
 	if err != nil {
@@ -270,14 +274,15 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
 
 	if e.workerCfg.Worker.Registry.IsConfigured() == true {
-		dockerImage = e.workerCfg.Worker.Registry.ServerAddress + "/" + dockerImage
-
 		// to fetch the docker image
 		_, pullError := e.PullImage(dockerImage, "latest")
 		if pullError != nil {
 			ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
 			return false
 		}
+	} else {
+		// assume the requested image is available
+		INFO.Println("no docker registery is configured, therefore we assume the requested docker image is already built locally and available")
 	}
 
 	taskCtx := taskContext{}
