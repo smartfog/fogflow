@@ -1,31 +1,31 @@
 {
-    "host": "155.54.239.141", 
-    "discoveryURL": "http://155.54.239.141:443/ngsi9", 		
-    "message_bus": "amqp://admin:mypass@155.54.239.141:5672/",    
-	"physical_location":{
-		"longitude": 139.709059,
-		"latitude": 36.692221,
-		"section": "01",
-		"district": "02",
-		"city": "Tokyo"
-	},	
-	"logical_location": {
-		"node_no": 2,
-		"site_no": 3,	 			
-		"layer_no": 2,
-		"parent_site_no": 1
-	},    		
-	"logging":{
-		"info":"stdout",
-		"error":"stderr",
-        	"protocol": "stdout",
-        	"debug": "discard"
-	},
-    "broker": {
-        "port": 8080,
-        "websocket": 8080        
-    },    
-    "worker": {
-        "container_autoremove": false       
-    }
+   "host":"155.54.239.141",
+   "discoveryURL":"http://155.54.239.141:443/ngsi9",
+   "message_bus":"amqp://admin:mypass@155.54.239.141:5672",
+   "physical_location":{
+      "longitude":139.709059,
+      "latitude":36.692221,
+      "section":"01",
+      "district":"02",
+      "city":"Tokyo"
+   },
+   "logical_location":{
+      "node_no":2,
+      "site_no":3,
+      "layer_no":2,
+      "parent_site_no":1
+   },
+   "logging":{
+      "info":"stdout",
+      "error":"stderr",
+      "protocol":"stdout",
+      "debug":"discard"
+   },
+   "broker":{
+      "port":8080,
+      "websocket":8080
+   },
+   "worker":{
+      "container_autoremove":false
+   }
 }
