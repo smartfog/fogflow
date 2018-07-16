@@ -2,14 +2,42 @@
 Define and trigger a fog function
 *****************************************
 
+FogFlow enables serverless edge computing, meaning that developers can define and submit a so-called fog function and then 
+the rest will be done by FogFlow automatically, including:
+	*  **triggering the submitted fog function when its input data are available**
+	*  **deciding how many instances to be created according to its defined granularity**
+	*  **deciding where to deploy the created instances**
+
+The following steps show how to define and test a simple 'hello world' function using the web portal provided by FogFlow Task Designer. 
+
+
 Define a "hello world" fog function 
 -----------------------------------------------
 
 create a fog function from the FogFlow editor 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-annotate its input 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    .. figure:: figures/fog-function-menu.png
+       :width: 100 %
+
+    .. figure:: figures/fog-function-selected.png
+       :width: 100 %
+
+    .. figure:: figures/fog-function-configuration.png
+       :width: 100 %
+
+select its input based on entity type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    .. figure:: figures/fog-function-filter.png
+       :width: 100 %
+
+define a granularity for the creation of its function instances
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    .. figure:: figures/fog-function-granularity.png
+       :width: 100 %
+
 
 provide the code of your own function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -52,9 +80,15 @@ provide the code of your own function
         
         };
 
+
+    .. figure:: figures/fog-function-code.png
+       :width: 100 %
+
 submit your fog function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     
+    .. figure:: figures/fog-function-submit.png
+       :width: 100 %
 
 
 Trigger your "hello world" fog function 
@@ -62,6 +96,11 @@ Trigger your "hello world" fog function
 
 The defined "hello world" fog function is triggered only when its required input data are available. 
 With the following command, you can create a "temperature" entity to trigger the function. 
+
+
+    .. figure:: figures/device-registration.png
+       :width: 100 %
+
 
 .. code-block:: console 
 
