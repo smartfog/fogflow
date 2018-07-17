@@ -212,8 +212,8 @@ With the following command, you can create a "Temperature" sensor entity to trig
         "contextElements": [
             {
                 "entityId": {
-                    "id": "001",
-                    "type": "temperature",
+                    "id": "temp001",
+                    "type": "Temperature",
                     "isPattern": false
                 },
                 "attributes": [
