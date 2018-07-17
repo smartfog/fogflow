@@ -109,7 +109,11 @@ function showDesignBoard()
     html += '</div>'    
     
     $('#content').html(html);  
+    
+    var boardHTML = '<textarea id="codeText" class="form-control" style="min-width: 800px; min-height: 200px"></textarea>';
+    $('#codeBoard').html(boardHTML);
     $('#codeText').val(template.javascript);
+   
 	
     var blocks = new Blocks();
  
