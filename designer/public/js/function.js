@@ -109,6 +109,7 @@ function showDesignBoard()
     html += '</div>'    
     
     $('#content').html(html);  
+    $('#codeText').val(template.javascript);
 	
     var blocks = new Blocks();
  

@@ -43,7 +43,7 @@ select its input based on entity type
 
 Please click "SelectCondition" from the popup menu to place a "SelectCondition" element on the design board. 
 Configure this element to specify the entity type of your input data. 
-In the following example, we choose "PowerPanel" as the entity type of input data for the "HelloWorld" fog function. 
+In the following example, we choose "Temperature" as the entity type of input data for the "HelloWorld" fog function. 
 
     .. figure:: figures/fog-function-filter.png
        :width: 100 %
@@ -69,6 +69,7 @@ for each individual entity ID.
     .. figure:: figures/fog-function-granularity.png
        :width: 100 %
 
+    .. note:: please link the InputTrigger element to the input of your fog function element; then link your SelectCondition element to the input of your InputTrigger element. 
 
 provide the code of your own function
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
