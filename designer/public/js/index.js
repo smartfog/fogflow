@@ -321,7 +321,7 @@ function deviceRegistration()
     html += '</div></div>';
     
     html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
-    html += '<div class="controls"><select id="deviceType"><option>PowerPanel</option><option>Camera</option><option>Alarm</option></select></div>'
+    html += '<div class="controls"><select id="deviceType"><option>Temperature</option><option>PowerPanel</option><option>Camera</option><option>Alarm</option></select></div>'
     html += '</div>';    
         
     html += '<div class="control-group"><label class="control-label" for="input01">Icon Image</label>';
