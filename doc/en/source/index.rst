@@ -36,8 +36,6 @@ What is FogFlow?
     processing.rst
     concept.rst    
     programming.rst
-    servicetopology.rst
-    fogfunction.rst
     api.rst
 
 .. toctree::
