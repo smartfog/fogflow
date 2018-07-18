@@ -1,11 +1,13 @@
+*******************************
 Core concepts
-======================================
+*******************************
+
 
 
 
 
 Operator
-------------------
+======================================
 
 In FogFlow an operator presents a type of data processing unit, 
 which receives certain input streams as NGSI10 notify messages via a listening port,
@@ -16,7 +18,7 @@ To support various hardware architectures (e.g., X86 and ARM for 64bits or 32 bi
 the same operator can be associated with multiple docker images.  
 
 Task
-------------------
+======================================
 
 A task is a data structure to represent a logic data processing unit within a service topology. 
 Each task is associated with an operator. 
@@ -44,7 +46,7 @@ the following two properties are introduced to specify the input streams of task
 * Scoped: determines whether the geo-scope in the requirement should be applied to select the input streams; its value can be either *true* or *false*.
 
 Task Instance
-------------------
+======================================
 
 During the runtime, a task is configured by FogFlow with its input data and specified output type 
 and then the configured task will be launched as a task instance, running in a docker container. 
@@ -52,13 +54,13 @@ Currently, each task instance is deployed in a dedicated docker container, eithe
 
 
 Service Template
-------------------
+======================================
 
 
 
 
 Dynamic data flow 
---------------------------------
+======================================
 
 On receiving a requirement, Topology Master creates a dataflow execution graph and then deploys them over the cloud and edges. 
 The main procedure is illustrated by the following figure, including two major steps. 

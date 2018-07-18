@@ -1,11 +1,12 @@
+*****************************************
 Edge programming models
-======================================
+*****************************************
 
 Currently the following two programing models are provided by FogFlow to support different types of workload patterns.
 
 
 Service Topology
-------------------
+==================================
 
 The first workload pattern is to trigger necessary processing flows to produce some output data 
 only when the output data are requested by consumers. 
@@ -25,7 +26,7 @@ for applying the triggered processing logic.
 
 
 Fog Function
-------------------
+==================================
 
 The second workload pattern is designed for the scenario in which service designers 
 do not a-priori know the exact sequence of stream processing steps. 

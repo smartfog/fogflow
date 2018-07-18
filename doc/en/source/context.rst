@@ -1,5 +1,6 @@
+*****************************************
 Distributed context management
-===============================
+*****************************************
 
 The context management system is designed to provide a global view for all system components and running task instances 
 to query, subscribe, and update context entities via the unified data model and the communication protocol *NGSI*. 
@@ -20,11 +21,11 @@ under the coordination a global and centralized IoT Discovery.
 
 
 IoT Discovery
--------------
+===============================
 The centralized IoT Discovery provides a global view of context availability of context data and provides NGSI9 interfaces for registration, discovery, and subscription of context availability. 
 
 IoT Broker
--------------
+===============================
 The IoT Broker in Fogflow is very light-weight, because it keeps only the lastest value of each context entity
 and saves each entity data directly in the system memory. 
 This brings high throughput and low latency for the data transfer from context produers to context consumers. 
