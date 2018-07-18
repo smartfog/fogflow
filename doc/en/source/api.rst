@@ -5,7 +5,7 @@ APIs and examples of their usage
 APIs of FogFlow Discovery
 ===================================
 
-lookup of nearby brokers
+Look up nearby brokers
 -----------------------------------------------
 
 For any external application or IoT devices, the only interface they need from FogFlow Discovery is to find out a nearby 
@@ -85,8 +85,12 @@ Please check the following examples.
 APIs of FogFlow Broker
 ===============================
 
-Create and update a context entity
+Create/update context
 -----------------------------------------------
+
+.. note:: It is the same API to create or update a context entity. 
+    For a context update, if there is no existing entity, a new entity will be created. 
+
 
 **POST /ngsi10/updateContext**
 
@@ -107,7 +111,7 @@ Example:
         .. code-block:: console 
 
             curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+              'http://localhost:8070/ngsi10/updateContext' \
               -H 'Content-Type: application/json' \
               -d '
                 {
@@ -133,6 +137,10 @@ Example:
                                     "latitude": 49.406393,
                                     "longitude": 8.684208
                                 }
+                            },{
+                                "name": "city",
+                                "type": "string",
+                                "value": "Heidelberg"                             
                             }
                             ]
                         }
@@ -189,8 +197,12 @@ Example:
         }); 
 
 
-Fetch a context entity by ID
+Query Context
 -----------------------------------------------
+
+
+Fetch a context entity by ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi10/entity/#eid**
 
@@ -204,10 +216,29 @@ Example:
 
 .. code-block:: console 
 
-   curl http://localhost:8070/ngsi10/entity/test001
+   curl http://localhost:8070/ngsi10/entity/Device.temp001
+
+Fetch a specific attribute of a specific context entity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /ngsi10/entity/#eid/#attr**
+
+==============   ===============
+Param            Description
+==============   ===============
+eid              entity ID
+attr             specify the attribute name to be fetched
+==============   ===============
+
+Example: 
+
+.. code-block:: console 
+
+   curl http://localhost:8070/ngsi10/entity/Device.temp001/temp
+
 
 Check all context entities on a single Broker
--------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi10/entity**
 
@@ -218,8 +249,11 @@ Example:
     curl http://localhost:8070/ngsi10/entity
 
 
-Delete a specific context entity by ID
+Delete context
 -----------------------------------------------
+
+Delete a specific context entity by ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi10/entity/#eid**
 
@@ -233,33 +267,25 @@ Example:
 
 .. code-block:: console 
 
-    curl -iX DELETE http://localhost:8070/ngsi10/entity/test001
+    curl -iX DELETE http://localhost:8070/ngsi10/entity/Device.temp001
 
 
-Check all received subscriptions
--------------------------------------------------
-
-**GET /ngsi10/subscription**
-
-Example: 
-
-.. code-block:: console 
-
-    curl http://localhost:8070/ngsi10/subscription
 
 
-Query context entities
+Query context
 -----------------------------------------------
 
-**GET /ngsi10/queryContext**
+**POST /ngsi10/queryContext**
 
 ==============   ===============
 Param            Description
 ==============   ===============
-eid              entity ID
+entityId         specify the entity filter, which can define a specific entity ID, ID pattern, or type
+restriction      a list of scopes and each scope defines a filter based on domain metadata
 ==============   ===============
 
-Example1: **query context by entity type**
+query context by the pattern of entity ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
 
@@ -267,90 +293,29 @@ Example1: **query context by entity type**
 
         .. code-block:: console 
 
-            curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
-              -d '
-                {
-                    "contextElements": [
-                        {
-                            "entityId": {
-                                "id": "Device.temp001",
-                                "type": "Temperature",
-                                "isPattern": false
-                            },
-                            "attributes": [
-                            {
-                              "name": "temp",
-                              "type": "integer",
-                              "contextValue": 10
-                            }
-                            ],
-                            "domainMetadata": [
-                            {
-                                "name": "location",
-                                "type": "point",
-                                "value": {
-                                    "latitude": 49.406393,
-                                    "longitude": 8.684208
-                                }
-                            }
-                            ]
-                        }
-                    ],
-                    "updateAction": "UPDATE"
-                }'          
-
+              -d '{"entities":[{"id":"Device.*","isPattern":true}]}'          
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
-    
+        var brokerURL = "http://localhost:8070/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
-    
-        var profile = {
-                "type": "PowerPanel",
-                "id": "01"};
         
-        var ctxObj = {};
-        ctxObj.entityId = {
-            id: 'Device.' + profile.type + '.' + profile.id,
-            type: profile.type,
-            isPattern: false
-        };
+        var queryReq = {}
+        queryReq.entities = [{id:'Device.*', isPattern: true}];           
         
-        ctxObj.attributes = {};
-        
-        var degree = Math.floor((Math.random() * 100) + 1);        
-        ctxObj.attributes.usage = {
-            type: 'integer',
-            value: degree
-        };   
-        ctxObj.attributes.shop = {
-            type: 'string',
-            value: profile.id
-        };       
-        ctxObj.attributes.iconURL = {
-            type: 'string',
-            value: profile.iconURL
-        };                   
-        
-        ctxObj.metadata = {};
-        
-        ctxObj.metadata.location = {
-            type: 'point',
-            value: profile.location
-        };    
-       
-        ngsi10client.updateContext(ctxObj).then( function(data) {
-            console.log(data);
+        ngsi10client.queryContext(queryReq).then( function(deviceList) {
+            console.log(deviceList);
         }).catch(function(error) {
-            console.log('failed to update context');
-        }); 
+            console.log(error);
+            console.log('failed to query context');
+        });          
 
 
-Example2: **query context by geo-scope**
+query context by entity type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
 
@@ -358,90 +323,29 @@ Example2: **query context by geo-scope**
 
         .. code-block:: console 
 
-            curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
-              -d '
-                {
-                    "contextElements": [
-                        {
-                            "entityId": {
-                                "id": "Device.temp001",
-                                "type": "Temperature",
-                                "isPattern": false
-                            },
-                            "attributes": [
-                            {
-                              "name": "temp",
-                              "type": "integer",
-                              "contextValue": 10
-                            }
-                            ],
-                            "domainMetadata": [
-                            {
-                                "name": "location",
-                                "type": "point",
-                                "value": {
-                                    "latitude": 49.406393,
-                                    "longitude": 8.684208
-                                }
-                            }
-                            ]
-                        }
-                    ],
-                    "updateAction": "UPDATE"
-                }'          
-
+              -d '{"entities":[{"type":"Temperature","isPattern":true}]}'          
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
-    
+        var brokerURL = "http://localhost:8070/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
-    
-        var profile = {
-                "type": "PowerPanel",
-                "id": "01"};
         
-        var ctxObj = {};
-        ctxObj.entityId = {
-            id: 'Device.' + profile.type + '.' + profile.id,
-            type: profile.type,
-            isPattern: false
-        };
+        var queryReq = {}
+        queryReq.entities = [{type:'Temperature', isPattern: true}];           
         
-        ctxObj.attributes = {};
-        
-        var degree = Math.floor((Math.random() * 100) + 1);        
-        ctxObj.attributes.usage = {
-            type: 'integer',
-            value: degree
-        };   
-        ctxObj.attributes.shop = {
-            type: 'string',
-            value: profile.id
-        };       
-        ctxObj.attributes.iconURL = {
-            type: 'string',
-            value: profile.iconURL
-        };                   
-        
-        ctxObj.metadata = {};
-        
-        ctxObj.metadata.location = {
-            type: 'point',
-            value: profile.location
-        };    
-       
-        ngsi10client.updateContext(ctxObj).then( function(data) {
-            console.log(data);
+        ngsi10client.queryContext(queryReq).then( function(deviceList) {
+            console.log(deviceList);
         }).catch(function(error) {
-            console.log('failed to update context');
-        }); 
+            console.log(error);
+            console.log('failed to query context');
+        });          
 
 
-Example3: **query context by combination of several constraints**
+query context by geo-scope
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
 
@@ -449,102 +353,175 @@ Example3: **query context by combination of several constraints**
 
         .. code-block:: console 
 
-            curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
-              -d '
-                {
-                    "contextElements": [
-                        {
-                            "entityId": {
-                                "id": "Device.temp001",
-                                "type": "Temperature",
-                                "isPattern": false
-                            },
-                            "attributes": [
-                            {
-                              "name": "temp",
-                              "type": "integer",
-                              "contextValue": 10
+              -d '{
+                    "entities": [{
+                        "id": ".*",
+                        "isPattern": true
+                    }],
+                    "restriction": {
+                        "scopes": [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
                             }
-                            ],
-                            "domainMetadata": [
-                            {
-                                "name": "location",
-                                "type": "point",
-                                "value": {
-                                    "latitude": 49.406393,
-                                    "longitude": 8.684208
-                                }
-                            }
-                            ]
-                        }
-                    ],
-                    "updateAction": "UPDATE"
-                }'          
-
+                        }]
+                    }
+                  }'
+                  
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
-    
+        var brokerURL = "http://localhost:8070/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
-    
-        var profile = {
-                "type": "PowerPanel",
-                "id": "01"};
         
-        var ctxObj = {};
-        ctxObj.entityId = {
-            id: 'Device.' + profile.type + '.' + profile.id,
-            type: profile.type,
-            isPattern: false
-        };
+        var queryReq = {}
+        queryReq.entities = [{type:'.*', isPattern: true}];  
+        queryReq.restriction = {scopes: [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
+                            }
+                        }]};
         
-        ctxObj.attributes = {};
-        
-        var degree = Math.floor((Math.random() * 100) + 1);        
-        ctxObj.attributes.usage = {
-            type: 'integer',
-            value: degree
-        };   
-        ctxObj.attributes.shop = {
-            type: 'string',
-            value: profile.id
-        };       
-        ctxObj.attributes.iconURL = {
-            type: 'string',
-            value: profile.iconURL
-        };                   
-        
-        ctxObj.metadata = {};
-        
-        ctxObj.metadata.location = {
-            type: 'point',
-            value: profile.location
-        };    
-       
-        ngsi10client.updateContext(ctxObj).then( function(data) {
-            console.log(data);
+        ngsi10client.queryContext(queryReq).then( function(deviceList) {
+            console.log(deviceList);
         }).catch(function(error) {
-            console.log('failed to update context');
-        }); 
+            console.log(error);
+            console.log('failed to query context');
+        });    
+
+query context with the filter of domain metadata values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note:: the conditional statement can be defined only with the domain matadata of your context entities
+    For the time being, it is not supported to filter out entities based on specific attribute values. 
+
+.. tabs::
+
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                    "entities": [{
+                        "id": ".*",
+                        "isPattern": true
+                    }],
+                    "restriction": {
+                        "scopes": [{
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]
+                    }
+                  }'
+                  
+
+   .. code-tab:: javascript
+
+        const NGSI = require('./ngsi/ngsiclient.js');
+        var brokerURL = "http://localhost:8070/ngsi10"    
+        var ngsi10client = new NGSI.NGSI10Client(brokerURL);
+        
+        var queryReq = {}
+        queryReq.entities = [{type:'.*', isPattern: true}];  
+        queryReq.restriction = {scopes: [{
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]};        
+        
+        ngsi10client.queryContext(queryReq).then( function(deviceList) {
+            console.log(deviceList);
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to query context');
+        });    
+
+
+query context with multiple filters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. tabs::
+
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                    "entities": [{
+                        "id": ".*",
+                        "isPattern": true
+                    }],
+                    "restriction": {
+                        "scopes": [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
+                            } 
+                        }, {
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]
+                    }
+                  }'
+                  
+
+   .. code-tab:: javascript
+
+        const NGSI = require('./ngsi/ngsiclient.js');
+        var brokerURL = "http://localhost:8070/ngsi10"    
+        var ngsi10client = new NGSI.NGSI10Client(brokerURL);
+        
+        var queryReq = {}
+        queryReq.entities = [{type:'.*', isPattern: true}];  
+        queryReq.restriction = {scopes: [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
+                            } 
+                        }, {
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]};          
+        
+        ngsi10client.queryContext(queryReq).then( function(deviceList) {
+            console.log(deviceList);
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to query context');
+        });    
 
 
 
-Subscribe context entities
+Subscribe context
 -----------------------------------------------
 
-**GET /ngsi10/queryContext**
+**POST /ngsi10/subscribeContext**
 
 ==============   ===============
 Param            Description
 ==============   ===============
-eid              entity ID
+entityId         specify the entity filter, which can define a specific entity ID, ID pattern, or type
+restriction      a list of scopes and each scope defines a filter based on domain metadata
+reference        the destination to receive notifications
 ==============   ===============
 
-Example1: **subscribe context by entity type**
+subscribe context by the pattern of entity ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
 
@@ -552,90 +529,32 @@ Example1: **subscribe context by entity type**
 
         .. code-block:: console 
 
-            curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
-              -d '
-                {
-                    "contextElements": [
-                        {
-                            "entityId": {
-                                "id": "Device.temp001",
-                                "type": "Temperature",
-                                "isPattern": false
-                            },
-                            "attributes": [
-                            {
-                              "name": "temp",
-                              "type": "integer",
-                              "contextValue": 10
-                            }
-                            ],
-                            "domainMetadata": [
-                            {
-                                "name": "location",
-                                "type": "point",
-                                "value": {
-                                    "latitude": 49.406393,
-                                    "longitude": 8.684208
-                                }
-                            }
-                            ]
-                        }
-                    ],
-                    "updateAction": "UPDATE"
+              -d '{
+                    "entities":[{"id":"Device.*","isPattern":true}],
+                    "reference": "http://localhost:8066"
                 }'          
-
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
-    
+        var brokerURL = "http://localhost:8070/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
-    
-        var profile = {
-                "type": "PowerPanel",
-                "id": "01"};
+        var mySubscriptionId;
         
-        var ctxObj = {};
-        ctxObj.entityId = {
-            id: 'Device.' + profile.type + '.' + profile.id,
-            type: profile.type,
-            isPattern: false
-        };
+        var subscribeReq = {}
+        subscribeReq.entities = [{id:'Device.*', isPattern: true}];           
         
-        ctxObj.attributes = {};
-        
-        var degree = Math.floor((Math.random() * 100) + 1);        
-        ctxObj.attributes.usage = {
-            type: 'integer',
-            value: degree
-        };   
-        ctxObj.attributes.shop = {
-            type: 'string',
-            value: profile.id
-        };       
-        ctxObj.attributes.iconURL = {
-            type: 'string',
-            value: profile.iconURL
-        };                   
-        
-        ctxObj.metadata = {};
-        
-        ctxObj.metadata.location = {
-            type: 'point',
-            value: profile.location
-        };    
-       
-        ngsi10client.updateContext(ctxObj).then( function(data) {
-            console.log(data);
+        ngsi10client.subscribeContext(subscribeReq).then( function(subscriptionId) {		
+            console.log("subscription id = " + subscriptionId);   
+    		mySubscriptionId = subscriptionId;
         }).catch(function(error) {
-            console.log('failed to update context');
-        }); 
+            console.log('failed to subscribe context');
+        });
 
-
-Example2: **subscribe context by geo-scope**
+subscribe context by entity type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
 
@@ -643,90 +562,32 @@ Example2: **subscribe context by geo-scope**
 
         .. code-block:: console 
 
-            curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
-              -d '
-                {
-                    "contextElements": [
-                        {
-                            "entityId": {
-                                "id": "Device.temp001",
-                                "type": "Temperature",
-                                "isPattern": false
-                            },
-                            "attributes": [
-                            {
-                              "name": "temp",
-                              "type": "integer",
-                              "contextValue": 10
-                            }
-                            ],
-                            "domainMetadata": [
-                            {
-                                "name": "location",
-                                "type": "point",
-                                "value": {
-                                    "latitude": 49.406393,
-                                    "longitude": 8.684208
-                                }
-                            }
-                            ]
-                        }
-                    ],
-                    "updateAction": "UPDATE"
-                }'          
-
+              -d '{
+                    "entities":[{"type":"Temperature","isPattern":true}]
+                    "reference": "http://localhost:8066"                    
+                  }'          
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
-    
+        var brokerURL = "http://localhost:8070/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
-    
-        var profile = {
-                "type": "PowerPanel",
-                "id": "01"};
         
-        var ctxObj = {};
-        ctxObj.entityId = {
-            id: 'Device.' + profile.type + '.' + profile.id,
-            type: profile.type,
-            isPattern: false
-        };
+        var subscribeReq = {}
+        subscribeReq.entities = [{type:'Temperature', isPattern: true}];           
         
-        ctxObj.attributes = {};
-        
-        var degree = Math.floor((Math.random() * 100) + 1);        
-        ctxObj.attributes.usage = {
-            type: 'integer',
-            value: degree
-        };   
-        ctxObj.attributes.shop = {
-            type: 'string',
-            value: profile.id
-        };       
-        ctxObj.attributes.iconURL = {
-            type: 'string',
-            value: profile.iconURL
-        };                   
-        
-        ctxObj.metadata = {};
-        
-        ctxObj.metadata.location = {
-            type: 'point',
-            value: profile.location
-        };    
-       
-        ngsi10client.updateContext(ctxObj).then( function(data) {
-            console.log(data);
+        ngsi10client.subscribeContext(subscribeReq).then( function(subscriptionId) {		
+            console.log("subscription id = " + subscriptionId);   
+    		mySubscriptionId = subscriptionId;
         }).catch(function(error) {
-            console.log('failed to update context');
-        }); 
+            console.log('failed to subscribe context');
+        });       
 
 
-Example3: **subscribe context by combination of several constraints**
+subscribe context by geo-scope
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
 
@@ -734,90 +595,179 @@ Example3: **subscribe context by combination of several constraints**
 
         .. code-block:: console 
 
-            curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
-              -d '
-                {
-                    "contextElements": [
-                        {
-                            "entityId": {
-                                "id": "Device.temp001",
-                                "type": "Temperature",
-                                "isPattern": false
-                            },
-                            "attributes": [
-                            {
-                              "name": "temp",
-                              "type": "integer",
-                              "contextValue": 10
+              -d '{
+                    "entities": [{
+                        "id": ".*",
+                        "isPattern": true
+                    }],
+                    "reference": "http://localhost:8066",                    
+                    "restriction": {
+                        "scopes": [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
                             }
-                            ],
-                            "domainMetadata": [
-                            {
-                                "name": "location",
-                                "type": "point",
-                                "value": {
-                                    "latitude": 49.406393,
-                                    "longitude": 8.684208
-                                }
-                            }
-                            ]
-                        }
-                    ],
-                    "updateAction": "UPDATE"
-                }'          
-
+                        }]
+                    }
+                  }'
+                  
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
-    
+        var brokerURL = "http://localhost:8070/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
-    
-        var profile = {
-                "type": "PowerPanel",
-                "id": "01"};
         
-        var ctxObj = {};
-        ctxObj.entityId = {
-            id: 'Device.' + profile.type + '.' + profile.id,
-            type: profile.type,
-            isPattern: false
-        };
+        var subscribeReq = {}
+        subscribeReq.entities = [{type:'.*', isPattern: true}];  
+        subscribeReq.restriction = {scopes: [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
+                            }
+                        }]};
         
-        ctxObj.attributes = {};
-        
-        var degree = Math.floor((Math.random() * 100) + 1);        
-        ctxObj.attributes.usage = {
-            type: 'integer',
-            value: degree
-        };   
-        ctxObj.attributes.shop = {
-            type: 'string',
-            value: profile.id
-        };       
-        ctxObj.attributes.iconURL = {
-            type: 'string',
-            value: profile.iconURL
-        };                   
-        
-        ctxObj.metadata = {};
-        
-        ctxObj.metadata.location = {
-            type: 'point',
-            value: profile.location
-        };    
-       
-        ngsi10client.updateContext(ctxObj).then( function(data) {
-            console.log(data);
+        ngsi10client.subscribeContext(subscribeReq).then( function(subscriptionId) {		
+            console.log("subscription id = " + subscriptionId);   
+    		mySubscriptionId = subscriptionId;
         }).catch(function(error) {
-            console.log('failed to update context');
-        }); 
+            console.log('failed to subscribe context');
+        });   
+
+subscribe context with the filter of domain metadata values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note:: the conditional statement can be defined only with the domain matadata of your context entities
+    For the time being, it is not supported to filter out entities based on specific attribute values. 
+
+.. tabs::
+
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                    "entities": [{
+                        "id": ".*",
+                        "isPattern": true
+                    }],
+                    "reference": "http://localhost:8066",                    
+                    "restriction": {
+                        "scopes": [{
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]
+                    }
+                  }'
+                  
+
+   .. code-tab:: javascript
+
+        const NGSI = require('./ngsi/ngsiclient.js');
+        var brokerURL = "http://localhost:8070/ngsi10"    
+        var ngsi10client = new NGSI.NGSI10Client(brokerURL);
+        
+        var subscribeReq = {}
+        subscribeReq.entities = [{type:'.*', isPattern: true}];  
+        subscribeReq.restriction = {scopes: [{
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]};        
+        
+        ngsi10client.subscribeContext(subscribeReq).then( function(subscriptionId) {		
+            console.log("subscription id = " + subscriptionId);   
+    		mySubscriptionId = subscriptionId;
+        }).catch(function(error) {
+            console.log('failed to subscribe context');
+        });      
 
 
+subscribe context with multiple filters
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. tabs::
+
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+              -H 'Content-Type: application/json' \
+              -d '{
+                    "entities": [{
+                        "id": ".*",
+                        "isPattern": true
+                    }],
+                    "reference": "http://localhost:8066", 
+                    "restriction": {
+                        "scopes": [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
+                            } 
+                        }, {
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]
+                    }
+                  }'
+                  
+
+   .. code-tab:: javascript
+
+        const NGSI = require('./ngsi/ngsiclient.js');
+        var brokerURL = "http://localhost:8070/ngsi10"    
+        var ngsi10client = new NGSI.NGSI10Client(brokerURL);
+        
+        var subscribeReq = {}
+        subscribeReq.entities = [{type:'.*', isPattern: true}];  
+        subscribeReq.restriction = {scopes: [{
+                            "scopeType": "circle",
+                            "scopeValue": {
+                               "centerLatitude": 49.406393,
+                               "centerLongitude": 8.684208,
+                               "radius": 10.0
+                            } 
+                        }, {
+                            "scopeType": "stringQuery",
+                            "scopeValue":"city=Heidelberg" 
+                        }]};          
+        
+        // use the IP and Port number your receiver is listening
+        subscribeReq.reference =  'http://' + agentIP + ':' + agentPort;  
+        
+        
+        ngsi10client.subscribeContext(subscribeReq).then( function(subscriptionId) {		
+            console.log("subscription id = " + subscriptionId);   
+    		mySubscriptionId = subscriptionId;
+        }).catch(function(error) {
+            console.log('failed to subscribe context');
+        });   
+
+Cancel a subscription by subscription ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**DELETE /ngsi10/subscription/#sid**
+
+
+==============   ===============
+Param            Description
+==============   ===============
+sid              the subscription ID created when the subscription is issued
+==============   ===============
+
+
+curl -iX DELETE http://localhost:8070/ngsi10/subscription/#sid
 
 
 
