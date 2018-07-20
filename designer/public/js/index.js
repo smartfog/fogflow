@@ -265,7 +265,10 @@ function displayDeviceList(devices)
         var device = devices[i];
 		
         html += '<tr>'; 
-		html += '<td>' + device.entityId.id + '<br><button id="' + device.entityId.id + '" type="button" class="btn btn-default">Download Profile</button></td>';
+		html += '<td>' + device.entityId.id + '<br>';
+        html += '<button id="DOWNLOAD-' + device.entityId.id + '" type="button" class="btn btn-default">Profile</button>';
+        html += '<button id="DELETE-' + device.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';     
+        html += '</td>';
 		html += '<td>' + device.entityId.type + '</td>'; 
 		html += '<td>' + JSON.stringify(device.attributes) + '</td>';        
 		html += '<td>' + JSON.stringify(device.metadata) + '</td>';
@@ -281,13 +284,21 @@ function displayDeviceList(devices)
         var device = devices[i];
         console.log(device.entityId.id);
         
-        var profileButton = document.getElementById(device.entityId.id);
+        var profileButton = document.getElementById('DOWNLOAD-' + device.entityId.id);
         profileButton.onclick = function(d) {
             var myProfile = d;
             return function(){
                 downloadDeviceProfile(myProfile);
             };
         }(device);
+        
+        var deleteButton = document.getElementById('DELETE-' + device.entityId.id);
+        deleteButton.onclick = function(d) {
+            var myProfile = d;
+            return function(){
+                removeDeviceProfile(myProfile);
+            };
+        }(device);        
 	}        
 }
 
@@ -308,6 +319,25 @@ function downloadDeviceProfile(deviceObj)
     dl.setAttribute('download', 'profile-' + profile.id  + '.json');
     dl.click();    
 }
+
+
+function removeDeviceProfile(deviceObj)
+{
+    var entityid = {
+        id : deviceObj.entityId.id, 
+        isPattern: false
+    };	    
+    
+    client.deleteContext(entityid).then( function(data) {
+        console.log('remove the device');
+		
+        // show the updated device list
+        showDevices();				
+    }).catch( function(error) {
+        console.log('failed to cancel a requirement');
+    });      
+}
+
 
 function deviceRegistration()
 {
