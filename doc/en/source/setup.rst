@@ -61,16 +61,9 @@ Run the downloaded script
 ===============================================================
 
      .. parsed-literal::
-
-          #pull the required docker images and create their containers, only required for the first time
-          docker-compose create
-          
+         
           #start the FogFlow system 
-          docker-compose start
-
-          #command to stop the FogFlow system
-          docker-compose stop  #no need for the following steps
-
+          docker-compose up -d 
 
 Test the FogFlow dashboard
 ===============================================================
