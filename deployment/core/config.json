@@ -1,7 +1,6 @@
 {
-    "host": "155.54.239.141", 
-    "discoveryURL": "http://155.54.239.141:443/ngsi9",       
-    "message_bus": "amqp://admin:mypass@155.54.239.141:5672",    
+    "external_IP": "155.54.239.141",     
+    "internal_IP": "172.17.0.1",     
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221,
@@ -45,5 +44,10 @@
     "designer": {
         "webSrvPort": 80,
         "agentPort": 1030               
+    },    
+    "rabbitmq": {
+        "port": 5672,
+        "username": "admin",
+        "password":"mypass"
     }    
 }
