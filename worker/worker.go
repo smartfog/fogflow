@@ -38,7 +38,7 @@ func (w *Worker) Start(config *Config) bool {
 	w.allTasks = make(map[string]*ScheduledTaskInstance)
 
 	cfg := MessageBusConfig{}
-	cfg.Broker = w.cfg.MessageBus
+	cfg.Broker = w.cfg.GetMessageBus()
 	cfg.Exchange = "fogflow"
 	cfg.ExchangeType = "topic"
 	cfg.DefaultQueue = w.id
@@ -47,7 +47,7 @@ func (w *Worker) Start(config *Config) bool {
 	// if no broker is configured in the configuration file, the worker needs to find a nearby IoT Broker
 	// otherwise, just use the configured broker
 	if config.Broker.Port != 0 {
-		w.selectedBrokerURL = "http://" + config.Host + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
+		w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
 	} else {
 		// find a nearby IoT Broker
 		for {
@@ -56,7 +56,7 @@ func (w *Worker) Start(config *Config) bool {
 			nearby.Longitude = w.cfg.PLocation.Longitude
 			nearby.Limit = 1
 
-			client := NGSI9Client{IoTDiscoveryURL: w.cfg.IoTDiscoveryURL}
+			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL()}
 			selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
 			if err == nil && selectedBroker != "" {
 				w.selectedBrokerURL = selectedBroker

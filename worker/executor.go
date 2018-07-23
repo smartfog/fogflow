@@ -317,7 +317,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// pass the reference URL to the task so that the task can issue context subscription as well
 	setReferenceCmd := make(map[string]interface{})
 	setReferenceCmd["command"] = "SET_REFERENCE"
-	setReferenceCmd["url"] = "http://" + e.workerCfg.Host + ":" + freePort
+	setReferenceCmd["url"] = "http://" + e.workerCfg.InternalIP + ":" + freePort
 	commands = append(commands, setReferenceCmd)
 
 	// set output stream
@@ -375,7 +375,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 }
 
 func (e *Executor) configurateTask(port string, commands []interface{}) bool {
-	taskAdminURL := fmt.Sprintf("http://%s:%s/admin", e.workerCfg.Host, port)
+	taskAdminURL := fmt.Sprintf("http://%s:%s/admin", e.workerCfg.InternalIP, port)
 
 	jsonText, _ := json.Marshal(commands)
 
@@ -475,7 +475,7 @@ func (e *Executor) subscribeInputStream(agentPort string, streamType string, str
 	subscription.Entities = make([]EntityId, 0)
 	subscription.Entities = append(subscription.Entities, newEntity)
 
-	subscription.Reference = "http://" + e.workerCfg.Host + ":" + agentPort
+	subscription.Reference = "http://" + e.workerCfg.InternalIP + ":" + agentPort
 
 	fmt.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 

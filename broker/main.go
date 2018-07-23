@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -24,22 +23,11 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// overwrite the configuration with environment variables
-	if value, exist := os.LookupEnv("host"); exist {
-		config.Host = value
-	}
-	if value, exist := os.LookupEnv("discoveryURL"); exist {
-		config.IoTDiscoveryURL = value
-	}
-	if value, exist := os.LookupEnv("mylocation"); exist {
-		json.Unmarshal([]byte(value), &config.PLocation)
-	}
-
 	myID := "Broker." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// check if IoT Discovery is ready
 	for {
-		resp, err := http.Get(config.IoTDiscoveryURL + "/status")
+		resp, err := http.Get(config.GetDiscoveryURL() + "/status")
 		if err != nil {
 			ERROR.Println(err)
 		} else {

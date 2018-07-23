@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -43,12 +44,11 @@ func (r *RegistryConfiguration) IsConfigured() bool {
 }
 
 type Config struct {
-	Host            string           `json:"host"`
-	IoTDiscoveryURL string           `json:"discoveryURL"`
-	MessageBus      string           `json:"message_bus"`
-	PLocation       PhysicalLocation `json:"physical_location"`
-	LLocation       LogicalLocation  `json:"logical_location"`
-	Logging         struct {
+	ExternalIP string           `json:"external_ip"`
+	InternalIP string           `json:"internal_ip"`
+	PLocation  PhysicalLocation `json:"physical_location"`
+	LLocation  LogicalLocation  `json:"logical_location"`
+	Logging    struct {
 		Info     string `json:"info"`
 		Protocol string `json:"protocol"`
 		Errlog   string `json:"error"`
@@ -69,12 +69,27 @@ type Config struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 	} `json:"worker"`
+	RabbitMQ struct {
+		Port     int    `json:"port"`
+		Username string `json:"username"`
+		Password string `json:"password"`
+	} `json:"rabbitmq"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{
 	"stdout":  os.Stdout,
 	"stderr":  os.Stderr,
 	"discard": ioutil.Discard,
+}
+
+func (c *Config) GetDiscoveryURL() string {
+	discoveryURL := fmt.Sprintf("http://%:%s/ngsi9", c.InternalIP, c.Discovery.Port)
+	return discoveryURL
+}
+
+func (c *Config) GetMessageBus() string {
+	messageBus := fmt.Sprintf("amqp://%:%s@%s:%s/", c.RabbitMQ.Username, c.RabbitMQ.Password, c.InternalIP, c.RabbitMQ.Port)
+	return messageBus
 }
 
 func (c *Config) SetLogTargets() {

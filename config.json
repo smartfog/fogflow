@@ -1,7 +1,6 @@
 {
-    "host": "127.0.0.1", 
-    "discoveryURL": "http://127.0.0.1:8071/ngsi9",
-    "message_bus": "amqp://guest:guest@127.0.0.1:5672/",    
+    "external_IP": "10.1.1.187",     
+    "internal_IP": "127.0.0.1", 
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221,
@@ -45,5 +44,10 @@
     "designer": {
         "webSrvPort": 8080,
         "agentPort": 1030               
-    }    
+    },    
+    "rabbitmq": {
+        "port": 5672,
+        "username": "guest",
+        "password":"guest"
+    }
 }

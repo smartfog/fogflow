@@ -48,8 +48,8 @@ type Master struct {
 func (master *Master) Start(configuration *Config) {
 	master.cfg = configuration
 
-	master.messageBus = configuration.MessageBus
-	master.discoveryURL = configuration.IoTDiscoveryURL
+	master.messageBus = configuration.GetMessageBus()
+	master.discoveryURL = configuration.GetDiscoveryURL()
 
 	master.workers = make(map[string]*WorkerProfile)
 
@@ -64,7 +64,7 @@ func (master *Master) Start(configuration *Config) {
 		nearby.Longitude = master.cfg.PLocation.Longitude
 		nearby.Limit = 1
 
-		client := NGSI9Client{IoTDiscoveryURL: master.cfg.IoTDiscoveryURL}
+		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
 		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
 
 		if err == nil && selectedBroker != "" {
@@ -92,7 +92,7 @@ func (master *Master) Start(configuration *Config) {
 
 	// start the NGSI agent
 	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort}
-	master.myURL = "http://" + configuration.Host + ":" + strconv.Itoa(configuration.Master.AgentPort)
+	master.myURL = "http://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
 	master.agent.Start()
 	master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
@@ -100,7 +100,7 @@ func (master *Master) Start(configuration *Config) {
 	// start the message consumer
 	go func() {
 		cfg := MessageBusConfig{}
-		cfg.Broker = configuration.MessageBus
+		cfg.Broker = configuration.GetMessageBus()
 		cfg.Exchange = "fogflow"
 		cfg.ExchangeType = "topic"
 		cfg.DefaultQueue = master.id
@@ -359,7 +359,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 
 	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
 
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
 	subscriptionId, err := client.SubscribeContextAvailability(availabilitySubscription)
 	if err != nil {
 		ERROR.Println(err)

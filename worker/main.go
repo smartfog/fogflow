@@ -29,17 +29,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// overwrite the configuration with environment variables
-	if value, exist := os.LookupEnv("myip"); exist {
-		config.Host = value
-	}
-	if value, exist := os.LookupEnv("discoveryURL"); exist {
-		config.IoTDiscoveryURL = value
-	}
-	if value, exist := os.LookupEnv("rabbitmq"); exist {
-		config.MessageBus = value
-	}
-
 	myID := "Worker." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
 	// start the worker to deal with tasks

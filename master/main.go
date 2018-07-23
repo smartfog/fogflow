@@ -23,17 +23,6 @@ func main() {
 
 	myID := "Master." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
 
-	// overwrite the configuration with environment variables
-	if value, exist := os.LookupEnv("myip"); exist {
-		config.Host = value
-	}
-	if value, exist := os.LookupEnv("discoveryURL"); exist {
-		config.IoTDiscoveryURL = value
-	}
-	if value, exist := os.LookupEnv("rabbitmq"); exist {
-		config.MessageBus = value
-	}
-
 	master := Master{id: myID}
 	master.Start(&config)
 

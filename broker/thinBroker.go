@@ -46,10 +46,10 @@ type ThinBroker struct {
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
-	tb.MyURL = "http://" + cfg.Host + ":" + strconv.Itoa(cfg.Broker.Port) + "/ngsi10"
+	tb.MyURL = "http://" + cfg.InternalIP + ":" + strconv.Itoa(cfg.Broker.Port) + "/ngsi10"
 	tb.myEntityId = tb.id
 
-	tb.IoTDiscoveryURL = cfg.IoTDiscoveryURL
+	tb.IoTDiscoveryURL = cfg.GetDiscoveryURL()
 	tb.MyLocation = cfg.PLocation
 
 	tb.subscriptions = make(map[string]*SubscribeContextRequest)
