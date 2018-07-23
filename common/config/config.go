@@ -83,12 +83,12 @@ var logTargets map[string]io.Writer = map[string]io.Writer{
 }
 
 func (c *Config) GetDiscoveryURL() string {
-	discoveryURL := fmt.Sprintf("http://%:%s/ngsi9", c.InternalIP, c.Discovery.Port)
+	discoveryURL := fmt.Sprintf("http://%s:%s/ngsi9", c.InternalIP, c.Discovery.Port)
 	return discoveryURL
 }
 
 func (c *Config) GetMessageBus() string {
-	messageBus := fmt.Sprintf("amqp://%:%s@%s:%s/", c.RabbitMQ.Username, c.RabbitMQ.Password, c.InternalIP, c.RabbitMQ.Port)
+	messageBus := fmt.Sprintf("amqp://%s:%s@%s:%s/", c.RabbitMQ.Username, c.RabbitMQ.Password, c.InternalIP, c.RabbitMQ.Port)
 	return messageBus
 }
 
