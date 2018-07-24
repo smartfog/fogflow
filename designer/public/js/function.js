@@ -5,8 +5,47 @@ var handlers = {};
 var CurrentScene = null;
 
 var template = {};
-template.javascript = 'exports.handler = function(contextEntity, publish, query, subscribe){  \r\n \t // TODO implement \r\n \t publish("Hello from fogflow"); \r\n }; ';
+
+template.javascript = '
+    exports.handler = function(contextEntity, publish, query, subscribe) {
+        console.log("enter into the user-defined fog function");
+    
+        var entityID = contextEntity.entityId.id;
+    
+        if (contextEntity == null) {
+            return;
+        }
+        if (contextEntity.attributes == null) {
+            return;
+        }
+    
+        var updateEntity = {};
+        updateEntity.entityId = {
+            id: "Stream.result." + entityID,
+            type: 'result',
+            isPattern: false
+        };
+        updateEntity.attributes = {};
+        updateEntity.attributes.city = {
+            type: 'string',
+            value: 'Heidelberg'
+        };
+    
+        updateEntity.metadata = {};
+        updateEntity.metadata.location = {
+            type: 'point',
+            value: {
+                'latitude': 33.0,
+                'longitude': -1.0
+            }
+        };
+    
+        console.log("publish: ", updateEntity);    
+        publish(updateEntity);
+    };
+';
 template.python = 'define handler(context): \r\n \t # write your own code to do data processing  \r\n \t # return the generated context entities to be published as outputs';
+
 
 var myFogFunctionExamples = [
 {
@@ -26,7 +65,6 @@ var myFogFunctionExamples = [
     "designboard":{"edges":[{"id":1,"block1":2,"connector1":["selector","output"],"block2":1,"connector2":["selectors","input"]},{"id":2,"block1":3,"connector1":["condition","output"],"block2":2,"connector2":["conditions","input"]}],"blocks":[{"id":1,"x":70.4081801170098,"y":-124.33545929838425,"type":"FogFunction","module":null,"values":{"name":"ConnectedCar","user":"fogflow"}},{"id":2,"x":-170.0545471557174,"y":-124.36545929838422,"type":"InputTrigger","module":null,"values":{"selectedattributes":["all"],"groupby":["id"]}},{"id":3,"x":-407.87272897389914,"y":-123.54727748020238,"type":"SelectCondition","module":null,"values":{"type":"EntityType","value":"ConnectedCar"}}]}
 }
 ];
-
 
 
 //connect to the broker

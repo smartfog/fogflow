@@ -111,10 +111,9 @@ or by selecting a registered operator.
                     'longitude': -1.0
                 }
             };
-        
-            publish(updateEntity);
-            console.log("publish: ", updateEntity);
-        
+
+            console.log("publish: ", updateEntity);        
+            publish(updateEntity);        
         };
 
 You can take the example Javascript code above as the implementation of your "HelloWorld" fog function. 

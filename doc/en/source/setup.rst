@@ -1,3 +1,5 @@
+.. _cloud-setup:
+
 *****************************************
 Set up everything on a single machine
 *****************************************
@@ -42,16 +44,20 @@ Download the deployment script and the configuration file
 Change the configuration file according to your local environment
 ====================================================================
 
-    As a simple change, you only need to replace the IP address with your own host IP in three places, as illustrated in the following figure. 
+    You can use the default setting for a simple test. The only thing you have to change in the 
+    configuration file is the external IP address, which should be replaced with the external IP address of your host. 
 
-    .. important:: **HOST_IP** is the IP address of your Linux machine. 
+    .. important:: 
+        * **external_ip** is used to access the FogFlow web portal and must be accessible from your browser;        
+        * **internal_ip** is the IP of your default docker bridge, which is the "docker0" network interface on your host. 
+        * **firewall rules**: to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80, 443, and 8080 for TCP
     
     We also assume that you can use the default port numbers for various FogFlow components. 
     More specially, the following ports are required.    
-        - 80: for Designer to provide the FogFlow web portal
-        - 443: for Discovery
-        - 8080: for Broker   
-        - 5672: for RabbitMQ 
+        - 80: for FogFlow web portal to be accessible at the external IP    
+        - 443: for Discovery to be accessible at the external IP    
+        - 8080: for Broker to be accessible at the external IP    
+        - 5672: for RabbitMQ, used only internally between Master and Worker(s) 
   
     .. figure:: figures/configuration.png
        :width: 100 %
@@ -62,13 +68,16 @@ Run the downloaded script
 
      .. parsed-literal::
          
+          #pull the docker images of all FogFlow components
+          docker-compose pull 
+        
           #start the FogFlow system 
           docker-compose up -d 
 
 Test the FogFlow dashboard
 ===============================================================
 
-    Open the link "http://HOST_IP" in your browser to check the status of all FogFlow running components in the cloud. 
+    Open the link "http://external_ip" in your browser to check the status of all FogFlow running components in the cloud. 
 
     If everything goes well, you should be able to see the following page from this link. 
 

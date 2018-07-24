@@ -25,10 +25,10 @@ FogFlow is a standard-based data processing framework for service providers to e
 More Information
 ----------------
 
-- `Documentation`_
+- `Tutorial`_
 - `IoT-J paper`_
 
-.. _`Documentation`: http://fogflow.readthedocs.io/en/latest/index.html
+.. _`Tutorial`: http://fogflow.readthedocs.io/en/latest/index.html
 .. _`IoT-J paper`: http://ieeexplore.ieee.org/document/8022859/
 
 License
