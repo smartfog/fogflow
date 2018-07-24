@@ -7,9 +7,8 @@ var CurrentScene = null;
 var template = {};
 
 
-$.ajax({url:'js/function_template.js', 
+$.ajax({url:'js/function_template.txt', 
     success: function(fileContent){
-        console.log(fileContent);
         template.javascript =  fileContent;      
     }
 });
@@ -45,7 +44,7 @@ addMenuItem('Task', showTask);
 addMenuItem('Editor', showEditor);  
 
 
-showEditor();
+showFunction();
 
 // the list of all registered operators
 var operatorList = [];

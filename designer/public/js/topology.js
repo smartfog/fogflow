@@ -42,7 +42,7 @@ addMenuItem('Topology', showTopologies);
 addMenuItem('Requirement', showRequirements);         
 addMenuItem('Editor', showEditor);         
 
-showEditor();
+showTopologies();
 
 queryOperatorList();
 
