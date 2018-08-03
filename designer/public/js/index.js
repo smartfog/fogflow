@@ -170,18 +170,81 @@ function displayMasterList(masters)
 
 function showWorkers() 
 {
-    $('#info').html('list of all edge nodes');
+    $('#info').html('show all edge nodes on the map');
     
+    var html = '<div id="map"  style="width: 700px; height: 500px"></div>';       
+    $('#content').html(html);   
+    
+    var curMap = showMap();
+    
+    // show edge nodes on the map
+    displayEdgeNodeOnMap(curMap);        
+}
+
+function displayEdgeNodeOnMap(map)
+{
     var queryReq = {}
-    queryReq.entities = [{type:'Worker', isPattern: true}];
-    client.queryContext(queryReq).then( function(workerList) {
-        console.log(workerList);
-        displayWorker(workerList);
+    queryReq.entities = [{"type":'Worker', "isPattern": true}];
+    
+    client.queryContext(queryReq).then( function(edgeNodeList) {
+        console.log(edgeNodeList);
+
+        var edgeIcon = L.icon({
+            iconUrl: '/img/gateway.png',
+            iconSize: [48, 48]
+        });      
+        
+        for(var i=0; i<edgeNodeList.length; i++){
+            var worker = edgeNodeList[i];    
+            
+            console.log(worker.attributes.physical_location.value);
+            
+            var latitude = worker.attributes.physical_location.value.latitude;
+            var longitude = worker.attributes.physical_location.value.longitude;
+            var edgeNodeId = worker.entityId.id;
+            
+            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
+			marker.nodeID = edgeNodeId;
+            marker.addTo(map).bindPopup(edgeNodeId);
+		    marker.on('click', showRunningTasks);
+        }            
+                
     }).catch(function(error) {
         console.log(error);
         console.log('failed to query context');
     });     
 }
+
+
+function showRunningTasks()
+{
+	var clickMarker = this;
+	
+    var queryReq = {}
+    queryReq.entities = [{type:'Task', isPattern: true}];
+    queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'worker=' + clickMarker.nodeID}]}    
+    
+    client.queryContext(queryReq).then( function(tasks) {
+        console.log(tasks);		
+		var content = "";		
+    		for(var i=0; i<tasks.length; i++){
+        		var task = tasks[i];		
+		
+			if (task.attributes.status.value == "paused") {
+				content += '<font color="red">' + task.attributes.id.value +'</font><br>';				
+			} else {
+				content += '<font color="green"><b>' + task.attributes.id.value + '</b></font><br>';												
+			}		
+		}
+		
+		clickMarker._popup.setContent(content);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query task');
+    }); 	
+}
+
+
 
 function displayWorker(workers)
 {
@@ -594,7 +657,9 @@ function showMap()
 
         drawnItems.clearLayers();
 		drawnItems.addLayer(layer);        
-	});    
+	});   
+    
+    return map; 
 }
 
 function showStreams() 

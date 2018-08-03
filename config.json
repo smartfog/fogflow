@@ -1,7 +1,7 @@
 {
-    "coreservice_ip": "155.54.239.141",      
-    "external_hostip": "155.54.239.141",     
-    "internal_hostip": "172.17.0.1",  
+    "coreservice_ip": "127.0.0.1",      
+    "external_hostip": "127.0.0.1",     
+    "internal_hostip": "127.0.0.1",  
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221,
@@ -28,7 +28,7 @@
             "username": "postgres",
             "password": "postgres",
             "host": "127.0.0.1",
-            "port": 5432,
+            "port": 5433,
             "dbname": "ngsi9"
         }    
     },
