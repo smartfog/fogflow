@@ -44,11 +44,12 @@ func (r *RegistryConfiguration) IsConfigured() bool {
 }
 
 type Config struct {
-	ExternalIP string           `json:"external_ip"`
-	InternalIP string           `json:"internal_ip"`
-	PLocation  PhysicalLocation `json:"physical_location"`
-	LLocation  LogicalLocation  `json:"logical_location"`
-	Logging    struct {
+	CoreSerivceIP string           `json:"coreservice_ip"`
+	ExternalIP    string           `json:"external_hostip"`
+	InternalIP    string           `json:"internal_hostip"`
+	PLocation     PhysicalLocation `json:"physical_location"`
+	LLocation     LogicalLocation  `json:"logical_location"`
+	Logging       struct {
 		Info     string `json:"info"`
 		Protocol string `json:"protocol"`
 		Errlog   string `json:"error"`
@@ -83,12 +84,12 @@ var logTargets map[string]io.Writer = map[string]io.Writer{
 }
 
 func (c *Config) GetDiscoveryURL() string {
-	discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.InternalIP, c.Discovery.Port)
+	discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.Port)
 	return discoveryURL
 }
 
 func (c *Config) GetMessageBus() string {
-	messageBus := fmt.Sprintf("amqp://%s:%s@%s:%d/", c.RabbitMQ.Username, c.RabbitMQ.Password, c.InternalIP, c.RabbitMQ.Port)
+	messageBus := fmt.Sprintf("amqp://%s:%s@%s:%d/", c.RabbitMQ.Username, c.RabbitMQ.Password, c.CoreSerivceIP, c.RabbitMQ.Port)
 	return messageBus
 }
 

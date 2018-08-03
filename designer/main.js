@@ -10,8 +10,8 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 
 var config = globalConfigFile.designer;
 
-config.discoveryURL = 'http://' + globalConfigFile.external_IP + ':' + globalConfigFile.discovery.port + '/ngsi9';
-config.brokerURL = 'http://' + globalConfigFile.external_IP + ':' + globalConfigFile.broker.port + '/ngsi10';
+config.discoveryURL = 'http://' + globalConfigFile.coreservice_ip + ':' + globalConfigFile.discovery.port + '/ngsi9';
+config.brokerURL = 'http://' + globalConfigFile.coreservice_ip + ':' + globalConfigFile.broker.port + '/ngsi10';
 config.agentIP = globalConfigFile.internal_IP;
 
 // all subscriptions that expect data forwarding
