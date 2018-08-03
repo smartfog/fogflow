@@ -12,7 +12,7 @@ var config = globalConfigFile.designer;
 
 config.discoveryURL = 'http://' + globalConfigFile.coreservice_ip + ':' + globalConfigFile.discovery.port + '/ngsi9';
 config.brokerURL = 'http://' + globalConfigFile.coreservice_ip + ':' + globalConfigFile.broker.port + '/ngsi10';
-config.agentIP = globalConfigFile.external_hostip;
+config.agentIP = globalConfigFile.internal_hostip;
 config.agentPort = globalConfigFile.designer.agentPort; 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 

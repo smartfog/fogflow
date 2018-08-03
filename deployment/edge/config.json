@@ -24,6 +24,11 @@
    "discovery": {
        "port": 443
    },
+    "rabbitmq": {
+        "port": 5672,
+        "username": "admin",
+        "password":"mypass"
+    },
    "broker":{
       "port":80,
       "websocket":8080
