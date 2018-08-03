@@ -423,7 +423,7 @@ func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 		go tb.notifySubscribers(&ctxResp.ContextElement)
 
 		//apply the new update to the entity in the entity map
-		tb.updateContextElement(&ctxResp.ContextElement)
+		// tb.updateContextElement(&ctxResp.ContextElement)  // remove this, no need to cache it
 	}
 }
 

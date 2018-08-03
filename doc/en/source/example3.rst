@@ -1,8 +1,8 @@
 *****************************************
-Showcase the integration with Orion
+Integrate FogFlow with FIWARE
 *****************************************
 
-Since November 2017 FogFlow has been promoted as an incubated open source Generic Enabler (GE) in the FIWARE community [4]. 
+Since November 2017 FogFlow has been promoted as an incubated open source Generic Enabler (GE) in the FIWARE community. 
 Within this community, FogFlow holds a unique position as Cloud-Edge Orchestrator 
 to launch and manage dynamic data processing flows seamlessly over cloud and edges for data ingestion, 
 transformation, and also advanced analytics. 
@@ -25,7 +25,6 @@ FogFlow can reuse the modules of existing IoT agents and transform them into Fog
 based on the fog function programming model. 
 With these adapters FogFlow can dynamically launch necessary adapters for device integration directly at edges. 
 This way FogFlow is able to talk with a wide range of IoT devices.
-
 
     .. figure:: figures/orion-integration.png
        :width: 100 %
