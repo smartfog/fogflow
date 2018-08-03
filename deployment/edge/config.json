@@ -21,6 +21,9 @@
       "protocol":"stdout",
       "debug":"discard"
    },
+   "discovery": {
+       "port": 443
+   },
    "broker":{
       "port":8080,
       "websocket":8080
