@@ -25,7 +25,7 @@
        "port": 443
    },
    "broker":{
-      "port":8080,
+      "port":80,
       "websocket":8080
    },
    "worker":{
