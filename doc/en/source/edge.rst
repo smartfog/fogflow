@@ -46,10 +46,22 @@ Download the default configuration file
 Change the configuration file accordingly
 -------------------------------------------------
 
-The following picture shows the configurations you need to chane accordingly to your own environment. 
+    You can use the default setting for a simple test, but you need to change the following addresses according to your own environment: 
+        
+        * **coreservice_ip**: please refer to the configuration of the cloud part. This is the accessible address of your FogFlow core services running in the cloud node;
+        * **external_hostip**: this is the external IP address, accessible for the cloud broker. It is useful when your edge node is behind NAT;
+        * **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host. 
 
-    .. figure:: figures/edgecfg.png
-       :width: 100 %
+        .. code-block:: json
+        
+            //you can see the following part in the default configuration file
+            { 
+                "coreservice_ip": "155.54.239.141", 
+                "external_hostip": "35.234.116.177", 
+                "internal_hostip": "172.17.0.1", 
+                …
+            } 
+
 
 Start both Edge IoT Broker and FogFlow Worker
 -------------------------------------------------
