@@ -44,8 +44,8 @@ func (r *RegistryConfiguration) IsConfigured() bool {
 }
 
 type Config struct {
+	WebPortalIP   string           `json:"webportal_ip"`
 	CoreSerivceIP string           `json:"coreservice_ip"`
-	ExternalIP    string           `json:"external_hostip"`
 	InternalIP    string           `json:"internal_hostip"`
 	PLocation     PhysicalLocation `json:"physical_location"`
 	LLocation     LogicalLocation  `json:"logical_location"`

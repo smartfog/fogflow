@@ -7,11 +7,10 @@ var app     =   express();
 var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
 var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 
-
 var config = globalConfigFile.designer;
 
-config.discoveryURL = 'http://' + globalConfigFile.coreservice_ip + ':' + globalConfigFile.discovery.port + '/ngsi9';
-config.brokerURL = 'http://' + globalConfigFile.coreservice_ip + ':' + globalConfigFile.broker.port + '/ngsi10';
+config.discoveryURL = 'http://' + globalConfigFile.webportal_ip + ':' + globalConfigFile.discovery.port + '/ngsi9';
+config.brokerURL = 'http://' + globalConfigFile.webportal_ip + ':' + globalConfigFile.broker.port + '/ngsi10';
 config.agentIP = globalConfigFile.internal_hostip;
 config.agentPort = globalConfigFile.designer.agentPort; 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
