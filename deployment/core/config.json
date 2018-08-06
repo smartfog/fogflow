@@ -1,6 +1,6 @@
 {
-    "coreservice_ip": "155.54.239.141",      
-    "external_hostip": "155.54.239.141",     
+    "webportal_ip": "155.54.239.141",      
+    "coreservice_ip": "155.54.239.141",     
     "internal_hostip": "172.17.0.1",  
     "physical_location":{
         "longitude": 139.709059,
