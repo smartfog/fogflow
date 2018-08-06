@@ -46,7 +46,7 @@ type ThinBroker struct {
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
-	tb.MyURL = "http://" + cfg.CoreSerivceIP + ":" + strconv.Itoa(cfg.Broker.Port) + "/ngsi10"
+	tb.MyURL = "http://" + cfg.ExternalIP + ":" + strconv.Itoa(cfg.Broker.Port) + "/ngsi10"
 	tb.myEntityId = tb.id
 
 	tb.IoTDiscoveryURL = cfg.GetDiscoveryURL()
