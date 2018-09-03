@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -12,6 +13,11 @@ import (
 	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
 )
+
+type DBQuery struct {
+	statement *Stmt
+	vars      []interface{}
+}
 
 type EntityRepository struct {
 	//connection to the backend database
@@ -61,41 +67,55 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 	er.dbLock.Lock()
 	defer er.dbLock.Unlock()
 
-	statements := make([]string, 0)
+	//statements := make([]Stmt, 0)
+	queries := make([]DBQuery, 0)
+	//.db.Prepare()
 
 	// update the entity table
-	queryStatement := fmt.Sprintf("SELECT entity_tab.eid, entity_tab.type, entity_tab.providerurl FROM entity_tab WHERE eid = '%s'", entity.ID)
-	rows, err := er.query(queryStatement)
+	//fmt.Sprintf("SELECT entity_tab.eid, entity_tab.type, entity_tab.providerurl FROM entity_tab WHERE eid = '%s'", entity.ID)
+	queryStatement := `SELECT entity_tab,eid, entity_tab.type, entity_tab.providerurl FROM entity_tab WHERE eid = $1;`
+	rows, err := er.db.Query(queryStatement, entity.ID)
 	if err != nil {
 		return
 	}
 	if rows.Next() == false {
 		// insert new entity
-		insertEntity := fmt.Sprintf("INSERT INTO entity_tab(eid, type, isPattern, providerURL) VALUES('%s', '%s', '%t', '%s');",
-			entity.ID, entity.Type, entity.IsPattern,
-			registration.ProvidingApplication)
-		statements = append(statements, insertEntity)
+		stmt, err := er.db.Prepare(`INSERT INTO entity_tab(eid, type, isPattern, providerURL) VALUES($1, $2, $3, $4);`)
+		if err != nil {
+			log.Fatal(err)
+		}
+		query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, entity.Type, entity.IsPattern, registration.ProvidingApplication}}
+		queries = append(queries, query)
 	}
 	rows.Close()
 
 	// update attribute table
 	for _, attr := range registration.ContextRegistrationAttributes {
-		queryStatement := fmt.Sprintf("SELECT * FROM attr_tab WHERE attr_tab.eid = '%s' AND attr_tab.name = '%s';",
-			entity.ID, attr.Name)
-		rows, err := er.query(queryStatement)
+		queryStatement := `SELECT * FROM attr_tab WHERE attr_tab.eid = $1 AND attr_tab.name = $2;`
+		rows, err := er.db.Query(queryStatement, entity.ID, attr.Name)
 		if err == nil {
 			if rows.Next() == false {
 				// insert as new attribute
-				statement := fmt.Sprintf("INSERT INTO attr_tab(eid, name, type, isDomain) VALUES('%s', '%s', '%s', '%t');",
-					entity.ID, attr.Name, attr.Type, attr.IsDomain)
-
-				statements = append(statements, statement)
+				//statement := fmt.Sprintf("INSERT INTO attr_tab(eid, name, type, isDomain) VALUES('%s', '%s', '%s', '%t');",
+				//	entity.ID, attr.Name, attr.Type, attr.IsDomain)
+				stmt, err := er.db.Prepare(`INSERT INTO attr_tab(eid, name, type, isDomain) VALUES($1, $2, $3, $4);`)
+				if err != nil {
+					log.Fatal(err)
+				}
+				query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, attr.Name, attr.Type, attr.IsDomain}}
+				queries = append(queries, query)
 			} else {
 				// update as existing attribute
-				statement := fmt.Sprintf("UPDATE attr_tab SET type = '%s', isDomain = '%t' WHERE attr_tab.eid = '%s' AND attr_tab.name = '%s';",
-					attr.Type, attr.IsDomain, entity.ID, attr.Name)
+				//statement := fmt.Sprintf("UPDATE attr_tab SET type = '%s', isDomain = '%t' WHERE attr_tab.eid = '%s' AND attr_tab.name = '%s';",
+				//	attr.Type, attr.IsDomain, entity.ID, attr.Name)
 
-				statements = append(statements, statement)
+				stmt, err := er.db.Prepare(`UPDATE attr_tab SET type = $1, isDomain = $2 WHERE attr_tab.eid = $3 AND attr_tab.name = $4;`)
+				if err != nil {
+					log.Fatal(err)
+				}
+				query := DBQuery{statement: stmt, vars: []interface{}{attr.Type, attr.IsDomain, entity.ID, attr.Name}}
+				queries = append(queries, query)
+				//statements = append(statements, statement)
 			}
 		}
 		rows.Close()
