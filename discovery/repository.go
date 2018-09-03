@@ -671,7 +671,7 @@ func (er *EntityRepository) exec(statements []string) {
 }
 
 func (er *EntityRepository) execDBQuery(queries []DBQuery) {
-	for query := range queries {
-		er.db.Exec(query.statement, query.vars)
+	for _, query := range queries {
+		query.statement.Exec(query.vars)
 	}
 }
