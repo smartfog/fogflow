@@ -142,7 +142,7 @@ function subscribeFogFlow(entityType, orionBroker)
 {
     var subscribeCtxReq = {};    
     subscribeCtxReq.entities = [{type: entityType, isPattern: true}];
-    subscribeCtxReq.reference =  'http://' + orionBroker + '/v1';
+    subscribeCtxReq.reference =  'http://' + orionBroker + '/v2';
     
     client.subscribeContext4Orion(subscribeCtxReq).then( function(subscriptionId) {
         console.log(subscriptionId);   

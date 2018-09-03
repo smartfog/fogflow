@@ -16,22 +16,10 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		// reset the subscriptionId due to the limited length in Orion Broker
-		subscriptionId = ""
+		return postOrionV2NotifyContext(ctxElems, URL)
 	}
 
 	for _, elem := range ctxElems {
-		if IsOrionBroker == true {
-			// convert it to orion-compatible format
-			elem.ID = elem.Entity.ID
-			elem.Type = elem.Entity.Type
-			if elem.Entity.IsPattern == true {
-				elem.IsPattern = "true"
-			} else {
-				elem.IsPattern = "false"
-			}
-		}
-
 		elementResponse := ContextElementResponse{}
 		elementResponse.ContextElement = elem
 		elementResponse.StatusCode.Code = 200
@@ -53,6 +41,79 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	DEBUG.Println(string(body))
 
 	req, err := http.NewRequest("POST", URL+"/notifyContext", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+type OrionV2NotifyContextRequest struct {
+	SubscriptionId string                   `json:"subscriptionId"`
+	Entities       []map[string]interface{} `json:"data"`
+}
+
+type OrionV2Attribute struct {
+	Type     string                 `json:"type"`
+	Value    interface{}            `json:"value"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
+
+type OrionV2Metadata struct {
+	Type  string      `json:"type"`
+	Value interface{} `json:"value"`
+}
+
+// send an notify to orion broker based on v2, for the compatability reason
+func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
+	elementList := make([]map[string]interface{}, 0)
+
+	for _, elem := range ctxElems {
+		// convert it to NGSI v2
+		element := make(map[string]interface{})
+
+		element["id"] = elem.Entity.ID
+		element["type"] = elem.Entity.Type
+
+		for _, attr := range elem.Attributes {
+			attribute := OrionV2Attribute{}
+			attribute.Type = attr.Type
+			attribute.Value = attr.Value
+
+			attribute.Metadata = make(map[string]interface{})
+			for _, meta := range attr.Metadata {
+				m := OrionV2Metadata{}
+				m.Type = meta.Type
+				m.Value = meta.Value
+
+				attribute.Metadata[meta.Name] = m
+			}
+
+			element[attr.Name] = attribute
+		}
+
+		elementList = append(elementList, element)
+	}
+
+	notifyCtxReq := &OrionV2NotifyContextRequest{
+		SubscriptionId: "",
+		Entities:       elementList,
+	}
+
+	body, err := json.Marshal(notifyCtxReq)
+	if err != nil {
+		return err
+	}
+
+	INFO.Println(string(body))
+
+	req, err := http.NewRequest("POST", URL+"/op/notify", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 

@@ -479,7 +479,7 @@ func (tb *ThinBroker) sendReliableNotify(elements []ContextElement, sid string) 
 
 	tb.subscriptions_lock.Unlock()
 
-	DEBUG.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", IsOrionBroker)
+	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", IsOrionBroker)
 
 	err := postNotifyContext(elements, sid, subscriberURL, IsOrionBroker)
 	if err != nil {
