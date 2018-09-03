@@ -12,7 +12,6 @@ ngsiproxy.setNotifyHandler(handleNotify);
 
 // client to interact with IoT Broker
 var client = new NGSI10Client(config.brokerURL);
-subscribeResult();
 
 testIntegration();
 
@@ -33,20 +32,6 @@ function selectMenuItem(name) {
     
     var handler = handlers[name];
     handler();
-}
-
-function subscribeResult()
-{
-    var subscribeCtxReq = {};    
-    subscribeCtxReq.entities = [{type: 'ChildFound', isPattern: true}];
-    subscribeCtxReq.reference =  'http://' + config.agentIP + ':' + config.agentPort;
-    
-    client.subscribeContext(subscribeCtxReq).then( function(subscriptionId) {
-        console.log(subscriptionId);   
-        ngsiproxy.reportSubID(subscriptionId);		
-    }).catch(function(error) {
-        console.log('failed to subscribe context');
-    });
 }
 
 function handleNotify(contextObj)

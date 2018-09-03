@@ -141,6 +141,25 @@ var NGSI10Client = (function() {
             }
         });
     };    
+    
+    // subscribe context
+    NGSI10Client.prototype.subscribeContext4Orion = function orionSubscribeContext(subscribeCtxReq) {        
+        return axios({
+            method: 'post',
+            url: this.brokerURL + '/subscribeContext',
+            data: subscribeCtxReq,
+			headers: {
+        			'Destination': 'orion-broker'
+    			}
+        }).then( function(response){
+            if (response.status == 200) {
+                return response.data.subscribeResponse.subscriptionId;
+            } else {
+                return null;
+            }
+        });
+    };	  
+   
 
     // unsubscribe context    
     NGSI10Client.prototype.unsubscribeContext = function unsubscribeContext(sid) {
