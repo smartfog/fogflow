@@ -45,8 +45,8 @@ Change the configuration file according to your local environment
 ====================================================================
 
     You can use the default setting for a simple test, but you need to change the following addresses according to your own environment: 
-        
-        * **coreservice_ip**: it is used by users to access the FogFlow web portal and must be accessible from your browser; Also, it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
+        * **webportal_ip**: this is the IP address to access the FogFlow web portal provided by Task Designer. It must be accessible from outside by user's browser.  
+        * **coreservice_ip**: it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
         * **external_hostip**: this is the same as coreservice_ip, for the cloud part of FogFlow;        
         * **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host. 
 
@@ -54,6 +54,7 @@ Change the configuration file according to your local environment
     
         //you can see the following part in the default configuration file
         { 
+            "webportal_ip": "155.54.239.141",                 
             "coreservice_ip": "155.54.239.141", 
             "external_hostip": "155.54.239.141", 
             "internal_hostip": "172.17.0.1", 
