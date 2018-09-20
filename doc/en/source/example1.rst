@@ -4,9 +4,9 @@ Define and trigger a fog function
 
 FogFlow enables serverless edge computing, meaning that developers can define and submit a so-called fog function and then 
 the rest will be done by FogFlow automatically, including:
-	*  **triggering the submitted fog function when its input data are available**
-	*  **deciding how many instances to be created according to its defined granularity**
-	*  **deciding where to deploy the created instances**
+    *  **triggering the submitted fog function when its input data are available**
+    *  **deciding how many instances to be created according to its defined granularity**
+    *  **deciding where to deploy the created instances**
 
 The following steps show how to define and test a simple 'hello world' function using the web portal provided by FogFlow Task Designer. 
 
@@ -20,9 +20,9 @@ create a fog function from the FogFlow editor
 A menu will pop up when you do a right mouse click on the task design board. 
 The displayed menu includes the following items: 
 
-	*  **FogFunction**: to place a fog function element on the design board
-	*  **InputTrigger**: to place a trigger element, which can be linked with a fog function as its input data selector
-	*  **SelectCondition**: to place a filter element, which can be linked with an input trigger in order to specify your input data
+    *  **FogFunction**: to place a fog function element on the design board
+    *  **InputTrigger**: to place a trigger element, which can be linked with a fog function as its input data selector
+    *  **SelectCondition**: to place a filter element, which can be linked with an input trigger in order to specify your input data
 
     .. figure:: figures/fog-function-menu.png
        :width: 100 %
@@ -54,8 +54,8 @@ define a granularity for the creation of its function instances
 Please click "InputTrigger" from the popup menu to place a "InputTrigger" element on the design board. 
 Configure it by specifying the following items: 
 
-	*  **SelectedAttributes**: for the selected entity type, which entity attributes are required by your fog function; "all" means to get all entity attributes. 
-	*  **Groupby**: this should be one of the selected entity attributes, which defines the granularity of this fog function. 
+    *  **SelectedAttributes**: for the selected entity type, which entity attributes are required by your fog function; "all" means to get all entity attributes. 
+    *  **Groupby**: this should be one of the selected entity attributes, which defines the granularity of this fog function. 
  
     .. note:: granularity determines the number of instances for this fog function.
             In principle, the number of task instances for the defined fog function 
@@ -124,12 +124,21 @@ This example fog function simple writes a fixed entity by calling the "publish" 
 
 The input parameters of a fog function are predefined and fixed, including: 
 
-	*  **contextEntity**: representing the received entity data
-	*  **publish**: the callback function to publish your generated result back to the FogFlow system
-	*  **query**: optional, this is used only when your own internal function logic needs to query some extra entity data from the FogFlow context management system. 
-	*  **subscribe**: optional, this is used only when your own internal function logic needs to subscribe some extra entity data from the FogFlow context management system.         
+    *  **contextEntity**: representing the received entity data
+    *  **publish**: the callback function to publish your generated result back to the FogFlow system
+    *  **query**: optional, this is used only when your own internal function logic needs to query some extra entity data from the FogFlow context management system. 
+    *  **subscribe**: optional, this is used only when your own internal function logic needs to subscribe some extra entity data from the FogFlow context management system.         
 
-    .. note:: for the callback functions *query* and *subscribe*, "extra" means any entity data that are not defined as the inputs in the annotation of your fog function. 
+.. important::
+
+    for the callback functions *query* and *subscribe*, "extra" means any entity data that are not defined as the inputs in the annotation of your fog function. 
+
+    a Javascript-based template of the implementation of fog functions is provided in the FogFlow repository as well. Please refer to |fog_function_js_template|
+
+          .. |fog_function_js_template| raw:: html
+
+             <a href="https://github.com/smartfog/fogflow/tree/master/application/operator/template/javascript" target="_blank">Javascript-based template for fog function</a>
+
 
 Here are some examples to show how you can use these three call back functions. 
 
@@ -142,8 +151,8 @@ example usage of *publish*:
                id: "Stream.Temperature.0001",
                type: 'Temperature',
                isPattern: false
-        };	    	
-        updateEntity.attributes = {};	 
+        };            
+        updateEntity.attributes = {};     
         updateEntity.attributes.city = {type: 'string', value: 'Heidelberg'};                
         
         updateEntity.metadata = {};    
@@ -151,7 +160,7 @@ example usage of *publish*:
             type: 'point',
             value: {'latitude': 33.0, 'longitude': -1.0}
         };        
-       	
+           
         publish(updateEntity);    
     
 example usage of *query*: 
@@ -198,9 +207,9 @@ The defined "hello world" fog function is triggered only when its required input
 With the following command, you can create a "Temperature" sensor entity to trigger the function. 
 Please fill out the following required information: 
 
-	*  **Device ID**: to specify a unique entity ID
-	*  **Device Type**: use "Temperature" as the entity type
-	*  **Location**: to place a location on the map
+    *  **Device ID**: to specify a unique entity ID
+    *  **Device Type**: use "Temperature" as the entity type
+    *  **Location**: to place a location on the map
             
     .. figure:: figures/device-registration.png
        :width: 100 %

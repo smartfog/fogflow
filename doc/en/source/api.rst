@@ -197,7 +197,7 @@ Example:
         }); 
 
 
-Query Context
+Query Context via GET
 -----------------------------------------------
 
 
@@ -249,30 +249,8 @@ Example:
     curl http://localhost:8070/ngsi10/entity
 
 
-Delete context
------------------------------------------------
 
-Delete a specific context entity by ID
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**DELETE /ngsi10/entity/#eid**
-
-==============   ===============
-Param            Description
-==============   ===============
-eid              entity ID
-==============   ===============
-
-Example: 
-
-.. code-block:: console 
-
-    curl -iX DELETE http://localhost:8070/ngsi10/entity/Device.temp001
-
-
-
-
-Query context
+Query context via POST
 -----------------------------------------------
 
 **POST /ngsi10/queryContext**
@@ -344,7 +322,7 @@ query context by entity type
         });          
 
 
-query context by geo-scope
+query context by geo-scope (circle)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -396,6 +374,106 @@ query context by geo-scope
             console.log(error);
             console.log('failed to query context');
         });    
+
+
+query context by geo-scope (polygon)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. tabs::
+
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+              -H 'Content-Type: application/json' \
+              -d '{
+               "entities":[
+                  {
+                     "id":".*",
+                     "isPattern":true
+                  }
+               ],
+               "restriction":{
+                  "scopes":[
+                     {
+                        "scopeType":"polygon",
+                        "scopeValue":{
+                           "vertices":[
+                              {
+                                 "latitude":34.4069096565206,
+                                 "longitude":135.84594726562503
+                              },
+                              {
+                                 "latitude":37.18657859524883,
+                                 "longitude":135.84594726562503
+                              },
+                              {
+                                 "latitude":37.18657859524883,
+                                 "longitude":141.51489257812503
+                              },
+                              {
+                                 "latitude":34.4069096565206,
+                                 "longitude":141.51489257812503
+                              },
+                              {
+                                 "latitude":34.4069096565206,
+                                 "longitude":135.84594726562503
+                              }
+                           ]
+                        }
+                    }]
+                }
+            }'
+                  
+
+   .. code-tab:: javascript
+
+        const NGSI = require('./ngsi/ngsiclient.js');
+        var brokerURL = "http://localhost:8070/ngsi10"    
+        var ngsi10client = new NGSI.NGSI10Client(brokerURL);
+        
+        var queryReq = {}
+        queryReq.entities = [{type:'.*', isPattern: true}];  
+        queryReq.restriction = {
+               "scopes":[
+                  {
+                     "scopeType":"polygon",
+                     "scopeValue":{
+                        "vertices":[
+                           {
+                              "latitude":34.4069096565206,
+                              "longitude":135.84594726562503
+                           },
+                           {
+                              "latitude":37.18657859524883,
+                              "longitude":135.84594726562503
+                           },
+                           {
+                              "latitude":37.18657859524883,
+                              "longitude":141.51489257812503
+                           },
+                           {
+                              "latitude":34.4069096565206,
+                              "longitude":141.51489257812503
+                           },
+                           {
+                              "latitude":34.4069096565206,
+                              "longitude":135.84594726562503
+                           }
+                        ]
+                     }
+                  }
+               ]
+            }
+                    
+        ngsi10client.queryContext(queryReq).then( function(deviceList) {
+            console.log(deviceList);
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to query context');
+        });    
+
 
 query context with the filter of domain metadata values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -504,6 +582,30 @@ query context with multiple filters
             console.log(error);
             console.log('failed to query context');
         });    
+
+
+Delete context
+-----------------------------------------------
+
+Delete a specific context entity by ID
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**DELETE /ngsi10/entity/#eid**
+
+==============   ===============
+Param            Description
+==============   ===============
+eid              entity ID
+==============   ===============
+
+Example: 
+
+.. code-block:: console 
+
+    curl -iX DELETE http://localhost:8070/ngsi10/entity/Device.temp001
+
+
+
 
 
 
