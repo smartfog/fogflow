@@ -50,7 +50,7 @@ Please refer to the examples provided in our code repository.
 
 * |anomaly_detector|
 
-* |counter|:
+* |counter|
 
           .. |anomaly_detector| raw:: html
 
