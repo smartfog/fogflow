@@ -56,12 +56,16 @@ Currently, each task instance is deployed in a dedicated docker container, eithe
 Service Template
 ======================================
 
-Each IoT service is described by a service template, which includes the following information:
+Each IoT service is described by a service template, which can be a service topology with a set of linked operators
+or a fog function with a single operator. For example, when we use a service topology to specify your service template, 
+the following information will be included. 
 
 	* topology name: the unique name of your topology
 	* service description: some text to describe what this service is about
 	* priority: define the priority level of all tasks in your topology, which will be utilized by edge nodes to decide how resource should be assigned to tasks 
 	* resource usage: define if the tasks in this topology can use the resources on edge nodes in an exclusive way, meaning that not sharing resources with any task from the other topologies
+
+Currently, FogFlow provides a graphical editor to allow developers to easily define and annotate their service topology or fog function during the design phrase.
 
 
 Dynamic data flow 

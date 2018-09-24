@@ -62,7 +62,7 @@ Please refer to the examples provided in our code repository.
 
 
 
-Register your task functions
+Register your task operators
 --------------------------------------------------------
 
 For each operator, once we create its docker image and push it to the FogFlow docker registry, 
@@ -89,6 +89,17 @@ The following picture shows the list of all registered operator docker images an
 After clicking the "register" button, you can see a form as below. 
 Please fill out the required information and click the "register" button to finish the registration. 
 The form is explained as the following. 
+
+
+.. important::
+    
+    Please notice that the name of your docker image must be consistent with the one you publish to |docker_hub|.
+    By default, FogFlow will fetch the required docker images from Docker Hub using the name you register here for your operator. 
+
+.. |docker_hub| raw:: html
+
+    <a href="https://hub.docker.com/" target="_blank">Docker Hub</a>
+    
 
 * Image: the name of your operator docker image
 * Tag: the tag you used to publish your operator docker image; by default it is "latest"
@@ -314,10 +325,15 @@ The processing requirement is sent as NGSI10 update, with the following properti
     Also, the entity ID of your input data must follow a pattern: "Stream.[Type].[xxx]". 
     For example, for a temperature sensor with "Temperature" as the entity type, 
     the entity ID of this temperature entity requires to be "Stream.Temperature.[xxx]",
-    for example, "Stream.Temperature.001"    
+    for example, "Stream.Temperature.001". Please look at the example in the section |connect_device_to_fogflow|
+    
+
+.. |connect_device_to_fogflow| raw:: html
+
+    <a href="./example4.html" target="_blank">Connect an IoT device to FogFlow</a>
 
 
-Here is the Javascript-based code example to trigger a service topology. 
+Here is the Javascript-based code example to trigger a service topology by sending a customized requirement entity to FogFlow. 
 
 
 .. code-block:: javascript

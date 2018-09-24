@@ -88,7 +88,7 @@ Run the downloaded script
 Test the FogFlow dashboard
 ===============================================================
 
-    Open the link "http://external_ip" in your browser to check the status of all FogFlow running components in the cloud. 
+    Open the link "http://webportal_ip" in your browser to check the status of all FogFlow running components in the cloud. 
 
     If everything goes well, you should be able to see the following page from this link. 
 

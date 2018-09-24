@@ -872,4 +872,33 @@ sid              the subscription ID created when the subscription is issued
 curl -iX DELETE http://localhost:8070/ngsi10/subscription/#sid
 
 
+APIs of FogFlow Orchestrator
+=======================================
+
+Register an operator
+-----------------------------------------------
+
+
+Register a service topology
+-----------------------------------------------
+
+
+Trigger a service topology
+-----------------------------------------------
+
+
+Query running tasks of the service topology
+----------------------------------------------------
+
+
+Register a fog function 
+-----------------------------------------------
+
+
+Trigger a service topology
+-----------------------------------------------
+
+
+Query running tasks of the service topology
+----------------------------------------------------
 
