@@ -1,6 +1,9 @@
 FogFlow
 =======
 
+.. figure:: https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/processing.svg
+  :target: https://www.fiware.org/developers/catalogue/
+
 What is FogFlow?
 --------------------
 
