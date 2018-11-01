@@ -15,6 +15,8 @@ The following steps show how to define and test a simple 'hello world' function 
 Define a "hello world" fog function 
 -----------------------------------------------
 
+
+
 create a fog function from the FogFlow editor 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -134,60 +136,57 @@ The input parameters of a fog function are predefined and fixed, including:
 
     for the callback functions *query* and *subscribe*, "extra" means any entity data that are not defined as the inputs in the annotation of your fog function. 
 
-    a Javascript-based template of the implementation of fog functions is provided in the FogFlow repository as well. Please refer to |fog_function_js_template|
+    a Javascript-based template of the implementation of fog functions is provided in the FogFlow repository as well. Please refer to `Javascript-based template for fog function`_
 
-          .. |fog_function_js_template| raw:: html
 
-             <a href="https://github.com/smartfog/fogflow/tree/master/application/operator/template/javascript" target="_blank">Javascript-based template for fog function</a>
+.. _`Javascript-based template for fog function`: https://github.com/smartfog/fogflow/tree/master/application/operator/template/javascript
 
 
 Here are some examples to show how you can use these three call back functions. 
 
 - example usage of *publish*: 
-
-.. code-block:: javascript
-
-    var updateEntity = {};
-    updateEntity.entityId = {
-           id: "Stream.Temperature.0001",
-           type: 'Temperature',
-           isPattern: false
-    };            
-    updateEntity.attributes = {};     
-    updateEntity.attributes.city = {type: 'string', value: 'Heidelberg'};                
-    
-    updateEntity.metadata = {};    
-    updateEntity.metadata.location = {
-        type: 'point',
-        value: {'latitude': 33.0, 'longitude': -1.0}
-    };        
-       
-    publish(updateEntity);    
+	.. code-block:: javascript
+	
+	    var updateEntity = {};
+	    updateEntity.entityId = {
+	           id: "Stream.Temperature.0001",
+	           type: 'Temperature',
+	           isPattern: false
+	    };            
+	    updateEntity.attributes = {};     
+	    updateEntity.attributes.city = {type: 'string', value: 'Heidelberg'};                
+	    
+	    updateEntity.metadata = {};    
+	    updateEntity.metadata.location = {
+	        type: 'point',
+	        value: {'latitude': 33.0, 'longitude': -1.0}
+	    };        
+	       
+	    publish(updateEntity);    
     
 - example usage of *query*: 
-
-.. code-block:: javascript
-
-    var queryReq = {}
-    queryReq.entities = [{type:'Temperature', isPattern: true}];    
-    var handleQueryResult = function(entityList) {
-        for(var i=0; i<entityList.length; i++) {
-            var entity = entityList[i];
-            console.log(entity);   
-        }
-    }  
-    
-    query(queryReq, handleQueryResult);
+	.. code-block:: javascript
+	
+	    var queryReq = {}
+	    queryReq.entities = [{type:'Temperature', isPattern: true}];    
+	    var handleQueryResult = function(entityList) {
+	        for(var i=0; i<entityList.length; i++) {
+	            var entity = entityList[i];
+	            console.log(entity);   
+	        }
+	    }  
+	    
+	    query(queryReq, handleQueryResult);
 
 - example usage of *subscribe*: 
 
-.. code-block:: javascript
-
-    var subscribeCtxReq = {};    
-    subscribeCtxReq.entities = [{type: 'Temperature', isPattern: true}];
-    subscribeCtxReq.attributes = ['avg'];        
-    
-    subscribe(subscribeCtxReq);     
+	.. code-block:: javascript
+	
+	    var subscribeCtxReq = {};    
+	    subscribeCtxReq.entities = [{type: 'Temperature', isPattern: true}];
+	    subscribeCtxReq.attributes = ['avg'];        
+	    
+	    subscribe(subscribeCtxReq);     
     
 
 
