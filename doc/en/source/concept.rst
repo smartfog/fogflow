@@ -36,8 +36,8 @@ the following two properties are introduced to specify the input streams of task
 
 - Shuffling: associated with each type of input stream for a task; its value can be either *broadcast* or *unicast*. 
 
-	* broadcast: the selected input streams should be repeatedly assigned to every task instance of this operator
-	* unicast: each of the selected input streams should be assigned to a specific task instance only once
+	- broadcast: the selected input streams should be repeatedly assigned to every task instance of this operator
+	- unicast: each of the selected input streams should be assigned to a specific task instance only once
 	
 - Scoped: determines whether the geo-scope in the requirement should be applied to select the input streams; its value can be either *true* or *false*.
 

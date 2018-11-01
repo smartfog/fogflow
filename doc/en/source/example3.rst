@@ -19,8 +19,8 @@ The first way is to consider Orion Broker as the destination of any context info
 In this case a NGSI subscription must be issued by an external application or FogFlow Dashboard 
 to ask FogFlow to forward the requested context updates to a specified Orion Broker. 
 
-    .. figure:: figures/orion-integration.png
-       :width: 100 %
+.. figure:: figures/orion-integration.png
+   :width: 100 %
 
 
 Here is the Javascript-based code example to show how your application can issue a subscription to FogFlow Broker,
@@ -82,8 +82,8 @@ Please refer to https://github.com/smartfog/adapter
 In the future, we consider to provide an adapter to IoT-agents. As illustrated by the following figure, 
 this adapter could be reused to integrate with all types of FIWARE IoT agents. 
 
-    .. figure:: figures/adapter-agent.jpg
-       :width: 100 %
+.. figure:: figures/adapter-agent.jpg
+   :width: 100 %
 
 
 
