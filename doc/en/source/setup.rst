@@ -15,13 +15,10 @@ Here are the steps to follow:
 Install Docker CE and Docker Compose on your Linux machine
 ===============================================================
 
-- Install Docker CE: 
-	To install Docker CE, please refer to `Install Docker CE`_, required version 18.03.1-ce;
-	*please also allow your user to execute the Docker Command without Sudo*
+To install Docker CE, please refer to `Install Docker CE`_, required version 18.03.1-ce;
+*please also allow your user to execute the Docker Command without Sudo*
 
-- Install Docker Compose
-	To install Docker Compose, please refer to `Install Docker Compose`_, required version 2.4.2
-
+To install Docker Compose, please refer to `Install Docker Compose`_, required version 2.4.2
 
 .. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 .. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
