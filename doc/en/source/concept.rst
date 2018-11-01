@@ -35,7 +35,6 @@ In order to determine which input stream goes to which task instances,
 the following two properties are introduced to specify the input streams of tasks: 
 
 - Shuffling: associated with each type of input stream for a task; its value can be either *broadcast* or *unicast*. 
-
 	- broadcast: the selected input streams should be repeatedly assigned to every task instance of this operator
 	- unicast: each of the selected input streams should be assigned to a specific task instance only once
 	
@@ -75,14 +74,12 @@ The main procedure is illustrated by the following figure, including two major s
    :width: 100 %
 
 - from *service topology* to *execution plan*: done by the task generation algorithm of Topology Master. 
-
 	The generated execution plan includes:
 	1) which part of service topology is triggered; 
 	2) how many instances need to be created for each triggered task;
 	3) and how each task instance should be configured with its input streams and output streams. 
 
 - from *execution plan* to *deployment plan*: done by the task assignment algorithm of Topology Master.
-
 	The generated deployment plan determines which task instance should be assigned to which worker (in the cloud or at edges),  
 	according to certain optimization objectives. Currently, the task assignment in FogFlow is optimized to reduce across-node data traffic
 	without overloading any edge node. 
