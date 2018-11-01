@@ -15,18 +15,16 @@ Here are the steps to follow:
 Install Docker CE and Docker Compose on your Linux machine
 ===============================================================
 
-.. important::
-
-    To install Docker CE, please refer to |install_docker|, required version 18.03.1-ce;
+- Install Docker CE: 
+	To install Docker CE, please refer to `Install Docker CE`_, required version 18.03.1-ce;
 	*please also allow your user to execute the Docker Command without Sudo*
 
+- Install Docker Compose
+	To install Docker Compose, please refer to `Install Docker Compose`_, required version 2.4.2
 
-    To install Docker Compose, please refer to |install_docker_compose|, required version 2.4.2
 
-    .. |install_docker| raw:: html
-        <a href="https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04" target="_blank">How to install Docker</a>
-    .. |install_docker_compose| raw:: html
-        <a href="https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04" target="_blank">How to install Docker Compose</a>
+.. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+.. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
 
 
 Download the deployment script and the configuration file
@@ -68,11 +66,12 @@ You can use the default setting for a simple test, but you need to change the fo
 
 
 We also assume that you can use the default port numbers for various FogFlow components. 
-More specially, the following ports are required.    
-    - 80: for FogFlow web portal to be accessible at the external IP    
-    - 443: for Discovery to be accessible at the external IP    
-    - 8080: for Broker to be accessible at the external IP    
-    - 5672: for RabbitMQ, used only internally between Master and Worker(s) 
+More specially, the following ports are required.   
+ 
+- 80: for FogFlow web portal to be accessible at the external IP    
+- 443: for Discovery to be accessible at the external IP    
+- 8080: for Broker to be accessible at the external IP    
+- 5672: for RabbitMQ, used only internally between Master and Worker(s) 
 
 
 Run the downloaded script
