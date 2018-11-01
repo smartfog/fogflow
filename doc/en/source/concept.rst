@@ -34,7 +34,8 @@ according to its granularity defined by the *groupBy" property.
 In order to determine which input stream goes to which task instances, 
 the following two properties are introduced to specify the input streams of tasks: 
 
-- Shuffling: associated with each type of input stream for a task; its value can be either *broadcast* or *unicast*. 
+- Shuffling: associated with each type of input stream for a task; its value can be either *broadcast* or *unicast*. 	
+
 	- broadcast: the selected input streams should be repeatedly assigned to every task instance of this operator
 	- unicast: each of the selected input streams should be assigned to a specific task instance only once
 	

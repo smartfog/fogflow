@@ -116,7 +116,7 @@ FogFlow has the following unique features illustrated in the following picture.
 More detailed differentiations are summarized in the following table. 
 
 .. figure:: figures/comparison2.png
-    :width: 80 %
+    :width: 60 %
     :align: center
     
 
