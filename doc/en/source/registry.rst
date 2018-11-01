@@ -6,7 +6,7 @@ Create a Self Signed Certificate
 -------------------------------------
 You need to create a self signed certificate on your server to use it for the private Docker Registry.
 
-.. code-block:: bash
+.. code-block:: console    
 
 	mkdir registry_certs
 	openssl req -newkey rsa:4096 -nodes -sha256 \
@@ -16,8 +16,8 @@ You need to create a self signed certificate on your server to use it for the pr
 
 Finally you have two files:
 
-	- domain.cert – this file can be handled to the client using the private registry
-	- domain.key – this is the private key which is necessary to run the private registry with TLS
+- domain.cert – this file can be handled to the client using the private registry
+- domain.key – this is the private key which is necessary to run the private registry with TLS
 
 
 
@@ -25,7 +25,7 @@ Run the Private Docker Registry with TLS
 -----------------------------------------
 Now we can start the registry with the local domain certificate and key file:
 
-.. code-block:: bash
+.. code-block:: console    
 
 	docker run -d -p 5000:5000 \
 		 	-v $(pwd)/registry_certs:/certs \
@@ -38,7 +38,7 @@ We use environment variables pointing to the certificate and key file.
 
 Now you can push your local image into the new registry:
 
-.. code-block:: bash
+.. code-block:: console    
 
 	docker push localhost:5000/proxy:1.0.0
 
@@ -49,14 +49,14 @@ Access the Remote Registry form a fog node
 Now as the private registry is started with TLS Support you can access the registry from any client which has the domain certificate.
 Therefor the certificate file “domain.cert” must be located on the client in a file
 
-.. code-block:: bash
+.. code-block:: console    
 
 	/etc/docker/certs.d/<registry_address>/ca.cert
 
 Where <registry_address> is the server host name. After the certificate was updated you need to restart the local docker daemon:
 
 
-.. code-block:: bash
+.. code-block:: console    
 
 	mkdir -p /etc/docker/certs.d/dock01:5000 
 	cp domain.cert /etc/docker/certs.d/dock01:5000/ca.crt
@@ -81,7 +81,7 @@ https://yourserver.com:5000
 
 use the following docker run command to start the frontend container:
 
-.. code-block:: bash
+.. code-block:: console    
 
 	docker run \
  		-d \

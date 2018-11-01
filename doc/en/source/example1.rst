@@ -5,9 +5,9 @@ Define and trigger a fog function
 FogFlow enables serverless edge computing, meaning that developers can define and submit a so-called fog function and then 
 the rest will be done by FogFlow automatically, including:
 
--  **triggering the submitted fog function when its input data are available**
--  **deciding how many instances to be created according to its defined granularity**
--  **deciding where to deploy the created instances**
+-  triggering the submitted fog function when its input data are available
+-  deciding how many instances to be created according to its defined granularity
+-  deciding where to deploy the created instances
 
 The following steps show how to define and test a simple 'hello world' function using the web portal provided by FogFlow Task Designer. 
 
