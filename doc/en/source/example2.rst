@@ -30,7 +30,8 @@ In addition, the system operator can dynamically update the rule for anomaly det
 
 - *Anomaly Detector*: 
 	This operator is to detect anomaly events based on the collected data from power panels in a retail store. It has two types of inputs: 
-    - detection rules, which are provided and updated by the operator; The detection rules input stream type is associated with ``broadcast``, meaning that the rules are needed by all task instances of this operator. The granularity of this operator is based on ``shopID``, meaning that a dedicated task instance will be created and configured for each shop.     
+    
+	- detection rules, which are provided and updated by the operator; The detection rules input stream type is associated with ``broadcast``, meaning that the rules are needed by all task instances of this operator. The granularity of this operator is based on ``shopID``, meaning that a dedicated task instance will be created and configured for each shop.     
     - sensor data from power panel
 
 - *Counter*: 
@@ -49,13 +50,13 @@ all operators used in your service topology must be provided by you or the other
 For  this specific use case, we need to implement two operators: anomaly_detector and counter. 
 Please refer to the examples provided in our code repository. 
 
-- `anomaly_detector`_ 
+* `anomaly_detector`_ *
 
-- `counter`_ 
+* `counter`_ *
 
 
-.._`anomaly_detector`: https://github.com/smartfog/fogflow/tree/master/application/operator/anomaly
-.._`counter`: https://github.com/smartfog/fogflow/tree/master/application/operator/counter
+.. _`anomaly_detector`: https://github.com/smartfog/fogflow/tree/master/application/operator/anomaly
+.. _`counter`: https://github.com/smartfog/fogflow/tree/master/application/operator/counter
 
 
 Register your task operators
