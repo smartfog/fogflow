@@ -29,7 +29,7 @@ In addition, the system operator can dynamically update the rule for anomaly det
 
 
 * Anomaly Detector
-	This operator is to detect anomaly events based on the collected data from power panels in a retail store. It has two types of inputs:     
+	This operator is to detect anomaly events based on the collected data from power panels in a retail store. It has two types of inputs    
 		* detection rules, which are provided and updated by the operator; The detection rules input stream type is associated with ``broadcast``, meaning that the rules are needed by all task instances of this operator. The granularity of this operator is based on ``shopID``, meaning that a dedicated task instance will be created and configured for each shop
     	* sensor data from power panel
 
