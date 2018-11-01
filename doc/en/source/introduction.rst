@@ -43,7 +43,7 @@ The unique feature of FogFlow is **context-driven**, meaning that
 FogFlow is able to orchestrate dynamic data processing flows over cloud & edges 
 based on three types of contexts, including: 
 
-- System context* available resources which are changing over time
+- System context: available resources which are changing over time
     The resources in a cloud-edge environment are geo-distributed in nature and they are dynamically changing over time;
     As compared to cloud computing, resources in such a cloud-edge environment are more *heterogenous* and *dynamical*.    
 

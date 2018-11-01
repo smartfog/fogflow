@@ -178,8 +178,8 @@ Here are some examples to show how you can use these three call back functions.
 	    
 	    query(queryReq, handleQueryResult);
 
-- example usage of *subscribe*: 
 
+- example usage of *subscribe*: 
 	.. code-block:: javascript
 	
 	    var subscribeCtxReq = {};    
