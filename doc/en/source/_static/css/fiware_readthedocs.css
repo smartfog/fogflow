@@ -1,0 +1,186 @@
+
+/* highlight styles */
+@import url('https://fonts.googleapis.com/css?family=Montserrat%3A100%2C100italic%2C200%2C200italic%2C300%2C300italic%2Cregular%2Citalic%2C500%2C500italic%2C600%2C600italic%2C700%2C700italic%2C800%2C800italic%2C900%2C900italic&ver=4.9.6#038;subset=latin,latin-ext');
+@import url("monokai_sublime_.css");
+@import url("pygments-monokai.css");
+
+
+/* Estilos ogilvy v2 */
+.wy-nav-content {max-width: none !important}
+
+
+body{font-family: Montserrat,Helvetica,Arial,sans-serif;font-weight: 500; line-height: 1.42857143 !important; color: #4c4c4c }
+h1, h2, h3, h4 {
+    font-family: Montserrat,Helvetica,Arial,sans-serif !important;
+    color:#000000 !important;     
+    font-weight: 800;
+    text-transform: uppercase;
+}
+h1, h2{
+    padding-top : 20px;
+    padding-bottom : 3px;
+    box-shadow: 0px 7px 0px 0px #000000;
+}
+h3 {
+    box-shadow: 0px 4px 0px 0px #000000;
+}
+h4 {
+  margin-bottom : 5px;
+  color:#233c68 !important;
+  text-transform: none; 
+}
+
+code{padding:0px; border-width: 0px; background-color: transparent;font-size: 16px; color:#ff7059 !important}
+pre code{color:#ffffff !important}
+td {
+    border-color:#4c4c4c !important;
+}
+th {
+    background-color:#5dc0cf;
+    color: #fff;
+    border-color:#4c4c4c !important;
+}
+hr {
+  width: 200%;
+  margin-left: -50%;
+   padding-bottom : 6px;
+   box-shadow: 0px 3px 0px 0px #5dc0cf;
+   border-top : none;
+}
+div[role="navigation"] hr {
+    box-shadow: none;
+    border-top: 1px solid #e1e4e5;
+}
+
+
+a{font-weight: 600; color:#233c68 !important}
+a:hover{color:#5dc0cf !important}
+a.icon-home{color:#fff !important;
+white-space : pre-line !important;
+font-family:'Montserrat',Helvetica,Arial,Lucida,sans-serif !important; font-weight:normal !important;color:#000 !important; text-transform:uppercase !important; margin:0 0 0 0 !important}
+.fa-home:before, .icon-home:before{content:None !important}
+.wy-menu-vertical {color: #4c4c4c; background-color:#bec3cc}
+.wy-menu-vertical .current {color: #4c4c4c; background-color:#ffffff;
+border-right: #efefef solid 1px; }
+
+.wy-menu-vertical .current > a  {background:#000000 !important; color : #ffffff  !important}
+.wy-menu-vertical .current > a  {background:#000000 !important; color : #ffffff  !important}
+.wy-menu-vertical li.current a {border-right: none}
+.wy-menu-vertical li.current a:hover{background-color: #000000; color:#ffffff !important}
+.wy-menu-vertical li.current > a:hover{background-color:#000000 !important;border-right:0 !important}
+.wy-menu-vertical a:hover{background-color: #000000; color:#ffffff !important}
+.wy-side-nav-search {background: #fff !important; border-right: #efefef solid 1px;}
+.wy-side-nav-search a{background-color:transparent !important; }
+.wy-menu-vertical span{font-weight: 600 !important; color:#000000 !important;}
+nav > div.wy-menu.wy-menu-vertical > ul > li > a{font-weight:600 !important; color:#000000 !important}
+nav > div.wy-menu.wy-menu-vertical > ul > li.current > a{font-weight:600 !important; color:#ffffff !important}
+
+.wy-side-nav-search{margin-bottom:0 !important; text-align:left !important}
+nav > div.wy-menu.wy-menu-vertical > ul > li > a:hover{color:#ffffff !important}
+.btn-neutral{background-color:#233c68 !important color:#4c4c4c !important}
+.btn-neutral:hover{background-color:#233c68 !important; color:#ffffff !important}
+.btn-neutral:visited{color:#233c68 !important}
+.btn-neutral:visited:hover{color:#ffffff !important}
+.rst-versions{background:#000000 none !important;border-top:0 !important;font-family:Verdana !important}
+.rst-versions .rst-current-version{background-color:#000000 !important}
+.rst-versions a{color:#fff !important; text-decoration:underline !important}
+.rst-versions a:hover{color:#FFF !important}
+.fa-book,.fa{font-family:verdana !important}
+.rst-versions .rst-other-versions{color:#fff !important}
+.rst-versions .rst-other-versions hr{border-color:#fff !important}
+.fa-home:before, .icon-home:after{content:}
+a.icon-home {color:#000000 !important;
+ font-family: 'Montserrat',Helvetica,Arial,Lucida,sans-serif !important; 
+ font-size: x-large !important; font-weight: 800 !important; 
+ text-transform:uppercase !important;
+}
+
+
+.wy-side-nav-search{
+ clear:both !important; 
+ padding:40px 10px 16px 10px;
+ background-image: url('https://www.fiware.org/wp-content/uploads/2018/04/logo.png') !important;
+ background-size: 128px 30px !important;
+ background-repeat: no-repeat !important;
+ background-position: 15px 8px !important; 
+ border-bottom-color : #000000;
+ border-bottom-width: 1px;
+ border-style: solid;
+}
+
+
+.rst-versions .rst-other-versions dt{font-weight:bold !important}
+.wy-body-for-nav{background-image:none !important}
+.wy-nav-side{background-color:transparent !important}
+/*Fin estilos ogilvy*/
+
+
+
+/* Custom width read the docs */
+.wy-nav-content {max-width: none !important; background-color: #ffffff}
+/* to avoid display version when generated from rst */
+.wy-side-nav-search .version {display:none;}
+/* Allow multiline project names in side navigation bar */
+.wy-side-nav-search a.icon-home {white-space: pre-wrap;}
+.wy-side-nav-search input[type=text]{
+    margin-top : 4px;
+    border-radius: unset;
+    background-color: #f5f5f5;
+    border-color:#000000;
+}
+
+.wy-breadcrumbs {
+    text-transform: uppercase !important;
+    color : #000000;
+    font-weight: 600;
+    font-size: medium;
+}
+
+.wy-nav-top { background-color:#000000;}
+.wy-nav-top > a:hover {color: #ffffff  !important}
+.wy-nav-top > a{ text-transform:uppercase; color: #ffffff  !important; font-size: x-large}
+
+.rst-content img,blockquote {max-width: 94%; background-color: #f5f5f5; border-style: solid;  border-color : #4c4c4c; border-width : 1px; margin-left: 3%;}
+.rst-content a img {background-color: transparent; border-style: none;  margin-left: 0%; margin-right: 0%}
+.rst-content blockquote {padding: 15px;}
+.rst-content pre {border-style: solid;  border-color : #000000; border-width : 1px; margin-left: 3%; margin-right: 3%;}
+.rst-content pre code { background-color: #000000; margin: 1px}
+
+.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td {
+    background-color: #f5f5f5;
+}
+.rst-content table.docutils:not(.field-list) tr:nth-child(2n-1) td img {
+    background-color: transparent; border-style: none; 
+}
+
+td {
+    border-color:#4c4c4c !important;
+}
+th {
+    background-color:#000000;
+    color: #fff;
+    border-color:#4c4c4c !important;
+}
+
+th code {
+    color: #fff !important;
+}
+
+hr {
+  width: 108%;
+  margin-left: -4%;
+   padding-bottom : 6px;
+    box-shadow: 0px 3px 0px 0px #23d3d3;
+}
+
+div[role="main"]{
+  margin-left:3%; 
+  margin-right:3%;
+}
+
+
+
+
+h1:first-of-type+ul,
+h2:first-of-type+ul{display: none}
+
