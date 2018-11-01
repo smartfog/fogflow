@@ -193,11 +193,11 @@ As seen in the picture, the following important information must be provided.
 	
     * name: the name of the task 
     * operator: the name of the operator that implements the data processing logic of this task; please register your operator beforehand so that it can be shown from the list
-    * groupby: to determine how many instances of this task should be created on the fly; currently including the following cases: 
+    * groupby: to determine how many instances of this task should be created on the fly; currently including the following cases
         *  if ther is only one instance to be created for this task, please use "groupby" = "all"
         *  if you need to create one instance for each entity ID of the input streams, please user "groupby" = "entityID"
         *  if you need to create one instance for each unique value of some specific context metadata, please use the name of this registered context metadata    
-    * shuffling of input streams: to indicate how the input stream should be assigned to the instance(s) of this task during the runtime, including the following two cases: 
+    * shuffling of input streams: to indicate how the input stream should be assigned to the instance(s) of this task during the runtime, including the following two cases
         *  "shuffling" = "broadcast": the selected input streams should be repeatedly assigned to every task instance of this operator
         *  "shuffling" = "unicast": each of the selected input streams should be assigned to a specific task instance only once        
     * entity type of output streams: to specify the entity type of the produced output stream
