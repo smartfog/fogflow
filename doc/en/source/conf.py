@@ -78,6 +78,9 @@ todo_include_todos = False
 
 
 def setup(app):      
+    app.add_stylesheet('css/theme.css')
+    app.add_stylesheet('css/theme_extra.css')
+    app.add_stylesheet('css/highlight.css')
     app.add_stylesheet('css/fiware_readthedocs.css')
     app.add_stylesheet('css/fiware_readthedocs_core.css')
 
