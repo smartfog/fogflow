@@ -7,6 +7,7 @@
 <br>
 [![Documentation badge](https://img.shields.io/readthedocs/fogflow.svg)](http://fogflow.readthedocs.org/en/latest/)
 ![Status](https://nexus.lab.fiware.org/repository/raw/public/static/badges/statuses/fogflow.svg)
+[![Swagger Validator](https://img.shields.io/swagger/valid/2.0/https/raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-expanded.json.svg)](https://app.swaggerhub.com/apis/fogflow/broker/1.0.0)
 
 FogFlow is an IoT edge computing framework to automatically orchestrate dynamic
 data processing flows over cloud and edges driven by context, including system
