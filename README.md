@@ -25,8 +25,8 @@ check the FIWARE Catalogue entry for
 -   [Usage](#usage)
 -   [API](#api)
 -   [Test](#test)
--   [More Information](#more-information)
 -   [Quality Assurance](#quality-assurance)
+-   [More Information](#more-information)
 -   [License](#license)
 
 ## Background
@@ -70,10 +70,6 @@ motivation, functionalities, and benefits of FogFlow.
     -   being able to provide services that require low latency and fast
         response time
 
-## More Information
-
--   [Tutorial](http://fogflow.readthedocs.io/en/latest/index.html)
--   [IoT-J paper](http://ieeexplore.ieee.org/document/8022859/)
 
 ## Install
 
@@ -113,7 +109,10 @@ follows:
     ![ ](https://img.shields.io/badge/dynamic/json.svg?label=Performance&url=https://fiware.github.io/catalogue/json/fogflow.json&query=$.performance&colorB=blue)
     ![ ](https://img.shields.io/badge/dynamic/json.svg?label=Stability&url=https://fiware.github.io/catalogue/json/fogflow.json&query=$.stability&colorB=blue)
 
----
+## More Information
+
+-   [Tutorial](http://fogflow.readthedocs.io/en/latest/index.html)
+-   [IoT-J paper](http://ieeexplore.ieee.org/document/8022859/)
 
 ## License
 
