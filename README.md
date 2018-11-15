@@ -90,7 +90,7 @@ Information about how to use FogFlow can be found in the
 APIs and examples of their usage can be found
 [here](https://fogflow.readthedocs.io/en/latest/api.html)
 
-## Tests
+## Test
 
 For performing a basic end-to-end test, you have to follow the detailed instructions [here](https://fogflow.readthedocs.io/en/latest/test.html).
 
