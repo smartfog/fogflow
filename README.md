@@ -2,7 +2,7 @@
 
 [![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/processing.svg)](https://www.fiware.org/developers/catalogue/)
 [![License: BSD-4-Clause](https://img.shields.io/badge/license-BSD%204%20Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
-[![Docker Status](https://img.shields.io/docker/pulls/fogflow.svg)](https://hub.docker.com/r/fogflow/)
+[![Docker Status](https://img.shields.io/docker/pulls/fogflow/discovery.svg)](https://hub.docker.com/r/fogflow/discovery/)
 [![Support badge](https://img.shields.io/badge/tag-fiware-orange.svg?logo=stackoverflow)](https://stackoverflow.com/questions/tagged/fiware)
 <br>
 [![Documentation badge](https://img.shields.io/readthedocs/fogflow.svg)](http://fogflow.readthedocs.org/en/latest/)
