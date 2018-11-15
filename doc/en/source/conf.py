@@ -79,7 +79,7 @@ todo_include_todos = False
 
 def setup(app):      
     app.add_stylesheet('css/fiware_readthedocs.css')
-    app.add_stylesheet('css/fiware_readthedocs_core.css')
+    app.add_stylesheet('css/fiware_readthedocs_processing.css')
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
