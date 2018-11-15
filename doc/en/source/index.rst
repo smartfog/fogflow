@@ -37,7 +37,8 @@ Currently, FogFlow has been applied into various business use cases in the areas
     concept.rst    
     programming.rst
     api.rst
-
+    test.rst
+    
 .. toctree::
     :maxdepth: 1
     :caption: Tutorial for Platform Operators
