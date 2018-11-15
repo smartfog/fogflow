@@ -24,6 +24,7 @@ check the FIWARE Catalogue entry for
 -   [Install](#install)
 -   [Usage](#usage)
 -   [API](#api)
+-   [Test](#test)
 -   [More Information](#more-information)
 -   [Quality Assurance](#quality-assurance)
 -   [License](#license)
