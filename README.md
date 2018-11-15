@@ -109,8 +109,6 @@ follows:
     ![ ](https://img.shields.io/badge/dynamic/json.svg?label=Performance&url=https://fiware.github.io/catalogue/json/fogflow.json&query=$.performance&colorB=blue)
     ![ ](https://img.shields.io/badge/dynamic/json.svg?label=Stability&url=https://fiware.github.io/catalogue/json/fogflow.json&query=$.stability&colorB=blue)
 
----
-
 ## More Information
 
 -   [Tutorial](http://fogflow.readthedocs.io/en/latest/index.html)
