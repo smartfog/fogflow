@@ -3,7 +3,10 @@ FogFlow
 
 .. figure:: https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/processing.svg
   :target: https://www.fiware.org/developers/catalogue/
+
+.. figure:: https://nexus.lab.fiware.org/repository/raw/public/badges/stackoverflow/fiware.svg
   :target: https://stackoverflow.com/questions/tagged/fiware/
+
 
 FogFlow is an IoT edge computing framework that automatically orchestrates dynamic data processing flows over cloud and edges 
 based on various **context**, including:
