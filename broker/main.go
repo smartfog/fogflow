@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	. "fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/config"
 )
 
 func main() {

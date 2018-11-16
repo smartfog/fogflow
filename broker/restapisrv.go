@@ -8,7 +8,7 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 
-	. "fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/config"
 )
 
 type RestApiSrv struct {

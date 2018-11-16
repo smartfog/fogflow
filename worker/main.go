@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"syscall"
 
-	. "fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/config"
 )
 
 func generateID(text string) string {

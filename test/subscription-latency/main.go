@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	. "fogflow/common/ngsi"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
 	"time"
+
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func main() {

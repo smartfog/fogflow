@@ -12,8 +12,8 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/satori/go.uuid"
 
-	. "fogflow/common/config"
-	. "fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type FastDiscovery struct {

@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	. "fogflow/common/config"
-	. "fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool) error {

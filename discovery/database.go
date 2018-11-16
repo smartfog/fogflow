@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	. "fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/config"
 )
 
 var DBTables = []string{

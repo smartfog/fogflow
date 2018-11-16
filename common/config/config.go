@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	. "fogflow/common/datamodel"
+	. "github.com/smartfog/fogflow/common/datamodel"
 )
 
 var (

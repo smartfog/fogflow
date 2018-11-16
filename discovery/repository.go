@@ -10,8 +10,8 @@ import (
 
 	_ "github.com/lib/pq"
 
-	. "fogflow/common/config"
-	. "fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type DBQuery struct {

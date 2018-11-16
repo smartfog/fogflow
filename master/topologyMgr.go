@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"sync"
 
-	. "fogflow/common/config"
-	. "fogflow/common/datamodel"
-	. "fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/datamodel"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type ProcessingPlane struct {
