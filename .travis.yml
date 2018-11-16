@@ -7,9 +7,31 @@ go:
 
 install: 
     - docker --version
+    
+    - echo "build discovery"
     - cd discovery
     - pwd
     - sh build
+
+    - echo "build broker"
+    - cd ../broker
+    - pwd
+    - sh build
+
+    - echo "build worker"
+    - cd ../worker
+    - pwd
+    - sh build
+
+    - echo "build master"
+    - cd ../master
+    - pwd
+    - sh build
+    
+    - echo "build designer"
+    - cd ../master
+    - pwd
+    - sh build    
 
 script:
 
