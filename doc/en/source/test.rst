@@ -6,7 +6,7 @@ Please follow the following steps to deploy the entire FogFlow system on a singl
 
 `Set up all FogFlow component on a single machine`_
 
-.. _`Set up all FogFlow component on a single machine`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+.. _`Set up all FogFlow component on a single machine`: https://fogflow.readthedocs.io/en/latest/setup.html
 
 
 Test of Context Management
