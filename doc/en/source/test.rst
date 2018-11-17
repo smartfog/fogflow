@@ -8,14 +8,15 @@ Please follow the following steps to deploy the entire FogFlow system on a singl
 
 .. _`Set up all FogFlow component on a single machine`: https://fogflow.readthedocs.io/en/latest/setup.html
 
+Once the FogFlow is up and running, an end-to-end function test can be done by performing test.sh in the /test folder. 
 
-Test of Context Management
-===================================
+.. code-block:: console    
+     
+	#perform an end-to-end function test
+	cd ./test
+	./function_test.sh 
 
-
-
-Test of Service Orchestration
-===================================
+For a performance test, please install JMeter and load the provided JMeter test plan ./test/performance_test.jmx
 
 
 
