@@ -6,13 +6,13 @@ This folder includes all docker-compose files to deploy FogFlow.
 
 the dockerfile files to build FogFlow components are located at the following folders
 
-	- discovery: /discovery/Dockerfile
+- discovery: /discovery/Dockerfile
 	
-	- broker: /broker/Dockerfile
+- broker: /broker/Dockerfile
 	
-	- master: /master/Dockerfile
+- master: /master/Dockerfile
 	
-	- worker: /worker/Dockerfile
+- worker: /worker/Dockerfile
 	
-	- designer: /designer/Dockerfile
+- designer: /designer/Dockerfile
 	
