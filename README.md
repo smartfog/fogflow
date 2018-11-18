@@ -23,10 +23,10 @@ check the FIWARE Catalogue entry for
 ## Content
 
 -   [Background](#background)
--   [Install](#install)
+-   [Installation](#installation)
 -   [Usage](#usage)
 -   [API](#api)
--   [Test](#test)
+-   [Testing](#testing)
 -   [Quality Assurance](#quality-assurance)
 -   [More Information](#more-information)
 -   [License](#license)
@@ -73,7 +73,7 @@ motivation, functionalities, and benefits of FogFlow.
         response time
 
 
-## Install
+## Installation
 
 The instructions to install FogFlow can be found in the
 [Installation Guide](https://fogflow.readthedocs.io/en/latest/setup.html)
@@ -88,7 +88,7 @@ Information about how to use FogFlow can be found in the
 APIs and examples of their usage can be found
 [here](https://fogflow.readthedocs.io/en/latest/api.html)
 
-## Test
+## Testing
 
 For performing a basic end-to-end test, you can follow the detailed instructions [here](https://fogflow.readthedocs.io/en/latest/test.html).
 
