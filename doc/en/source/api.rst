@@ -85,6 +85,10 @@ Please check the following examples.
 APIs of FogFlow Broker
 ===============================
 
+.. figure:: https://img.shields.io/swagger/valid/2.0/https/raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-expanded.json.svg
+  :target: https://app.swaggerhub.com/apis/fogflow/broker/1.0.0
+
+
 Create/update context
 -----------------------------------------------
 

@@ -90,7 +90,7 @@ APIs and examples of their usage can be found
 
 ## Test
 
-For performing a basic end-to-end test, you have to follow the detailed instructions [here](https://fogflow.readthedocs.io/en/latest/test.html).
+For performing a basic end-to-end test, you can follow the detailed instructions [here](https://fogflow.readthedocs.io/en/latest/test.html).
 
 ## Quality Assurance
 
