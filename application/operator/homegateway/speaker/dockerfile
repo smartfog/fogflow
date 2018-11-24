@@ -1,0 +1,7 @@
+FROM mhart/alpine-node
+#FROM hypriot/rpi-node
+
+
+WORKDIR /app
+ADD . /app
+ENTRYPOINT [ "node", "main.js" ]
