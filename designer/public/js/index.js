@@ -854,6 +854,27 @@ function initDockerImageList()
         osType: "Linux",
         operatorName: "speaker",
         prefetched: false
+    },{
+        name: "pushbutton",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "pushbutton",
+        prefetched: false
+    },{
+        name: "acoustic",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "acoustic",
+        prefetched: false
+    },{
+        name: "speaker",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "speaker",
+        prefetched: false
     }
     ];
 
@@ -868,7 +889,7 @@ function addDockerImage(image)
     var newImageObject = {};
 
     newImageObject.entityId = {
-        id : image.name + ':' + image.tag, 
+        id : image.name + '.' + uuid(), 
         type: 'DockerImage',
         isPattern: false
     };
