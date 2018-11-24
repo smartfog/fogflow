@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -13,11 +12,6 @@ import (
 	. "github.com/smartfog/fogflow/common/config"
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
-
-type DBQuery struct {
-	statement *sql.Stmt
-	vars      []interface{}
-}
 
 type EntityRepository struct {
 	//connection to the backend database
@@ -67,60 +61,41 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 	er.dbLock.Lock()
 	defer er.dbLock.Unlock()
 
-	//statements := make([]Stmt, 0)
-	queries := make([]DBQuery, 0)
-	//.db.Prepare()
+	statements := make([]string, 0)
 
 	// update the entity table
-	//fmt.Sprintf("SELECT entity_tab.eid, entity_tab.type, entity_tab.providerurl FROM entity_tab WHERE eid = '%s'", entity.ID)
-	queryStatement := `SELECT entity_tab,eid, entity_tab.type, entity_tab.providerurl FROM entity_tab WHERE eid = $1;`
-	rows, err := er.db.Query(queryStatement, entity.ID)
+	queryStatement := fmt.Sprintf("SELECT entity_tab.eid, entity_tab.type, entity_tab.providerurl FROM entity_tab WHERE eid = '%s'", entity.ID)
+	rows, err := er.query(queryStatement)
 	if err != nil {
 		return
 	}
 	if rows.Next() == false {
 		// insert new entity
-		stmt, err := er.db.Prepare(`INSERT INTO entity_tab(eid, type, isPattern, providerURL) VALUES($1, $2, $3, $4);`)
-		if err != nil {
-			log.Fatal(err)
-		}
-		query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, entity.Type, entity.IsPattern, registration.ProvidingApplication}}
-		queries = append(queries, query)
+		insertEntity := fmt.Sprintf("INSERT INTO entity_tab(eid, type, isPattern, providerURL) VALUES('%s', '%s', '%t', '%s');",
+			entity.ID, entity.Type, entity.IsPattern,
+			registration.ProvidingApplication)
+		statements = append(statements, insertEntity)
 	}
 	rows.Close()
 
 	// update attribute table
 	for _, attr := range registration.ContextRegistrationAttributes {
-
-		////################################################################////
-		////### 	  MAYBE REPLACE THIS WHOLE BLOCK BY A			   #####////
-		////###	INSERT INTO .... ON CONFLICT (...) DO UPDATE SET ....; #####////
-		////################################################################////
-		queryStatement := `SELECT * FROM attr_tab WHERE attr_tab.eid = $1 AND attr_tab.name = $2;`
-		rows, err := er.db.Query(queryStatement, entity.ID, attr.Name)
+		queryStatement := fmt.Sprintf("SELECT * FROM attr_tab WHERE attr_tab.eid = '%s' AND attr_tab.name = '%s';",
+			entity.ID, attr.Name)
+		rows, err := er.query(queryStatement)
 		if err == nil {
 			if rows.Next() == false {
 				// insert as new attribute
-				//statement := fmt.Sprintf("INSERT INTO attr_tab(eid, name, type, isDomain) VALUES('%s', '%s', '%s', '%t');",
-				//	entity.ID, attr.Name, attr.Type, attr.IsDomain)
-				stmt, err := er.db.Prepare(`INSERT INTO attr_tab(eid, name, type, isDomain) VALUES($1, $2, $3, $4);`)
-				if err != nil {
-					log.Fatal(err)
-				}
-				query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, attr.Name, attr.Type, attr.IsDomain}}
-				queries = append(queries, query)
+				statement := fmt.Sprintf("INSERT INTO attr_tab(eid, name, type, isDomain) VALUES('%s', '%s', '%s', '%t');",
+					entity.ID, attr.Name, attr.Type, attr.IsDomain)
+
+				statements = append(statements, statement)
 			} else {
 				// update as existing attribute
-				//statement := fmt.Sprintf("UPDATE attr_tab SET type = '%s', isDomain = '%t' WHERE attr_tab.eid = '%s' AND attr_tab.name = '%s';",
-				//	attr.Type, attr.IsDomain, entity.ID, attr.Name)
+				statement := fmt.Sprintf("UPDATE attr_tab SET type = '%s', isDomain = '%t' WHERE attr_tab.eid = '%s' AND attr_tab.name = '%s';",
+					attr.Type, attr.IsDomain, entity.ID, attr.Name)
 
-				stmt, err := er.db.Prepare(`UPDATE attr_tab SET type = $1, isDomain = $2 WHERE attr_tab.eid = $3 AND attr_tab.name = $4;`)
-				if err != nil {
-					log.Fatal(err)
-				}
-				query := DBQuery{statement: stmt, vars: []interface{}{attr.Type, attr.IsDomain, entity.ID, attr.Name}}
-				queries = append(queries, query)
-				//statements = append(statements, statement)
+				statements = append(statements, statement)
 			}
 		}
 		rows.Close()
@@ -131,64 +106,42 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 		switch strings.ToLower(meta.Type) {
 		case "circle":
 			circle := meta.Value.(Circle)
-			////################################################################////
-			////### 	  MAYBE REPLACE THIS WHOLE BLOCK BY A			   #####////
-			////###	INSERT INTO .... ON CONFLICT (...) DO UPDATE SET ....; #####////
-			////################################################################////
-			queryStatement := `SELECT * FROM geo_circle_tab WHERE geo_circle_tab.eid = $1 AND geo_circle_tab.name = $2;`
-			rows, err := er.db.Query(queryStatement, entity.ID, meta.Name)
-
+			queryStatement := fmt.Sprintf("SELECT * FROM geo_circle_tab WHERE geo_circle_tab.eid = '%s' AND geo_circle_tab.name = '%s';",
+				entity.ID, meta.Name)
+			rows, err := er.query(queryStatement)
 			if err == nil {
 				if rows.Next() == false {
 					// insert as new attribute
-
-					stmt, err := er.db.Prepare(`INSERT INTO geo_circle_tab(eid, name, type, center, radius) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326), $6);`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, meta.Name, meta.Type, circle.Longitude, circle.Latitude, circle.Radius}}
-					queries = append(queries, query)
-
+					statement := fmt.Sprintf("INSERT INTO geo_circle_tab(eid, name, type, center, radius) VALUES ('%s', '%s', '%s', ST_SetSRID(ST_MakePoint(%f, %f), 4326), %f);",
+						entity.ID, meta.Name, meta.Type, circle.Longitude, circle.Latitude, circle.Radius)
+					statements = append(statements, statement)
 				} else {
 					// update as existing attribute
-					stmt, err := er.db.Prepare(`UPDATE geo_circle_tab SET center = ST_SetSRID(ST_MakePoint($1, $2), 4326) AND radius = $3 WHERE geo_circle_tab.eid = $4 AND geo_circle_tab.name = $5;`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{circle.Longitude, circle.Latitude, circle.Radius, entity.ID, meta.Name}}
-					queries = append(queries, query)
+					statement := fmt.Sprintf("UPDATE geo_circle_tab SET center = ST_SetSRID(ST_MakePoint(%f, %f), 4326) AND radius = %f WHERE geo_circle_tab.eid = '%s' AND geo_circle_tab.name = '%s';",
+						circle.Longitude, circle.Latitude, circle.Radius, entity.ID, meta.Name)
+
+					statements = append(statements, statement)
 				}
 			}
 			rows.Close()
 
 		case "point":
 			point := meta.Value.(Point)
-
-			////################################################################////
-			////### 	  MAYBE REPLACE THIS WHOLE BLOCK BY A			   #####////
-			////###	INSERT INTO .... ON CONFLICT (...) DO UPDATE SET ....; #####////
-			////################################################################////
-			queryStatement := `SELECT * FROM geo_box_tab WHERE geo_box_tab.eid = $1 AND geo_box_tab.name = $2;`
-			rows, err := er.db.Query(queryStatement, entity.ID, meta.Name)
+			queryStatement := fmt.Sprintf("SELECT * FROM geo_box_tab WHERE geo_box_tab.eid = '%s' AND geo_box_tab.name = '%s';",
+				entity.ID, meta.Name)
+			rows, err := er.query(queryStatement)
 			if err == nil {
 				if rows.Next() == false {
 					// insert as new attribute
-
-					stmt, err := er.db.Prepare(`INSERT INTO geo_box_tab(eid, name, type, box) VALUES ($1, $2, $3, ST_SetSRID(ST_MakePoint($4, $5), 4326));`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, meta.Name, meta.Type, point.Longitude, point.Latitude}}
-					queries = append(queries, query)
+					statement := fmt.Sprintf("INSERT INTO geo_box_tab(eid, name, type, box) VALUES ('%s', '%s', '%s', ST_SetSRID(ST_MakePoint(%f, %f), 4326));",
+						entity.ID, meta.Name, meta.Type, point.Longitude, point.Latitude)
+					statements = append(statements, statement)
 				} else {
 					// update as existing attribute
+					statement := fmt.Sprintf("UPDATE geo_box_tab SET box = ST_SetSRID(ST_MakePoint(%f, %f), 4326) WHERE geo_box_tab.eid = '%s' AND geo_box_tab.name = '%s';",
+						point.Longitude, point.Latitude, entity.ID, meta.Name)
 
-					stmt, err := er.db.Prepare(`UPDATE geo_box_tab SET box = ST_SetSRID(ST_MakePoint($1, $2), 4326) WHERE geo_box_tab.eid = $3 AND geo_box_tab.name = $4;`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{point.Longitude, point.Latitude, entity.ID, meta.Name}}
-					queries = append(queries, query)
+					statements = append(statements, statement)
 				}
 			}
 			rows.Close()
@@ -202,61 +155,43 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 				}
 				locationText = locationText + fmt.Sprintf("%f %f", point.Longitude, point.Latitude)
 			}
-			////################################################################////
-			////### 	  MAYBE REPLACE THIS WHOLE BLOCK BY A			   #####////
-			////###	INSERT INTO .... ON CONFLICT (...) DO UPDATE SET ....; #####////
-			////################################################################////
 
-			queryStatement := `SELECT * FROM geo_box_tab WHERE geo_box_tab.eid = $1 AND geo_box_tab.name = $2;`
-			rows, err := er.db.Query(queryStatement, entity.ID, meta.Name)
+			queryStatement := fmt.Sprintf("SELECT * FROM geo_box_tab WHERE geo_box_tab.eid = '%s' AND geo_box_tab.name = '%s';",
+				entity.ID, meta.Name)
+			rows, err := er.query(queryStatement)
 			if err == nil {
 				if rows.Next() == false {
 					// insert as new attribute
-
-					stmt, err := er.db.Prepare(`INSERT INTO geo_box_tab(eid, name, type, box) VALUES ($1, $2, $3, ST_MakePolygon(ST_GeomFromText('POLYGON(($4))', 4326)));`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, meta.Name, meta.Type, locationText}}
-					queries = append(queries, query)
+					statement := fmt.Sprintf("INSERT INTO geo_box_tab(eid, name, type, box) VALUES ('%s', '%s', '%s', ST_MakePolygon(ST_GeomFromText('POLYGON((%s))', 4326)));",
+						entity.ID, meta.Name, meta.Type, locationText)
+					statements = append(statements, statement)
 				} else {
 					// update as existing attribute
-					stmt, err := er.db.Prepare(`UPDATE geo_box_tab SET box = ST_MakePolygon(ST_GeomFromText('POLYGON(($1))', 4326)) WHERE geo_box_tab.eid = $2 AND geo_box_tab.name = $3;`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{locationText, entity.ID, meta.Name}}
-					queries = append(queries, query)
+					statement := fmt.Sprintf("UPDATE geo_box_tab SET box = ST_MakePolygon(ST_GeomFromText('POLYGON((%s))', 4326)) WHERE geo_box_tab.eid = '%s' AND geo_box_tab.name = '%s';",
+						locationText, entity.ID, meta.Name)
+
+					statements = append(statements, statement)
 				}
 			}
 			rows.Close()
 
 		default:
-			////################################################################////
-			////### 	  MAYBE REPLACE THIS WHOLE BLOCK BY A			   #####////
-			////###	INSERT INTO .... ON CONFLICT (...) DO UPDATE SET ....; #####////
-			////################################################################////
-			queryStatement := `SELECT * FROM metadata_tab WHERE metadata_tab.eid = $1 AND metadata_tab.name = $2;`
-			rows, err := er.db.Query(queryStatement, entity.ID, meta.Name)
+			queryStatement := fmt.Sprintf("SELECT * FROM metadata_tab WHERE metadata_tab.eid = '%s' AND metadata_tab.name = '%s';",
+				entity.ID, meta.Name)
+			rows, err := er.query(queryStatement)
 			if err == nil {
 				if rows.Next() == false {
 					// insert as new attribute
+					statement := fmt.Sprintf("INSERT INTO metadata_tab(eid, name, type, value) VALUES('%s', '%s', '%s', '%s');",
+						entity.ID, meta.Name, meta.Type, meta.Value)
 
-					stmt, err := er.db.Prepare(`INSERT INTO metadata_tab(eid, name, type, value) VALUES($1, $2, $3, $4);`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{entity.ID, meta.Name, meta.Type, meta.Value}}
-					queries = append(queries, query)
+					statements = append(statements, statement)
 				} else {
 					// update as existing attribute
+					statement := fmt.Sprintf("UPDATE metadata_tab SET type = '%s', value = '%s' WHERE metadata_tab.eid = '%s' AND metadata_tab.name = '%s';",
+						meta.Type, meta.Value, entity.ID, meta.Name)
 
-					stmt, err := er.db.Prepare(`UPDATE metadata_tab SET type = $1, value = $2 WHERE metadata_tab.eid = $3 AND metadata_tab.name = $3;`)
-					if err != nil {
-						log.Fatal(err)
-					}
-					query := DBQuery{statement: stmt, vars: []interface{}{meta.Type, meta.Value, entity.ID, meta.Name}}
-					queries = append(queries, query)
+					statements = append(statements, statement)
 				}
 			}
 			rows.Close()
@@ -264,8 +199,7 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 	}
 
 	// apply the update once for the entire registration request, within a transaction
-	//er.exec(statements)
-	er.execDBQuery(queries)
+	er.exec(statements)
 }
 
 func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
@@ -667,11 +601,5 @@ func (er *EntityRepository) query(statement string) (*sql.Rows, error) {
 func (er *EntityRepository) exec(statements []string) {
 	for _, statement := range statements {
 		er.db.Exec(statement)
-	}
-}
-
-func (er *EntityRepository) execDBQuery(queries []DBQuery) {
-	for _, query := range queries {
-		query.statement.Exec(query.vars)
 	}
 }
