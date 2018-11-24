@@ -32,6 +32,18 @@ var myFogFunctionExamples = [
 {
     "fogfunction":{"type":"docker","code":"","dockerImage":"connectedcar","name":"ConnectedCar","user":"fogflow","inputTriggers":[{"name":"selector2","selectedAttributeList":["all"],"groupedAttributeList":["id"],"conditionList":[{"type":"EntityType","value":"ConnectedCar"}]}],"outputAnnotators":[]},
     "designboard":{"edges":[{"id":1,"block1":2,"connector1":["selector","output"],"block2":1,"connector2":["selectors","input"]},{"id":2,"block1":3,"connector1":["condition","output"],"block2":2,"connector2":["conditions","input"]}],"blocks":[{"id":1,"x":70.4081801170098,"y":-124.33545929838425,"type":"FogFunction","module":null,"values":{"name":"ConnectedCar","user":"fogflow"}},{"id":2,"x":-170.0545471557174,"y":-124.36545929838422,"type":"InputTrigger","module":null,"values":{"selectedattributes":["all"],"groupby":["id"]}},{"id":3,"x":-407.87272897389914,"y":-123.54727748020238,"type":"SelectCondition","module":null,"values":{"type":"EntityType","value":"ConnectedCar"}}]}
+},
+{
+    fogfunction: {"type":"docker","code":"","dockerImage":"pushbutton","name":"Pushbutton","user":"fogflow","inputTriggers":[{"name":"selector2","selectedAttributeList":["all"],"groupedAttributeList":["id"],"conditionList":[{"type":"EntityType","value":"Pushbutton"}]}],"outputAnnotators":[]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["selector","output"],"block2":1,"connector2":["selectors","input"]},{"id":2,"block1":3,"connector1":["condition","output"],"block2":2,"connector2":["conditions","input"]}],"blocks":[{"id":1,"x":96,"y":-133,"type":"FogFunction","module":null,"values":{"name":"Pushbutton","user":"fogflow"}},{"id":2,"x":-141,"y":-134,"type":"InputTrigger","module":null,"values":{"selectedattributes":["all"],"groupby":["id"]}},{"id":3,"x":-373,"y":-136,"type":"SelectCondition","module":null,"values":{"type":"EntityType","value":"Pushbutton"}}]}
+},
+{
+    fogfunction: {"type":"docker","code":"","dockerImage":"acoustic","name":"Acoustic","user":"fogflow","inputTriggers":[{"name":"selector2","selectedAttributeList":["all"],"groupedAttributeList":["id"],"conditionList":[{"type":"EntityType","value":"Microphone"}]}],"outputAnnotators":[]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["selector","output"],"block2":1,"connector2":["selectors","input"]},{"id":2,"block1":3,"connector1":["condition","output"],"block2":2,"connector2":["conditions","input"]}],"blocks":[{"id":1,"x":96,"y":-133,"type":"FogFunction","module":null,"values":{"name":"Acoustic","user":"fogflow"}},{"id":2,"x":-141,"y":-134,"type":"InputTrigger","module":null,"values":{"selectedattributes":["all"],"groupby":["id"]}},{"id":3,"x":-373,"y":-136,"type":"SelectCondition","module":null,"values":{"type":"EntityType","value":"Microphone"}}]}
+},
+{
+    fogfunction: {"type":"docker","code":"","dockerImage":"speaker","name":"Speaker","user":"fogflow","inputTriggers":[{"name":"selector2","selectedAttributeList":["all"],"groupedAttributeList":["id"],"conditionList":[{"type":"EntityType","value":"Speaker"}]}],"outputAnnotators":[]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["selector","output"],"block2":1,"connector2":["selectors","input"]},{"id":2,"block1":3,"connector1":["condition","output"],"block2":2,"connector2":["conditions","input"]}],"blocks":[{"id":1,"x":96,"y":-133,"type":"FogFunction","module":null,"values":{"name":"Speaker","user":"fogflow"}},{"id":2,"x":-141,"y":-134,"type":"InputTrigger","module":null,"values":{"selectedattributes":["all"],"groupby":["id"]}},{"id":3,"x":-373,"y":-136,"type":"SelectCondition","module":null,"values":{"type":"EntityType","value":"Speaker"}}]}
 }
 ];
 

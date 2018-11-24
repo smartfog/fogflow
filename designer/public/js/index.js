@@ -833,6 +833,27 @@ function initDockerImageList()
         osType: "Linux",
         operatorName: "publicsite",
         prefetched: false
+    },{
+        name: "pushbutton",
+        tag: "latest",
+        hwType: "ARM",
+        osType: "Linux",
+        operatorName: "pushbutton",
+        prefetched: false
+    },{
+        name: "acoustic",
+        tag: "latest",
+        hwType: "ARM",
+        osType: "Linux",
+        operatorName: "acoustic",
+        prefetched: false
+    },{
+        name: "speaker",
+        tag: "latest",
+        hwType: "ARM",
+        osType: "Linux",
+        operatorName: "speaker",
+        prefetched: false
     }
     ];
 
