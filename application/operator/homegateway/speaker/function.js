@@ -96,6 +96,8 @@ exports.handler = function(contextEntity, publish, subscribe){
         } else {
             attachedSpeakerID = contextEntity.attributes.speaker.value;            
         }
+        
+        console.log("====speaker ID=========", attachedSpeakerID);
                
         if (attachedSpeakerID == null) {
             return;
