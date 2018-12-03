@@ -488,6 +488,8 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 // to select the right docker image of an operator for the selected worker
 //
 func (master *Master) DetermineDockerImage(operatorName string, wID string) string {
+	INFO.Println("select a suitable image to execute on the selected worker")
+
 	selectedDockerImageName := ""
 
 	wProfile := master.workers[wID]
@@ -509,10 +511,13 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 
 		if image.TargetedOSType == osType && image.TargetedHWType == hwType {
 			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
+			break
 		}
 	}
 
 	master.operatorList_lock.RUnlock()
+
+	DEBUG.Println(selectedDockerImageName)
 
 	return selectedDockerImageName
 }
