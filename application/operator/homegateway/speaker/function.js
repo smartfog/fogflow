@@ -33,8 +33,8 @@ exports.handler = function(contextEntity, publish, subscribe){
         		updateEntity.metadata.location = contextEntity.metadata.location;
 		}    
     	
-	    publish(updateEntity, -1);
 	    console.log("publish: ", updateEntity);		                
+	    publish(updateEntity, -1);        
         
         // trigger a subsciption to fetch the prediction result
         var subscribeCtxReq = {};    
@@ -84,8 +84,8 @@ exports.handler = function(contextEntity, publish, subscribe){
             value: alert
         };              
         
-        publish(ctxObj, -1);
 	    console.log("publish: ", updateEntity);		                        
+        publish(ctxObj, -1);        
     } else if (contextEntity.entityId.type == 'Announcement') {
         // issue control commands to the speaker device according to the received announcement       
         
@@ -119,8 +119,8 @@ exports.handler = function(contextEntity, publish, subscribe){
             value: alert
         };              
         
-        publish(ctxObj, -1);
 	    console.log("publish: ", updateEntity);		                        
+        publish(ctxObj, -1);        
     }
 	
 };
