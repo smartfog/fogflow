@@ -13,7 +13,7 @@
     "logical_location": {
         "node_no": 1,
         "site_no": 1,               
-        "layer_no": 2,
+        "layer_no": 1,
         "parent_site_no": 1
     },          
     "logging":{
