@@ -107,7 +107,7 @@ exports.handler = function(contextEntity, publish, subscribe){
 		
 		var alert = {};
 		alert.type = "BROADCAST";
-		alert.value = annoucment;
+		alert.value = annoucement;
 		                    
         var ctxObj = {};
 	
