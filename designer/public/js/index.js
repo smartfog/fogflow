@@ -878,9 +878,18 @@ function initDockerImageList()
     }
     ];
 
-    for(var i=0; i<imageList.length; i++) {
-        addDockerImage(imageList[i]);
-    }
+    var queryReq = {}
+    queryReq.entities = [{type:'DockerImage', isPattern: true}];               
+    client.queryContext(queryReq).then( function(existingImageList) {
+        if (existingImageList.length == 0) {
+            for(var i=0; i<imageList.length; i++) {
+                addDockerImage(imageList[i]);
+            }            
+        }
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query the image list');
+    }); 
 }
 
 function addDockerImage(image) 
