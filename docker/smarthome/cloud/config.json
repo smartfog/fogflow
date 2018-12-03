@@ -1,11 +1,11 @@
 {
     "webportal_ip": "35.198.104.115",      
-    "coreservice_ip": "10.156.0.4",     
-    "external_hostip": "10.156.0.6",      
+    "coreservice_ip": "10.156.0.5",     
+    "external_hostip": "10.156.0.5",      
     "internal_hostip": "172.17.0.1",  
     "physical_location":{
-        "longitude": 137.709059,
-        "latitude": 33.692221,
+        "longitude": 139.709059,
+        "latitude": 35.692221,
         "section": "01",
         "district": "02",
         "city": "Tokyo"
