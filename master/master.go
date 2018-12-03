@@ -511,10 +511,13 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 
 		if image.TargetedOSType == osType && image.TargetedHWType == hwType {
 			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
+			break
 		}
 	}
 
 	master.operatorList_lock.RUnlock()
+
+	DEBUG.Println(selectedDockerImageName)
 
 	return selectedDockerImageName
 }
