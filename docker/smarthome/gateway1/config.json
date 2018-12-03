@@ -4,15 +4,15 @@
     "external_hostip": "10.156.0.7",      
     "internal_hostip": "172.17.0.1",  
     "physical_location":{
-        "longitude": 139.709059,
-        "latitude": 32.692221,
+        "longitude": 139.685090,
+        "latitude": 35.742752,
         "section": "01",
         "district": "02",
         "city": "Tokyo"
     },  
     "logical_location": {
         "node_no": 1,
-        "site_no": 2,               
+        "site_no": 1,               
         "layer_no": 2,
         "parent_site_no": 1
     },          
