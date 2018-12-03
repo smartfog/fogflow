@@ -84,7 +84,7 @@ exports.handler = function(contextEntity, publish, subscribe){
             value: alert
         };              
         
-	    console.log("publish: ", updateEntity);		                        
+	    console.log("publish: ", ctxObj);		                        
         publish(ctxObj, -1);        
     } else if (contextEntity.entityId.type == 'Announcement') {
         // issue control commands to the speaker device according to the received announcement       
@@ -121,7 +121,7 @@ exports.handler = function(contextEntity, publish, subscribe){
             value: alert
         };              
         
-	    console.log("publish: ", updateEntity);		                        
+	    console.log("publish: ", ctxObj);		                        
         publish(ctxObj, -1);        
     }
 	
