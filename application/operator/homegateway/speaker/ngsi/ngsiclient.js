@@ -134,7 +134,13 @@ var NGSI10Client = (function() {
         return axios({
             method: 'post',
             url: this.brokerURL + '/subscribeContext',
-            data: subscribeCtxReq
+            data: subscribeCtxReq,
+            headers: {
+                'Accept': 'application/json',
+                'Require-Reliability': 'true',
+                'Content-Type': 'application/json'
+            },
+            json: true            
         }).then( function(response){
             if (response.status == 200) {
                 return response.data.subscribeResponse.subscriptionId;

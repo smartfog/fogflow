@@ -216,7 +216,7 @@ def subscribeCmd():
     subscribeCtxReq['attributes'] = ['command']      
     subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
     
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
+    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
     response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
     if response.status_code != 200:
         print 'failed to subscribe context'
@@ -230,6 +230,9 @@ def run():
     if brokerURL == '':
         print 'failed to find a nearby broker'
         sys.exit(0)        
+
+    print "selected broker"
+    print brokerURL    
                     
     #announce myself        
     publishMySelf()
