@@ -392,7 +392,6 @@ func (e *Executor) configurateTask(port string, commands []interface{}) bool {
 	resp, err := client.Do(req)
 	if err != nil {
 		ERROR.Println(err)
-		panic(err)
 		return false
 	}
 	defer resp.Body.Close()
