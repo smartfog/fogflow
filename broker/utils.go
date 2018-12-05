@@ -51,6 +51,8 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	}
 	defer resp.Body.Close()
 
+	ioutil.ReadAll(resp.Body)
+
 	return nil
 }
 
