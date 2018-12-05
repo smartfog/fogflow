@@ -208,7 +208,7 @@ func (e *Executor) writeTempFile(fileName string, fileContent string) {
 func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string) (string, error) {
 	// prepare the configuration for a docker container, host mode for the container network
 	evs := make([]string, 0)
-	evs = append(evs, fmt.Sprintf("myport=%s", portNum))
+	evs = append(evs, fmt.Sprintf("myport=%d", portNum))
 
 	config := docker.Config{Image: dockerImage, Env: evs}
 
