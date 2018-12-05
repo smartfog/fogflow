@@ -37,14 +37,15 @@ def admin():
 
 @app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
-    print "notify"
+    print "=============notify============="
 
     if not request.json:
         abort(400)
-    
-    print(request.json)
-	
+    	
     objs = readContextElements(request.json)
+
+    global counter
+    counter = counter + 1
     
     print(objs)
 
@@ -139,10 +140,6 @@ def handleTimer():
 def publishResult(result):
     resultCtxObj = {}
         
-    #annotate the context with the configured entity id and type
-    if len(outputs) < 1:
-        return   
-    
     resultCtxObj['entityId'] = {}
     resultCtxObj['entityId']['id'] = result['id']
     resultCtxObj['entityId']['type'] = result['type']        
@@ -174,9 +171,10 @@ def updateContext(ctxObj):
 
                              
 if __name__ == '__main__':
-    #handleTimer()    
+    handleTimer()    
     
     myport = int(os.environ['myport'])
+
     app.run(host='0.0.0.0', port=myport)
     
     timer.cancel()
