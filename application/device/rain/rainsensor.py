@@ -40,7 +40,7 @@ def findNearbyBroker():
  
     discoveryReq = {}
     discoveryReq['entities'] = [{'type': 'IoTBroker', 'isPattern': True}]
-    discoveryReq['restriction'] = {'scopes':[{'type': 'nearby', 'value': nearby}]}
+    discoveryReq['restriction'] = {'scopes':[{'type': 'scopeType', 'scopeValue': nearby}]}
     
     discoveryURL = profile['discoveryURL']
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
