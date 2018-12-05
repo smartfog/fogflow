@@ -176,7 +176,7 @@ def updateContext(ctxObj):
 if __name__ == '__main__':
     #handleTimer()    
     
-    myport = os.environ['myport']
+    myport = int(os.environ['myport'])
     app.run(host='0.0.0.0', port=myport)
     
     timer.cancel()
