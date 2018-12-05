@@ -4,10 +4,6 @@ import json
 import time
 import datetime
 import threading
-import numpy as np
-import urllib
-import cv2
-import openface
 import os
 
 

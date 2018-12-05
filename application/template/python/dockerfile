@@ -1,15 +1,10 @@
-# for raspberry pi
-#FROM gavrisco/rpi-openface
-FROM bamos/openface
+FROM python:2.7-alpine
 
-RUN rm /root/openface/demos/web/start-servers.sh
-WORKDIR /tmp
-RUN pip install flask
+RUN mkdir /task
+ADD main.py /task
+ADD requirements.txt  /task
+WORKDIR /task
 
-#RUN sudo echo "Europe/Berlin" > /etc/timezone
-#RUN sudo dpkg-reconfigure -f noninteractive tzdata
+RUN pip install -r requirements.txt
 
-RUN mkdir /facefinder
-ADD main.py /facefinder
-WORKDIR /facefinder
 CMD ["python", "./main.py"]

@@ -1,1 +1,1 @@
-docker build -t "facefinder"  .
+docker build -t "python-fog-function"  .
