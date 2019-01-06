@@ -1,0 +1,10 @@
+{
+    "entities": [
+        {
+            "type": "FaceNum",
+            "isPattern": false,
+            "id": "Stream.FaceNum.01"
+        }
+    ],
+    "reference": "http://192.168.1.80:8001"
+}

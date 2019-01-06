@@ -1,0 +1,2 @@
+npm install
+docker build -t "geohash"  .

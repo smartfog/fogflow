@@ -1,0 +1,10 @@
+{
+    "entities": [
+        {
+            "type": "ChildLost",
+            "isPattern": false,
+            "id": "Stream.ChildLost.01"
+        }
+    ],
+    "reference": "http://192.168.1.80:8009"
+}

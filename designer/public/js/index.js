@@ -806,6 +806,55 @@ function initDockerImageList()
         operatorName: "anomaly",
         prefetched: false
     },{
+        name: "sum",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "sum",
+        prefetched: false
+    },{
+        name: "facecounter",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "facecounter",
+        prefetched: false
+    },{
+        name: "facefinder",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "facefinder",
+        prefetched: false
+    },{
+        name: "geohash",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "geohash",
+        prefetched: false
+    },{
+        name: "converter",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "converter",
+        prefetched: false
+    },{
+        name: "predictor",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "predictor",
+        prefetched: false
+    },{
+        name: "controller",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "controller",
+        prefetched: false
+    },{
         name: "fogflow/connectedcar",
         tag: "latest",
         hwType: "X86",

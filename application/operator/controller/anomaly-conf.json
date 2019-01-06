@@ -1,0 +1,13 @@
+[
+{
+	"command":"CONNECT_BROKER",
+	"brokerURL": "http://127.0.0.1:8070/ngsi"
+},
+{
+	"command":"SET_OUTPUTS",
+	"type": "Anomaly",
+	"id": "Anomaly.01"
+}
+]
+
+

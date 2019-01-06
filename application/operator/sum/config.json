@@ -1,0 +1,8 @@
+[{
+	"command": "CONNECT_BROKER",
+	"brokerURL": "http://192.168.1.80:8091/ngsi10"
+}, {
+	"command": "SET_OUTPUTS",
+	"id": "Stream.FaceSum.01",
+	"type": "FaceSum"
+}]
