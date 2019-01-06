@@ -1,0 +1,10 @@
+{
+    "discoveryURL": "http://192.168.1.102:8071/ngsi9",
+    "location": {
+        "latitude": 35.72226,
+        "longitude": 139.78437
+    },
+    "iconURL": "/img/rainsensor.png",
+	"type": "RainSensor",
+	"id": "01"	
+}
