@@ -806,49 +806,49 @@ function initDockerImageList()
         operatorName: "anomaly",
         prefetched: false
     },{
-        name: "sum",
+        name: "fogflow/sum",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "sum",
         prefetched: false
     },{
-        name: "facecounter",
+        name: "fogflow/facecounter",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "facecounter",
         prefetched: false
     },{
-        name: "facefinder",
+        name: "fogflow/facefinder",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "facefinder",
         prefetched: false
     },{
-        name: "geohash",
+        name: "fogflow/geohash",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "geohash",
         prefetched: false
     },{
-        name: "converter",
+        name: "fogflow/converter",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "converter",
         prefetched: false
     },{
-        name: "predictor",
+        name: "fogflow/predictor",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "predictor",
         prefetched: false
     },{
-        name: "controller",
+        name: "fogflow/controller",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
@@ -883,42 +883,42 @@ function initDockerImageList()
         operatorName: "publicsite",
         prefetched: false
     },{
-        name: "pushbutton",
+        name: "fogflow/pushbutton",
         tag: "latest",
         hwType: "ARM",
         osType: "Linux",
         operatorName: "pushbutton",
         prefetched: false
     },{
-        name: "acoustic",
+        name: "fogflow/acoustic",
         tag: "latest",
         hwType: "ARM",
         osType: "Linux",
         operatorName: "acoustic",
         prefetched: false
     },{
-        name: "speaker",
+        name: "fogflow/speaker",
         tag: "latest",
         hwType: "ARM",
         osType: "Linux",
         operatorName: "speaker",
         prefetched: false
     },{
-        name: "pushbutton",
+        name: "fogflow/pushbutton",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "pushbutton",
         prefetched: false
     },{
-        name: "acoustic",
+        name: "fogflow/acoustic",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "acoustic",
         prefetched: false
     },{
-        name: "speaker",
+        name: "fogflow/speaker",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
