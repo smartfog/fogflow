@@ -273,16 +273,11 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
 
-	if e.workerCfg.Worker.Registry.IsConfigured() == true {
-		// to fetch the docker image
-		_, pullError := e.PullImage(dockerImage, "latest")
-		if pullError != nil {
-			ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
-			return false
-		}
-	} else {
-		// assume the requested image is available
-		INFO.Println("no docker registery is configured, therefore we assume the requested docker image is already built locally and available")
+	// to fetch the docker image
+	_, pullError := e.PullImage(dockerImage, "latest")
+	if pullError != nil {
+		ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
+		return false
 	}
 
 	taskCtx := taskContext{}
