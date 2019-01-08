@@ -119,7 +119,7 @@ func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
 		auth.Password = e.workerCfg.Worker.Registry.Password
 		auth.Email = e.workerCfg.Worker.Registry.Email
 		auth.ServerAddress = e.workerCfg.Worker.Registry.ServerAddress
-		dockerImage = e.workerCfg.Worker.Registry.ServerAddress + "/" + dockerImage
+		dockerImage = dockerImage
 	}
 
 	fmt.Printf("options : %+v\r\n", auth)
