@@ -101,14 +101,15 @@ func (e *Executor) ListImages() {
 	}
 }
 
-func (e *Executor) InspectImage(dockerImage string) {
-	img, err := e.client.InspectImage(dockerImage)
+func (e *Executor) InspectImage(dockerImage string) bool {
+	_, err := e.client.InspectImage(dockerImage)
 	if err != nil {
-		fmt.Printf("failed to access this image %+v", err)
-		return
+		INFO.Printf("operator image %s does not exist locally\r\n", dockerImage)
+		return false
+	} else {
+		INFO.Printf("operator image %s exists locally\r\n", dockerImage)
+		return true
 	}
-
-	fmt.Printf("cfg : %+v", img.Config)
 }
 
 func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
@@ -273,11 +274,14 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
 
-	// to fetch the docker image
-	_, pullError := e.PullImage(dockerImage, "latest")
-	if pullError != nil {
-		ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
-		return false
+	// first check the image locally
+	if e.InspectImage(dockerImage) == false {
+		// if the image does not exist locally, try to fetch it from docker hub
+		_, pullError := e.PullImage(dockerImage, "latest")
+		if pullError != nil {
+			ERROR.Printf("failed to fetch the image %s\r\n", task.DockerImage)
+			return false
+		}
 	}
 
 	taskCtx := taskContext{}
