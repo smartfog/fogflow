@@ -1,2 +1,2 @@
 npm install
-docker build -t "sum"  .
+docker build -t "fogflow/sum"  .

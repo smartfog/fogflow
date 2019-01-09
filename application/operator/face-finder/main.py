@@ -151,8 +151,8 @@ def getChildInfo(entityObj):
             image =  url2Image(imageURL)
             
             if targetedFeaturesIsSet == False: 
-               featuresOfTarget = getRep(image)
-        targetedFeaturesIsSet = True
+                featuresOfTarget = getRep(image)
+                targetedFeaturesIsSet = True
             
             saveLocation = attributes['saveLocation']['value']  
 
