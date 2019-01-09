@@ -139,7 +139,7 @@ The input parameters of a fog function are predefined and fixed, including:
     a Javascript-based template of the implementation of fog functions is provided in the FogFlow repository as well. Please refer to `Javascript-based template for fog function`_
 
 
-.. _`Javascript-based template for fog function`: https://github.com/smartfog/fogflow/tree/master/application/operator/template/javascript
+.. _`Javascript-based template for fog function`: https://github.com/smartfog/fogflow/tree/master/application/template/javascript
 
 
 Here are some examples to show how you can use these three call back functions. 

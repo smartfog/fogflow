@@ -16,80 +16,80 @@ var totalNumAnomaly = 0; // total number of detected anomaly events
 function startApp() 
 {
     console.log('start to receive input data streams via a listening port');
-	setInterval(onTimer, tInterval);
+    setInterval(onTimer, tInterval);
 }
 
 function stopApp() 
 {                         
-	console.log('clean up the app');
+    console.log('clean up the app');
 }
 
 // process the input data stream and generate output stream
 function processInputStreamData(data) 
 {
-	// do the internal data processing	
-	counter(data);
+    // do the internal data processing    
+    counter(data);
 }
 
 function onTimer()
 {
-	var now = Date.now();
-	
-	if( (now - tBegin) >= tInterval ) {
-		// publish the total number of anomaly events in the current time window
+    var now = Date.now();
+    
+    if( (now - tBegin) >= tInterval ) {
+        // publish the total number of anomaly events in the current time window
         var stat = {};
         
-		stat['time'] = tBegin; // time.toISOString(); var time = new Date(now);
-		stat['counter'] = totalNumAnomaly;	
+        stat['time'] = tBegin; // time.toISOString(); var time = new Date(now);
+        stat['counter'] = totalNumAnomaly;    
         
-        updateContext(stat)				
-		
-		tBegin = tBegin + tInterval;
-		totalNumAnomaly = 0;
-	} 
+        updateContext(stat)                
+        
+        tBegin = tBegin + tInterval;
+        totalNumAnomaly = 0;
+    } 
 }
 
 function counter(msg) 
-{	
-	var now = Date.now();
-	
-	if( (now - tBegin) >= tInterval ) {
-		// publish the total number of anomaly events in the current time window
+{    
+    var now = Date.now();
+    
+    if( (now - tBegin) >= tInterval ) {
+        // publish the total number of anomaly events in the current time window
         var stat = {};
         
-		stat['time'] = tBegin; //time.toISOString(); var time = new Date(now);
-		stat['counter'] = totalNumAnomaly;	
+        stat['time'] = tBegin; //time.toISOString(); var time = new Date(now);
+        stat['counter'] = totalNumAnomaly;    
         
-        updateContext(stat)				
-		
-		tBegin = tBegin + tInterval;
-		totalNumAnomaly = 1;
-	} else {
-		totalNumAnomaly = totalNumAnomaly + 1;
-	}
+        updateContext(stat)                
+        
+        tBegin = tBegin + tInterval;
+        totalNumAnomaly = 1;
+    } else {
+        totalNumAnomaly = totalNumAnomaly + 1;
+    }
 }
 
 // update context for streams
 function updateContext(stat) 
 {
-	if (isConfigured == false) {
-		console.log('the task is not configured yet!!!');
-		return;
-	}
-		
+    if (isConfigured == false) {
+        console.log('the task is not configured yet!!!');
+        return;
+    }
+        
     var ctxObj = {};
    
-	ctxObj.entityId = {};
-	
-	var outputStream = outputs[0];
-	
+    ctxObj.entityId = {};
+    
+    var outputStream = outputs[0];
+    
     ctxObj.entityId.id = outputStream.id;
-	ctxObj.entityId.type = outputStream.type;
-	ctxObj.entityId.isPattern = false;	
+    ctxObj.entityId.type = outputStream.type;
+    ctxObj.entityId.isPattern = false;    
     
     ctxObj.attributes = {};
-    		
-    ctxObj.attributes.time = {		
+            
+    ctxObj.attributes.time = {        
         type: 'integer',
         value: stat.time
     };
@@ -97,12 +97,12 @@ function updateContext(stat)
         type: 'integer',
         value: stat.counter
     };  
-	
+    
     console.log(ctxObj);    
     ngsi10client.updateContext(ctxObj).then( function(data) {
-		console.log('======send update======, ');
+        console.log('======send update======, ');
     }).catch(function(error) {
-		console.log(error);
+        console.log(error);
         console.log('failed to update context');
     });    
 }
@@ -110,34 +110,34 @@ function updateContext(stat)
 
 // handle the commands received from the engine
 function handleAdmin(req, commands, res) 
-{	
+{    
     console.log('=============commands=============');
     console.log(commands);
-	handleCmds(commands);
-	
-	isConfigured = true;
-	
-	res.status(200).json({});
+    handleCmds(commands);
+    
+    isConfigured = true;
+    
+    res.status(200).json({});
 }
 
 function handleCmds(commands) 
 {
-	for(var i = 0; i < commands.length; i++) {
-		var cmd = commands[i];
-		handleCmd(cmd);
-	}	
+    for(var i = 0; i < commands.length; i++) {
+        var cmd = commands[i];
+        handleCmd(cmd);
+    }    
 }
 
 function handleCmd(commandObj) 
-{	
-	switch(commandObj.command) {
-		case 'CONNECT_BROKER':
-			connectBroker(commandObj);
-			break;
-		case 'SET_OUTPUTS':
-			setOutputs(commandObj);
-			break;
-	}	
+{    
+    switch(commandObj.command) {
+        case 'CONNECT_BROKER':
+            connectBroker(commandObj);
+            break;
+        case 'SET_OUTPUTS':
+            setOutputs(commandObj);
+            break;
+    }    
 }
 
 // connect to the IoT Broker
@@ -145,29 +145,29 @@ function connectBroker(cmd)
 {
     brokerURL = cmd.brokerURL;
     ngsi10client = new NGSIClient.NGSI10Client(brokerURL);
-	console.log('connected to broker', cmd.brokerURL);
+    console.log('connected to broker', cmd.brokerURL);
 }
 
 
 function setOutputs(cmd) 
 {
-	var outputStream = {};
-	outputStream.id = cmd.id;
-	outputStream.type = cmd.type;
+    var outputStream = {};
+    outputStream.id = cmd.id;
+    outputStream.type = cmd.type;
 
-	outputs.push(outputStream);
+    outputs.push(outputStream);
 
-	console.log('output has been set: ', cmd);
+    console.log('output has been set: ', cmd);
 }
 
 
 // handle the received results
 function handleNotify(req, ctxObjects, res) 
-{	
-	for(var i = 0; i < ctxObjects.length; i++) {
-		//console.log(ctxObjects[i]);
+{    
+    for(var i = 0; i < ctxObjects.length; i++) {
+        //console.log(ctxObjects[i]);
         processInputStreamData(ctxObjects[i]);
-	}
+    }
 }
 
 // get the listening port number from the environment variables given by the FogFlow edge worker
@@ -178,10 +178,10 @@ NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.setAdminHandler(handleAdmin);
 NGSIAgent.start(myport, startApp);
 process.on('SIGINT', function() {
-	NGSIAgent.stop();	
-	stopApp();
-	
-	process.exit(0);
+    NGSIAgent.stop();    
+    stopApp();
+    
+    process.exit(0);
 });
 
 

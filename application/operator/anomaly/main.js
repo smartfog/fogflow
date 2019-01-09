@@ -145,7 +145,7 @@ function handleCmds(commands)
 
 function handleCmd(commandObj) 
 {	
-	switch(commandObj.command) {
+	switch(commandObj.command)
 		case 'CONNECT_BROKER':
 			connectBroker(commandObj);
 			break;

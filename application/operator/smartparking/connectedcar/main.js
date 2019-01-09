@@ -181,7 +181,11 @@ function handleNotify(req, ctxObjects, res)
 	console.log('handle notify');
 	for(var i = 0; i < ctxObjects.length; i++) {
 		console.log(ctxObjects[i]);
-        fogfunction.handler(ctxObjects[i], publish, query, subscribe);
+        try {
+            fogfunction.handler(ctxObjects[i], publish, query, subscribe);    
+        } catch (error) {
+            console.log(error)
+        }
 	}
 }
 

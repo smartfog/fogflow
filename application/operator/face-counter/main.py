@@ -185,10 +185,10 @@ def url2Image(url):
     
     image = np.asarray(bytearray(data), dtype=np.uint8)    
     image = cv2.imdecode(image, cv2.CV_LOAD_IMAGE_COLOR)
-    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)	
+    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)    
     return rgbImg
 
-def faceCounting(url): 	
+def faceCounting(url):     
     image = url2Image(url)
     if image is None:
         raise Exception("Unable to load image: {}".format(url))

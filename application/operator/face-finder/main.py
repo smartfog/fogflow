@@ -58,7 +58,7 @@ def notifyContext():
         abort(400)
     
     print(request.json)
-	
+    
     objs = readContextElements(request.json)
     
     print(objs)
@@ -151,8 +151,8 @@ def getChildInfo(entityObj):
             image =  url2Image(imageURL)
             
             if targetedFeaturesIsSet == False: 
-       		featuresOfTarget = getRep(image)
-		targetedFeaturesIsSet = True
+               featuresOfTarget = getRep(image)
+        targetedFeaturesIsSet = True
             
             saveLocation = attributes['saveLocation']['value']  
 
@@ -224,7 +224,7 @@ def url2Image(url):
     
     image = np.asarray(bytearray(data), dtype=np.uint8)    
     image = cv2.imdecode(image, cv2.CV_LOAD_IMAGE_COLOR)
-    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)	
+    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)    
     return rgbImg
 
     
@@ -241,7 +241,7 @@ def getRep(img):
     return rep
     
 
-def faceMatching(): 	
+def faceMatching():     
     global camera, cameraURL, featuresOfTarget, targetedFeaturesIsSet
     
     if camera == None or cameraURL == '' or targetedFeaturesIsSet == False:        
@@ -272,7 +272,7 @@ def faceMatching():
         
             # save the image and post it to the remote image server
             fileName = 'childfound-' + camera['metadata']['cameraID']['value'] + '-' + str(int(time.time())) + '.png'
-            bgrImg = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)	
+            bgrImg = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)    
             cv2.imwrite(fileName, bgrImg)
             files = {fileName: open(fileName, 'rb')}
             requests.post(saveLocation, files=files)

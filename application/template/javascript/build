@@ -1,1 +1,2 @@
-docker build -t "nodejs"  .
+npm install  
+docker build -t "fogflow/connectedcar"  .

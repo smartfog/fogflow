@@ -111,14 +111,13 @@ var NGSI10Client = (function() {
             url: this.brokerURL + '/queryContext',
             data: queryCtxReq
         }).then( function(response){
-            console.log(response);
+            //console.log(response);
             if (response.status == 200) {
                 var objectList = [];
                 var ctxElements = response.data.contextResponses;
                 for(var i=0; ctxElements && i<ctxElements.length; i++){                    
-                    console.log(ctxElements[i].contextElement);
-                    console.log('===========context element=======');
-                    console.log(ctxElements[i].contextElement)
+                    //console.log('===========context element=======');
+                    //console.log(ctxElements[i].contextElement)
                     var obj = CtxElement2JSONObject(ctxElements[i].contextElement);
                     objectList.push(obj);
                 }

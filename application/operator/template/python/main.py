@@ -4,10 +4,6 @@ import json
 import time
 import datetime
 import threading
-import numpy as np
-import urllib
-import cv2
-import openface
 import os
 
 
@@ -18,18 +14,7 @@ brokerURL = ''
 outputs = []
 timer = None
 lock = threading.Lock()
-camera = None
-cameraURL = ''
-total_size = 0 
-
-threshold = 1.0
-imageDemension = 96
-align = openface.AlignDlib('/root/openface/models/dlib/shape_predictor_68_face_landmarks.dat')
-net = openface.TorchNeuralNet('/root/openface/models/openface/nn4.small2.v1.t7', imageDemension)
-
-saveLocation = ''
-featuresOfTarget = None
-targetedFeaturesIsSet = False
+counter = 0 
 
 @app.errorhandler(400)
 def not_found(error):
@@ -52,14 +37,15 @@ def admin():
 
 @app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
-    print "notify"
+    print "=============notify============="
 
     if not request.json:
         abort(400)
-    
-    print(request.json)
-	
+    	
     objs = readContextElements(request.json)
+
+    global counter
+    counter = counter + 1
     
     print(objs)
 
@@ -123,38 +109,9 @@ def handleNotify(contextObjs):
 def processInputStreamData(obj):
     print '===============receive context entity===================='
     print obj
-
-    entityId = obj['entityId']
-    if entityId['type'] == 'Camera':
-        getCameraURL(obj)
-    elif entityId['type'] == 'ChildLost':
-        getChildInfo(obj)
     
-    with lock: 
-        faceMatching()
-
-def getCameraURL(entityObj):
-    global camera, cameraURL
-    
-    camera = entityObj    
-    if 'attributes' in entityObj:
-        attributes = entityObj['attributes']
-        if 'url' in attributes:
-            cameraURL = attributes['url']['value']    
-
-def getChildInfo(entityObj):
-    global featuresOfTarget, saveLocation, targetedFeaturesIsSet
-    if 'attributes' in entityObj:
-        attributes = entityObj['attributes']
-        if 'imageURL' in attributes:
-            imageURL = attributes['imageURL']['value']        
-            image =  url2Image(imageURL)
-            
-            if targetedFeaturesIsSet == False: 
-       		featuresOfTarget = getRep(image)
-		targetedFeaturesIsSet = True
-            
-            saveLocation = attributes['saveLocation']['value']  
+    global counter    
+    counter = counter + 1
 
 def handleConfig(configurations):  
     global brokerURL
@@ -168,8 +125,13 @@ def handleConfig(configurations):
 def handleTimer():
     global timer
 
-    with lock: 
-        faceMatching()  
+    # publish the counting result
+    entity = {}       
+    entity['id'] = "result.01"
+    entity['type'] = "Result"
+    entity['counter'] = counter    
+     
+    publishResult(entity)
         
     timer = threading.Timer(10, handleTimer)
     timer.start()
@@ -178,20 +140,13 @@ def handleTimer():
 def publishResult(result):
     resultCtxObj = {}
         
-    #annotate the context with the configured entity id and type
-    if len(outputs) < 1:
-        return   
-    
     resultCtxObj['entityId'] = {}
-    resultCtxObj['entityId']['id'] = outputs[0]['id']
-    resultCtxObj['entityId']['type'] = outputs[0]['type']        
+    resultCtxObj['entityId']['id'] = result['id']
+    resultCtxObj['entityId']['type'] = result['type']        
     resultCtxObj['entityId']['isPattern'] = False    
     
     resultCtxObj['attributes'] = {}
-    resultCtxObj['attributes']['cameraID'] = {'type': 'string', 'value': result['cameraID']}
-    resultCtxObj['attributes']['where'] = {'type': 'object', 'value': result['location']}    
-    resultCtxObj['attributes']['when'] = {'type': 'string', 'value': result['date']}        
-    resultCtxObj['attributes']['image'] = {'type': 'string', 'value': result['image']}            
+    resultCtxObj['attributes']['counter'] = {'type': 'integer', 'value': result['counter']}
 
     # publish the real time results as context updates    
     updateContext(resultCtxObj)
@@ -214,87 +169,12 @@ def updateContext(ctxObj):
         print 'failed to update context'
         print response.text
 
-
-def url2Image(url): 
-    global total_size
-    resp = urllib.urlopen(url)
-    data = resp.read()
-    
-    total_size += len(data)
-    
-    image = np.asarray(bytearray(data), dtype=np.uint8)    
-    image = cv2.imdecode(image, cv2.CV_LOAD_IMAGE_COLOR)
-    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)	
-    return rgbImg
-
-    
-def getRep(img):
-    bb = align.getLargestFaceBoundingBox(img)
-    if bb is None:
-        raise Exception("Unable to find a face: {}")
-        
-    alignedFace = align.align(imageDemension, img, bb, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
-    if alignedFace is None:
-        raise Exception("Unable to align image: {}")
-
-    rep = net.forward(alignedFace)
-    return rep
-    
-
-def faceMatching(): 	
-    global camera, cameraURL, featuresOfTarget, targetedFeaturesIsSet
-    
-    if camera == None or cameraURL == '' or targetedFeaturesIsSet == False:        
-        print 'parameters are not yet set', camera, cameraURL, featuresOfTarget
-        return     
-
-    image = url2Image(cameraURL)
-    if image is None:
-        raise Exception("Unable to load image: {}".format(camera))
-        
-    faces = align.getAllFaceBoundingBoxes(image)
-    if faces is None:
-        raise Exception("Unable to find a face: {}".format(camera))
-    
-    for face in faces:
-        alignedFace = align.align(96, image, face, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
-        if alignedFace is None:
-            raise Exception("Unable to align image: {}")
-
-        rep = net.forward(alignedFace)
-        d = rep - featuresOfTarget
-        print("  + Squared l2 distance between representations: {:0.3f}".format(np.dot(d, d)))
-            
-        distance = np.dot(d, d);
-        if  distance < threshold:
-            distance = "{:0.3f}".format(distance);        
-            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")              
-        
-            # save the image and post it to the remote image server
-            fileName = 'childfound-' + camera['metadata']['cameraID']['value'] + '-' + str(int(time.time())) + '.png'
-            bgrImg = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)	
-            cv2.imwrite(fileName, bgrImg)
-            files = {fileName: open(fileName, 'rb')}
-            requests.post(saveLocation, files=files)
-            
-            result = {  "date": now, 
-                        "cameraID": camera['metadata']['cameraID']['value'], 
-                        "location": camera['metadata']['location']['value'], 
-                        "delta": distance, 
-                        "image": saveLocation + '/' + fileName,
-                        "totalbytes": total_size
-                    }
-            
-            
-            #update context
-            publishResult(result)  
-            
-                                
-
+                             
 if __name__ == '__main__':
-    #handleTimer()    
+    handleTimer()    
     
-    myport = os.environ['myport']
+    myport = int(os.environ['myport'])
+
     app.run(host='0.0.0.0', port=myport)
     
     timer.cancel()
