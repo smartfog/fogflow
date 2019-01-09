@@ -1,2 +1,2 @@
 npm install
-docker build -t "pushbutton"  .
+docker build -t "fogflow/pushbutton"  .

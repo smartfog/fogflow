@@ -1,2 +1,2 @@
 npm install
-docker build -t "acoustic"  .
+docker build -t "fogflow/acoustic"  .

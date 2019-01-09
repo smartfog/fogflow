@@ -10,6 +10,7 @@ docker push  fogflow/connectedcar
 
 docker push  fogflow/recommender
 
+docker push  fogflow/face-finder
 
 
 
