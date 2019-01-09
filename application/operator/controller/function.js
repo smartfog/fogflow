@@ -1,14 +1,14 @@
 var awningID = null;
 
 exports.handler = function(contextEntity, publish, subscribe){
-	
-	if (contextEntity == null) {
-		return;
-	} 
-	
-	if (contextEntity.attributes == null) {
-		return;
-	}
+    
+    if (contextEntity == null) {
+        return;
+    } 
+    
+    if (contextEntity.attributes == null) {
+        return;
+    }
     
     if (contextEntity.entityId.type == 'SmartAwning') {
         awningID = contextEntity.entityId.id;
@@ -16,7 +16,7 @@ exports.handler = function(contextEntity, publish, subscribe){
         // trigger a subsciption to fetch the prediction result
         var subscribeCtxReq = {};    
         subscribeCtxReq.entities = [{type: 'Prediction', isPattern: true}];
-        //subscribeCtxReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'geohash='+contextEntity.attributes.geohash.value}]}        	
+        //subscribeCtxReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'geohash='+contextEntity.attributes.geohash.value}]}           
         
         subscribe(subscribeCtxReq);     
            
@@ -25,24 +25,24 @@ exports.handler = function(contextEntity, publish, subscribe){
         // var geohash = contextEntity.attributes.geohash.value;
                 
         var ctxObj = {};
-	
-	    ctxObj.entityId = {};
-	
-        ctxObj.attributes = {};	        
-				
-	    ctxObj.metadata = {};		
+    
+        ctxObj.entityId = {};
+    
+        ctxObj.attributes = {};         
+                
+        ctxObj.metadata = {};       
         ctxObj.metadata.awningID = {
             type: 'string',
             value: awningID
-        };  		           
+        };                     
         
         if (contextEntity.attributes.raining.value == true) {
-            ctxObj.attributes.command = {		
+            ctxObj.attributes.command = {       
                 type: 'string',
                 value: 'open'
             };              
         } else {
-            ctxObj.attributes.command = {		
+            ctxObj.attributes.command = {       
                 type: 'string',
                 value: 'close'
             };                          
@@ -50,6 +50,6 @@ exports.handler = function(contextEntity, publish, subscribe){
         
         publish(ctxObj, 0);
     }
-	
+    
 };
 
