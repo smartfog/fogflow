@@ -5,6 +5,6 @@
         "longitude": 139.709059
     },
     "iconURL": "/img/shop.png",    
-	"type": "PowerPanel",
-	"id": "01"	
+    "type": "PowerPanel",
+    "id": "01"	
 }

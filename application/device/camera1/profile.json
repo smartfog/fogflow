@@ -1,12 +1,12 @@
 {
     "discoveryURL": "http://10.156.0.9:443/ngsi9",
-    "myIP": "10.156.0.9",
-    "myPort": 8091,
+    "myIP": "10.156.0.5",
+    "myPort": 8080,
     "location": {
         "latitude": 36.014631,
         "longitude": 140.106970
     },
     "iconURL": "/img/camera.png",
-	"type": "Camera",
-	"id": "01"	
+    "type": "Camera",
+    "id": "01"	
 }
