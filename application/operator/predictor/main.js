@@ -86,13 +86,13 @@ function sendUpdateWithinBuffer()
             tmp.ctxObj.entityId.type = outputs[i].type;
         }
         
-            ngsi10client.updateContext(tmp.ctxObj).then( function(data) {
+        ngsi10client.updateContext(tmp.ctxObj).then( function(data) {
             console.log('======send update======');
-                console.log(data);
-            }).catch(function(error) {
+            console.log(data);
+        }).catch(function(error) {
             console.log(error);
-                console.log('failed to update context');
-            });          
+            console.log('failed to update context');
+        });          
     }
     
     buffer= [];
@@ -116,13 +116,13 @@ function publish(ctxUpdate, index)
             tmp.ctxObj.entityId.type = outputs[i].type;
         }
         
-            ngsi10client.updateContext(tmp.ctxObj).then( function(data) {
+        ngsi10client.updateContext(tmp.ctxObj).then( function(data) {
             console.log('======send update======');
-                console.log(data);
-            }).catch(function(error) {
+            console.log(data);
+        }).catch(function(error) {
             console.log(error);
-                console.log('failed to update context');
-            });          
+            console.log('failed to update context');
+        });          
     }
     
     buffer= [];
@@ -154,5 +154,4 @@ process.on('SIGINT', function() {
     
     process.exit(0);
 });
-
 

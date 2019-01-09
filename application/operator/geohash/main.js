@@ -87,10 +87,10 @@ function sendUpdateWithinBuffer()
         }
         
         ngsi10client.updateContext(tmp.ctxObj).then( function(data) {
-        console.log('======send update======');
+            console.log('======send update======');
             console.log(data);
         }).catch(function(error) {
-        console.log(error);
+            console.log(error);
             console.log('failed to update context');
         });          
     }
