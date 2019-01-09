@@ -29,7 +29,7 @@
             "username": "postgres",
             "password": "postgres",
             "host": "127.0.0.1",
-            "port": 5433,
+            "port": 5432,
             "dbname": "ngsi9"
         }    
     },
@@ -49,7 +49,7 @@
     },    
     "rabbitmq": {
         "port": 5672,
-        "username": "guest",
-        "password":"guest"
+        "username": "admin",
+        "password":"mypass"
     }
 }

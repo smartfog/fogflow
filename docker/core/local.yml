@@ -1,0 +1,12 @@
+version: "2"
+services:
+    postgis:
+        image: mdillon/postgis
+        ports:
+            - 5432:5432        
+    rabbitmq:
+        image: tutum/rabbitmq
+        ports:
+            - 5672:5672
+        environment:
+            - RABBITMQ_PASS=mypass   
