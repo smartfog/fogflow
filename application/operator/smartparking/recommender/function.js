@@ -9,15 +9,15 @@ var speakerID = null;
 //
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
-	if (contextEntity == null) {
-		return;
-	} 	
-	if (contextEntity.attributes == null) {
-		return;
-	}
-	if (contextEntity.attributes.RecommendedParkingSite != null) {
-		return;
-	}       
+    if (contextEntity == null) {
+        return;
+    } 	
+    if (contextEntity.attributes == null) {
+        return;
+    }
+    if (contextEntity.attributes.RecommendedParkingSite != null) {
+        return;
+    }       
     
     // to inform the driver where to park for the given parking request
     if (contextEntity.attributes.ParkingRequest != null) {

@@ -9,14 +9,12 @@ var OrionNGSI = require('ngsijs');
 //
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
-	console.log("enter into the user-defined fog function");
-
-	if (contextEntity == null) {
-		return;
-	} 	
-	if (contextEntity.attributes == null) {
-		return;
-	}
+    if (contextEntity == null) {
+        return;
+    } 	
+    if (contextEntity.attributes == null) {
+        return;
+    }
     
     // query the data source to know the available parking lots
     if (contextEntity.attributes.datasource != null) {

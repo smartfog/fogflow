@@ -9,18 +9,18 @@ var speakerID = null;
 //
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
-	if (contextEntity == null) {
-		return;
-	} 	
-	if (contextEntity.attributes == null) {
-		return;
-	}    
-	if (contextEntity.attributes.ParkingRequest != null) {
-		return;
-	}    
-	if (contextEntity.attributes.RecommendedParkingSite != null) {
-		return;
-	}  
+    if (contextEntity == null) {
+        return;
+    } 	
+    if (contextEntity.attributes == null) {
+        return;
+    }    
+    if (contextEntity.attributes.ParkingRequest != null) {
+        return;
+    }    
+    if (contextEntity.attributes.RecommendedParkingSite != null) {
+        return;
+    }  
     
     // to calculate how long it will take to arrive the planned destination accordingly
     // todo: @Javier, please add your implementation here
