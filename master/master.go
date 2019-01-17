@@ -545,7 +545,10 @@ func (master *Master) SelectWorker(locations []Point) string {
 
 		totalDistance := uint64(0)
 
-		for _, location := range locations {
+		for _, location := range locations { 
+			if location.Latitude == 0 && location.Longitude == 0 {
+				continue
+			}
 			distance := Distance(wp, location)
 			totalDistance += distance
 			INFO.Printf("distance = %d between %+v, %+v\r\n", distance, wp, location)
