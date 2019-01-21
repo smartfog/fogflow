@@ -877,25 +877,34 @@ curl -iX DELETE http://localhost:8070/ngsi10/subscription/#sid
 
 
 
-Development process of an IoT Service in FogFlow
-====================================================
-
-.. figure:: figures/development_process.png
-   :width: 100 %
-
 
 
 APIs of FogFlow Service Orchestrator
 =========================================
 
 
+The overall development process of an IoT Service in FogFlow is shown in the following figure. 
+For the development of a fog function, the steps 4 and 5 are combined, which means a default requirement 
+is issued by the FogFlow editor when a fog function is submmited. 
+
+
+.. figure:: figures/development_process.png
+   :width: 100 %
+
+
+
 Implement an operator
 -----------------------------------------------
+
+
+.. note:: currently the template of operator is 
 
 
 Publish the operator
 -----------------------------------------------
 
+
+.. note:: this step is done with only docker commands
 
 
 Define and register your operator
