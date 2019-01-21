@@ -877,3 +877,47 @@ curl -iX DELETE http://localhost:8070/ngsi10/subscription/#sid
 
 
 
+Development process of an IoT Service in FogFlow
+====================================================
+
+.. figure:: figures/development_process.png
+   :width: 100 %
+
+
+
+APIs of FogFlow Service Orchestrator
+=========================================
+
+
+Implement an operator
+-----------------------------------------------
+
+
+Publish the operator
+-----------------------------------------------
+
+
+
+Define and register your operator
+-----------------------------------------------
+
+
+
+Define and register your service topology
+-----------------------------------------------
+
+
+
+Create a requirement entity to trigger the service topology
+--------------------------------------------------------------
+
+
+
+Remove a requirement entity to terminate the service topology
+---------------------------------------------------------------
+
+
+
+
+
+
