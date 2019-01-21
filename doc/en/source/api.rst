@@ -905,7 +905,7 @@ all operators used in your service topology must be provided by you or the other
 
 
 .. _`nodejs-based`: https://github.com/smartfog/fogflow/tree/master/application/template/javascript
-.. _`python-base`: https://github.com/smartfog/fogflow/tree/master/application/template/python
+.. _`python-based`: https://github.com/smartfog/fogflow/tree/master/application/template/python
 
 
 .. note:: currently two templates are provided: one for nodejs based Implement and the other for python-based implementation
