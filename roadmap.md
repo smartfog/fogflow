@@ -1,6 +1,6 @@
 # FogFlow Roadmap
 
-FogFlow: This product is a FIWARE Generic Enabler. If
+FogFlow is a FIWARE Generic Enabler. If
 you would like to learn about the overall Roadmap of FIWARE, please check
 section "Roadmap" on the FIWARE Catalogue.
 
