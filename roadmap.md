@@ -24,7 +24,7 @@ The following list of features are planned to be addressed in the medium term,
 typically within the subsequent release(s) generated in the next **9 months**
 after next planned release:
 
-- refine the current programming model with a expressive intent model, which allows service developers to specify their expected service QoS and configurable parameters of operators
+- refine the current programming model with a more expressive intent model, which allows service developers to specify their expected service QoS and configurable parameters of operators
 
 - provide more use case examples with the new intent-based programming model
 
