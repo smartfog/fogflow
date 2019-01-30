@@ -1,6 +1,6 @@
 <h2>FogFlow</h2>
 
-[![](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/fogflow.svg)](https://www.fiware.org/developers/catalogue/)
+[![](https://nexus.lab.fiware.org/repository/raw/public/badges/chapters/processing.svg)](https://www.fiware.org/developers/catalogue/)
 [![](https://img.shields.io/badge/tag-fiware-orange.svg?logo=stackoverflow)](http://stackoverflow.com/questions/tagged/fogflow)
 
 <!-- textlint-disable write-good -->
@@ -24,7 +24,7 @@ This lesson presents a introduction to the Kurento framework, architecture and k
 
 More concrete use case examples can be found from the following links.
 
--   <a href="https://doc-kurento.readthedocs.io/en/stable/user/tutorials.html#hello-world">Smart Parking</a>: 
+-   <a href="https://github.com/smartfog/fogflow/tree/master/application/operator/smartparking">Smart Parking</a>: 
     This application implements a simple smart parking use case based on the fog function programming model.
 
 
