@@ -19,7 +19,6 @@ including system context on the available system resources from all layers,
 data context on the registered metadata of all available data entities, 
 and also usage context on the expected QoS defined by users.
 
-
 ---
 
 # System View
@@ -31,10 +30,62 @@ describe the entire scenario and also use a figure to show the system view
 
 for simplicity, we use a single docker compose file to launch all necessary FogFlow components, including the core FogFlow services and also one edge node. The edge node means one FogFlow Broker and one FogFlow Worker and they are deployed on a physical edge node, such as an IoT Gateway or a raspberry Pi. 
 
+**Prerequisite:**
+
+These two commands should be present on your system.
+1. docker
+2. docker-compose
+
+For ubuntu-16.04, you need to install docker-ce and docker-compose.
+
+To install Docker CE, please refer to [Install Docker CE](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04), required version 18.03.1-ce;
+*please also allow your user to execute the Docker Command without Sudo*
+
+To install Docker Compose, please refer to [Install Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04), required version 18.03.1-ce, required version 2.4.2
+
+**Setup:**
+
+Download the docker-compose file and the config.json file to setup flogflow cloud node
+
 ```bash
-git clone git@github.com:
+wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/docker-compose.yml
+
+wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/config.json
+```
+you need to change the following addresses in config.json according to your own environment.
+
+-  **webportal_ip**: this is the IP address to access the FogFlow web portal provided by Task Designer. It must be accessible from outside by user's browser.  
+-  **coreservice_ip**: it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
+-  **external_hostip**: this is the same as coreservice_ip, for the cloud part of FogFlow;        
+-  **internal_hostip**: is the IP of your default docker bridge, which is the "docker0" network interface on your host
+
+**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80, 443, 8080, and 5672 for TCP
+    
+Pull the docker images of all FogFlow components and start the FogFlow system
+```bash
+docker-compose pull
+
+docker-compose up -d
+```
+Check all the containers are Up and Running using "docker ps -a"
+```bash
+root@fffog-ynomljrk3y7bs23:~# docker ps -a
+CONTAINER ID  IMAGE              COMMAND           CREATED      STATUS       PORTS                                       NAMES
+122a61ece2ce  fogflow/master     "/master"         26 hours ago Up 26 hours  0.0.0.0:1060->1060/tcp                      fogflow_master_1
+e625df7a1e51  fogflow/designer   "node main.js"    26 hours ago Up 26 hours  0.0.0.0:80->80/tcp, 0.0.0.0:1030->1030/tcp  fogflow_designer_1
+42ada6ee39ae  fogflow/broker     "/broker"         26 hours ago Up 26 hours  0.0.0.0:8080->8080/tcp                      fogflow_broker_1
+39b166181acc  fogflow/discovery  "/discovery"      26 hours ago Up 26 hours  0.0.0.0:443->443/tcp                        fogflow_discovery_1
+8951aaac0049  tutum/rabbitmq     "/run.sh"         26 hours ago Up 26 hours  0.0.0.0:5672->5672/tcp, 15672/tcp           fogflow_rabbitmq_1
+7f32d441c54a  mdillon/postgis    "docker-entry…"   26 hours ago Up 26 hours  0.0.0.0:5432->5432/tcp                      fogflow_postgis_1
+53bf689d3db6  fogflow/worker     "/worker"         26 hours ago Up 26 hours                                              fogflow_cloud_worker_1
+root@fffog-ynomljrk3y7bs23:~# 
 
 ```
+**Test the Fogflow Dashboard:**
+
+Open the link “http://<webportal_ip>” in your browser to check the status of all FogFlow running components in the cloud.
+
+So now you can also check all the components using dashboard.
 
 # Start Up Orion
 
