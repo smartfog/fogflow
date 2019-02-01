@@ -30,7 +30,7 @@ describe the entire scenario and also use a figure to show the system view
 
 for simplicity, we use a single docker compose file to launch all necessary FogFlow components, including the core FogFlow services and also one edge node. The edge node means one FogFlow Broker and one FogFlow Worker and they are deployed on a physical edge node, such as an IoT Gateway or a raspberry Pi. 
 
-**Prerequisite:**
+**Prerequisite:** (For both Cloud and Edge node)
 
 These two commands should be present on your system.
 1. docker
@@ -43,7 +43,7 @@ To install Docker CE, please refer to [Install Docker CE](https://www.digitaloce
 
 To install Docker Compose, please refer to [Install Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04), required version 18.03.1-ce, required version 2.4.2
 
-**Setup:**
+**Setup Fogflow Cloud Node:**
 
 Download the docker-compose file and the config.json file to setup flogflow cloud node
 
@@ -81,15 +81,54 @@ e625df7a1e51  fogflow/designer   "node main.js"    26 hours ago Up 26 hours  0.0
 root@fffog-ynomljrk3y7bs23:~# 
 
 ```
+
 **Test the Fogflow Dashboard:**
 
 Open the link “http://<webportal_ip>” in your browser to check the status of all FogFlow running components in the cloud.
 
 So now you can also check all the components using dashboard.
 
+**Setup Fogflow Edge Node:** (optional for basic setup)
+
+An FogFlow edge node needs to deploy a Worker and an IoT broker. An Edge node can be on physical device or raspberry Pi. It can be setup in cloud/VM for testing/simulation environment. 
+
+Download shell scripts to start/stop edge node.
+
+Note: Docker and docker-compose should be installed before running these script as specified in Prerequisite section.
+
+```bash
+wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/start.sh
+wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/stop.sh
+```
+
+Download the configuration file for Edge node and change it accordingly.
+```bash
+wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/config.json
+```
+You need to change the following addresses according to your own environment in config.json file: 
+        
+- **coreservice_ip**: please refer to the configuration of the cloud part. This is the accessible address of your FogFlow core services running in the cloud node;
+- **external_hostip**: this is the external IP address, accessible for the cloud broker. It is useful when your edge node is behind NAT;
+- **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host.
+
+To start Edge node components(Broker and worker), run the script 'start.sh'.
+```bash
+./start.sh
+```
+
+To stop Edge node components(Broker and worker), run the script 'stop.sh'
+```bash
+./stop.sh
+```
+
+if the edge node is ARM-basd, please attach arm as the command parameter
+```bash
+./start.sh  arm
+```
+
 # Start Up Orion
 
-follow the orion tutorial to set up a Orion Context Broker instance
+You may follow the orion tutorial to set up a Orion Context Broker instance
 
 
 # Programe a simple fog function via FogFlow Dashboard
