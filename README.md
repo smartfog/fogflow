@@ -21,7 +21,7 @@ check the FIWARE Catalogue entry for
 [Processing](https://github.com/Fiware/catalogue/tree/master/processing).
 
 
-| :books: [Documentation](https://fogflow.rtfd.io/) | :whale: [Docker Hub](https://hub.docker.com/r/fogflow) | :dart: [Roadmap](https://github.com/KnowageLabs/Knowage-Server/blob/master/ROADMAP.md) |
+| :books: [Documentation](https://fogflow.rtfd.io/) | :whale: [Docker Hub](https://hub.docker.com/r/fogflow) | :dart: [Roadmap](https://github.com/smartfog/fogflow/blob/master/roadmap.md) |
 | --- | --- | --- | 
 
 ## Content
