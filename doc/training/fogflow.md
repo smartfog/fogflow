@@ -14,7 +14,7 @@ FogFlow is an IoT edge computing framework to automatically orchestrate dynamic 
 <h3>Academy Courses</h3>
 
 <h4>Lesson 1. Introduction to FogFlow</h4>
-This lesson presents a introduction to the Kurento framework, architecture and key concepts.
+This lesson presents a introduction to the FogFlow framework, architecture, key concepts, and edge programming models.
 
 -   <a href="//www.slideshare.net/slideshow/embed_code/key/eEUzD1Nf73wakR">![](https://fiware.github.io/academy/img/doc.svg)
     Lesson 1 - Slides</a>
