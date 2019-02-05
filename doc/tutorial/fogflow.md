@@ -128,7 +128,11 @@ if the edge node is ARM-basd, please attach arm as the command parameter
 
 # Start Up Orion
 
-You may follow the orion tutorial to set up a Orion Context Broker instance
+You may follow the orion docs to set up a Orion Context Broker instance from here: [Install Orion](https://fiware-orion.readthedocs.io/en/master/admin/install/index.html)
+
+You may also setup Orion on docker using below commands.(docker is required for this method)
+
+
 
 
 # Programe a simple fog function via FogFlow Dashboard
