@@ -19,13 +19,14 @@ For a simple demonstration or test, this is already enough to try out the FogFlo
 
 the dockerfile files to build FogFlow components are located at the following folders
 
-- discovery: /discovery/Dockerfile
+- discovery: /discovery/Dockerfile, please check the [readme](https://github.com/smartfog/fogflow/tree/master/discovery) to see the detail instruction
 	
-- broker: /broker/Dockerfile
+- broker: /broker/Dockerfile, lease check the [readme](https://github.com/smartfog/fogflow/tree/master/broker) to see the detail instruction
 	
-- master: /master/Dockerfile
+- master: /master/Dockerfile, lease check the [readme](https://github.com/smartfog/fogflow/tree/master/master) to see the detail instruction
 	
-- worker: /worker/Dockerfile
+- worker: /worker/Dockerfile, lease check the [readme](https://github.com/smartfog/fogflow/tree/master/worker) to see the detail instruction
 	
-- designer: /designer/Dockerfile
+- designer: /designer/Dockerfile, lease check the [readme](https://github.com/smartfog/fogflow/tree/master/designer) to see the detail instruction
+
 
