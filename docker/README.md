@@ -13,8 +13,17 @@ For a simple demonstration or test, this is already enough to try out the FogFlo
 
 #### Related configurations
 
+All configurations are provided by in the configuration file. No environment viable is required. A default configuration file is provided in our repository.  
 
+- [FogFlow Core](https://github.com/smartfog/fogflow/blob/master/docker/core/config.json)
 
+- [FogFlow Edge Node](https://github.com/smartfog/fogflow/blob/master/docker/edge/config.json)
+
+Please follow the following instructions to change the configurations accordingly. 
+
+- [set up and configure FogFlow Core](https://fogflow.readthedocs.io/en/latest/setup.html)
+
+- [set up and configure FogFlow Edge Node](https://fogflow.readthedocs.io/en/latest/edge.html)
 
 ### FogFlow Edge Node
 
