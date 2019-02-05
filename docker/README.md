@@ -3,27 +3,27 @@
 
 This folder includes all docker-compose files to deploy FogFlow, including the following two parts.  
 
-# How to deploy the FogFlow system with the provided docker images
+## How to deploy the FogFlow system with the provided docker images
 
-## FogFlow Core
+### FogFlow Core
 
 - deployment all FogFlow core components on a cloud node; the detailed steps are introduced [here](https://fogflow.readthedocs.io/en/latest/setup.html)
 
 For a simple demonstration or test, this is already enough to try out the FogFlow system, because this docker compose file will also launch an edge node as part of the FogFlow Core. 
 
-### Related configurations
+#### Related configurations
 
 
 
 
-## FogFlow Edge Node
+### FogFlow Edge Node
 
 - deployment a FogFlow edge node; the detailed steps are introduced [here](https://fogflow.readthedocs.io/en/latest/edge.html)
 
-### Related configurations
+#### Related configurations
 
 
-# How to build each FogFlow component
+## How to build each FogFlow component
 
 the dockerfile files to build FogFlow components are located at the following folders
 
