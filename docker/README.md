@@ -29,4 +29,7 @@ the dockerfile files to build FogFlow components are located at the following fo
 	
 - designer: /designer/Dockerfile, lease check the [readme](https://github.com/smartfog/fogflow/tree/master/designer) to see the detail instruction
 
+* We also provide a script to build the images of all FogFlow components. 
 
+```console
+./build.sh
