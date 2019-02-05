@@ -33,10 +33,12 @@ A bash script is provided to build the images of all FogFlow components.
 
 ```console
 ./build.sh
+```
 
 Once you log in to your own docker hub account, you can publish all generated docker images to your own docker registry. 
 
 ```console
 ./publish.sh
+```
 
 
