@@ -1,4 +1,4 @@
-FROM mhart/alpine-node
+FROM node:alpine
 #FROM hypriot/rpi-node
 
 

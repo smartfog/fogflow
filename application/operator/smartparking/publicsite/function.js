@@ -1,4 +1,4 @@
-var OrionNGSI = require('ngsijs');
+
 
 //
 //  contextEntity: the received entities

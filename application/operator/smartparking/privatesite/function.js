@@ -1,5 +1,3 @@
-var OrionNGSI = require('ngsijs');
-
 //
 //  contextEntity: the received entities
 //  publish, query, and subscribe are the callback functions for your own function to interact with the assigned nearby broker
