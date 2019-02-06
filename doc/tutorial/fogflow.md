@@ -211,7 +211,8 @@ There are three inbuilt usecases in Fogflow:
 You may run any of these usecases, provided the following Prerquisites are fulfilled:
 1. Fogflow should be installed and running well.
 2. Edge Devices should be simulated and running.
-	Simulated devices will feed the Fogflow System with Context Data on regular basis. Follow these steps to get the devices running:
+Simulated devices will feed the Fogflow System with Context Data on regular basis. Follow these steps to get the devices running:
+
 **1. Simulate devices:**
 -  Install python2, pip for python2, nodejs, and npm in order to run the simulated devices:
 ```bash
