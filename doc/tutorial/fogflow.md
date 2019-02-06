@@ -203,16 +203,16 @@ curl localhost:1026/version
 
 take the powerpanel sensor as an example and then write a simple temperature sensor, which can publish the temperature entity every 5 seconds.
 
-There are three inbuilt use cases in Fogflow.
--  **1. Anomaly Detection for retails**
--  **2. Lost Child finder for public safety**
--  **3. Smart Parking for smart cities**
+There are three inbuilt usecases in Fogflow:
+-  **Anomaly Detector for retails**
+-  **Lost Child finder for public safety**
+-  **Smart Parking for smart cities**
 
 You may run any of these usecases, provided the following Prerquisites are fulfilled:
 1. Fogflow should be installed and running well.
 2. Edge Devices should be simulated and running.
 	Simulated devices will feed the Fogflow System with Context Data on regular basis. Follow these steps to get the devices running:
-**1) Simulate devices:**
+**1. Simulate devices:**
 -  Install python2, pip for python2, nodejs, and npm in order to run the simulated devices:
 ```bash
 apt install python2.7 python-pip	
@@ -226,7 +226,7 @@ npm -v
 git clone https://github.com/smartfog/fogflow.git
 ```
 
-**2) Run the simulated devices:**
+**2. Run the simulated devices:**
 -  Start the simulated powerpanel device for "anomaly detection"
 ```bash
 cd  fogflow/application/device/powerpanel
