@@ -28,7 +28,7 @@ describe the entire scenario and also use a figure to show the system view
 
 # Start Up FogFlow
 
-for simplicity, we use a single docker compose file to launch all necessary FogFlow components, including the core FogFlow services and also one edge node. The edge node means one FogFlow Broker and one FogFlow Worker and they are deployed on a physical edge node, such as an IoT Gateway or a raspberry Pi. 
+For simplicity, we use a single docker compose file to launch all necessary FogFlow components, including the core FogFlow services and also one edge node. The edge node means one FogFlow Broker and one FogFlow Worker and they are deployed on a physical edge node, such as an IoT Gateway or a raspberry Pi. 
 
 **Prerequisite:** (For both Cloud and Edge node)
 
@@ -128,19 +128,80 @@ if the edge node is ARM-basd, please attach arm as the command parameter
 
 # Start Up Orion
 
-You may follow the orion docs to set up a Orion Context Broker instance from here: [Install Orion](https://fiware-orion.readthedocs.io/en/master/admin/install/index.html)
+You may follow the orion docs to set up a Orion Context Broker instance from here: [Installing Orion](https://fiware-orion.readthedocs.io/en/master/admin/install/index.html)
 
-You may also setup Orion on docker using below commands.(docker is required for this method)
+You may also setup Orion on docker using below commands.(docker and docker-compose are required for these method)
+Note: Orion container has a dependency on MongoDB database.
 
+Their are two methods to setup Orion using Docker:
 
+**1. The Fastest Way Using Docker-compose:**
 
+Docker Compose allows you to link an Orion Context Broker container to a MongoDB container in a few minutes. This method requires that install [Docker Compose](https://docs.docker.com/compose/install/)
+
+Follow these steps:
+1. Create a directory on your system on which to work( for example, ```bash ~/fiware ```).
+2. Create a new file called docker-compose.yaml inside your directory with the following contents:
+
+```bash
+mongo:
+  image: mongo:3.4
+  command: --nojournal
+orion:
+  image: fiware/orion
+  links:
+    - mongo
+  ports:
+    - "1026:1026"
+  command: -dbhost mongo
+```
+3. Using the command-line and within directory you created type:
+
+```bash
+sudo docker-compose up
+```
+Note: Regarding --nojournal it is not recommended for production, but it speeds up mongo container startup and avoids some race    conditions problems if Orion container is faster and doesn't find the DB up and ready.
+
+After a few seconds you should have your Context Broker running and listening on port 1026.
+
+Check that everything works with
+```bash
+curl localhost:1026/version
+```
+**2. Setup Orion using ``` docker run ``` command:**
+
+First launch MongoDB container using below command:
+```bash
+sudo docker run --name mongodb -d mongo:3.4
+```
+
+And then run Orion with this command
+```bash
+sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
+```
+
+Check that everything works with
+```bash
+curl localhost:1026/version
+```
+**3. Install Orion If MongoDB already exists on different host:**
+
+If you want to connect to a different MongoDB instance do the following commnad
+```bash
+sudo docker run -d --name orion1 -p 1026:1026 fiware/orion -dbhost <MongoDB Host> 
+```
+
+Check that everything works with
+```bash
+curl localhost:1026/version
+```
 
 # Programe a simple fog function via FogFlow Dashboard
 
 
 # Simulate an IoT device
 
-take the powerpanel sensor as an example and then write a simple temperature sensor, which can publish the temperature entity every 5 seconds. 
+take the powerpanel sensor as an example and then write a simple temperature sensor, which can publish the temperature entity every 5 seconds.
 
 
 # Check if the fog function is triggered
