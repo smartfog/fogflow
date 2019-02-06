@@ -232,7 +232,7 @@ git clone https://github.com/smartfog/fogflow.git
 cd  fogflow/application/device/powerpanel
 npm install
 ```            
-(Note: Please change the "discoveryURL": "http://<Fogflow Discovery Ip>:443/ngsi9" in the following profile.json files before proceeding.)      
+(Note: Please change the "discoveryURL": "http://<Fogflow_Discovery_Ip>:443/ngsi9" in the following profile.json files before proceeding.)      
 ```bash
 node powerpanel profile1.json
 node powerpanel profile2.json
@@ -243,7 +243,7 @@ node powerpanel profile3.json
 cd  fogflow/application/device/camera1
 pip install –r requirements.txt
 ```            
-(Note: Please change the "discoveryURL": "http://<Fogflow Discovery Ip>:443/ngsi9" in the following profile.json files before proceeding.)            
+(Note: Please change the "discoveryURL": "http://<Fogflow_Discovery_Ip>:443/ngsi9" in the following profile.json files before proceeding.)            
 ```bash
 Python fakecamera.py profile.json
 ```          
