@@ -212,51 +212,47 @@ You may run any of these usecases, provided the following Prerquisites are fulfi
 1. Fogflow should be installed and running well.
 2. Edge Devices should be simulated and running.
 	Simulated devices will feed the Fogflow System with Context Data on regular basis. Follow these steps to get the devices running:
-	**a) Simulate devices:**
-		i) Install python2, pip for python2, nodejs, and npm in order to run the simulated devices:
-        
-			```bash
-			apt install python2.7 python-pip	
-			curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-			apt-get install -y nodejs
-			node -v
-			npm -v
-            ```
+**a) Simulate devices:**
+i) Install python2, pip for python2, nodejs, and npm in order to run the simulated devices:
+```bash
+apt install python2.7 python-pip	
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+apt-get install -y nodejs
+node -v
+npm -v
+```
 
-		ii) Download the code repository:
-        
-            ```bash
-			git clone https://github.com/smartfog/fogflow.git
-            ```
+ii) Download the code repository:
+```bash
+git clone https://github.com/smartfog/fogflow.git
+```
 
-	**b) Run the simulated devices:**
-		i) Start the simulated powerpanel device for "anomaly detection"
-
-            ```bash
-			cd  fogflow/application/device/powerpanel
-			npm install
-            ```
+**b) Run the simulated devices:**
+i) Start the simulated powerpanel device for "anomaly detection"
+```bash
+cd  fogflow/application/device/powerpanel
+npm install
+```
             
-            (Note: Please change the "discoveryURL": "http://<Fogflow Discovery Ip>:443/ngsi9" in the following profile.json files before proceeding.)
-            
-            ```bash
-			node powerpanel profile1.json
-			node powerpanel profile2.json
-			node powerpanel profile3.json
-            ```
+(Note: Please change the "discoveryURL": "http://<Fogflow Discovery Ip>:443/ngsi9" in the following profile.json files before proceeding.)
+      
+```bash
+node powerpanel profile1.json
+node powerpanel profile2.json
+node powerpanel profile3.json
+```
 
-		ii) Start the simulated camera device for "lost child finder"
-
-            ```bash
-			cd  fogflow/application/device/camera1
-			Pip install –r requirements.txt
-            ```
+ii) Start the simulated camera device for "lost child finder"
+```bash
+cd  fogflow/application/device/camera1
+pip install –r requirements.txt
+```
             
-            (Note: Please change the "discoveryURL": "http://<Fogflow Discovery Ip>:443/ngsi9" in the following profile.json files before proceeding.)
+(Note: Please change the "discoveryURL": "http://<Fogflow Discovery Ip>:443/ngsi9" in the following profile.json files before proceeding.)
             
-            ```bash
-			Python fakecamera.py profile.json
-            ```          
+```bash
+Python fakecamera.py profile.json
+```          
 
 # Check if the fog function is triggered
 
