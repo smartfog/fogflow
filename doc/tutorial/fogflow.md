@@ -196,7 +196,22 @@ Check that everything works with
 curl localhost:1026/version
 ```
 
-# Programe a simple fog function via FogFlow Dashboard
+# Program a simple fog function via FogFlow Dashboard
+
+
+![Creating a FogFunction](https://fogflow.readthedocs.io/en/latest/_images/fog-function-menu.png)
+
+![Adding FogFunction element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-selected.png)
+
+![Configuring FogFunction element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-configuration.png)
+
+![Configuring SelectCondition element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-filter.png)
+
+![Configuring InputTrigger element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-granularity.png)
+
+![Customizing FogFuntion Code](https://fogflow.readthedocs.io/en/latest/_images/fog-function-code.png)
+
+![Submitting FogFuntion](https://fogflow.readthedocs.io/en/latest/_images/fog-function-submit.png)
 
 
 # Simulate an IoT device
