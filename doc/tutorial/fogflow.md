@@ -212,7 +212,7 @@ You may run any of these usecases, provided the following Prerquisites are fulfi
 Simulated devices will feed the Fogflow System with Context Data on regular basis (say 5 seconds).
 Follow these steps to get the devices running:
 
-## 1. Simulate devices:
+### 1. Simulate devices:
 -  Install python2, pip for python2, nodejs, and npm in order to run the simulated devices:
 ```bash
 apt install python2.7 python-pip
@@ -226,7 +226,7 @@ npm -v
 git clone https://github.com/smartfog/fogflow.git
 ```
 
-## 2. Run the simulated devices:
+### 2. Run the simulated devices:
 -  Start the simulated powerpanel device for "anomaly detection"
 ```bash
 cd  fogflow/application/device/powerpanel
