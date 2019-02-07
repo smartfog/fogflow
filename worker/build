@@ -1,7 +1,10 @@
 go get
 
-CGO_ENABLED=0 go build -a 
-docker build -t "fogflow/worker" .
+
+#build the linux version (amd64) of worker
+env GOOS=linux GOARCH=amd64 go build  -a  -o worker
+docker build -t "fogflow/broker" .
+
 
 #build the arm version of worker
 env GOOS=linux GOARCH=arm go build  -a  -o worker_arm

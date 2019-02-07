@@ -1,3 +1,6 @@
 go get
-CGO_ENABLED=0 go build -a 
-docker build -t "fogflow/master" .
+
+#build the linux version (amd64) of master
+env GOOS=linux GOARCH=amd64 go build  -a  -o master
+docker build -t "fogflow/broker" .
+

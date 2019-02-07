@@ -1,3 +1,6 @@
 go get
-CGO_ENABLED=0 go build -a 
+
+
+#build the linux version (amd64) of discovery
+env GOOS=linux GOARCH=amd64 go build  -a  -o discovery
 docker build -t "fogflow/discovery" .
