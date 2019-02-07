@@ -23,43 +23,11 @@ and also usage context on the expected QoS defined by users.
 
 # System View
 
-## System Architecture
-The FogFlow framework operates on a geo-distributed, hierarchical, and heterogeneous ICT infrastructure that includes cloud nodes, edge nodes, and IoT devices. The following figure illustrates the system architecture of FogFlow and its major components across three logical layers.
-
-![Fogflow Architecture](https://fogflow.readthedocs.io/en/latest/_images/architecture.png)
-
-## Three Layers
-Logically, FogFlow consists of the following three layers:
-- **Service Management:** converts service requirements into concrete execution plan and then deploys the generated execution plan over cloud and edges.
-- **Context Management:** manages all context information and makes them discoverable and accessible via flexible query and subscribe interfaces.
-- **Data Processing:** launches data processing tasks and establishes data flows between tasks via the pub/sub interfaces provided by the context management layer.
-
-## System Components
-
-### Centralized service components to be deployed in the cloud:
-
-- **Task Designer:** provides the web-based interface for service providers to specify, register, and manage their tasks and service topologies.
-- **Topology Master:** figures out when and which task should be instantiated, dynamically configures them, and also decides where to deploy them over cloud and edges.
-- **IoT Discovery:** manages all registered context availability information, including its ID, entity type, attribute list, and metadata; allows other components to query and subscribe their interested context availability information via NGSI9.
-
-### Distributed components to be deployed both in the cloud and at edges:
-
-- **Worker:** according to the assignment from the topology master, each worker will launch its scheduled task instances in docker containers on its local host; configure their inputs and outputs and manage all task instances locally based on task priority.
-- **IoT Broker:** each broker manages a part of context entities published by nearby IoT devices and also provides a single view of all context entities for IoT devices to query and subscribe the entities they need.
-
-### External service components to be used in FogFlow:
-
-- **Dock Registry:** manages all docker images provided by developers.
-- **RabbitMQ:** for internal communication between topology master and the workers.
-- **PostgreSQL:** the backend database to save the registered context availability information.
+describe the entire scenario and also use a figure to show the system view
 
 # Start Up FogFlow
 
-For simplicity, we use a single docker compose file to launch all necessary FogFlow components, including the core FogFlow services and also one edge node. The edge node means one FogFlow Broker and one FogFlow Worker and they are deployed on a physical edge node, such as an IoT Gateway or a raspberry Pi. 
-
-**Prerequisite:** (For both Cloud and Edge node)
-
-These two commands should be present on your system.
+Here are the prerequisite commands for starting Fogflow:
 1. docker
 2. docker-compose
 
@@ -70,9 +38,9 @@ To install Docker CE, please refer to [Install Docker CE](https://www.digitaloce
 
 To install Docker Compose, please refer to [Install Docker Compose](https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04), required version 18.03.1-ce, required version 2.4.2
 
-**Setup Fogflow Cloud Node:**
+**Setup Fogflow:**
 
-Download the docker-compose file and the config.json file to setup flogflow cloud node
+Download the docker-compose file and the config.json file to setup flogflow.
 
 ```bash
 wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/docker-compose.yml
@@ -115,43 +83,6 @@ Open the link “http://<webportal_ip>” in your browser to check the status of
 
 So now you can also check all the components using dashboard.
 
-**Setup Fogflow Edge Node:** (optional for basic setup)
-
-An FogFlow edge node needs to deploy a Worker and an IoT broker. An Edge node can be on physical device or raspberry Pi. It can be setup in cloud/VM for testing/simulation environment. 
-
-Download shell scripts to start/stop edge node.
-
-Note: Docker and docker-compose should be installed before running these script as specified in Prerequisite section.
-
-```bash
-wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/start.sh
-wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/stop.sh
-```
-
-Download the configuration file for Edge node and change it accordingly.
-```bash
-wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/config.json
-```
-You need to change the following addresses according to your own environment in config.json file: 
-        
-- **coreservice_ip**: please refer to the configuration of the cloud part. This is the accessible address of your FogFlow core services running in the cloud node;
-- **external_hostip**: this is the external IP address, accessible for the cloud broker. It is useful when your edge node is behind NAT;
-- **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host.
-
-To start Edge node components(Broker and worker), run the script 'start.sh'.
-```bash
-./start.sh
-```
-
-To stop Edge node components(Broker and worker), run the script 'stop.sh'
-```bash
-./stop.sh
-```
-
-if the edge node is ARM-basd, please attach arm as the command parameter
-```bash
-./start.sh  arm
-```
 
 # Start Up Orion
 
@@ -160,42 +91,9 @@ You may follow the orion docs to set up a Orion Context Broker instance from her
 You may also setup Orion on docker using below commands.(docker and docker-compose are required for these method)
 Note: Orion container has a dependency on MongoDB database.
 
-Their are two methods to setup Orion using Docker:
+## Easiest way to setup Orion (docker is ):
 
-## 1. The Fastest Way Using Docker-compose:
-
-Docker Compose allows you to link an Orion Context Broker container to a MongoDB container in a few minutes. This method requires that install [Docker Compose](https://docs.docker.com/compose/install/)
-
-Follow these steps:
-1. Create a directory on your system on which to work( for example, ```bash ~/fiware ```).
-2. Create a new file called docker-compose.yaml inside your directory with the following contents:
-
-```bash
-mongo:
-  image: mongo:3.4
-  command: --nojournal
-orion:
-  image: fiware/orion
-  links:
-    - mongo
-  ports:
-    - "1026:1026"
-  command: -dbhost mongo
-```
-3. Using the command-line and within directory you created type:
-
-```bash
-sudo docker-compose up
-```
-Note: Regarding --nojournal it is not recommended for production, but it speeds up mongo container startup and avoids some race    conditions problems if Orion container is faster and doesn't find the DB up and ready.
-
-After a few seconds you should have your Context Broker running and listening on port 1026.
-
-Check that everything works with
-```bash
-curl localhost:1026/version
-```
-## 2. Setup Orion using ``` docker run ``` command:
+**Prerequisite:** Docker should be installed.
 
 First launch MongoDB container using below command:
 ```bash
@@ -211,149 +109,31 @@ Check that everything works with
 ```bash
 curl localhost:1026/version
 ```
-## 3. Install Orion If MongoDB already exists on different host:
-
-If you want to connect to a different MongoDB instance do the following commnad
-```bash
-sudo docker run -d --name orion1 -p 1026:1026 fiware/orion -dbhost <MongoDB Host> 
-```
-
-Check that everything works with
-```bash
-curl localhost:1026/version
-```
 
 # Program a simple fog function via FogFlow Dashboard
 **1. Creating a FogFunction**
 - Click on FogFuntion from the top menu on Fogflow portal.
 - Select Editor to start creating the Fog Function. Editor consists of a graphical editor and a text (or code) editor.
 
-![Creating a FogFunction](https://fogflow.readthedocs.io/en/latest/_images/fog-function-menu.png)
-
 **2. Adding FogFunction element**
 - Right click in graphical editor area and select "FogFunction".
 - Right click in graphical editor area and select "InputTrigger". Use connectors Selector-Selectors to connect FogFunction and InputTrigger elements.
 - Right click in graphical editor area and select "SelectCondition". Use connectors Condition-Conditions to connect InputTrigger and SelectCondition elements.
 
-![Adding FogFunction element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-selected.png)
-
 **3. Configuring FogFunction element**
 - Click on Configure button of "FogFunction" element on its top right corner and provide FogFunction name and user.
-
-![Configuring FogFunction element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-configuration.png)
 
 **4. Configuring InputTrigger element**
 - Click on Configure button of "InputTrigger" element on its top right corner and choose SelectedAttributes and GroupBy values.
 
-![Configuring SelectCondition element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-filter.png)
-
 **5. Configuring SelectCondition element**
 - Click on Configure button of "SelectCondition" element on its top right corner and choose the condition for triggering the FogFuntion.
 
-![Configuring InputTrigger element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-granularity.png)
-
 **6. Customizing FogFuntion Code**
-- Edit the FogFunction to customize the logic of FogFunction.
-
-![Customizing FogFuntion Code](https://fogflow.readthedocs.io/en/latest/_images/fog-function-code.png)
-
-Currently FogFlow allows developers to specify the function code, either by directly overwritting the following handler function (in Javascript or Python) or by selecting a registered operator (or docker image).
-
-```bash
-exports.handler = function(contextEntity, publish, query, subscribe) {
-    console.log("enter into the user-defined fog function");
-
-    var entityID = contextEntity.entityId.id;
-
-    if (contextEntity == null) {
-        return;
-    }
-    if (contextEntity.attributes == null) {
-        return;
-    }
-
-    var updateEntity = {};
-    updateEntity.entityId = {
-        id: "Stream.result." + entityID,
-        type: 'result',
-        isPattern: false
-    };
-    updateEntity.attributes = {};
-    updateEntity.attributes.city = {
-        type: 'string',
-        value: 'Heidelberg'
-    };
-
-    updateEntity.metadata = {};
-    updateEntity.metadata.location = {
-        type: 'point',
-        value: {
-            'latitude': 33.0,
-            'longitude': -1.0
-        }
-    };
-
-    console.log("publish: ", updateEntity);
-    publish(updateEntity);
-};
-```
-
-You can take the example Javascript code above as the implementation of your “HelloWorld” fog function. This example fog function simply writes a fixed entity by calling the “publish” callback function.
-
-The input parameters of a fog function are predefined and fixed, including:
-**- contextEntity:** representing the received entity data
-**- publish:** the callback function to publish your generated result back to the FogFlow system
-**- query:** optional, this is used only when your own internal function logic needs to query some extra entity data from the FogFlow context management system.
-**- subscribe:** optional, this is used only when your own internal function logic needs to subscribe some extra entity data from the FogFlow context management system.
-
-**example usage of publish:**
-```bash
-var updateEntity = {};
-updateEntity.entityId = {
-       id: "Stream.Temperature.0001",
-       type: 'Temperature',
-       isPattern: false
-};
-updateEntity.attributes = {};
-updateEntity.attributes.city = {type: 'string', value: 'Heidelberg'};
-
-updateEntity.metadata = {};
-updateEntity.metadata.location = {
-    type: 'point',
-    value: {'latitude': 33.0, 'longitude': -1.0}
-};
-
-publish(updateEntity);
-```
-
-**example usage of query:**
-```bash
-var queryReq = {}
-queryReq.entities = [{type:'Temperature', isPattern: true}];
-var handleQueryResult = function(entityList) {
-    for(var i=0; i<entityList.length; i++) {
-        var entity = entityList[i];
-        console.log(entity);
-    }
-}
-
-query(queryReq, handleQueryResult);
-```
-
-**example usage of subscribe:**
-```bash
-var subscribeCtxReq = {};
-subscribeCtxReq.entities = [{type: 'Temperature', isPattern: true}];
-subscribeCtxReq.attributes = ['avg'];
-
-subscribe(subscribeCtxReq);
-```
+- Edit the FogFunction to customize the logic of FogFunction. Currently FogFlow allows developers to specify the function code in Javascript, python and docker image.
 
 **7. Submitting FogFuntion**
 - Click on "Create a Fog Function" button once customization is complete. You can also edit it again by selecting the Fog Function from the list of registered Fog Functions.
-
-![Submitting FogFuntion](https://fogflow.readthedocs.io/en/latest/_images/fog-function-submit.png)
-
 
 # Simulate an IoT device
 
@@ -406,8 +186,8 @@ Python fakecamera.py profile.json
 
 # Check if the fog function is triggered
 
-## There are two way to trigger the fog function
-### Step1
+**There are two way to trigger the fog function**
+### Step 1
 **1.create a “Temperature” sensor entity by filling the following element**
  - **Device ID:** to specify a unique entity ID.
  - **Device Type:** use “Temperature” as the entity type.
@@ -415,7 +195,7 @@ Python fakecamera.py profile.json
  ![Temperature](https://fogflow.readthedocs.io/en/latest/_images/device-registration.png)
  
  - Once the device profile is registered, a new “Temperature” sensor entity will be created and it will trigger the “HelloWorld” fog function automatically.
- ### step2
+ ### Step 2
  - To trigger the “HelloWorld” fog function is to send a NGSI entity update to create the “Temperature” sensor entity.
  -Send the post request to the FogFlow broker.
  ```bash
@@ -453,7 +233,7 @@ Python fakecamera.py profile.json
     "updateAction": "UPDATE"
 }'
  ``` 
- #### You can check whether the fog function is triggered or not in the following way
+ **You can check whether the fog function is triggered or not in the following way**
  - check the task instance of this fog function, as shown in the following picture
  ![check the task instance of this fog function, as shown in the following picture](https://fogflow.readthedocs.io/en/latest/_images/fog-function-task-instance.png)
  -check the result generated by its running task instance, as shown in the following picture
