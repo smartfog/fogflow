@@ -135,7 +135,7 @@ Note: Orion container has a dependency on MongoDB database.
 
 Their are two methods to setup Orion using Docker:
 
-**1. The Fastest Way Using Docker-compose:**
+## 1. The Fastest Way Using Docker-compose:
 
 Docker Compose allows you to link an Orion Context Broker container to a MongoDB container in a few minutes. This method requires that install [Docker Compose](https://docs.docker.com/compose/install/)
 
@@ -168,7 +168,7 @@ Check that everything works with
 ```bash
 curl localhost:1026/version
 ```
-**2. Setup Orion using ``` docker run ``` command:**
+## 2. Setup Orion using ``` docker run ``` command:
 
 First launch MongoDB container using below command:
 ```bash
@@ -184,7 +184,7 @@ Check that everything works with
 ```bash
 curl localhost:1026/version
 ```
-**3. Install Orion If MongoDB already exists on different host:**
+## 3. Install Orion If MongoDB already exists on different host:
 
 If you want to connect to a different MongoDB instance do the following commnad
 ```bash
@@ -274,10 +274,53 @@ exports.handler = function(contextEntity, publish, query, subscribe) {
 You can take the example Javascript code above as the implementation of your “HelloWorld” fog function. This example fog function simply writes a fixed entity by calling the “publish” callback function.
 
 The input parameters of a fog function are predefined and fixed, including:
-- contextEntity: representing the received entity data
-- publish: the callback function to publish your generated result back to the FogFlow system
-- query: optional, this is used only when your own internal function logic needs to query some extra entity data from the FogFlow context management system.
-- subscribe: optional, this is used only when your own internal function logic needs to subscribe some extra entity data from the FogFlow context management system.
+**- contextEntity:** representing the received entity data
+**- publish:** the callback function to publish your generated result back to the FogFlow system
+**- query:** optional, this is used only when your own internal function logic needs to query some extra entity data from the FogFlow context management system.
+**- subscribe:** optional, this is used only when your own internal function logic needs to subscribe some extra entity data from the FogFlow context management system.
+
+**example usage of publish:**
+```bash
+var updateEntity = {};
+updateEntity.entityId = {
+       id: "Stream.Temperature.0001",
+       type: 'Temperature',
+       isPattern: false
+};
+updateEntity.attributes = {};
+updateEntity.attributes.city = {type: 'string', value: 'Heidelberg'};
+
+updateEntity.metadata = {};
+updateEntity.metadata.location = {
+    type: 'point',
+    value: {'latitude': 33.0, 'longitude': -1.0}
+};
+
+publish(updateEntity);
+```
+
+**example usage of query:**
+```bash
+var queryReq = {}
+queryReq.entities = [{type:'Temperature', isPattern: true}];
+var handleQueryResult = function(entityList) {
+    for(var i=0; i<entityList.length; i++) {
+        var entity = entityList[i];
+        console.log(entity);
+    }
+}
+
+query(queryReq, handleQueryResult);
+```
+
+**example usage of subscribe:**
+```bash
+var subscribeCtxReq = {};
+subscribeCtxReq.entities = [{type: 'Temperature', isPattern: true}];
+subscribeCtxReq.attributes = ['avg'];
+
+subscribe(subscribeCtxReq);
+```
 
 **7. Submitting FogFuntion**
 - Click on "Create a Fog Function" button once customization is complete. You can also edit it again by selecting the Fog Function from the list of registered Fog Functions.
@@ -292,13 +335,13 @@ There are three inbuilt usecases in Fogflow:
 -  **Lost Child finder for public safety**
 -  **Smart Parking for smart cities**
 
-You may run any of these usecases, provided the following Prerquisites are fulfilled:
+You may run any of these usecases, provided the following prerquisites are fulfilled:
 1. Fogflow should be installed and running well.
 2. Edge Devices should be simulated and running.
 Simulated devices will feed the Fogflow System with Context Data on regular basis (say 5 seconds).
 Follow these steps to get the devices running:
 
-### 1. Simulate devices:
+## 1. Simulate devices:
 -  Install python2, pip for python2, nodejs, and npm in order to run the simulated devices:
 ```bash
 apt install python2.7 python-pip
@@ -312,7 +355,7 @@ npm -v
 git clone https://github.com/smartfog/fogflow.git
 ```
 
-### 2. Run the simulated devices:
+## 2. Run the simulated devices:
 -  Start the simulated powerpanel device for "anomaly detection"
 ```bash
 cd  fogflow/application/device/powerpanel
