@@ -30,24 +30,24 @@ The FogFlow framework operates on a geo-distributed, hierarchical, and heterogen
 
 ## Three Layers
 Logically, FogFlow consists of the following three layers:
-**- Service Management:** converts service requirements into concrete execution plan and then deploys the generated execution plan over cloud and edges.
-**- Context Management:** manages all context information and makes them discoverable and accessible via flexible query and subscribe interfaces.
-**- Data Processing:** launches data processing tasks and establishes data flows between tasks via the pub/sub interfaces provided by the context management layer.
+- **Service Management:** converts service requirements into concrete execution plan and then deploys the generated execution plan over cloud and edges.
+- **Context Management:** manages all context information and makes them discoverable and accessible via flexible query and subscribe interfaces.
+- **Data Processing:** launches data processing tasks and establishes data flows between tasks via the pub/sub interfaces provided by the context management layer.
 
 ## System Components
 
-**- Centralized service components to be deployed in the cloud:**
+- ###Centralized service components to be deployed in the cloud:
 
 **Task Designer:** provides the web-based interface for service providers to specify, register, and manage their tasks and service topologies.
 **Topology Master:** figures out when and which task should be instantiated, dynamically configures them, and also decides where to deploy them over cloud and edges.
 **IoT Discovery:** manages all registered context availability information, including its ID, entity type, attribute list, and metadata; allows other components to query and subscribe their interested context availability information via NGSI9.
 
-**- Distributed components to be deployed both in the cloud and at edges:**
+- ###Distributed components to be deployed both in the cloud and at edges:
 
 **Worker:** according to the assignment from the topology master, each worker will launch its scheduled task instances in docker containers on its local host; configure their inputs and outputs and manage all task instances locally based on task priority.
 **IoT Broker:** each broker manages a part of context entities published by nearby IoT devices and also provides a single view of all context entities for IoT devices to query and subscribe the entities they need.
 
-**- External service components to be used in FogFlow:**
+- ###External service components to be used in FogFlow:
 
 **Dock Registry:** manages all docker images provided by developers.
 **RabbitMQ:** for internal communication between topology master and the workers.
@@ -81,10 +81,10 @@ wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/confi
 ```
 you need to change the following addresses in config.json according to your own environment.
 
--  **webportal_ip**: this is the IP address to access the FogFlow web portal provided by Task Designer. It must be accessible from outside by user's browser.  
--  **coreservice_ip**: it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
--  **external_hostip**: this is the same as coreservice_ip, for the cloud part of FogFlow;        
--  **internal_hostip**: is the IP of your default docker bridge, which is the "docker0" network interface on your host
+- **webportal_ip**: this is the IP address to access the FogFlow web portal provided by Task Designer. It must be accessible from outside by user's browser.  
+- **coreservice_ip**: it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
+- **external_hostip**: this is the same as coreservice_ip, for the cloud part of FogFlow;        
+- **internal_hostip**: is the IP of your default docker bridge, which is the "docker0" network interface on your host
 
 **Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80, 443, 8080, and 5672 for TCP
     
