@@ -200,16 +200,19 @@ curl localhost:1026/version
 **1. Creating a FogFunction**
 - Click on FogFuntion from the top menu on Fogflow portal.
 - Select Editor to start creating the Fog Function. Editor consists of a graphical editor and a text (or code) editor.
+
 ![Creating a FogFunction](https://fogflow.readthedocs.io/en/latest/_images/fog-function-menu.png)
 
 **2. Adding FogFunction element**
 - Right click in graphical editor area and select "FogFunction".
 - Right click in graphical editor area and select "InputTrigger". Use connectors Selector-Selectors to connect FogFunction and InputTrigger elements.
 - Right click in graphical editor area and select "SelectCondition". Use connectors Condition-Conditions to connect InputTrigger and SelectCondition elements.
+
 ![Adding FogFunction element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-selected.png)
 
 **3. Configuring FogFunction element**
 - Click on Configure button of "FogFunction" element on its top right corner and provide FogFunction name and user.
+
 ![Configuring FogFunction element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-configuration.png)
 
 **4. Configuring InputTrigger element**
@@ -218,14 +221,17 @@ curl localhost:1026/version
 
 **5. Configuring SelectCondition element**
 - Click on Configure button of "SelectCondition" element on its top right corner and choose the condition for triggering the FogFuntion.
+
 ![Configuring InputTrigger element](https://fogflow.readthedocs.io/en/latest/_images/fog-function-granularity.png)
 
 **6. Customizing FogFuntion Code**
 - Edit the FogFunction to customize the logic of FogFunction. You can choose programming in javascript or python. Prebuilt docker image can also be used.
+
 ![Customizing FogFuntion Code](https://fogflow.readthedocs.io/en/latest/_images/fog-function-code.png)
 
 **7. Submitting FogFuntion**
 - Click on "Create a Fog Function" button once customization is complete. You can also edit it again by selecting the Fog Function from the list of registered Fog Functions.
+
 ![Submitting FogFuntion](https://fogflow.readthedocs.io/en/latest/_images/fog-function-submit.png)
 
 
