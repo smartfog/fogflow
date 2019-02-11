@@ -3,7 +3,7 @@ go get
 
 #build the linux version (amd64) of worker
 env GOOS=linux GOARCH=amd64 go build  -a  -o worker
-docker build -t "fogflow/broker" .
+docker build -t "fogflow/worker" .
 
 
 #build the arm version of worker
