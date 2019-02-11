@@ -41,7 +41,7 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
               -H 'Destination: orion-broker' \			
               -d '
 					{
-						"entities": [{"type": "Temperature", "isPattern": true}],
+						"entities": [{"type": "PowerPanel", "isPattern": true}],
 						"reference": "http://host.docker.internal:1026/v2"
 					} '           
 
