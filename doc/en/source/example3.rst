@@ -43,7 +43,7 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
 					{
 						"entities": [{"type": "Temperature", "isPattern": true}],
 						"reference": "http://host.docker.internal:1026/v2"
-					}            
+					} '           
 
 
    .. code-tab:: javascript
