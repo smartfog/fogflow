@@ -47,7 +47,7 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
               -d '
 					{
 						"entities": [{"type": "PowerPanel", "isPattern": true}],
-						"reference": "http://host.docker.internal:1026/v2"
+						"reference": "http://orionBroker:1026/v2"
 					} '           
 
 
