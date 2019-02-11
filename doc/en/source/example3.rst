@@ -45,11 +45,8 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
               'http://fogflowBroker:8080/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -H 'Destination: orion-broker' \			
-              -d '
-					{
-						"entities": [{"type": "PowerPanel", "isPattern": true}],
-						"reference": "http://orionBroker:1026/v2"
-					} '           
+              -d '{"entities": [{"type": "PowerPanel", "isPattern": true}],
+					"reference": "http://orionBroker:1026/v2"} '           
 
 
    .. code-tab:: javascript
