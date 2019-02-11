@@ -23,10 +23,17 @@ to ask FogFlow to forward the requested context updates to a specified Orion Bro
    :width: 100 %
 
 
-Here is the Javascript-based code example to show how your application can issue a subscription to FogFlow Broker,
-using the URL of an existing Orion Broker as the destination. 
+Two ways are provided to tell FogFlow which entitie should be forwarded to the Orion Broker. 
+The first way is to issue a raw subscription to FogFlow Broker. 
+The second way is to write a small JavaScript program to do this. 
+Examples are provided below. 
 Notice that the integration is using the NGSI V2 interface of Orion Broker. 
 
+.. important:: 
+    *fogflowBroker*: IP address of the FogFlow Broker, it could be "webportal_ip" or "coreservice_ip" in the configuration file. 
+	This is up to where you access the FogFlow system. 
+	
+	*orionBroker*: the accessible IP address of your Orion Running Instance. 
 
 
 .. tabs::
@@ -36,7 +43,7 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
         .. code-block:: console 
 
             curl -iX POST \
-              'http://[fogflow-broker-ip]:8080/ngsi10/subscribeContext' \
+              'http://fogflowBroker:8080/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -H 'Destination: orion-broker' \			
               -d '
@@ -78,7 +85,7 @@ you can send the following NGSI v2 query to check it.
 
 .. code-block:: console 
 
-    curl localhost:1026/v2/entities?type=PowerPanel -s -S -H 'Accept: application/json'
+    curl http://orionBroker:1026/v2/entities?type=PowerPanel -s -S -H 'Accept: application/json'
     
 
 Orion Broker as a Data Source
