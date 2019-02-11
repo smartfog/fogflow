@@ -30,8 +30,7 @@ Examples are provided below.
 Notice that the integration is using the NGSI V2 interface of Orion Broker. 
 
 .. important:: 
-    * **fogflowBroker**: IP address of the FogFlow Broker, it could be "webportal_ip" or "coreservice_ip" in the configuration file. 
-	This is up to where you access the FogFlow system. 
+    * **fogflowBroker**: IP address of the FogFlow Broker, it could be "webportal_ip" or "coreservice_ip" in the configuration file.	This is up to where you access the FogFlow system. 
 	
 	* **orionBroker**: the accessible IP address of your Orion Running Instance. 
 
