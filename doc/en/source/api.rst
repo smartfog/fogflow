@@ -56,7 +56,7 @@ Please check the following examples.
                          }
                       ]
                    }
-                }             
+                } '            
 
 
    .. code-tab:: javascript
