@@ -28,31 +28,50 @@ using the URL of an existing Orion Broker as the destination.
 Notice that the integration is using the NGSI V2 interface of Orion Broker. 
 
 
-.. code-block:: javascript
 
-    // please refer to the JavaScript library, located at  https://github.com/smartfog/fogflow/tree/master/designer/public/lib/ngsi
+.. tabs::
 
-    //  entityType: the type of context entities to be pushed to Orion Broker
-    //  orionBroker: the URL of your running Orion Broker
-    function subscribeFogFlow(entityType, orionBroker)
-    {
-        var subscribeCtxReq = {};    
-        subscribeCtxReq.entities = [{type: entityType, isPattern: true}];
-        subscribeCtxReq.reference =  'http://' + orionBroker + '/v2';
-        
-        client.subscribeContext4Orion(subscribeCtxReq).then( function(subscriptionId) {
-            console.log(subscriptionId);   
-            ngsiproxy.reportSubID(subscriptionId);		
-        }).catch(function(error) {
-            console.log('failed to subscribe context');
-        });	
-    }
-    
-    
-    // client to interact with IoT Broker
-    var client = new NGSI10Client(config.brokerURL);
-    
-    subscribeFogFlow('PowerPanel', 'cpaasio-fogflow.inf.um.es:1026');
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+            curl -iX POST \
+              'http://[fogflow-broker-ip]:8080/ngsi10/subscribeContext' \
+              -H 'Content-Type: application/json' \
+              -H 'Destination: orion-broker' \			
+              -d '
+					{
+						"entities": [{"type": "Temperature", "isPattern": true}],
+						"reference": "http://host.docker.internal:1026/v2"
+					}            
+
+
+   .. code-tab:: javascript
+
+	    // please refer to the JavaScript library, located at  https://github.com/smartfog/fogflow/tree/master/designer/public/lib/ngsi
+	
+	    //  entityType: the type of context entities to be pushed to Orion Broker
+	    //  orionBroker: the URL of your running Orion Broker
+	    function subscribeFogFlow(entityType, orionBroker)
+	    {
+	        var subscribeCtxReq = {};    
+	        subscribeCtxReq.entities = [{type: entityType, isPattern: true}];
+	        subscribeCtxReq.reference =  'http://' + orionBroker + '/v2';
+	        
+	        client.subscribeContext4Orion(subscribeCtxReq).then( function(subscriptionId) {
+	            console.log(subscriptionId);   
+	            ngsiproxy.reportSubID(subscriptionId);		
+	        }).catch(function(error) {
+	            console.log('failed to subscribe context');
+	        });	
+	    }
+	    
+	    
+	    // client to interact with IoT Broker
+	    var client = new NGSI10Client(config.brokerURL);
+	    
+	    subscribeFogFlow('PowerPanel', 'cpaasio-fogflow.inf.um.es:1026');
+	
 
 To verify if the requested data has been pushed to your Orion Broker, 
 you can send the following NGSI v2 query to check it. 
