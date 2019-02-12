@@ -16,7 +16,7 @@ The tutorial introduces a typical FogFlow system setup with a simple example to 
 to automatically orchestrate dynamic data processing flows over cloud and edges driven by context, 
 including system context on the available system resources from all layers, 
 data context on the registered metadata of all available data entities, 
-and also usage context on the expected QoS defined by users.
+and also usage context on the expected QoS defined by users. More details can be found out [here](https://fogflow.readthedocs.io)
 
 ---
 
