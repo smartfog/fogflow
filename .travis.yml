@@ -34,10 +34,10 @@ install:
     - sh build    
 
 before_script:
-    - go get github.com/golangci/golangci-lint/cmd/golangci-lint
+    - go get github.com/golang/lint/golint
+
 
 script:
-    - golangci-lint run  
 
 notifications:
     email: false
