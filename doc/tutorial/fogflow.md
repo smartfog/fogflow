@@ -110,9 +110,13 @@ curl http://<Orion IP>:1026/version
 Note: Allow port 1026 in firewall for public access.
 
 # Program a simple fog function via FogFlow Dashboard
+
 **Create a simple Fog Function that:**
 - accepts "Temperature" Entity Type as SelectCondition, "id" as granularity and "all" as SelectedAttributes,
 - publishes a context entity of type "result" in Streams.
+
+![Speficy a fog function](images/fogfunction.png)
+
 
 # Simulate an IoT device to trigger the Fog Function
 
