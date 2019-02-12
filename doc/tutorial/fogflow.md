@@ -105,7 +105,7 @@ sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orio
 
 Check that everything works with
 ```bash
-curl localhost:1026/version
+curl http://<Orion IP>:1026/version
 ```
 Note: Allow port 1026 in firewall for public access.
 
