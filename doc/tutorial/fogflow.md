@@ -110,18 +110,25 @@ curl http://<Orion IP>:1026/version
 Note: Allow port 1026 in firewall for public access.
 
 # Program a simple fog function via FogFlow Dashboard
+
 **Create a simple Fog Function that:**
 - accepts "Temperature" Entity Type as SelectCondition, "id" as granularity and "all" as SelectedAttributes,
 - publishes a context entity of type "result" in Streams.
+
+![Speficy a fog function](images/fogfunction.png)
+
 
 # Simulate an IoT device to trigger the Fog Function
 
 There are two ways to trigger the fog function:
 
 **1. Create a “Temperature” sensor entity by filling the following element:**
- - **Device ID:** to specify a unique entity ID.
- - **Device Type:** use “Temperature” as the entity type.
- - **Location:** use “Temperature” as the entity type.
+ - **Device ID:** to specify a unique entity ID
+ - **Device Type:** use “Temperature” as the entity type
+ - **Location:** select a location on the map
+ 
+ ![System View for Fogflow and Fiware Orion Integration](images/createdevice.png)
+
 
 **2. Send an NGSI entity update to create the “Temperature” sensor entity:**
  - Send a curl request to the FogFlow broker for entity update:
@@ -168,8 +175,12 @@ curl -iX POST \
 # Check if the fog function is triggered:**
  - Check if a task is created under "Task" in System Management.
 
+![Running task triggered by the device](images/task.png)
+
 
 - Check if a Stream is created under "Stream" in System Management.
+
+![New "result" entity created by the running task](images/result.png)
 
 
 # Issue a subscription to forward the generated result to Orion Context Broker
