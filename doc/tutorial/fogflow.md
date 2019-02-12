@@ -26,7 +26,7 @@ This section explains an example usecase implementation using Fogflow and Fiware
 
 Let us consider temperature sensor example. The temperature sensors send temperature context data based on location to Fogflow Broker in the form of NGSI updates, assuming that IOT agent sits in the middle if IOT devices are non-NGSI.The Worker tasks process that data flow and send an NGSI update to Fogflow Broker. In no time, this update notification is also sent to FIWARE Orion. From FIWARE Orion, these context entities can also be used by other FIWARE GEs using pub-sub requests.
 
-![System View for Fogflow and Fiware Orion Integration](https://raw.githubusercontent.com/rhcayadav/fiware/master/SystemView.png)
+![System View for Fogflow and Fiware Orion Integration](images/systemview.png)
 
 # Start Up FogFlow
 
