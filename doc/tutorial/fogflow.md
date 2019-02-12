@@ -125,12 +125,12 @@ Note: Allow port 1026 in firewall for public access.
 
 ## There are two ways to trigger the fog function:**
 
-**1. Create a “Temperature” sensor entity by filling the following element**
+**1. Create a “Temperature” sensor entity by filling the following element:**
  - **Device ID:** to specify a unique entity ID.
  - **Device Type:** use “Temperature” as the entity type.
  - **Location:** use “Temperature” as the entity type.
 
-**2. Send an NGSI entity update to create the “Temperature” sensor entity**
+**2. Send an NGSI entity update to create the “Temperature” sensor entity:**
  - Send a curl request to the FogFlow broker for entity update:
  ```bash
 curl -iX POST \
@@ -177,7 +177,7 @@ curl -iX POST \
  - Check if a Stream is created under "Stream" in System Management.
 
 # Issue a subscription to forward the generated result to Orion Context Broker
-**Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:**
+Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:**
 
 ```bash
 curl -iX POST \
@@ -196,10 +196,10 @@ curl -iX POST \
   "reference": "http://<Orion IP>:1026/v2"
 }'
 ```
-**Please note that this subscription request does not use any restrictions and attributes, it is a general subscription request based of entity type.**
+Please note that this subscription request does not use any restrictions and attributes, it is a general subscription request based of entity type.
 
 # Query the result from Orion Context Broker
-**Visit the following URL in your browser and search for the desired context entities:**
+Visit the following URL in your browser and search for the desired context entities:
 ```bash
 http://<Orion IP>:1026/v2/entities/
 ```
