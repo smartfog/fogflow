@@ -117,9 +117,9 @@ Note: Allow port 1026 in firewall for public access.
 - publishes a context entity of type "result" in Streams.
 
 # Simulate an IoT device
-**Temperature type device simulation can be used instead of manual update. (Pending)**
-## 1. Simulate devices:
-## 2. Run the simulated devices:
+**Temperature type device simulation can be used instead of manual update.**
+1. Simulate devices:
+2. Run the simulated devices:
 
 # Trigger the Fog Function
 
@@ -177,8 +177,7 @@ curl -iX POST \
  - Check if a Stream is created under "Stream" in System Management.
 
 # Issue a subscription to forward the generated result to Orion Context Broker
-Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:**
-
+Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
 ```bash
 curl -iX POST \
   'http://<Fogflow IP>:8080/ngsi10/subscribeContext' \
