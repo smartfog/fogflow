@@ -4,8 +4,7 @@
 **Description:** 
 This is an Introductory Tutorial to [FogFlow](https://eprosima-fast-rtps.readthedocs.io).
 In the FIWARE-based architecture, FogFlow can be used to dynamically trigger data processing functions 
-between IoT devices and Orion Context Broker, for the purpose of transforming and preprocessing raw data at edge nodes, 
-which can be deployed at IoT gateways or directly on the devices like Raspberry Pis.
+between IoT devices and Orion Context Broker, for the purpose of transforming and preprocessing raw data at edge nodes (e.g., IoT gateways or Raspberry Pis).
 
 The tutorial introduces a typical FogFlow system setup with a simple example to do anomaly detection at edges for temperature sensor data. 
 
