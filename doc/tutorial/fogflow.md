@@ -87,10 +87,10 @@ So now you can also check all the components using dashboard.
 
 You may follow the orion docs to set up a Orion Context Broker instance from here: [Installing Orion](https://fiware-orion.readthedocs.io/en/master/admin/install/index.html)
 
-You may also setup Orion on docker using below commands.(docker and docker-compose are required for these method)
+You may also setup Orion on docker using below commands.(docker is required this method)
 Note: Orion container has a dependency on MongoDB database.
 
-## Easiest way to setup Orion (docker is ):
+## Easiest way to setup Orion using docker:
 
 **Prerequisite:** Docker should be installed.
 
@@ -108,6 +108,7 @@ Check that everything works with
 ```bash
 curl localhost:1026/version
 ```
+Note: Allow port 1026 in firewall for public access.
 
 # Program a simple fog function via FogFlow Dashboard
 **Create a simple Fog Function that:**
