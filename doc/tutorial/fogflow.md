@@ -91,8 +91,6 @@ You may follow the orion docs to set up a Orion Context Broker instance from her
 You may also setup Orion on docker using below commands.(docker is required this method)
 Note: Orion container has a dependency on MongoDB database.
 
-## Easiest way to setup Orion using docker:
-
 **Prerequisite:** Docker should be installed.
 
 First launch MongoDB container using below command:
@@ -116,12 +114,7 @@ Note: Allow port 1026 in firewall for public access.
 - accepts "Temperature" Entity Type as SelectCondition, "id" as granularity and "all" as SelectedAttributes,
 - publishes a context entity of type "result" in Streams.
 
-# Simulate an IoT device
-**Temperature type device simulation can be used instead of manual update.**
-1. Simulate devices:
-2. Run the simulated devices:
-
-# Trigger the Fog Function
+# Simulate an IoT device to trigger the Fog Function
 
 There are two ways to trigger the fog function:
 
@@ -172,12 +165,16 @@ curl -iX POST \
 }'
 ```
 
-**To check if the fog function is triggered:**
+# Check if the fog function is triggered:**
  - Check if a task is created under "Task" in System Management.
- - Check if a Stream is created under "Stream" in System Management.
+
+
+- Check if a Stream is created under "Stream" in System Management.
+
 
 # Issue a subscription to forward the generated result to Orion Context Broker
 Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
+
 ```bash
 curl -iX POST \
   'http://<Fogflow IP>:8080/ngsi10/subscribeContext' \
@@ -195,6 +192,7 @@ curl -iX POST \
   "reference": "http://<Orion IP>:1026/v2"
 }'
 ```
+
 Please note that this subscription request does not use any restrictions and attributes, it is a general subscription request based of entity type.
 
 # Query the result from Orion Context Broker
