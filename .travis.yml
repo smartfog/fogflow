@@ -33,8 +33,11 @@ install:
     - pwd
     - sh build    
 
-script:
+before_script:
+    - go get github.com/golang/lint/golint
 
+
+script:
 
 notifications:
     email: false
