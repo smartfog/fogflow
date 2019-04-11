@@ -223,6 +223,11 @@ type WorkerProfile struct {
 	HWType    string
 }
 
+type WorkerStat struct {
+	WID        string
+	UtilCPU    float32
+	UtilMemory float32
+}
 type StreamProfile struct {
 	ID         string
 	StreamType string

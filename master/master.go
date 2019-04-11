@@ -31,6 +31,11 @@ type Master struct {
 	workers         map[string]*WorkerProfile
 	workerList_lock sync.RWMutex
 
+	workerStats      map[string]*WorkerStat
+	workerStats_lock sync.RWMutex
+	// The moving average window for updating logs
+	statAlpha float32
+
 	//list of all dockerized operators
 	operatorList      map[string][]DockerImage
 	operatorList_lock sync.RWMutex
@@ -47,11 +52,13 @@ type Master struct {
 
 func (master *Master) Start(configuration *Config) {
 	master.cfg = configuration
-
+	master.statAlpha = 0.2
 	master.messageBus = configuration.GetMessageBus()
 	master.discoveryURL = configuration.GetDiscoveryURL()
 
 	master.workers = make(map[string]*WorkerProfile)
+
+	master.workerStats = make(map[string]*WorkerStat)
 
 	master.operatorList = make(map[string][]DockerImage)
 
@@ -372,7 +379,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 // to deal with the communication between master and workers via rabbitmq
 //
 func (master *Master) Process(msg *RecvMessage) error {
-	//INFO.Println("type ", msg.Type)
+	INFO.Println("type ", msg.Type)
 
 	switch msg.Type {
 	case "heart_beat":
@@ -388,6 +395,14 @@ func (master *Master) Process(msg *RecvMessage) error {
 		if err == nil {
 			master.onTaskUpdate(msg.From, &update)
 		}
+	case "heart_stat":
+		INFO.Println("AMIR: recieved Heart stats:",msg.PayLoad)
+		stat := WorkerStat{}
+		err := json.Unmarshal(msg.PayLoad,&stat)
+		if err == nil {
+			master.onNewStat(msg.From, &stat)
+		}
+
 	}
 
 	return nil
@@ -397,6 +412,26 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	master.workerList_lock.Lock()
 	master.workers[profile.WID] = profile
 	master.workerList_lock.Unlock()
+}
+
+func (master *Master) onNewStat(from string, newStat *WorkerStat){
+	if oldStat, ok := master.workerStats[newStat.WID]; ok {
+		//update statistics
+		INFO.Println("not the first time, old stat is: ",oldStat)
+		master.workerStats_lock.Lock()
+		oldStat.UtilMemory = (newStat.UtilMemory * master.statAlpha)+( (1-master.statAlpha)*oldStat.UtilMemory )
+		oldStat.UtilCPU = (newStat.UtilCPU * master.statAlpha)+( (1-master.statAlpha)*oldStat.UtilCPU )
+		master.workerStats[newStat.WID]=oldStat
+		master.workerStats_lock.Unlock()
+		INFO.Println("and the new stat is: ",master.workerStats[newStat.WID])
+
+	} else {
+		// First time that we have this value. Added to map
+		master.workerStats[newStat.WID]=newStat
+		INFO.Println("first time....")
+		INFO.Println("Updating:",newStat)
+	}
+
 }
 
 func (master *Master) onTaskUpdate(from string, update *TaskUpdate) {

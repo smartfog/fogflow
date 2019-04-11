@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"runtime"
 	"strconv"
 	"time"
@@ -34,7 +35,7 @@ func (w *Worker) Start(config *Config) bool {
 
 	w.profile.OSType = runtime.GOOS
 	w.profile.HWType = runtime.GOARCH
-
+	INFO.Println("AMIR: profile ID:",w.profile)
 	w.allTasks = make(map[string]*ScheduledTaskInstance)
 
 	cfg := MessageBusConfig{}
@@ -208,6 +209,12 @@ func (w *Worker) onTimer() {
 func (w *Worker) heartbeat() {
 	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
 	w.communicator.Publish(&taskUpdateMsg)
+
+	//AMIR: Send statistics to master
+	INFO.Println("sending heart_stat")
+	stat := WorkerStat{WID:w.id,UtilCPU:rand.Float32(),UtilMemory:rand.Float32()}
+	statsUpdateMsg := SendMessage{Type: "heart_stat", RoutingKey: "heartbeat.", From: w.id, PayLoad: stat}
+	w.communicator.Publish(&statsUpdateMsg)
 }
 
 func (w *Worker) onAddInput(from string, flow *FlowInfo) {
