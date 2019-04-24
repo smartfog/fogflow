@@ -382,7 +382,7 @@ Here are the Curl and the Javascript-based code examples to trigger a service to
 	        	"updateAction": "UPDATE"
 		     }	
 
-	.. code-tab:: javascript
+   .. code-tab:: javascript
 
     		var rid = 'Requirement.' + uuid();    
    
