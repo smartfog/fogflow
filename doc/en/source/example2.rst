@@ -384,32 +384,33 @@ Here are the Curl and the Javascript-based code examples to trigger a service to
 
    .. code-tab:: javascript
 
-    		var rid = 'Requirement.' + uuid();    
+    	var rid = 'Requirement.' + uuid();    
    
-		var requirementCtxObj = {};    
-    		requirementCtxObj.entityId = {
-     			id : rid, 
-        		type: 'Requirement',
-        		isPattern: false
-    		};
+   	var requirementCtxObj = {};    
+    	requirementCtxObj.entityId = {
+     		id : rid, 
+        	type: 'Requirement',
+        	isPattern: false
+    	};
     
-    		var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-                
-    		requirementCtxObj.attributes = {};   
-    		requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
-    		requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
-    		requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
-                        
-    		requirementCtxObj.metadata = {};               
-    		requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
+    	var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
+               
+    	requirementCtxObj.attributes = {};   
+    	requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
+    	requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
+    	requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
+                       
+    	requirementCtxObj.metadata = {};               
+    	requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
 		    
-    		console.log(requirementCtxObj);
-		            
-    		// assume the config.brokerURL is the IP of cloud IoT Broker
-    		var client = new NGSI10Client(config.brokerURL);                
-    		client.updateContext(requirementCtxObj).then( function(data) {
-        		console.log(data);
-    		}).catch( function(error) {
-        		console.log('failed to send a requirement');
-    		});    
-	
+    	console.log(requirementCtxObj);
+	            
+    	// assume the config.brokerURL is the IP of cloud IoT Broker
+    	var client = new NGSI10Client(config.brokerURL);                
+    	client.updateContext(requirementCtxObj).then( function(data) {
+        	console.log(data);
+    	}).catch( function(error) {
+        	console.log('failed to send a requirement');
+    	});    
+
+
