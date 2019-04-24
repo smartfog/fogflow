@@ -324,88 +324,92 @@ The processing requirement is sent as NGSI10 update, with the following properti
     <a href="./example4.html" target="_blank">Connect an IoT device to FogFlow</a>
 
 
-Here is the Javascript-based code example to trigger a service topology by sending a customized requirement entity to FogFlow. 
+Here are the Curl and the Javascript-based code examples to trigger a service topology by sending a customized requirement entity to FogFlow. 
+ 
+.. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
 
+.. tabs::
 
-.. code-block:: javascript
+   .. group-tab:: curl
 
-    var rid = 'Requirement.' + uuid();    
-   
-    var requirementCtxObj = {};    
-    requirementCtxObj.entityId = {
-        id : rid, 
-        type: 'Requirement',
-        isPattern: false
-    };
-    
-    var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-                
-    requirementCtxObj.attributes = {};   
-    requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
-    requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
-    requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
-                        
-    requirementCtxObj.metadata = {};               
-    requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
-    
-    console.log(requirementCtxObj);
-            
-    // assume the config.brokerURL is the IP of cloud IoT Broker
-    var client = new NGSI10Client(config.brokerURL);                
-    client.updateContext(requirementCtxObj).then( function(data) {
-        console.log(data);
-    }).catch( function(error) {
-        console.log('failed to send a requirement');
-    });    
-
-Here is the resulting HTTP POST request, assuming the cloud IoT Broker is running on localhost on port 8070.
-
-.. code-block:: json
+        .. code-block:: console 
 	
-	POST /ngsi10/updateContext HTTP/1.1
-	Host: localhost:8070
-	Content-Type: application/json
-		
-	{
-	"contextElements": [
-            {
-                "entityId": {
-                    "id": "Requirement.163ed933-828c-4c20-ab2a-59f73e8682cf",
-                    "type": "Requirement",
-                    "isPattern": false
-                },
-                "attributes": [
-                {
-                  "name": "output",
-                  "type": "string",
-                  "contextValue": "Stat"
-                }, {
-                  "name": "scheduler",
-                  "type": "string",
-                  "contextValue": "closest_first"
-		}, {
-                  "name": "restriction",
-                  "type": "object",
-                  "contextValue": { 
-		  	"scopes": [{ 
-			   "scopeType": "circle", 
-			   "scopeValue": {
-			   	"centerLatitude": 49.406393,
-				"centerLongitude": 8.684208,
-				"radius": 10.0
-			   }
-		        }]
-		  }
-		}
-                ],
-                "domainMetadata": [
-                {
-                    "name": "topology",
-                    "type": "string",
-                    "value": "Topology.anomaly-detection"
-                }
-                ]
-            }
-        ],
-        "updateAction": "UPDATE"
-    }	
+		curl -iX POST \
+		  'http://localhost:8070/ngsi10/updateContext' \
+	  	-H 'Content-Type: application/json' \
+	  	-d '		
+	     	{
+			"contextElements": [
+	            	{
+	                	"entityId": {
+	                    		"id": "Requirement.163ed933-828c-4c20-ab2a-59f73e8682cf",
+	                    		"type": "Requirement",
+	                    		"isPattern": false
+	                	},
+	                	"attributes": [
+	                	{
+	                  		"name": "output",
+	                  		"type": "string",
+	                  		"contextValue": "Stat"
+	                	}, {
+	                  		"name": "scheduler",
+	                  		"type": "string",
+	                  		"contextValue": "closest_first"
+				}, {
+	                  		"name": "restriction",
+	                  		"type": "object",
+	                  		"contextValue": { 
+			  			"scopes": [{ 
+				   			"scopeType": "circle", 
+				   			"scopeValue": {
+							   	"centerLatitude": 49.406393,
+								"centerLongitude": 8.684208,
+								"radius": 10.0
+							   }
+			        		}]
+			  		}
+				}
+	                	],
+	                	"domainMetadata": [
+	                	{
+	                    		"name": "topology",
+	                    		"type": "string",
+			                "value": "Topology.anomaly-detection"
+	                	}
+	                	]
+	            	}
+	        	],
+	        	"updateAction": "UPDATE"
+		     }	
+
+	.. code-tab:: javascript
+
+    		var rid = 'Requirement.' + uuid();    
+   
+		var requirementCtxObj = {};    
+    		requirementCtxObj.entityId = {
+     			id : rid, 
+        		type: 'Requirement',
+        		isPattern: false
+    		};
+    
+    		var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
+                
+    		requirementCtxObj.attributes = {};   
+    		requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
+    		requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
+    		requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
+                        
+    		requirementCtxObj.metadata = {};               
+    		requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
+		    
+    		console.log(requirementCtxObj);
+		            
+    		// assume the config.brokerURL is the IP of cloud IoT Broker
+    		var client = new NGSI10Client(config.brokerURL);                
+    		client.updateContext(requirementCtxObj).then( function(data) {
+        		console.log(data);
+    		}).catch( function(error) {
+        		console.log('failed to send a requirement');
+    		});    
+	
