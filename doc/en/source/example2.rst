@@ -358,4 +358,54 @@ Here is the Javascript-based code example to trigger a service topology by sendi
         console.log('failed to send a requirement');
     });    
 
+Here is the resulting HTTP POST request, assuming the cloud IoT Broker is running on localhost on port 8070.
 
+.. code-block:: json
+	
+	POST /ngsi10/updateContext HTTP/1.1
+	Host: localhost:8070
+	Content-Type: application/json
+		
+	{
+	"contextElements": [
+            {
+                "entityId": {
+                    "id": "Requirement.163ed933-828c-4c20-ab2a-59f73e8682cf",
+                    "type": "Requirement",
+                    "isPattern": false
+                },
+                "attributes": [
+                {
+                  "name": "output",
+                  "type": "string",
+                  "contextValue": "Stat"
+                }, {
+                  "name": "scheduler",
+                  "type": "string",
+                  "contextValue": "closest_first"
+		}, {
+                  "name": "restriction",
+                  "type": "object",
+                  "contextValue": { 
+		  	"scopes": [{ 
+			   "scopeType": "circle", 
+			   "scopeValue": {
+			   	"centerLatitude": 49.406393,
+				"centerLongitude": 8.684208,
+				"radius": 10.0
+			   }
+		        }]
+		  }
+		}
+                ],
+                "domainMetadata": [
+                {
+                    "name": "topology",
+                    "type": "string",
+                    "value": "Topology.anomaly-detection"
+                }
+                ]
+            }
+        ],
+        "updateAction": "UPDATE"
+    }	
