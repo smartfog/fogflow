@@ -294,9 +294,8 @@ Here are the Curl and the Javascript-based code examples to register an operator
        							]
     						}
 					}
-				}
-				]
-			]
+				}]
+			}]
 		}
 		
 
@@ -351,7 +350,7 @@ Here are the Curl and the Javascript-based code examples to register an operator
                    					"type":"Stat"
                 				}
              				]
-          			}          
+          			}
        		]
     	}
     
