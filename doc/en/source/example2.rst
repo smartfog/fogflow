@@ -114,8 +114,7 @@ You can also register an operator docker image by sending a constructed NGSI upd
 
 Here are the Curl and the Javascript-based code examples to register an operator docker image. 
 
-.. note:: In the Javascript code example, we use the Javascript-based library to interact with FogFlow IoT Broker. 
-You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
+.. note:: In the Javascript code example, we use the Javascript-based library to interact with FogFlow IoT Broker. You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
 
 .. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
 
