@@ -116,48 +116,108 @@ Here is a Javascript-based code example to register an operator docker image.
 Within this code example, we use the Javascript-based library to interact with FogFlow IoT Broker. 
 You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
 
-.. code-block:: javascript
+.. tabs::
 
-    var image = {
-        name: "counter",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "counter",
-        prefetched: false
-    };
+   .. group-tab:: curl
 
-    //register a new docker image
-    var newImageObject = {};
+        .. code-block:: console 
 
-    newImageObject.entityId = {
-        id : image.name + ':' + image.tag, 
-        type: 'DockerImage',
-        isPattern: false
-    };
+		curl -iX POST \
+		  'http://localhost:8070/ngsi10/updateContext' \
+	  	-H 'Content-Type: application/json' \
+	  	-d '		
+	     	{
+			"contextElements": [
+	            		{
+	                	"entityId": {
+	                    		"id": "counter:latest",
+	                    		"type": "DockerImage",
+	                    		"isPattern": false
+	                	},
+	                	"attributes": [
+	               		{
+	                  		"name": "image",
+	                  		"type": "string",
+	                  		"contextValue": "counter"
+				},
+	               		{
+	                  		"name": "tag",
+	                  		"type": "string",
+	                  		"contextValue": "latest"
+				},
+	               		{
+	                  		"name": "hwType",
+	                  		"type": "string",
+	                  		"contextValue": "X86"
+				},
+	               		{
+	                  		"name": "osType",
+	                  		"type": "string",
+	                  		"contextValue": "Linux"
+				},
+	               		{
+	                  		"name": "operatorName",
+	                  		"type": "string",
+	                  		"contextValue": "counter"
+				},
+	               		{
+	                  		"name": "prefetched",
+	                  		"type": "string",
+	                  		"contextValue": false
+				}],		
+	                	"domainMetadata": [
+	                	{
+	                    		"name": "operator",
+	                    		"type": "string",
+			                "value": "counter"
+	                	}
+	                	]
+	            	} ],
+	        	"updateAction": "UPDATE"
+		}			
 
-    newImageObject.attributes = {};   
-    newImageObject.attributes.image = {type: 'string', value: image.name};        
-    newImageObject.attributes.tag = {type: 'string', value: image.tag};    
-    newImageObject.attributes.hwType = {type: 'string', value: image.hwType};      
-    newImageObject.attributes.osType = {type: 'string', value: image.osType};          
-    newImageObject.attributes.operator = {type: 'string', value: image.operatorName};      
-    newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};                      
+   .. code-tab:: javascript
+
+    	var image = {
+        	name: "counter",
+	        tag: "latest",
+	        hwType: "X86",
+	        osType: "Linux",
+	        operatorName: "counter",
+	        prefetched: false
+    	};
+
+    	//register a new docker image
+    	var newImageObject = {};
+	
+    	newImageObject.entityId = {
+	        id : image.name + ':' + image.tag, 
+	        type: 'DockerImage',
+	        isPattern: false
+    	};
+	
+    	newImageObject.attributes = {};   
+    	newImageObject.attributes.image = {type: 'string', value: image.name};        
+    	newImageObject.attributes.tag = {type: 'string', value: image.tag};    
+    	newImageObject.attributes.hwType = {type: 'string', value: image.hwType};      
+    	newImageObject.attributes.osType = {type: 'string', value: image.osType};          
+    	newImageObject.attributes.operator = {type: 'string', value: image.operatorName};      
+    	newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};                      
+	    
+    	newImageObject.metadata = {};    
+    	newImageObject.metadata.operator = {
+	        type: 'string',
+	        value: image.operatorName
+    	};               
     
-    newImageObject.metadata = {};    
-    newImageObject.metadata.operator = {
-        type: 'string',
-        value: image.operatorName
-    };               
-    
-    // assume the config.brokerURL is the IP of cloud IoT Broker
-    var client = new NGSI10Client(config.brokerURL);    
-    client.updateContext(newImageObject).then( function(data) {
-        console.log(data);
-    }).catch( function(error) {
-        console.log('failed to register the new device object');
-    });        
-
+	    // assume the config.brokerURL is the IP of cloud IoT Broker
+    	var client = new NGSI10Client(config.brokerURL);    
+    	client.updateContext(newImageObject).then( function(data) {
+	        console.log(data);
+    	}).catch( function(error) {
+	        console.log('failed to register the new device object');
+    	});        
+	
 
 
 Specify a service topology
