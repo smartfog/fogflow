@@ -112,9 +112,12 @@ Register it programmatically by sending a NGSI update
 
 You can also register an operator docker image by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
 
-Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, we use the Javascript-based library to interact with FogFlow IoT Broker. 
+Here are the Curl and the Javascript-based code examples to register an operator docker image. 
+
+.. note:: In the Javascript code example, we use the Javascript-based library to interact with FogFlow IoT Broker. 
 You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
+
+.. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
 
 .. tabs::
 
