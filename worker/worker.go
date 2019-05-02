@@ -33,6 +33,7 @@ func (w *Worker) Start(config *Config) bool {
 	w.profile.PLocation = config.PLocation
 	w.profile.LLocation = config.LLocation
 	w.profile.EdgeAddress = config.Worker.EdgeAddress
+	w.profile.CAdvisorPort = config.Worker.CAdvisorPort
 
 	w.profile.OSType = runtime.GOOS
 	w.profile.HWType = runtime.GOARCH

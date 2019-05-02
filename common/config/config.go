@@ -71,6 +71,7 @@ type Config struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		EdgeAddress string `json:"edge_address"`
+		CAdvisorPort int `json:"cadvisor_port"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`

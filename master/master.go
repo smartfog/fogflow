@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"net/http"
 	"strconv"
 	"sync"
 	"time"
@@ -137,6 +139,17 @@ func (master *Master) Start(configuration *Config) {
 
 	// subscribe to the update of required context information
 	master.triggerInitialSubscriptions()
+	master.InitPrometheus(configuration)
+}
+
+func (master *Master) InitPrometheus(configuration *Config) {
+	INFO.Printf("Initializing Prometheus on %v with AdminPort: %v, DataProt: %v \n",
+		configuration.Prometheus.Address,
+		configuration.Prometheus.AdminPort,configuration.Prometheus.DataPort)
+	if configuration.Prometheus.Address=="auto" {
+		configuration.Prometheus.Address = "prometheus"
+	}
+	//TODO check the address to see if prometheus is up and running
 }
 
 func (master *Master) onTimer() {
@@ -379,7 +392,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 // to deal with the communication between master and workers via rabbitmq
 //
 func (master *Master) Process(msg *RecvMessage) error {
-	INFO.Println("type ", msg.Type)
+	//INFO.Println("type ", msg.Type)
 
 	switch msg.Type {
 	case "heart_beat":
@@ -396,7 +409,7 @@ func (master *Master) Process(msg *RecvMessage) error {
 			master.onTaskUpdate(msg.From, &update)
 		}
 	case "heart_stat":
-		INFO.Println("AMIR: recieved Heart stats:",msg.PayLoad)
+		//INFO.Println("AMIR: recieved Heart stats:",msg.PayLoad)
 		stat := WorkerStat{}
 		err := json.Unmarshal(msg.PayLoad,&stat)
 		if err == nil {
@@ -410,27 +423,43 @@ func (master *Master) Process(msg *RecvMessage) error {
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	//INFO.Printf("HEARTBEAT: The edge address of worker %v is: %v ", profile.WID,profile.EdgeAddress)
-	master.workerList_lock.Lock()
-	master.workers[profile.WID] = profile
-	master.workerList_lock.Unlock()
+	if _,exists := master.workers[profile.WID]; !exists {
+		//A new worker registration!
+		// Notify Prometheus
+		master.UpdatePrometheusConfig()
+		master.workerList_lock.Lock()
+		master.workers[profile.WID] = profile
+		master.workerList_lock.Unlock()
+
+
+	}else {
+		master.workerList_lock.Lock()
+		master.workers[profile.WID] = profile
+		master.workerList_lock.Unlock()
+	}
 }
 
 func (master *Master) onNewStat(from string, newStat *WorkerStat){
 	if oldStat, ok := master.workerStats[newStat.WID]; ok {
 		//update statistics
-		INFO.Println("not the first time, old stat is: ",oldStat)
+		//INFO.Println("not the first time, old stat is: ",oldStat)
 		master.workerStats_lock.Lock()
 		oldStat.UtilMemory = (newStat.UtilMemory * master.statAlpha)+( (1-master.statAlpha)*oldStat.UtilMemory )
 		oldStat.UtilCPU = (newStat.UtilCPU * master.statAlpha)+( (1-master.statAlpha)*oldStat.UtilCPU )
 		master.workerStats[newStat.WID]=oldStat
 		master.workerStats_lock.Unlock()
-		INFO.Println("and the new stat is: ",master.workerStats[newStat.WID])
+		//INFO.Println("and the new stat is: ",master.workerStats[newStat.WID])
 
 	} else {
 		// First time that we have this value. Added to map
 		master.workerStats[newStat.WID]=newStat
 		INFO.Println("first time....")
 		INFO.Println("Updating:",newStat)
+	}
+
+	if newStat.UtilMemory>0.8 {
+		INFO.Println("received memory utilization more than 80%!")
+		master.MoveAFunction()
 	}
 
 }
@@ -599,4 +628,73 @@ func (master *Master) SelectWorker(locations []Point) string {
 	}
 
 	return closestWorkerID
+}
+
+
+func (master *Master) MoveAFunction() bool{
+	for _,fogflow := range master.functionMgr.functionFlows{
+		for _, taskinstance:= range fogflow.DeploymentPlan{
+			taskinstance.WorkerID=master.GetAnotherWorker(taskinstance.WorkerID)
+			master.DeployTask(taskinstance)
+			INFO.Println("AMIR: moved the function: +%v......",taskinstance.TaskName)
+		}
+	}
+	return false
+}
+
+func (master *Master) GetAnotherWorker(oldWorkerId string) string {
+
+		for _, worker := range master.workers {
+			if worker.WID != oldWorkerId {
+				INFO.Println("changed from worker: %+v to new worker: %+v",oldWorkerId,worker.WID)
+				return worker.WID
+			}
+
+		}
+
+		INFO.Println("Could not find another worker")
+		return oldWorkerId
+}
+
+func (master *Master) UpdatePrometheusConfig(){
+
+	//TODO: Make this code more robust. If the request fails either prometheus is not ready or not running.
+	// We should retry several times and send an proper error message if prometheus is down.
+	baseConfig := `[{
+	    "targets": ["13.53.90.176:8090","52.32.9.56:8090","127.0.0.1:8092"],
+	    "labels": {
+	      "job": "fogflow"
+	    }
+	}]`
+	var configFile []PrometheusConfig
+
+	if err := json.Unmarshal([]byte(baseConfig), &configFile); err != nil {
+		panic(err)
+	}
+	for _, worker := range master.workers {
+		configFile[0].Targets =
+			append(configFile[0].Targets, worker.EdgeAddress+ ":" + strconv.Itoa(worker.CAdvisorPort))
+	}
+
+
+	//send update to prometheus
+	body, err := json.Marshal(configFile)
+	if err != nil {
+		panic(err)
+	}
+	url:=master.cfg.Prometheus.Address+":" + strconv.Itoa(master.cfg.Prometheus.AdminPort)
+	DEBUG.Printf("sending new config to premetheus[%v]:\n%v", url, string(body))
+
+	req, err := http.NewRequest("POST", "http://"+url+"/config", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+
 }
