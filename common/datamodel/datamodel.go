@@ -221,6 +221,7 @@ type WorkerProfile struct {
 	Capacity  int
 	OSType    string
 	HWType    string
+	EdgeAddress string
 }
 
 type WorkerStat struct {

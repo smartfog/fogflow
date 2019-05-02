@@ -409,6 +409,7 @@ func (master *Master) Process(msg *RecvMessage) error {
 }
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
+	//INFO.Printf("HEARTBEAT: The edge address of worker %v is: %v ", profile.WID,profile.EdgeAddress)
 	master.workerList_lock.Lock()
 	master.workers[profile.WID] = profile
 	master.workerList_lock.Unlock()

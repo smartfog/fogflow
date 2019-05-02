@@ -70,6 +70,7 @@ type Config struct {
 	Worker struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
+		EdgeAddress string `json:"edge_address"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`
