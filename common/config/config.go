@@ -77,6 +77,11 @@ type Config struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"rabbitmq"`
+	Prometheus struct {
+		Address string `json:"address"`
+		DataPort int `json:"data_port"`
+		AdminPort int `json:"admin_port"`
+	}`json:"prometheus"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{
