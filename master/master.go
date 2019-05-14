@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"gonum.org/v1/gonum/mat"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -13,6 +16,8 @@ import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 
 	. "github.com/smartfog/fogflow/common/config"
+	"math"
+	url2 "net/url"
 )
 
 type Master struct {
@@ -33,8 +38,16 @@ type Master struct {
 	workers         map[string]*WorkerProfile
 	workerList_lock sync.RWMutex
 
+
+	edgeUtilization  map[string] []float64
+	edgeUtilLock     sync.RWMutex
+
+	METRIC_COUNT     int
+	metricWeights    []float64
+
 	workerStats      map[string]*WorkerStat
 	workerStats_lock sync.RWMutex
+
 	// The moving average window for updating logs
 	statAlpha float32
 
@@ -53,8 +66,10 @@ type Master struct {
 }
 
 func (master *Master) Start(configuration *Config) {
+
 	master.cfg = configuration
 	master.statAlpha = 0.2
+	master.METRIC_COUNT = 4
 	master.messageBus = configuration.GetMessageBus()
 	master.discoveryURL = configuration.GetDiscoveryURL()
 
@@ -65,7 +80,12 @@ func (master *Master) Start(configuration *Config) {
 	master.operatorList = make(map[string][]DockerImage)
 
 	master.subID2Type = make(map[string]string)
+	master.edgeUtilLock.Lock()
+	master.edgeUtilization = make( map[string] []float64)
+	master.edgeUtilLock.Unlock()
 
+	//Build the Metrics Vector from Preferences Matrix Using AHP Method
+	master.InitMetricWeights()
 	// find a nearby IoT Broker
 	for {
 		nearby := NearBy{}
@@ -153,7 +173,7 @@ func (master *Master) InitPrometheus(configuration *Config) {
 }
 
 func (master *Master) onTimer() {
-
+	master.UpdateUtilization()
 }
 
 func (master *Master) Quit() {
@@ -425,18 +445,30 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	//INFO.Printf("HEARTBEAT: The edge address of worker %v is: %v ", profile.WID,profile.EdgeAddress)
 	if _,exists := master.workers[profile.WID]; !exists {
 		//A new worker registration!
-		// Notify Prometheus
-		master.UpdatePrometheusConfig()
+
+
+
+		//Create Utilization Entry for the worker
+		DEBUG.Printf("Registering new Edge: %v",profile.EdgeAddress)
+		master.edgeUtilLock.Lock()
+		master.edgeUtilization[profile.EdgeAddress+ ":" + strconv.Itoa(profile.CAdvisorPort)]=
+			make([]float64,master.METRIC_COUNT,master.METRIC_COUNT)
+			master.edgeUtilLock.Unlock()
+		//Add the worker to the workers
 		master.workerList_lock.Lock()
 		master.workers[profile.WID] = profile
 		master.workerList_lock.Unlock()
 
+		// Notify Prometheus
+		master.UpdatePrometheusConfig()
 
 	}else {
 		master.workerList_lock.Lock()
 		master.workers[profile.WID] = profile
 		master.workerList_lock.Unlock()
 	}
+	master.UpdateUtilization()
+	//DEBUG.Printf("List of workers: %v",master.workers)
 }
 
 func (master *Master) onNewStat(from string, newStat *WorkerStat){
@@ -457,8 +489,8 @@ func (master *Master) onNewStat(from string, newStat *WorkerStat){
 		INFO.Println("Updating:",newStat)
 	}
 
-	if newStat.UtilMemory>0.8 {
-		INFO.Println("received memory utilization more than 80%!")
+	if newStat.UtilMemory>0.96 {
+		INFO.Println("received memory utilization more than 95%!")
 		master.MoveAFunction()
 	}
 
@@ -544,7 +576,6 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 		if err != nil {
 			ERROR.Println("error occured when retrieving a context entity :", err)
 		}
-
 		return nil
 	}
 }
@@ -590,6 +621,29 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 //
 // to select the worker that is closest to the given points
 //
+
+func (master *Master) SelectWorkerAHP() string {
+	var selectedWorkerID string = "0"
+	var highestUtility float64 =0
+	for _,worker := range master.workers{
+		var utility  float64
+		utility = 0
+		instanceID:= worker.EdgeAddress+":"+strconv.Itoa(worker.CAdvisorPort)
+		for i:=0; i<master.METRIC_COUNT ; i++ {
+			utility = utility + master.metricWeights[i]*master.edgeUtilization[instanceID][i]
+		}
+		if utility >=highestUtility {
+			selectedWorkerID=worker.WID
+		}
+
+	}
+
+	return selectedWorkerID
+	//USEFUL VARIABLES:
+	//master.metricWeights
+	//master.edgeUtilization
+}
+
 func (master *Master) SelectWorker(locations []Point) string {
 	if len(locations) == 0 {
 		for _, worker := range master.workers {
@@ -631,7 +685,7 @@ func (master *Master) SelectWorker(locations []Point) string {
 }
 
 
-func (master *Master) MoveAFunction() bool{
+func (master *Master)MoveAFunction() bool{
 	for _,fogflow := range master.functionMgr.functionFlows{
 		for _, taskinstance:= range fogflow.DeploymentPlan{
 			taskinstance.WorkerID=master.GetAnotherWorker(taskinstance.WorkerID)
@@ -642,7 +696,7 @@ func (master *Master) MoveAFunction() bool{
 	return false
 }
 
-func (master *Master) GetAnotherWorker(oldWorkerId string) string {
+func (master *Master)GetAnotherWorker(oldWorkerId string) string {
 
 		for _, worker := range master.workers {
 			if worker.WID != oldWorkerId {
@@ -661,7 +715,7 @@ func (master *Master) UpdatePrometheusConfig(){
 	//TODO: Make this code more robust. If the request fails either prometheus is not ready or not running.
 	// We should retry several times and send an proper error message if prometheus is down.
 	baseConfig := `[{
-	    "targets": ["13.53.90.176:8090","52.32.9.56:8090","127.0.0.1:8092"],
+	    "targets": ["127.0.0.1:8092"],
 	    "labels": {
 	      "job": "fogflow"
 	    }
@@ -697,4 +751,138 @@ func (master *Master) UpdatePrometheusConfig(){
 	defer resp.Body.Close()
 
 
+}
+
+type PromReply struct {
+	Status string `json:"status"`
+	Data   struct {
+		ResultType string `json:"resultType"`
+		Result     []struct {
+			Metric struct {
+				Instance string `json:"instance"`
+			} `json:"metric"`
+			Value []string `json:"value"`
+		} `json:"result"`
+	} `json:"data"`
+}
+
+func (master *Master)InitMetricWeights() {
+	preferenceMatrix := mat.NewDense(master.METRIC_COUNT, master.METRIC_COUNT, []float64{
+		1,0.5, 10, 5,
+		2, 1 , 2 , 7,
+		1,0.5, 1 ,0.3,
+		2,  4, 5 , 3,
+	})
+	DEBUG.Printf("Matrix of Preference of Metrics is =\n %v\n\n", mat.Formatted(preferenceMatrix, mat.Prefix("    ")))
+
+	var eig mat.Eigen
+	ok := eig.Factorize(preferenceMatrix, mat.EigenRight)
+	if !ok {
+		log.Fatal("Eigendecomposition failed")
+	}
+
+	eigenValues := eig.Values(nil)
+	var maxIndex,maxValue float64
+	maxIndex = 0
+	maxValue = -1
+
+	//Find out the biggest Real EigenValue
+	for i := 0; i < len(eigenValues); i++ {
+		if real(eigenValues[i])>maxValue && imag(eigenValues[i])==0 {
+			maxIndex=float64(i)
+			maxValue=real(eigenValues[i])
+		}
+	}
+
+	eigenVectors := eig.VectorsTo(nil)
+	r,_:=eigenVectors.Dims()
+	master.metricWeights = make([]float64, r)
+
+	for i := 0; i < r; i++ {
+		master.metricWeights[i]=real(eigenVectors.At(i,int(maxIndex)))
+	}
+
+	DEBUG.Printf("Decision Making Metric Weights : %v\n", master.metricWeights)
+
+	// It would be called in the Timer:
+	//master.UpdateUtilization()
+
+}
+
+
+
+func (master *Master)UpdateUtilization () {
+	//DEBUG.Printf("Utilization of Edge nodes: \n %v \n",master.edgeUtilization)
+	MetricQueries := make([]string,master.METRIC_COUNT)
+	MetricQueries[0] = `sum(rate(container_cpu_usage_seconds_total{job="fogflow",id="/"}[2m] )) by (instance)`
+	MetricQueries[1] = `sum(container_memory_working_set_bytes{job="fogflow",id=~"/docker.*"})by(instance)`
+	MetricQueries[2] = `sum(container_memory_working_set_bytes{job="fogflow",id=~"/docker.*"}) by(instance) / sum(machine_memory_bytes) by (instance)`
+	MetricQueries[3] = `sum(rate(container_memory_failures_total{failure_type="pgmajfault"}[20m])) by (instance)`
+
+	//for address, metric := range *util {
+	//	//AAA fmt.Printf("address %v is: %v \n", address, metric)
+	//	//fmt.Printf("the value of metrics are: %v",util[address][0])
+	//	//return worker.WID
+	//}
+
+	for metricNumber, metricQuery := range MetricQueries {
+
+		promAddress := master.cfg.Prometheus.Address+":"+ strconv.Itoa(master.cfg.Prometheus.DataPort)
+		url := "http://" + promAddress + "/api/v1/query?query=" + url2.QueryEscape(metricQuery)
+		req, err := http.NewRequest("GET", url, nil)
+		req.Header.Add("Accept", "application/json")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			DEBUG.Printf("Error Talking to Prometheus Server for Orchestration")
+			panic(err)
+		}
+		defer resp.Body.Close()
+		text, _ := ioutil.ReadAll(resp.Body)
+		var data PromReply
+		json.Unmarshal(text, &data)
+
+		for _, d := range data.Data.Result {
+			f, _ := strconv.ParseFloat(d.Value[1], 64)
+			if _,exists := master.edgeUtilization[d.Metric.Instance]; !exists {
+				master.edgeUtilLock.Lock()
+				master.edgeUtilization[d.Metric.Instance] =make([]float64,master.METRIC_COUNT,master.METRIC_COUNT)
+				master.edgeUtilLock.Unlock()
+			}
+			master.edgeUtilLock.Lock()
+			master.edgeUtilization[d.Metric.Instance][metricNumber] = f
+			master.edgeUtilLock.Unlock()
+		}
+	}
+
+	//Normalize the Utlization data
+	for metricNumber, _ := range MetricQueries {
+		//Normalize data of Each Metric (metricNumber)
+		//for all hosts
+
+		// DEBUG.Printf("%v: This is host: %v, and this is data: %v\n",metricNumber,host,data[metricNumber])
+
+		//Get the sum
+		var sumMetric float64 = 0
+		for _,data :=range master.edgeUtilization{
+			sumMetric += data[metricNumber]
+		}
+
+		//Divide each value to sum --> Normalize
+		for _,data :=range master.edgeUtilization{
+			master.edgeUtilLock.Lock()
+			data[metricNumber] = divide(data[metricNumber],sumMetric)
+			master.edgeUtilLock.Unlock()
+		}
+	}
+}
+
+func divide(a,b float64) float64{
+	if math.IsNaN(a/b){
+		return 0
+	} else {
+		return a/b
+
+	}
 }

@@ -27,7 +27,7 @@ services:
         depends_on: 
             - discovery
     master:
-        image: fogflow/master
+        image: rahafrouz/fogflow/master
         volumes:
             - ./config.json:/config.json                        
         links:
@@ -37,8 +37,15 @@ services:
         depends_on: 
             - rabbitmq
             - discovery
-            - broker     
-    cloud_worker:
+            - broker  
+    cloud_worker_1:
+        image: fogflow/worker
+        volumes:
+            - /tmp:/tmp        
+            - ./config.json:/config.json                
+            - /var/run/docker.sock:/var/run/docker.sock                    
+   
+    cloud_worker_2:
         image: fogflow/worker
         volumes:
             - /tmp:/tmp        

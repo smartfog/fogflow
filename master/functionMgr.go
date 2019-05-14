@@ -875,6 +875,8 @@ func (fMgr *FunctionMgr) HandleContextAvailabilityUpdate(subID string, entityAct
 			// find out the worker close to the available inputs
 			locations := fogflow.getLocationOfInputs(taskID)
 			scheduledTaskInstance.WorkerID = fMgr.master.SelectWorker(locations)
+			//OVERRIDE GEO-Based Orchestration by AMIR!
+			scheduledTaskInstance.WorkerID = fMgr.master.SelectWorkerAHP()
 
 			if scheduledTaskInstance.WorkerID != "" {
 				fMgr.master.DeployTask(&scheduledTaskInstance)
