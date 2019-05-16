@@ -42,7 +42,7 @@
     },
     "worker": {
         "container_autoremove": false    ,
-        "edge_address": "127.0.0.1",
+        "edge_address": "172.17.0.1",
         "cadvisor_port": 9091
     },
     "designer": {
