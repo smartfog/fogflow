@@ -840,7 +840,7 @@ func (fMgr *FunctionMgr) HandleContextAvailabilityUpdate(subID string, entityAct
 
 	fMgr.subID2FogFunc_lock.RLock()
 	if _, exist := fMgr.subID2FogFunc[subID]; exist == false {
-		INFO.Println("this subscripption is not issued by me")
+		INFO.Println("this subscription is not issued by me")
 		fMgr.subID2FogFunc_lock.RUnlock()
 		return
 	}
@@ -875,6 +875,8 @@ func (fMgr *FunctionMgr) HandleContextAvailabilityUpdate(subID string, entityAct
 			// find out the worker close to the available inputs
 			locations := fogflow.getLocationOfInputs(taskID)
 			scheduledTaskInstance.WorkerID = fMgr.master.SelectWorker(locations)
+			//OVERRIDE GEO-Based Orchestration by AMIR!
+			scheduledTaskInstance.WorkerID = fMgr.master.SelectWorkerAHP()
 
 			if scheduledTaskInstance.WorkerID != "" {
 				fMgr.master.DeployTask(&scheduledTaskInstance)

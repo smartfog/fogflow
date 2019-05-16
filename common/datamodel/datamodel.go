@@ -221,8 +221,15 @@ type WorkerProfile struct {
 	Capacity  int
 	OSType    string
 	HWType    string
+	CAdvisorPort int
+	EdgeAddress string
 }
 
+type WorkerStat struct {
+	WID        string
+	UtilCPU    float32
+	UtilMemory float32
+}
 type StreamProfile struct {
 	ID         string
 	StreamType string
@@ -231,4 +238,10 @@ type StreamProfile struct {
 	Location   PhysicalLocation
 
 	StreamObject *ContextObject
+}
+type PrometheusConfig struct {
+	Targets []string `json:"targets"`
+	Labels  struct {
+		Job string `json:"job"`
+	} `json:"labels"`
 }

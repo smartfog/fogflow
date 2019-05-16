@@ -70,12 +70,19 @@ type Config struct {
 	Worker struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
+		EdgeAddress string `json:"edge_address"`
+		CAdvisorPort int `json:"cadvisor_port"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`
 		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"rabbitmq"`
+	Prometheus struct {
+		Address string `json:"address"`
+		DataPort int `json:"data_port"`
+		AdminPort int `json:"admin_port"`
+	}`json:"prometheus"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{
