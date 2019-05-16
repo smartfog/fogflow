@@ -4,7 +4,7 @@ import pickle
 import datetime
 import io
 import requests
-import constant
+from consts import constant
 class ngsi_data_creation:
     def __init__(self,data):
         self.data=data 
@@ -19,7 +19,7 @@ class ngsi_data_creation:
         entity_data_id=entity_data['id']
         relations=[]
         relation_url={}
-        relations.append(constant.jsonld_url)
+        relations.append(constant.context_url)
         relation_url[entity_data_type]=constant.brand_url+entity_data_type
         attribute_data=data3['attributes']
         length=len(attribute_data)

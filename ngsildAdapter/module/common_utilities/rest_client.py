@@ -4,7 +4,7 @@ import pickle
 import datetime
 import io
 import requests
-import constant
+from consts import constant
 class Rest_client:
     def __init__(self,url,payload):
         self.url=url
