@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"gonum.org/v1/gonum/mat"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,13 +10,16 @@ import (
 	"sync"
 	"time"
 
+	"gonum.org/v1/gonum/mat"
+
 	. "github.com/smartfog/fogflow/common/communicator"
 	. "github.com/smartfog/fogflow/common/datamodel"
 	. "github.com/smartfog/fogflow/common/ngsi"
 
-	. "github.com/smartfog/fogflow/common/config"
 	"math"
 	url2 "net/url"
+
+	. "github.com/smartfog/fogflow/common/config"
 )
 
 type Master struct {
@@ -38,12 +40,11 @@ type Master struct {
 	workers         map[string]*WorkerProfile
 	workerList_lock sync.RWMutex
 
+	edgeUtilization map[string][]float64
+	edgeUtilLock    sync.RWMutex
 
-	edgeUtilization  map[string] []float64
-	edgeUtilLock     sync.RWMutex
-
-	METRIC_COUNT     int
-	metricWeights    []float64
+	METRIC_COUNT  int
+	metricWeights []float64
 
 	workerStats      map[string]*WorkerStat
 	workerStats_lock sync.RWMutex
@@ -81,7 +82,7 @@ func (master *Master) Start(configuration *Config) {
 
 	master.subID2Type = make(map[string]string)
 	master.edgeUtilLock.Lock()
-	master.edgeUtilization = make( map[string] []float64)
+	master.edgeUtilization = make(map[string][]float64)
 	master.edgeUtilLock.Unlock()
 
 	//Build the Metrics Vector from Preferences Matrix Using AHP Method
@@ -165,8 +166,8 @@ func (master *Master) Start(configuration *Config) {
 func (master *Master) InitPrometheus(configuration *Config) {
 	INFO.Printf("Initializing Prometheus on %v with AdminPort: %v, DataProt: %v \n",
 		configuration.Prometheus.Address,
-		configuration.Prometheus.AdminPort,configuration.Prometheus.DataPort)
-	if configuration.Prometheus.Address=="auto" {
+		configuration.Prometheus.AdminPort, configuration.Prometheus.DataPort)
+	if configuration.Prometheus.Address == "auto" {
 		configuration.Prometheus.Address = "prometheus"
 	}
 	//TODO check the address to see if prometheus is up and running
@@ -431,7 +432,7 @@ func (master *Master) Process(msg *RecvMessage) error {
 	case "heart_stat":
 		//INFO.Println("AMIR: recieved Heart stats:",msg.PayLoad)
 		stat := WorkerStat{}
-		err := json.Unmarshal(msg.PayLoad,&stat)
+		err := json.Unmarshal(msg.PayLoad, &stat)
 		if err == nil {
 			master.onNewStat(msg.From, &stat)
 		}
@@ -443,17 +444,15 @@ func (master *Master) Process(msg *RecvMessage) error {
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	//INFO.Printf("HEARTBEAT: The edge address of worker %v is: %v ", profile.WID,profile.EdgeAddress)
-	if _,exists := master.workers[profile.WID]; !exists {
+	if _, exists := master.workers[profile.WID]; !exists {
 		//A new worker registration!
 
-
-
 		//Create Utilization Entry for the worker
-		DEBUG.Printf("Registering new Edge: %v",profile.EdgeAddress)
+		DEBUG.Printf("Registering new Edge: %v", profile.EdgeAddress)
 		master.edgeUtilLock.Lock()
-		master.edgeUtilization[profile.EdgeAddress+ ":" + strconv.Itoa(profile.CAdvisorPort)]=
-			make([]float64,master.METRIC_COUNT,master.METRIC_COUNT)
-			master.edgeUtilLock.Unlock()
+		master.edgeUtilization[profile.EdgeAddress+":"+strconv.Itoa(profile.CAdvisorPort)] =
+			make([]float64, master.METRIC_COUNT, master.METRIC_COUNT)
+		master.edgeUtilLock.Unlock()
 		//Add the worker to the workers
 		master.workerList_lock.Lock()
 		master.workers[profile.WID] = profile
@@ -462,7 +461,7 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 		// Notify Prometheus
 		master.UpdatePrometheusConfig()
 
-	}else {
+	} else {
 		master.workerList_lock.Lock()
 		master.workers[profile.WID] = profile
 		master.workerList_lock.Unlock()
@@ -471,25 +470,25 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	//DEBUG.Printf("List of workers: %v",master.workers)
 }
 
-func (master *Master) onNewStat(from string, newStat *WorkerStat){
+func (master *Master) onNewStat(from string, newStat *WorkerStat) {
 	if oldStat, ok := master.workerStats[newStat.WID]; ok {
 		//update statistics
 		//INFO.Println("not the first time, old stat is: ",oldStat)
 		master.workerStats_lock.Lock()
-		oldStat.UtilMemory = (newStat.UtilMemory * master.statAlpha)+( (1-master.statAlpha)*oldStat.UtilMemory )
-		oldStat.UtilCPU = (newStat.UtilCPU * master.statAlpha)+( (1-master.statAlpha)*oldStat.UtilCPU )
-		master.workerStats[newStat.WID]=oldStat
+		oldStat.UtilMemory = (newStat.UtilMemory * master.statAlpha) + ((1 - master.statAlpha) * oldStat.UtilMemory)
+		oldStat.UtilCPU = (newStat.UtilCPU * master.statAlpha) + ((1 - master.statAlpha) * oldStat.UtilCPU)
+		master.workerStats[newStat.WID] = oldStat
 		master.workerStats_lock.Unlock()
 		//INFO.Println("and the new stat is: ",master.workerStats[newStat.WID])
 
 	} else {
 		// First time that we have this value. Added to map
-		master.workerStats[newStat.WID]=newStat
+		master.workerStats[newStat.WID] = newStat
 		INFO.Println("first time....")
-		INFO.Println("Updating:",newStat)
+		INFO.Println("Updating:", newStat)
 	}
 
-	if newStat.UtilMemory>0.96 {
+	if newStat.UtilMemory > 0.96 {
 		INFO.Println("received memory utilization more than 95%!")
 		master.MoveAFunction()
 	}
@@ -624,16 +623,16 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 
 func (master *Master) SelectWorkerAHP() string {
 	var selectedWorkerID string = "0"
-	var highestUtility float64 =0
-	for _,worker := range master.workers{
-		var utility  float64
+	var highestUtility float64 = 0
+	for _, worker := range master.workers {
+		var utility float64
 		utility = 0
-		instanceID:= worker.EdgeAddress+":"+strconv.Itoa(worker.CAdvisorPort)
-		for i:=0; i<master.METRIC_COUNT ; i++ {
+		instanceID := worker.EdgeAddress + ":" + strconv.Itoa(worker.CAdvisorPort)
+		for i := 0; i < master.METRIC_COUNT; i++ {
 			utility = utility + master.metricWeights[i]*master.edgeUtilization[instanceID][i]
 		}
-		if utility >=highestUtility {
-			selectedWorkerID=worker.WID
+		if utility >= highestUtility {
+			selectedWorkerID = worker.WID
 		}
 
 	}
@@ -664,7 +663,7 @@ func (master *Master) SelectWorker(locations []Point) string {
 
 		totalDistance := uint64(0)
 
-		for _, location := range locations { 
+		for _, location := range locations {
 			if location.Latitude == 0 && location.Longitude == 0 {
 				continue
 			}
@@ -684,33 +683,32 @@ func (master *Master) SelectWorker(locations []Point) string {
 	return closestWorkerID
 }
 
-
-func (master *Master)MoveAFunction() bool{
-	for _,fogflow := range master.functionMgr.functionFlows{
-		for _, taskinstance:= range fogflow.DeploymentPlan{
-			taskinstance.WorkerID=master.GetAnotherWorker(taskinstance.WorkerID)
+func (master *Master) MoveAFunction() bool {
+	for _, fogflow := range master.functionMgr.functionFlows {
+		for _, taskinstance := range fogflow.DeploymentPlan {
+			taskinstance.WorkerID = master.GetAnotherWorker(taskinstance.WorkerID)
 			master.DeployTask(taskinstance)
-			INFO.Println("AMIR: moved the function: +%v......",taskinstance.TaskName)
+			INFO.Printf("AMIR: moved the function: %s......\r\n", taskinstance.TaskName)
 		}
 	}
 	return false
 }
 
-func (master *Master)GetAnotherWorker(oldWorkerId string) string {
+func (master *Master) GetAnotherWorker(oldWorkerId string) string {
 
-		for _, worker := range master.workers {
-			if worker.WID != oldWorkerId {
-				INFO.Println("changed from worker: %+v to new worker: %+v",oldWorkerId,worker.WID)
-				return worker.WID
-			}
-
+	for _, worker := range master.workers {
+		if worker.WID != oldWorkerId {
+			INFO.Printf("changed from worker: %s to new worker: %s\r\n", oldWorkerId, worker.WID)
+			return worker.WID
 		}
 
-		INFO.Println("Could not find another worker")
-		return oldWorkerId
+	}
+
+	INFO.Println("Could not find another worker")
+	return oldWorkerId
 }
 
-func (master *Master) UpdatePrometheusConfig(){
+func (master *Master) UpdatePrometheusConfig() {
 
 	//TODO: Make this code more robust. If the request fails either prometheus is not ready or not running.
 	// We should retry several times and send an proper error message if prometheus is down.
@@ -727,16 +725,15 @@ func (master *Master) UpdatePrometheusConfig(){
 	}
 	for _, worker := range master.workers {
 		configFile[0].Targets =
-			append(configFile[0].Targets, worker.EdgeAddress+ ":" + strconv.Itoa(worker.CAdvisorPort))
+			append(configFile[0].Targets, worker.EdgeAddress+":"+strconv.Itoa(worker.CAdvisorPort))
 	}
-
 
 	//send update to prometheus
 	body, err := json.Marshal(configFile)
 	if err != nil {
 		panic(err)
 	}
-	url:=master.cfg.Prometheus.Address+":" + strconv.Itoa(master.cfg.Prometheus.AdminPort)
+	url := master.cfg.Prometheus.Address + ":" + strconv.Itoa(master.cfg.Prometheus.AdminPort)
 	DEBUG.Printf("sending new config to premetheus[%v]:\n%v", url, string(body))
 
 	req, err := http.NewRequest("POST", "http://"+url+"/config", bytes.NewBuffer(body))
@@ -749,7 +746,6 @@ func (master *Master) UpdatePrometheusConfig(){
 		panic(err)
 	}
 	defer resp.Body.Close()
-
 
 }
 
@@ -766,12 +762,12 @@ type PromReply struct {
 	} `json:"data"`
 }
 
-func (master *Master)InitMetricWeights() {
+func (master *Master) InitMetricWeights() {
 	preferenceMatrix := mat.NewDense(master.METRIC_COUNT, master.METRIC_COUNT, []float64{
-		1,0.5, 10, 5,
-		2, 1 , 2 , 7,
-		1,0.5, 1 ,0.3,
-		2,  4, 5 , 3,
+		1, 0.5, 10, 5,
+		2, 1, 2, 7,
+		1, 0.5, 1, 0.3,
+		2, 4, 5, 3,
 	})
 	DEBUG.Printf("Matrix of Preference of Metrics is =\n %v\n\n", mat.Formatted(preferenceMatrix, mat.Prefix("    ")))
 
@@ -782,24 +778,24 @@ func (master *Master)InitMetricWeights() {
 	}
 
 	eigenValues := eig.Values(nil)
-	var maxIndex,maxValue float64
+	var maxIndex, maxValue float64
 	maxIndex = 0
 	maxValue = -1
 
 	//Find out the biggest Real EigenValue
 	for i := 0; i < len(eigenValues); i++ {
-		if real(eigenValues[i])>maxValue && imag(eigenValues[i])==0 {
-			maxIndex=float64(i)
-			maxValue=real(eigenValues[i])
+		if real(eigenValues[i]) > maxValue && imag(eigenValues[i]) == 0 {
+			maxIndex = float64(i)
+			maxValue = real(eigenValues[i])
 		}
 	}
 
 	eigenVectors := eig.VectorsTo(nil)
-	r,_:=eigenVectors.Dims()
+	r, _ := eigenVectors.Dims()
 	master.metricWeights = make([]float64, r)
 
 	for i := 0; i < r; i++ {
-		master.metricWeights[i]=real(eigenVectors.At(i,int(maxIndex)))
+		master.metricWeights[i] = real(eigenVectors.At(i, int(maxIndex)))
 	}
 
 	DEBUG.Printf("Decision Making Metric Weights : %v\n", master.metricWeights)
@@ -809,11 +805,9 @@ func (master *Master)InitMetricWeights() {
 
 }
 
-
-
-func (master *Master)UpdateUtilization () {
+func (master *Master) UpdateUtilization() {
 	//DEBUG.Printf("Utilization of Edge nodes: \n %v \n",master.edgeUtilization)
-	MetricQueries := make([]string,master.METRIC_COUNT)
+	MetricQueries := make([]string, master.METRIC_COUNT)
 	MetricQueries[0] = `sum(rate(container_cpu_usage_seconds_total{job="fogflow",id="/"}[2m] )) by (instance)`
 	MetricQueries[1] = `sum(container_memory_working_set_bytes{job="fogflow",id=~"/docker.*"})by(instance)`
 	MetricQueries[2] = `sum(container_memory_working_set_bytes{job="fogflow",id=~"/docker.*"}) by(instance) / sum(machine_memory_bytes) by (instance)`
@@ -827,7 +821,7 @@ func (master *Master)UpdateUtilization () {
 
 	for metricNumber, metricQuery := range MetricQueries {
 
-		promAddress := master.cfg.Prometheus.Address+":"+ strconv.Itoa(master.cfg.Prometheus.DataPort)
+		promAddress := master.cfg.Prometheus.Address + ":" + strconv.Itoa(master.cfg.Prometheus.DataPort)
 		url := "http://" + promAddress + "/api/v1/query?query=" + url2.QueryEscape(metricQuery)
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Add("Accept", "application/json")
@@ -845,9 +839,9 @@ func (master *Master)UpdateUtilization () {
 
 		for _, d := range data.Data.Result {
 			f, _ := strconv.ParseFloat(d.Value[1], 64)
-			if _,exists := master.edgeUtilization[d.Metric.Instance]; !exists {
+			if _, exists := master.edgeUtilization[d.Metric.Instance]; !exists {
 				master.edgeUtilLock.Lock()
-				master.edgeUtilization[d.Metric.Instance] =make([]float64,master.METRIC_COUNT,master.METRIC_COUNT)
+				master.edgeUtilization[d.Metric.Instance] = make([]float64, master.METRIC_COUNT, master.METRIC_COUNT)
 				master.edgeUtilLock.Unlock()
 			}
 			master.edgeUtilLock.Lock()
@@ -865,24 +859,24 @@ func (master *Master)UpdateUtilization () {
 
 		//Get the sum
 		var sumMetric float64 = 0
-		for _,data :=range master.edgeUtilization{
+		for _, data := range master.edgeUtilization {
 			sumMetric += data[metricNumber]
 		}
 
 		//Divide each value to sum --> Normalize
-		for _,data :=range master.edgeUtilization{
+		for _, data := range master.edgeUtilization {
 			master.edgeUtilLock.Lock()
-			data[metricNumber] = divide(data[metricNumber],sumMetric)
+			data[metricNumber] = divide(data[metricNumber], sumMetric)
 			master.edgeUtilLock.Unlock()
 		}
 	}
 }
 
-func divide(a,b float64) float64{
-	if math.IsNaN(a/b){
+func divide(a, b float64) float64 {
+	if math.IsNaN(a / b) {
 		return 0
 	} else {
-		return a/b
+		return a / b
 
 	}
 }
