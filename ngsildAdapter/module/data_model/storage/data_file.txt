@@ -3,3 +3,4 @@ urn:ngsi-ld:Car001
 urn:ngsi-ld:Car001
 urn:ngsi-ld:Temprature
 urn:ngsi-ld:Temprature12
+urn:ngsi-ld:Temp001

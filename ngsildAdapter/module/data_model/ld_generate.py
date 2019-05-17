@@ -4,7 +4,10 @@ import pickle
 import datetime
 import io
 import requests
+import sys
+#sys.path.insert(0, '../consts')
 from consts import constant
+#import constant
 class ngsi_data_creation:
     def __init__(self,data):
         self.data=data 
