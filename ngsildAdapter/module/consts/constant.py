@@ -11,3 +11,4 @@ internal_server_error=500
 resource_not_found=404
 multistatus=207
 fog_header={'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+http='http://'

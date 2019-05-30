@@ -11,17 +11,17 @@ class Rest_client:
         self.payload=payload
         self.headers=constant.header
     def post_request(self):
-	print("POST URL: ", self.url)
-        print("Requested Payload: ", self.payload)
-        r = requests.post(self.url, data=self.payload, headers=self.headers)
-        print(r.content)
-        print(r.status_code)
-        return r
+        response = requests.post(self.url, data=self.payload, headers=self.headers)
+        print(dir(response))
+        if response.ok: 
+            return response
+        else:
+            return None 
     def patch_request(self):
-	print("PATCH URL: ", self.url)
-	print("Requested Payload: ", self.payload)
-        r = requests.patch(self.url, data=self.payload, headers=self.headers)
-        print(r.content)
-        print(r.status_code)
-        return r
+        response = requests.patch(self.url, data=self.payload, headers=self.headers)
+        if response.ok:
+           return response
+        else:
+            return None
+            
          

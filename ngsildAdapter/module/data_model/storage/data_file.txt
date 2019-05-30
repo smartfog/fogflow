@@ -4,3 +4,8 @@ urn:ngsi-ld:Car001
 urn:ngsi-ld:Temprature
 urn:ngsi-ld:Temprature12
 urn:ngsi-ld:Temp001
+urn:ngsi-ld:Temp002
+urn:ngsi-ld:temprature_data
+urn:ngsi-ld:temprature_data
+urn:ngsi-ld:temprature_data
+urn:ngsi-ld:temprature_data
