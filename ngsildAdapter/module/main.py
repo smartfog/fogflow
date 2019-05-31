@@ -15,22 +15,16 @@ from consts import constant
 app = Flask(__name__)
 File_data={}
 storage=[]
-
-
 def take_backup():
     id_file=open("data_model/storage/data_file.txt",'r+')
     for x in id_file:
         x=x.rstrip("\n")
         File_data[x]=1
-    print(File_data)
     id_file.close()
-
-
 #notify context
 @app.route('/notifyContext',methods=['POST'])
 def noify_server():
     data=request.get_json()
-    #print(data)
     dataObj=ngsi_data_creation(data)
     context=dataObj.get_ngsi_ld()
     patch_context= copy.deepcopy(context)
@@ -39,9 +33,8 @@ def noify_server():
     entity_id=dataObj.get_entityId()
     configobj=config_data()
     entity_url=configobj.get_entity_url()
-    url1 ='http://'+entity_url+constant.entity_uri
-    url2='http://'+entity_url+constant.entity_uri+entity_id+'/attrs'
-    #print(url1)
+    url1 =constant.http+entity_url+constant.entity_uri
+    url2=constant.http+entity_url+constant.entity_uri+entity_id+'/attrs'
     if entity_id in File_data.keys():
         payload=json.dumps(patch_context)
         robj=Rest_client(url2,payload)
@@ -56,15 +49,12 @@ def noify_server():
             File_data[entity_id]=1
             id_file.close()
     return "notify"
-
 @app.route('/subscribeContext',methods=['POST'])
 def rest_client():
     data=request.get_json()
     configobj=config_data()
     fog_url=configobj.get_fogflow_subscription_endpoint()
-    url='http://'+fog_url+constant.subscribe_uri
-    #print("neeraj srivastav")
-    #print(url)
+    url=constant.http+fog_url+constant.subscribe_uri
     payload = json.dumps(data)
     robj=Rest_client(url,payload)
     r=robj.post_request()

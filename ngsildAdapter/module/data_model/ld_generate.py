@@ -5,9 +5,7 @@ import datetime
 import io
 import requests
 import sys
-#sys.path.insert(0, '../consts')
 from consts import constant
-#import constant
 class ngsi_data_creation:
     def __init__(self,data):
         self.data=data 
@@ -16,7 +14,6 @@ class ngsi_data_creation:
         data=self.data
         data2=data['contextResponses'][0]
         data3=data2['contextElement']
-        #data3=data[data['contextResponses'][0]]
         entity_data=data3['entityId']
         entity_data_type=entity_data['type']
         entity_data_id=entity_data['id']
@@ -34,9 +31,6 @@ class ngsi_data_creation:
             relation_url[attribute_data_name]=constant.brand_url+attribute_data_name
         relations.append(relation_url)
         self.context['@context']=relations
-        #self.context['id']=constant.id_value+entity_data_id
-        #self.entity_id=self.context['id']
-        #self.context['type']="Vehicle"
         attribute_data=data3['attributes'][0]
         for i in range(length):
             attribute_data=data3['attributes'][i]

@@ -1,0 +1,5 @@
+docker build -t tejinderkaur3015/ngsildadapter:latest .
+
+
+
+docker push tejinderkaur3015/ngsildadapter:latest
