@@ -20,7 +20,6 @@ def take_backup():
     for x in id_file:
         x=x.rstrip("\n")
         File_data[x]=1
-    print(File_data)
     id_file.close()
 #notify context
 @app.route('/notifyContext',methods=['POST'])
@@ -59,7 +58,6 @@ def rest_client():
     payload = json.dumps(data)
     robj=Rest_client(url,payload)
     r=robj.post_request()
-    print(r.content)
     return "subscribe"
 if __name__ == '__main__':
     take_backup()
