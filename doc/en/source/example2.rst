@@ -465,7 +465,7 @@ The processing requirement is sent as NGSI10 update, with the following properti
 
 .. |connect_device_to_fogflow| raw:: html
 
-    <a href="./example4.html" target="_blank">Connect an IoT device to FogFlow</a>
+    <a href="./example3.html" target="_blank">Connect an IoT device to FogFlow</a>
 
 
 Here are the Curl and the Javascript-based code examples to trigger a service topology by sending a customized requirement entity to FogFlow. 
