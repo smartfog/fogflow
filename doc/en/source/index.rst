@@ -23,6 +23,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :numbered:
    
     introduction.rst
+    onepage.rst
     setup.rst
     example1.rst
     example2.rst

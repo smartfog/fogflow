@@ -1,0 +1,14 @@
+entity_uri = '/ngsi-ld/v1/entities/'
+header={'content-type': 'application/ld+json', 'Accept-Charset': 'UTF-8'}
+subscribe_uri='/ngsi10/subscribeContext'
+context_url="https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld"
+brand_url="http://example.org/"
+id_value="urn:ngsi-ld:"
+update_uri='/ngsi10/updateContext'
+create_status=201
+update_status=204
+internal_server_error=500
+resource_not_found=404
+multistatus=207
+fog_header={'content-type': 'application/json', 'Accept-Charset': 'UTF-8'}
+http='http://'
