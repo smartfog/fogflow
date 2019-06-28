@@ -9,6 +9,8 @@ for example, a raspberry Pi with several connected sensors or actuators.
 In the following example, we show how a simulated PowerPanel device can be connected to FogFlow via NGSI. 
 This example code is also accessible from `FogFlow code repository`_ in the application folder. 
 
+You need Node.js to run this example code. Please install Node.js and npm.
+
 .. _`FogFlow code repository`: https://github.com/smartfog/fogflow/blob/master/application/device/powerpanel/powerpanel.js
 
 .. code-block:: javascript
@@ -166,3 +168,31 @@ This example code is also accessible from `FogFlow code repository`_ in the appl
     });
 
 
+You need to modify discoveryURL in profile1.json.
+
+.. code-block:: json
+
+    {
+        "discoveryURL":"http://35.198.104.115:443/ngsi9",
+        "location": {
+            "latitude": 35.692221,
+            "longitude": 139.709059
+        },
+        "iconURL": "/img/shop.png",
+        "type": "PowerPanel",
+        "id": "01"
+    }
+
+
+You need to install the packages as follows:
+
+.. code-block:: console
+
+    npm install
+
+
+Run this example code as follows:
+
+.. code-block:: console
+
+    node powerpanel.js profile1.json
