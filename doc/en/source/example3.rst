@@ -7,8 +7,9 @@ can be very easy. It requires some small application to be running on your devic
 for example, a raspberry Pi with several connected sensors or actuators. 
 
 In the following example, we show how a simulated PowerPanel device can be connected to FogFlow via NGSI. 
-This example code is also accessible from FogFlow code repository in the application folder. 
+This example code is also accessible from `FogFlow code repository`_ in the application folder. 
 
+.. _`FogFlow code repository`: https://github.com/smartfog/fogflow/blob/master/application/device/powerpanel/powerpanel.js
 
 .. code-block:: javascript
 
