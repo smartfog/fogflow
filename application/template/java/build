@@ -1,0 +1,3 @@
+mvn clean install
+
+docker build  -t "javafogfunction"   .

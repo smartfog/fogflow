@@ -2,6 +2,7 @@
 *.doctree
 *.pickle
 *.exe
+.DS_store
 node_modules
 doc/en/_build/
 doc/en/source/figures/~$figures.pptx
