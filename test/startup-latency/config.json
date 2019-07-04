@@ -1,0 +1,9 @@
+{
+	"my_ip": "10.156.0.2",	
+	"update_broker_url": "http://10.156.0.2:8080/ngsi10",	
+	"subscribe_broker_url": "http://10.156.0.2:8080/ngsi10",	    
+	"logging":{
+		"info":"stdout"
+	}			
+}
+
