@@ -86,7 +86,8 @@ func (master *Master) Start(configuration *Config) {
 	master.edgeUtilLock.Unlock()
 
 	//Build the Metrics Vector from Preferences Matrix Using AHP Method
-	master.InitMetricWeights()
+	//master.InitMetricWeights()
+
 	// find a nearby IoT Broker
 	for {
 		nearby := NearBy{}
@@ -174,7 +175,7 @@ func (master *Master) InitPrometheus(configuration *Config) {
 }
 
 func (master *Master) onTimer() {
-	master.UpdateUtilization()
+	//master.UpdateUtilization()
 }
 
 func (master *Master) Quit() {
@@ -459,14 +460,15 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 		master.workerList_lock.Unlock()
 
 		// Notify Prometheus
-		master.UpdatePrometheusConfig()
+		//master.UpdatePrometheusConfig()
 
 	} else {
 		master.workerList_lock.Lock()
 		master.workers[profile.WID] = profile
 		master.workerList_lock.Unlock()
 	}
-	master.UpdateUtilization()
+
+	//master.UpdateUtilization()
 	//DEBUG.Printf("List of workers: %v",master.workers)
 }
 

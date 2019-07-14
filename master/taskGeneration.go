@@ -63,7 +63,7 @@ func generateTaskInstances(root *TaskNode, streams []*ContextObject, restriction
 		instance.TaskNode = root
 
 		// update the set of restrictions for all sub tasks
-		newRestrictions := make([]Constraint, 0)
+		newRestrictions := make([]Constraint, len(restrictions))
 		copy(newRestrictions, restrictions)
 
 		newConstraint := Constraint{}
@@ -72,7 +72,7 @@ func generateTaskInstances(root *TaskNode, streams []*ContextObject, restriction
 
 		newRestrictions = append(newRestrictions, newConstraint)
 
-		// go through all child task with the updated restrictions
+		// go through all child tasks with their updated restrictions
 		for _, childtask := range root.Children {
 			instanceList := generateTaskInstances(childtask, streams, newRestrictions)
 			for _, subtaskInstance := range instanceList {
@@ -110,7 +110,7 @@ func configurateInputs(instance *TaskInstance, restrictions []Constraint, stream
 			conditions := make([]Constraint, 0)
 
 			if stream.Shuffling != "broadcast" {
-				copy(conditions, restrictions)
+				conditions = append(conditions, restrictions...)
 			}
 
 			newConstraint := Constraint{}

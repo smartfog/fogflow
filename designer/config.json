@@ -1,6 +1,6 @@
 {
-    "webportal_ip": "127.0.0.1",     
-    "coreservice_ip": "127.0.0.1",      
+    "webportal_ip": "127.0.0.1",
+    "coreservice_ip": "127.0.0.1",     
     "external_hostip": "127.0.0.1",      
     "internal_hostip": "127.0.0.1",  
     "physical_location":{
@@ -9,47 +9,47 @@
         "section": "01",
         "district": "02",
         "city": "Tokyo"
-    },
+    },  
     "logical_location": {
-        "node_no": 2,
-        "site_no": 2,
+        "node_no": 1,
+        "site_no": 1,               
         "layer_no": 2,
         "parent_site_no": 1
-    },    
+    },          
     "logging":{
         "info":"stdout",
         "error":"stderr",
-        "protocol": "stdout",
-        "debug": "discard"
+            "protocol": "stdout",
+            "debug": "stdout"
     },
     "discovery": {
-        "port": 8071,
+        "port": 443,
         "postgresql": {
             "dbreset": true,
             "username": "postgres",
             "password": "postgres",
             "host": "127.0.0.1",
-            "port": 5433,
+            "port": 5432,
             "dbname": "ngsi9"
         }    
     },
     "broker": {
-        "port": 8070,
+        "port": 8080,
         "websocket": 8090        
     },    
     "master": {
-        "ngsi_agent_port": 1060    
+        "ngsi_agent_port": 1060         
     },
     "worker": {
         "container_autoremove": false       
     },
     "designer": {
-        "webSrvPort": 8080,
+        "webSrvPort": 80,
         "agentPort": 1030               
     },    
     "rabbitmq": {
         "port": 5672,
-        "username": "guest",
-        "password":"guest"
-    }
+        "username": "admin",
+        "password":"mypass"
+    }    
 }
