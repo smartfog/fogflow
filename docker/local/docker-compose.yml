@@ -27,7 +27,7 @@ services:
         depends_on: 
             - discovery
     master:
-        image: rahafrouz/fogflow/master
+        image: fogflow/master
         volumes:
             - ./config.json:/config.json                        
         links:

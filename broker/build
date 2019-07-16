@@ -1,10 +1,10 @@
 go get
 
 #build the linux version (amd64) of broker
-env GOOS=linux GOARCH=amd64 go build  -a  -o broker
+CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo   -o broker
 docker build -t "fogflow/broker" .
 
 #build the arm version of broker
-env GOOS=linux GOARCH=arm go build  -a  -o broker_arm
+CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o broker_arm
 docker build -f Dockerfile4Arm -t "fogflow/broker:arm"  .
 
