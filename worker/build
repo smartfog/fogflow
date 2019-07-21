@@ -1,11 +1,11 @@
 go get
 
 #build the linux version (amd64) of worker
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o worker
-docker build -t "fogflow/worker:intent" .
+CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo    -o worker
+docker build -t "fogflow/worker" .
 
 
 #build the arm version of worker
-CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o worker_arm
-docker build -f Dockerfile4Arm -t "fogflow/worker:arm.intent"  .
+CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo    -o worker_arm
+docker build -f Dockerfile4Arm -t "fogflow/worker:arm"  .
 
