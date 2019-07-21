@@ -24,12 +24,10 @@ addMenuItem('Master', showMaster);
 addMenuItem('Worker', showWorkers);    
 addMenuItem('Device', showDevices); 
 addMenuItem('Stream', showStreams); 
-addMenuItem('Task', showTasks);    
-addMenuItem('DockerImage', showDockerImage);    
+
 
 showArch();
 
-initDockerImageList();
 
 $(window).on('hashchange', function() {
     var hash = window.location.hash;
@@ -56,6 +54,7 @@ function showArch()
 	$('#content').html('<img width="80%" height="80%" src="/img/arch.jpg"></img>');
 }
 
+
 function showDiscovery() 
 {
     $('#info').html('information of IoT Discovery');
@@ -74,7 +73,6 @@ function showDiscovery()
 	$('#content').html(html);  
 }
 
-
 function showBrokers() 
 {
     $('#info').html('list of all IoT Brokers');
@@ -86,7 +84,6 @@ function showBrokers()
     ngsi9client.discoverContextAvailability(discoverReq).then( function(response) {
         var brokers = [];
         if (response.errorCode.code == 200 && response.hasOwnProperty('contextRegistrationResponses')) {
-            console.log(response.contextRegistrationResponses);
             for(var i in response.contextRegistrationResponses) {
                 var contextRegistrationResponse = response.contextRegistrationResponses[i];
                 var brokerID = contextRegistrationResponse.contextRegistration.entities[0].id;
@@ -96,7 +93,6 @@ function showBrokers()
                 }
             }
         }         
-        console.log(brokers);
         displayBrokerList(brokers);
     }).catch(function(error) {
         console.log(error);
@@ -136,7 +132,6 @@ function showMaster()
     var queryReq = {}
     queryReq.entities = [{type:'Master', isPattern: true}];
     client.queryContext(queryReq).then( function(masterList) {
-        console.log(masterList);
         displayMasterList(masterList);
     }).catch(function(error) {
         console.log(error);
@@ -172,47 +167,99 @@ function showWorkers()
 {
     $('#info').html('show all edge nodes on the map');
     
-    var html = '<div id="map"  style="width: 700px; height: 500px"></div>';       
-    $('#content').html(html);   
+    var html = '<table class="table table-striped table-bordered table-condensed" id="workerList"></table>';                  
+    html += '<div id="map"  style="width: 700px; height: 500px"></div>';       
     
-    var curMap = showMap();
+    $('#content').html(html);       
     
-    // show edge nodes on the map
-    displayEdgeNodeOnMap(curMap);        
-}
-
-function displayEdgeNodeOnMap(map)
-{
     var queryReq = {}
-    queryReq.entities = [{"type":'Worker', "isPattern": true}];
-    
+    queryReq.entities = [{"type":'Worker', "isPattern": true}];    
     client.queryContext(queryReq).then( function(edgeNodeList) {
-        console.log(edgeNodeList);
-
-        var edgeIcon = L.icon({
-            iconUrl: '/img/gateway.png',
-            iconSize: [48, 48]
-        });      
+        // list all edge nodes in the table
+        displayEdgeNodeList(edgeNodeList);                
         
-        for(var i=0; i<edgeNodeList.length; i++){
-            var worker = edgeNodeList[i];    
-            
-            console.log(worker.attributes.physical_location.value);
-            
-            var latitude = worker.attributes.physical_location.value.latitude;
-            var longitude = worker.attributes.physical_location.value.longitude;
-            var edgeNodeId = worker.entityId.id;
-            
-            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
-			marker.nodeID = edgeNodeId;
-            marker.addTo(map).bindPopup(edgeNodeId);
-		    marker.on('click', showRunningTasks);
-        }            
-                
+        // show edge nodes on the map
+        displayEdgeNodeOnMap(edgeNodeList);                
     }).catch(function(error) {
         console.log(error);
-        console.log('failed to query context');
-    });     
+        console.log('failed to query the list of workers');
+    });                
+}
+
+
+function displayEdgeNodeList(workerList)
+{           
+    var queryReq = {}
+    queryReq.entities = [{type:'Task', isPattern: true}];
+    
+    client.queryContext(queryReq).then( function(tasks) {
+        var counter = {};
+   		for(var i=0; i<tasks.length; i++){
+        	var task = tasks[i];		            
+            var workerID = task.metadata.worker.value;
+            
+            if (workerID in counter) {
+                counter[workerID]++;
+            } else {
+                counter[workerID] = 1;
+            }
+		}
+        
+        var html = '<thead><tr>';
+        html += '<th>ID</th>';
+        html += '<th>location</th>';
+        html += '<th>capacity</th>';        
+        html += '<th># of tasks</th>';    
+        html += '</tr></thead>';         
+            
+        for(var i=0; i<workerList.length; i++) {
+            var worker = workerList[i];                    
+                        
+            var wid = worker.entityId.id;
+            var num_task_instances = 0;
+            if (wid in counter) {
+                num_task_instances = counter[wid];
+            }            
+                 
+            html += '<tr>'; 
+    		html += '<td>' + wid + '</td>'; 
+    		html += '<td>' + JSON.stringify(worker.attributes.physical_location.value) + '</td>';                    
+    		html += '<td>' + JSON.stringify(worker.attributes.capacity.value) + '</td>';        
+    		html += '<td>' + num_task_instances  + '</td>';
+    		html += '</tr>';	            
+        }      
+        
+        $('#workerList').html(html);          
+		
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query task');
+    });         
+        
+     
+}
+
+function displayEdgeNodeOnMap(workerList)
+{
+    var curMap = showMap();
+        
+    var edgeIcon = L.icon({
+        iconUrl: '/img/gateway.png',
+        iconSize: [48, 48]
+    });      
+            
+    for(var i=0; i<workerList.length; i++) {
+        var worker = workerList[i];
+                
+        var latitude = worker.attributes.physical_location.value.latitude;
+        var longitude = worker.attributes.physical_location.value.longitude;
+        var edgeNodeId = worker.entityId.id;
+        
+        var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
+		marker.nodeID = edgeNodeId;
+        marker.addTo(curMap).bindPopup(edgeNodeId);
+	    marker.on('click', showRunningTasks);        
+    }      
 }
 
 
@@ -300,7 +347,6 @@ function updateDeviceList()
     queryReq.entities = [{id:'Device.*', isPattern: true}];           
     
     client.queryContext(queryReq).then( function(deviceList) {
-        console.log(deviceList);
         displayDeviceList(deviceList);
     }).catch(function(error) {
         console.log(error);
@@ -420,14 +466,7 @@ function deviceRegistration()
     html += '<div class="control-group"><label class="control-label" for="input01">Icon Image</label>';
     html += '<div class="controls"><input class="input-file" id="iconImage" type="file" accept="image/png"></div>'
     html += '</div>';    
-
-    html += '<div class="control-group"><label class="control-label" for="optionsCheckbox">Pull-based</label>';
-    html += '<div class="controls"> <label class="checkbox"><input type="checkbox" id="pullbased" value="option1">';
-    html += 'data stream must be fetched by the platform under URL';
-    html += '</label></div>';
-    html += '</div>';        
-
-    
+     
     html += '<div class="control-group"><label class="control-label" for="input01">Camera Image</label>';
     html += '<div class="controls"><input class="input-file" id="imageContent" type="file" accept="image/png"></div>'
     html += '</div>';    
@@ -497,16 +536,6 @@ function registerNewDevice()
     var type = $('#deviceType option:selected').val();
     console.log(type);
     
-    var isPullbased = document.getElementById('pullbased').checked;
-    console.log(isPullbased);        
-    
-
-    // check the provided inputs    
-    if( isPullbased == true && contentImage == null ) {
-        alert('please provide the content image');
-        return;
-    }
-    
     if( id == '' || type == '' || locationOfNewDevice == null) {
         alert('please provide the required inputs');
         return;
@@ -522,8 +551,28 @@ function registerNewDevice()
            console.log(text);
         });        
     } else {
-        iconImageFileName = 'defaultIcon.png';
+        switch(type) {
+            case "PowerPanel":
+                iconImageFileName = 'shop.png';  
+                break;          
+            case "Camera":
+                iconImageFileName = 'camera.png';            
+                break;
+            default:
+                iconImageFileName = 'defaultIcon.png';            
+                break;
+        }                
     }
+        
+            
+    // if the device is pull-based, publish a stream entity with its provided URL as well        
+    if( contentImage != null ) {
+        Webcam.params.upload_name = contentImageFileName;
+        Webcam.upload(contentImage,  '/photo', function(code, text) {
+           console.log(code);
+           console.log(text);
+        });                                                
+    }         
         
     //register a new device
     var newDeviceObject = {};
@@ -535,15 +584,40 @@ function registerNewDevice()
     };
 
     newDeviceObject.attributes = {};   
-    newDeviceObject.attributes.id = {type: 'string', value: id};    
+    newDeviceObject.attributes.DeviceID = {type: 'string', value: id};    
+    
+    var url = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/' + contentImageFileName;
+    newDeviceObject.attributes.url = {type: 'string', value: url};       
     newDeviceObject.attributes.iconURL = {type: 'string', value: '/photo/' + iconImageFileName};
-    newDeviceObject.attributes.pullbased = {type: 'boolean', value: isPullbased};    
+    
+    if (type == "PowerPanel") {
+        newDeviceObject.attributes.usage = {
+            type: 'integer',
+            value: 20
+            };   
+        newDeviceObject.attributes.shop = {
+            type: 'string',
+            value: id
+        };             
+    } 
             
     newDeviceObject.metadata = {};    
     newDeviceObject.metadata.location = {
         type: 'point',
         value: {'latitude': locationOfNewDevice.lat, 'longitude': locationOfNewDevice.lng}
-    };               
+    };       
+    
+    if (type == "PowerPanel") {
+        newDeviceObject.metadata.shop = {
+            type: 'string',
+            value: id
+        };                     
+    } else if (type == "Camera") {
+        newDeviceObject.metadata.cameraID = {
+            type: 'string',
+            value: id
+        };          
+    }            
 
     client.updateContext(newDeviceObject).then( function(data) {
         console.log(data);
@@ -553,46 +627,7 @@ function registerNewDevice()
     }).catch( function(error) {
         console.log('failed to register the new device object');
     });      
-    
-    // if the device is pull-based, publish a stream entity with its provided URL as well        
-    if( isPullbased == true && contentImage != null ) {
-        Webcam.params.upload_name = contentImageFileName;
-        Webcam.upload(contentImage,  '/photo', function(code, text) {
-           console.log(code);
-           console.log(text);
-        });   
-                
-        //register a new device
-        var newStreamObject = {};
-    
-        newStreamObject.entityId = {
-            id : 'Stream.' + type + '.' + id, 
-            type: type,
-            isPattern: false
-        };
-    
-        var url = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/' + contentImageFileName;
-    
-        newStreamObject.attributes = {};   
-        newStreamObject.attributes.url = {type: 'string', value: url};
-        newStreamObject.attributes.pullbased = {type: 'boolean', value: isPullbased};    
-                
-        newStreamObject.metadata = {};    
-        newStreamObject.metadata.location = {
-            type: 'point',
-            value: {'latitude': locationOfNewDevice.lat, 'longitude': locationOfNewDevice.lng}
-        };  
-        newStreamObject.metadata.cameraID = {
-            type: 'string',
-            value: id
-        };                        
-    
-        client.updateContext(newStreamObject).then( function(data) {
-            console.log(data);
-        }).catch( function(error) {
-            console.log('failed to register the corresponding stream object');
-        });                              
-    }    
+   
 }
        
 function uuid() {
@@ -664,23 +699,22 @@ function showMap()
 
 function showStreams() 
 {
-    $('#info').html('list of all data streams');
+    $('#info').html('list of all entities');
 
     var queryReq = {}
-    queryReq.entities = [{id:'Stream.*', isPattern: true}];    	
+    queryReq.entities = [{id:'.*', isPattern: true}];    	
     
-    client.queryContext(queryReq).then( function(streamList) {
-        console.log(streamList);
-        displayStreamList(streamList);
+    client.queryContext(queryReq).then( function(entityList) {
+        displayEntityList(entityList);
     }).catch(function(error) {
         console.log(error);
         console.log('failed to query context');
     });      
 }
 
-function displayStreamList(streams) 
+function displayEntityList(entities) 
 {
-    if(streams == null || streams.length == 0){
+    if(entities == null || entities.length == 0){
         $('#content').html('');           
         return        
     }
@@ -694,459 +728,20 @@ function displayStreamList(streams)
     html += '<th>DomainMetadata</th>';    
     html += '</tr></thead>';    
        
-    for(var i=0; i<streams.length; i++){
-        var stream = streams[i];
+    for(var i=0; i<entities.length; i++){
+        var entity = entities[i];
 		
         html += '<tr>'; 
-		html += '<td>' + stream.entityId.id + '</td>';
-		html += '<td>' + stream.entityId.type + '</td>'; 
-		html += '<td>' + JSON.stringify(stream.attributes) + '</td>';        
-		html += '<td>' + JSON.stringify(stream.metadata) + '</td>';
+		html += '<td>' + entity.entityId.id + '</td>';
+		html += '<td>' + entity.entityId.type + '</td>'; 
+		html += '<td>' + JSON.stringify(entity.attributes) + '</td>';        
+		html += '<td>' + JSON.stringify(entity.metadata) + '</td>';
 		html += '</tr>';	
 	}
        
     html += '</table>';  
 
 	$('#content').html(html);   
-}
-
-function showTasks() 
-{
-    $('#info').html('list of running data processing tasks');
-
-    var queryReq = {}
-    queryReq.entities = [{type:'Task', isPattern: true}];    
-    
-    client.queryContext(queryReq).then( function(taskList) {
-        console.log(taskList);
-        displayTaskList(taskList);
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to query context');
-    });     
-}
-
-function displayTaskList(tasks) 
-{
-    if(tasks == null || tasks.length ==0){
-        $('#content').html('');                   
-        return
-    }
-    
-    var html = '<table class="table table-striped table-bordered table-condensed">';
-   
-    html += '<thead><tr>';
-    html += '<th>ID</th>';
-    html += '<th>Type</th>';
-    html += '<th>Attributes</th>';
-    html += '<th>DomainMetadata</th>';    
-    html += '</tr></thead>';    
-       
-    for(var i=0; i<tasks.length; i++){
-        var task = tasks[i];
-		
-        html += '<tr>'; 
-		html += '<td>' + task.entityId.id + '</td>';
-		html += '<td>' + task.entityId.type + '</td>'; 
-		html += '<td>' + JSON.stringify(task.attributes) + '</td>';        
-		html += '<td>' + JSON.stringify(task.metadata) + '</td>';
-		html += '</tr>';	
-	}
-       
-    html += '</table>'; 
-
-	$('#content').html(html);   
-}
-
-function showDockerImage() 
-{
-    $('#info').html('list of docker images in the docker registry');
-
-    var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
-    html += '<div id="dockerImageList"></div>';
-
-	$('#content').html(html);   
-      
-    updateDockerImageList();       
-    
-    $( "#registerDockerImage" ).click(function() {
-        dockerImageRegistration();
-    });                
-}
-
-
-function initDockerImageList()
-{
-    var imageList = [{
-        name: "fogflow/nodejs",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "nodejs",
-        prefetched: true
-    },{
-        name: "fogflow/python",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "python",
-        prefetched: false
-    },{
-        name: "fogflow/counter",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "counter",
-        prefetched: false
-    },{
-        name: "fogflow/anomaly",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "anomaly",
-        prefetched: false
-    },{
-        name: "fogflow/sum",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "sum",
-        prefetched: false
-    },{
-        name: "fogflow/facecounter",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "facecounter",
-        prefetched: false
-    },{
-        name: "fogflow/facefinder",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "facefinder",
-        prefetched: false
-    },{
-        name: "fogflow/geohash",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "geohash",
-        prefetched: false
-    },{
-        name: "fogflow/converter",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "converter",
-        prefetched: false
-    },{
-        name: "fogflow/predictor",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "predictor",
-        prefetched: false
-    },{
-        name: "fogflow/controller",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "controller",
-        prefetched: false
-    },{
-        name: "fogflow/connectedcar",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "connectedcar",
-        prefetched: false
-    },{
-        name: "fogflow/recommender",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "recommender",
-        prefetched: false
-    },{
-        name: "fogflow/privatesite",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "privatesite",
-        prefetched: false
-    },{
-        name: "fogflow/publicsite",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "publicsite",
-        prefetched: false
-    },{
-        name: "fogflow/pushbutton",
-        tag: "latest",
-        hwType: "ARM",
-        osType: "Linux",
-        operatorName: "pushbutton",
-        prefetched: false
-    },{
-        name: "fogflow/acoustic",
-        tag: "latest",
-        hwType: "ARM",
-        osType: "Linux",
-        operatorName: "acoustic",
-        prefetched: false
-    },{
-        name: "fogflow/speaker",
-        tag: "latest",
-        hwType: "ARM",
-        osType: "Linux",
-        operatorName: "speaker",
-        prefetched: false
-    },{
-        name: "fogflow/pushbutton",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "pushbutton",
-        prefetched: false
-    },{
-        name: "fogflow/acoustic",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "acoustic",
-        prefetched: false
-    },{
-        name: "fogflow/speaker",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "speaker",
-        prefetched: false
-    }
-    ];
-
-    var queryReq = {}
-    queryReq.entities = [{type:'DockerImage', isPattern: true}];               
-    client.queryContext(queryReq).then( function(existingImageList) {
-        if (existingImageList.length == 0) {
-            for(var i=0; i<imageList.length; i++) {
-                addDockerImage(imageList[i]);
-            }            
-        }
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to query the image list');
-    }); 
-}
-
-function addDockerImage(image) 
-{    
-    //register a new docker image
-    var newImageObject = {};
-
-    newImageObject.entityId = {
-        id : image.name + '.' + uuid(), 
-        type: 'DockerImage',
-        isPattern: false
-    };
-
-    newImageObject.attributes = {};   
-    newImageObject.attributes.image = {type: 'string', value: image.name};        
-    newImageObject.attributes.tag = {type: 'string', value: image.tag};    
-    newImageObject.attributes.hwType = {type: 'string', value: image.hwType};      
-    newImageObject.attributes.osType = {type: 'string', value: image.osType};          
-    newImageObject.attributes.operator = {type: 'string', value: image.operatorName};      
-    newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};                      
-    
-    newImageObject.metadata = {};    
-    newImageObject.metadata.operator = {
-        type: 'string',
-        value: image.operatorName
-    };               
-
-    client.updateContext(newImageObject).then( function(data) {
-        console.log(data);
-    }).catch( function(error) {
-        console.log('failed to register the new device object');
-    });      
-    
-}
-
-function dockerImageRegistration()
-{
-    $('#info').html('to register a new docker image');
-    
-    var html = '<div id="dockerRegistration" class="form-horizontal"><fieldset>';                 
-    
-    html += '<div class="control-group"><label class="control-label" for="input01">Image(*)</label>';
-    html += '<div class="controls"><input type="text" class="input-xlarge" id="dockerImageName">';
-    html += '</div></div>';
-    
-    html += '<div class="control-group"><label class="control-label" for="input01">Tag(*)</label>';
-    html += '<div class="controls"><input type="text" class="input-xlarge" id="imageTag" placeholder="latest">';
-    html += '</div></div>';    
-    
-    html += '<div class="control-group"><label class="control-label" for="input01">HardwareType(*)</label>';
-    html += '<div class="controls"><select id="hwType"><option>X86</option><option>ARM</option></select></div>'
-    html += '</div>';    
-    
-    html += '<div class="control-group"><label class="control-label" for="input01">OSType(*)</label>';
-    html += '<div class="controls"><select id="osType"><option>Linux</option><option>Windows</option></select></div>'
-    html += '</div>';    
-
-    html += '<div class="control-group"><label class="control-label" for="input01">Operator(*)</label>';
-    html += '<div class="controls"><input type="text" class="input-xlarge" id="OperatorName">';
-    html += '</div></div>';    
-
-    html += '<div class="control-group"><label class="control-label" for="optionsCheckbox">Prefetched</label>';
-    html += '<div class="controls"> <label class="checkbox"><input type="checkbox" id="Prefetched" value="option1">';
-    html += 'docker image must be fetched by the platform in advance';
-    html += '</label></div>';
-    html += '</div>';        
-
-    
-    html += '<div class="control-group"><label class="control-label" for="input01"></label>';
-    html += '<div class="controls"><button id="submitRegistration" type="button" class="btn btn-primary">Register</button>';
-    html += '</div></div>';   
-       
-    html += '</fieldset></div>';
-
-	$('#content').html(html);          
-        
-    // associate functions to clickable buttons
-    $('#submitRegistration').click(registerDockerImage);  
-}
-
-
-function registerDockerImage() 
-{    
-    console.log('register a new docker image'); 
-
-    // take the inputs    
-    var image = $('#dockerImageName').val();
-    console.log(image);
-    
-    var tag = $('#imageTag').val();
-    if (tag == '') {
-        tag = 'latest';
-    }
-    
-    console.log(tag);    
-    
-    var hwType = $('#hwType option:selected').val();
-    console.log(hwType);
-    
-    var osType = $('#osType option:selected').val();
-    console.log(osType);    
-    
-    var operatorName = $('#OperatorName').val();
-    console.log(operatorName);        
-    
-    var prefetched = document.getElementById('Prefetched').checked;
-    console.log(prefetched);        
-    
-               
-    if( image == '' || tag == '' || hwType == '' || osType == '' || operatorName == '' ) {
-        alert('please provide the required inputs');
-        return;
-    }    
-
-    //register a new docker image
-    var newImageObject = {};
-
-    newImageObject.entityId = {
-        id : image + ':' + tag, 
-        type: 'DockerImage',
-        isPattern: false
-    };
-
-    newImageObject.attributes = {};   
-    newImageObject.attributes.image = {type: 'string', value: image};        
-    newImageObject.attributes.tag = {type: 'string', value: tag};    
-    newImageObject.attributes.hwType = {type: 'string', value: hwType};      
-    newImageObject.attributes.osType = {type: 'string', value: osType};          
-    newImageObject.attributes.operator = {type: 'string', value: operatorName};  
-    
-    if (prefetched == true) {
-        newImageObject.attributes.prefetched = {type: 'boolean', value: true};                      
-    } else {
-        newImageObject.attributes.prefetched = {type: 'boolean', value: false};                      
-    }
-            
-    newImageObject.metadata = {};    
-    newImageObject.metadata.operator = {
-        type: 'string',
-        value: operatorName
-    };               
-
-    client.updateContext(newImageObject).then( function(data) {
-        console.log(data);
-        
-        // show the updated image list
-        showDockerImage();
-    }).catch( function(error) {
-        console.log('failed to register the new device object');
-    });      
-    
-}
-
-
-function updateDockerImageList()
-{
-    var queryReq = {}
-    queryReq.entities = [{type:'DockerImage', isPattern: true}];           
-    
-    client.queryContext(queryReq).then( function(imageList) {
-        console.log(imageList);
-        displayDockerImageList(imageList);
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to query context');
-    });    
-}
-
-function displayDockerImageList(images) 
-{
-    if(images == null || images.length == 0){
-        $('#dockerImageList').html('');           
-        return        
-    }
-    
-    var html = '<table class="table table-striped table-bordered table-condensed">';
-   
-    html += '<thead><tr>';
-    html += '<th>Operator</th>';    
-    html += '<th>Image</th>';
-    html += '<th>Tag</th>';
-    html += '<th>Hardware Type</th>';
-    html += '<th>OS Type</th>';    
-    html += '<th>Prefetched</th>';        
-    html += '</tr></thead>';    
-       
-    for(var i=0; i<images.length; i++){
-        var dockerImage = images[i];
-		
-        html += '<tr>'; 
-		html += '<td>' + dockerImage.attributes.operator.value + '</td>';                
-		html += '<td>' + dockerImage.attributes.image.value + '</td>';                
-		html += '<td>' + dockerImage.attributes.tag.value + '</td>';        
-		html += '<td>' + dockerImage.attributes.hwType.value + '</td>';                
-		html += '<td>' + dockerImage.attributes.osType.value + '</td>';  
-        
-        if (dockerImage.attributes.prefetched.value == true) {
-		    html += '<td><font color="red"><b>' + dockerImage.attributes.prefetched.value + '</b></font></td>';                                            
-        } else {
-		    html += '<td>' + dockerImage.attributes.prefetched.value + '</td>';                                            
-        }
-                              
-		html += '</tr>';	                        
-	}
-       
-    html += '</table>';  
-    
-	$('#dockerImageList').html(html);      
 }
 
 });

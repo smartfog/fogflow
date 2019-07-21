@@ -1,38 +1,52 @@
-function registerAllBlocks(blocks){
+
+function registerAllBlocks(blocks, operators){
+
+console.log("operator list: ", operators);
 
 blocks.register({
-    name: "FogFunction",
-    description: "To specify a fog function",
+    name: "Task",
+    description: "To specify a data processing task",
     fields: [
         {
             name: "Name",
             type: "string",
-            defaultValue: "unknown",
-            attrs: "editable"
-        },     
-        {
-            name: "User",
-            type: "string",
-            defaultValue: "fogflow",
+            defaultValue: "main",
             attrs: "editable"
         },    
         {
-            name: "Selectors",
-            type: "Selector",
-            attrs: "input"
-        },
+            name: "Operator",
+            type: "choice",            
+            choices: operators,
+            attrs: "editable"
+        },    
         {
-            name: "Annotators",
-            type: "Annotator",
-            attrs: "output"
-        }
+            name: "Streams",
+            type: "Stream",
+            attrs: "input"
+        },                        
+        {
+            name: "Outputs",
+            type: "string[]",
+            defaultValue: ["Out"],                                   
+            hide: true,
+            attrs: "editable output",
+            dynamicLabel: function(block, x) {
+                return block.getValue('Outputs')[x];
+            }                                  
+        }      
     ]
 });
 
+
 blocks.register({
-    name: "InputTrigger",
-    description: "To select a type of input stream of a fog function",
+    name: "EntityStream",
+    description: "To define an entity stream",
     fields: [
+        {
+            name: "SelectedType",
+            type: "string",
+            attrs: "editable"
+        },
         {
             name: "SelectedAttributes",
             type: "string[]",
@@ -41,67 +55,21 @@ blocks.register({
         },          
         {
             name: "Groupby",
-            type: "string[]",
-            defaultValue: ["all"],            
-            attrs: "editable"
-        },              
-        {
-            name: "Conditions",
-            type: "Condition",
-            attrs: "input"
-        },        
-        {
-            name: "Selector",
-            type: "Selector",
-            attrs: "output"
-        }        
-    ]
-});
-
-blocks.register({
-    name: "SelectCondition",
-    description: "To define a restriction for entity selection",
-    fields: [
-        {
-            name: "Type",
-            type: "choice",
-            choices: ["EntityId","EntityType", "GeoScope(Nearby)", "GeoScope(InCircle)", "GeoScope(InPolygon)", "TimeScope", "StringQuery"],
-            defaultValue: "EntityType",
+            choices: ["ALL", "EntityID", "EntityType", "EntityAttribute"],
+            defaultValue: "EntityID",
             attrs: "editable"
         },
         {
-            name: "value",
-            type: "string",
-            attrs: "editable"
-        },   
-        {
-            name: "Condition",
-            type: "Condition",
-            attrs: "output"
-        }             
-    ]
-});
-
-blocks.register({
-    name: "OutputAnnotator",
-    description: "To annotate the output stream of a fog function",
-    fields: [
-        {
-            name: "EntityType",
-            type: "string",
-            attrs: "editable"
-        },
-        {
-            name: "Herited",
+            name: "Scoped",
             type: "bool",
             defaultValue: false,
             attrs: "editable"
-        },
+        },         
         {
-            name: "Annotator",
-            type: "Annotator",
-            attrs: "input"
-        }        
+            name: "Stream",
+            attrs: "output",
+            type: "Stream"
+        }                          
     ]
 });
 

@@ -4,7 +4,15 @@ import (
 	"encoding/json"
 	"strconv"
 	"strings"
+
+	"github.com/mitchellh/mapstructure"
 )
+
+type SiteInfo struct {
+	ExternalAddress string `json:"externalAddress"`
+	GeohashID       string `json:"geohashID"`
+	IsLocalSite     bool   `json:"isLocalSite"`
+}
 
 type NotifyConditionType int
 type UpdateActionType int
@@ -21,6 +29,11 @@ const (
 	DELETE
 )
 
+type BrokerProfile struct {
+	BID   string
+	MyURL string
+}
+
 type NearBy struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
@@ -30,6 +43,14 @@ type NearBy struct {
 type Point struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
+}
+
+func (p *Point) IsEmpty() bool {
+	if p.Latitude == 0 && p.Longitude == 0 {
+		return true
+	} else {
+		return false
+	}
 }
 
 type Circle struct {
@@ -72,11 +93,46 @@ type ContextMetadata struct {
 	Value interface{} `json:"value"`
 }
 
+/*
+func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
+	fmt.Println("====== test 1========")
+
+	err := json.Unmarshal(b, metadata)
+
+	fmt.Println("====== test ========")
+	fmt.Printf("%+v\n", metadata)
+
+	if err == nil {
+		switch strings.ToLower(metadata.Type) {
+		case "circle":
+			var temp Circle
+			if err = mapstructure.Decode(metadata.Value, &temp); err == nil {
+				(*metadata).Value = temp
+			}
+
+		case "point":
+			var temp Point
+			if err = mapstructure.Decode(metadata.Value, &temp); err == nil {
+				(*metadata).Value = temp
+			}
+
+		case "polygon":
+			var temp Polygon
+			if err = mapstructure.Decode(metadata.Value, &temp); err == nil {
+				(*metadata).Value = temp
+			}
+		}
+	}
+
+	return err
+}
+*/
+
 func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 	type InternalContextMetadata struct {
-		Name  string          `json:"name"`
-		Type  string          `json:"type,omitempty"`
-		Value json.RawMessage `json:"value"`
+		Name  string      `json:"name"`
+		Type  string      `json:"type,omitempty"`
+		Value interface{} `json:"value"`
 	}
 
 	m := InternalContextMetadata{}
@@ -86,55 +142,55 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 		(*metadata).Name = m.Name
 		(*metadata).Type = m.Type
 
-		switch m.Type {
+		switch strings.ToLower(m.Type) {
 		case "circle":
 			var temp Circle
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
+			if err = mapstructure.Decode(m.Value, &temp); err == nil {
 				(*metadata).Value = temp
 			}
 
 		case "point":
 			var temp Point
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
+			if err = mapstructure.Decode(m.Value, &temp); err == nil {
 				(*metadata).Value = temp
 			}
 
 		case "polygon":
 			var temp Polygon
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
+			if err = mapstructure.Decode(m.Value, &temp); err == nil {
 				(*metadata).Value = temp
 			}
+			/*
+				case "integer":
+					var temp int
+					if err = json.Unmarshal(m.Value, &temp); err == nil {
+						(*metadata).Value = temp
+					}
 
-		case "integer":
-			var temp int
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
-				(*metadata).Value = temp
-			}
+				case "float":
+					var temp float64
+					if err = json.Unmarshal(m.Value, &temp); err == nil {
+						(*metadata).Value = temp
+					}
 
-		case "float":
-			var temp float64
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
-				(*metadata).Value = temp
-			}
+				case "boolean":
+					var temp bool
+					if err = json.Unmarshal(m.Value, &temp); err == nil {
+						(*metadata).Value = temp
+					}
 
-		case "boolean":
-			var temp bool
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
-				(*metadata).Value = temp
-			}
+				case "string":
+					var temp string
+					if err = json.Unmarshal(m.Value, &temp); err == nil {
+						(*metadata).Value = temp
+					}
 
-		case "string":
-			var temp string
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
-				(*metadata).Value = temp
-			}
-
-		case "object":
-			var temp map[string]interface{}
-			if err = json.Unmarshal(m.Value, &temp); err == nil {
-				(*metadata).Value = temp
-			}
-
+				case "object":
+					var temp map[string]interface{}
+					if err = json.Unmarshal(m.Value, &temp); err == nil {
+						(*metadata).Value = temp
+					}
+			*/
 		default:
 			(*metadata).Value = m.Value
 		}
@@ -242,13 +298,38 @@ func (ctxObj *ContextObject) IsEmpty() bool {
 }
 
 type ContextElement struct {
-	Entity              EntityId           `json:"entityId"`
-	ID                  string             `json:"id"`
-	Type                string             `json:"type,omitempty"`
-	IsPattern           string             `json:"isPattern"`
-	AttributeDomainName string             `json:"attributeDomainName,omitempty"`
-	Attributes          []ContextAttribute `json:"attributes,omitempty"`
-	Metadata            []ContextMetadata  `json:"domainMetadata,omitempty"`
+	Entity    EntityId `json:"entityId"`
+	ID        string   `json:"id"`
+	Type      string   `json:"type,omitempty"`
+	IsPattern string   `json:"isPattern"`
+	//	AttributeDomainName string             `json:"attributeDomainName,omitempty"`
+	Attributes []ContextAttribute `json:"attributes,omitempty"`
+	Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
+}
+
+func (ce *ContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *ContextElement {
+	preparedCopy := ContextElement{}
+
+	preparedCopy.Entity = ce.Entity
+
+	if len(selectedAttributes) == 0 {
+		preparedCopy.Attributes = make([]ContextAttribute, len(ce.Attributes))
+		copy(preparedCopy.Attributes, ce.Attributes)
+	} else {
+		preparedCopy.Attributes = make([]ContextAttribute, 0)
+		for _, requiredAttrName := range selectedAttributes {
+			for _, ctxAttr := range ce.Attributes {
+				if ctxAttr.Name == requiredAttrName {
+					preparedCopy.Attributes = append(preparedCopy.Attributes, ctxAttr)
+				}
+			}
+		}
+	}
+
+	preparedCopy.Metadata = make([]ContextMetadata, len(ce.Metadata))
+	copy(preparedCopy.Metadata, ce.Metadata)
+
+	return &preparedCopy
 }
 
 func (ce *ContextElement) GetAttribute(name string) *ContextAttribute {
@@ -279,12 +360,26 @@ func (ce *ContextElement) IsEmpty() bool {
 	}
 }
 
-func (ce *ContextElement) Clone(orig *ContextElement) {
-	ce.Entity.ID = orig.Entity.ID
-	ce.Entity.Type = orig.Entity.Type
-	ce.Entity.IsPattern = orig.Entity.IsPattern
+func (ce *ContextElement) GetScope() OperationScope {
+	updateScope := OperationScope{}
 
-	ce.AttributeDomainName = orig.AttributeDomainName
+	isLocal := true
+	for _, metadata := range ce.Metadata {
+		if metadata.Name == "location" {
+			if metadata.Type == "global" || metadata.Type == "circle" || metadata.Type == "polygon" {
+				updateScope.Type = metadata.Type
+				updateScope.Value = metadata.Value
+				isLocal = false
+				break
+			}
+		}
+	}
+
+	if isLocal == true {
+		updateScope.Type = "local"
+	}
+
+	return updateScope
 }
 
 type ContextElementOrion struct {
@@ -304,7 +399,7 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 		convertedElement.Type = element.Type
 		convertedElement.IsPattern = element.IsPattern
 
-		convertedElement.AttributeDomainName = element.AttributeDomainName
+		//convertedElement.AttributeDomainName = element.AttributeDomainName
 
 		convertedElement.Attributes = make([]OrionContextAttribute, 0)
 
@@ -320,38 +415,18 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 			convertedElement.Attributes = append(convertedElement.Attributes, orionAttr)
 		}
 
-		/* Orion is not using domain context metadata
-		convertedElement.Metadatas = make([]ContextMetadata, len(element.Metadata))
-		copy(convertedElement.Metadatas, element.Metadata)
-
-			convertedElement.Metadatas = make([]ContextMetadata, 0)
-			for _, meta := range element.Metadata {
-				orionMeta := ContextMetadata{}
-				orionMeta.Name = meta.Name
-				orionMeta.Type = "string"
-
-				bytes, err := json.Marshal(&meta.Value)
-				if err == nil {
-					orionMeta.Value = string(bytes)
-				} else {
-					orionMeta.Value = ""
-				}
-
-				convertedElement.Metadatas = append(convertedElement.Metadatas, orionMeta)
-			} */
-
 		return json.Marshal(&convertedElement)
 	} else {
 		return json.Marshal(&struct {
-			Entity              EntityId           `json:"entityId"`
-			AttributeDomainName string             `json:"attributeDomainName,omitempty"`
-			Attributes          []ContextAttribute `json:"attributes,omitempty"`
-			Metadata            []ContextMetadata  `json:"domainMetadata,omitempty"`
+			Entity EntityId `json:"entityId"`
+			//AttributeDomainName string             `json:"attributeDomainName,omitempty"`
+			Attributes []ContextAttribute `json:"attributes,omitempty"`
+			Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
 		}{
-			Entity:              element.Entity,
-			AttributeDomainName: element.AttributeDomainName,
-			Attributes:          element.Attributes,
-			Metadata:            element.Metadata,
+			Entity: element.Entity,
+			//AttributeDomainName: element.AttributeDomainName,
+			Attributes: element.Attributes,
+			Metadata:   element.Metadata,
 		})
 	}
 }
@@ -415,6 +490,11 @@ func (scope *OperationScope) UnmarshalJSON(b []byte) error {
 			if err = json.Unmarshal(s.Value, &temp); err == nil {
 				(*scope).Value = temp
 			}
+		case "global":
+			var temp string
+			if err = json.Unmarshal(s.Value, &temp); err == nil {
+				(*scope).Value = temp
+			}
 		case "stringQuery":
 			var temp string
 			if err = json.Unmarshal(s.Value, &temp); err == nil {
@@ -433,6 +513,25 @@ type Restriction struct {
 	Scopes              []OperationScope `json:"scopes,omitempty"`
 }
 
+func (restriction *Restriction) GetScope() OperationScope {
+	myscope := OperationScope{}
+
+	isLocal := true
+	for _, scope := range restriction.Scopes {
+		if scope.Type == "global" || scope.Type == "circle" || scope.Type == "polygon" {
+			myscope = scope
+			isLocal = false
+			break
+		}
+	}
+
+	if isLocal == true {
+		myscope.Type = "local"
+	}
+
+	return myscope
+}
+
 type SubscribeResponse struct {
 	SubscriptionId string `json:"subscriptionId"`
 	Duration       string `json:"duration,omitempty"`
@@ -444,6 +543,78 @@ type ContextRegistrationAttribute struct {
 	Type     string            `json:"type,omitempty"`
 	IsDomain bool              `json:"isDomain"`
 	Metadata []ContextMetadata `json:"metadata,omitempty"`
+}
+
+type EntityRegistration struct {
+	ID                   string
+	Type                 string
+	AttributesList       map[string]ContextRegistrationAttribute
+	MetadataList         map[string]ContextMetadata
+	ProvidingApplication string
+}
+
+func (registredEntity *EntityRegistration) GetLocation() Point {
+	for _, domainMeta := range registredEntity.MetadataList {
+		if domainMeta.Name == "location" && domainMeta.Type == "point" {
+			location := domainMeta.Value.(Point)
+			return location
+		}
+	}
+
+	return Point{0.0, 0.0}
+}
+
+func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
+	//DEBUG.Printf(" ====restriction = %+v\r\n", restrictions)
+	//DEBUG.Printf(" ====registration = %+v\r\n", registredEntity)
+
+	matched := true
+
+	for key, value := range restrictions {
+		if key == "ALL" {
+			continue
+		}
+
+		switch key {
+		case "EntityID":
+			if registredEntity.ID != value {
+				matched = false
+				break
+			}
+		case "EntityType":
+			if registredEntity.Type != value {
+				matched = false
+				break
+			}
+		default:
+			if registredEntity.MetadataList[key] != value {
+				matched = false
+				break
+			}
+		}
+	}
+
+	//DEBUG.Printf(" ====matched = %+v\r\n", matched)
+
+	return matched
+}
+
+func (registredEntity *EntityRegistration) Update(newUpdates *EntityRegistration) {
+	if newUpdates.Type != "" {
+		registredEntity.Type = newUpdates.Type
+	}
+
+	if newUpdates.ProvidingApplication != "" {
+		registredEntity.ProvidingApplication = newUpdates.ProvidingApplication
+	}
+
+	for _, attribute := range newUpdates.AttributesList {
+		registredEntity.AttributesList[attribute.Name] = attribute
+	}
+
+	for _, meta := range newUpdates.MetadataList {
+		registredEntity.MetadataList[meta.Name] = meta
+	}
 }
 
 type ContextRegistration struct {

@@ -1,4 +1,4 @@
-var speakerID = null;
+var parkingRequest = null;
 
 //
 //  contextEntity: the received entities
@@ -15,12 +15,15 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     if (contextEntity.attributes == null) {
         return;
     }    
+    
     if (contextEntity.attributes.ParkingRequest != null) {
         return;
-    }    
+    }  
+    
     if (contextEntity.attributes.RecommendedParkingSite != null) {
         return;
     }  
+        
     
     // to calculate how long it will take to arrive the planned destination accordingly
     // todo: @Javier, please add your implementation here
@@ -38,14 +41,14 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     var twentyMinutesLater = new Date();
     twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
 
-    var parkingreq = {
+    parkingRequest = {
         arrival_time: twentyMinutesLater,
         destination: {
             latitude: 37.984737,
             longitude: -1.127266
         }
     };    
-    updateEntity.attributes.ParkingRequest = {type: 'object', value: parkingreq};                
+    updateEntity.attributes.ParkingRequest = {type: 'object', value: parkingRequest};                
        	
     publish(updateEntity);
     console.log("publish: ", updateEntity);	    

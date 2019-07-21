@@ -64,7 +64,7 @@
 .blocks_js_editor .contextmenu .type,
 .blocks_js_editor .contextmenu .menuentry,
 .blocks_js_editor .contextmenu .family {
-    font-size:14px;
+    font-size:16px;
     padding:1px;
     cursor:pointer;
     background-color:#fff;
@@ -137,7 +137,7 @@
     margin-top:0px;
     background-color:#fafafa;
     opacity:0.8;
-    font-size:14px;
+    font-size:16px;
     -moz-user-select:none;
     -khtml-user-select:none;
     -webkit-user-select:none;
@@ -166,7 +166,7 @@
     margin:-1px;
     margin-bottom:2px;
     cursor:move;
-    font-size:80%;
+    font-size:120%;
 }
 
 .blocks_js_editor .blockTitle .blockId {

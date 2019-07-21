@@ -15,15 +15,22 @@ import (
 
 func main() {
 	cfgFile := flag.String("f", "config.json", "A configuration file")
+	id := flag.String("i", "0", "its ID in the current site")
+	port := flag.String("p", "0", "the listening port")
+
 	flag.Parse()
 	config, err := LoadConfig(*cfgFile)
 	if err != nil {
 		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
-		fmt.Println("please specify the configuration file, for example, \r\n\t./broker -f config.json")
+		ERROR.Println("please specify the configuration file, for example, \r\n\t./broker -f config.json")
 		os.Exit(-1)
 	}
 
-	myID := "Broker." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
+	if (*port) != "0" {
+		config.Broker.Port, _ = strconv.Atoi(*port)
+	}
+
+	myID := "Broker." + config.SiteID + "." + (*id)
 
 	// check if IoT Discovery is ready
 	for {

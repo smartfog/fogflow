@@ -3,13 +3,13 @@ $(function(){
 // initialization  
 var handlers = {}
 var geoscope = {
-    type: 'string',
-    value: 'all'
+    scopeType: "local",
+    scopeValue: "local"
 };
 
 var RuleSet = {threshold: 30};
 var curTopology = null;
-var curRequirement = null;
+var curIntent = null;
 var curResult = [];
 
 var category_dataset = [{key: '#anomalies', values:[]}];  
@@ -31,10 +31,9 @@ ngsiproxy.setNotifyHandler(handleNotify);
 var client = new NGSI10Client(config.brokerURL);
 subscribeResult();
 checkTopology();
-checkRequirement();
+checkIntent();
 showTopology();
 publishThreshold();
-//startUpdateTimer();
 
 $(window).on('hashchange', function() {
     var hash = window.location.hash;
@@ -109,21 +108,19 @@ function checkTopology()
     });      
 }
 
-function checkRequirement() 
+function checkIntent() 
 {
     var queryReq = {};
-    queryReq.entities = [{type: 'Requirement', isPattern: true}];               
+    queryReq.entities = [{type: 'ServiceIntent', isPattern: true}];               
     queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection'}]}        
     
     client.queryContext(queryReq).then( function(resultList) {
         console.log(resultList);
         if(resultList && resultList.length > 0) {
-            curRequirement = resultList[0];
+            curIntent = resultList[0];
             
             //update the current geoscope as well
-            var restriction = curRequirement.attributes.restriction.value;
-            geoscope.type = restriction.scopes[0].scopeType;
-            geoscope.value = restriction.scopes[0].scopeValue;                        
+            geoscope = curIntent.attributes.intent.geoscope;
         }
     }).catch(function(error) {
         console.log(error);
@@ -149,7 +146,6 @@ function showTopology()
     html += '</div> ';     
     
     html += '<div><img src="/img/anomaly.jpg"></img></div>';    
-
     
     $('#content').html(html);
     
@@ -213,7 +209,7 @@ function showMgt()
     var html = '';
     html += '<div class="input-prepend">';     
     
-    if(curRequirement == null) {
+    if(curIntent == null) {
         html += '<button id="enableService" type="button" class="btn btn-default">Start</button>';    
         html += '<button id="disableService" type="button" class="btn btn-default" disabled>Stop</button>';                            
     } else {
@@ -228,81 +224,89 @@ function showMgt()
     $('#content').html(html);        
     
     // associate functions to clickable buttons
-    $('#enableService').click(sendRequirement);
-    $('#disableService').click(cancelRequirement);   
+    $('#enableService').click(sendIntent);
+    $('#disableService').click(cancelIntent);   
     
     // show up the map
     showMap();    
 }
 
-function sendRequirement() 
+function sendIntent() 
 {
     if(client == null) {         
         console.log('no nearby broker');
         return;
     }
     
-    console.log('issue a requirement for topology ', curTopology);
-       
-    // define the requirement to launch data processing tasks    
-    var rid = 'Requirement.' + uuid();    
-   
-    var requirementCtxObj = {};    
-    requirementCtxObj.entityId = {
-        id : rid, 
-        type: 'Requirement',
-        isPattern: false
-    };
+    console.log('issue an service intent for this service topology ', curTopology);
     
-    var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-                
-    requirementCtxObj.attributes = {};   
-    requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
-    //requirementCtxObj.attributes.scheduler = {type: 'string', value: 'default'};
-    requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
-    requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
-                        
-    requirementCtxObj.metadata = {};               
-    requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
+    // create the intent object
+    var topology = curTopology.attributes.template.value    
     
-    console.log(requirementCtxObj);
+    var intent = {};        
+    intent.topology = topology.name;
+    intent.priority = {
+        'exclusive': false,
+        'level': 50
+    };    
+    intent.qos = "default";    
+    intent.geoscope = geoscope;  
             
-    client.updateContext(requirementCtxObj).then( function(data) {
-        console.log(data);
-        curRequirement = requirementCtxObj;
-		
-		// change the button status
+    // create the intent entity            
+    var intentCtxObj = {};        
+    intentCtxObj.entityId = { 
+        id: 'ServiceIntent.' + uuid(),           
+        type: 'ServiceIntent',
+        isPattern: false
+    };    
+    intentCtxObj.attributes = {};   
+    intentCtxObj.attributes.status = {type: 'string', value: 'enabled'};
+    intentCtxObj.attributes.intent = {type: 'object', value: intent};  
+    
+    intentCtxObj.metadata = {};               
+    intentCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};    
+    
+    console.log(JSON.stringify(intentCtxObj));
+        
+    client.updateContext(intentCtxObj).then( function(data) {
+        console.log(data);  
+        curIntent = intentCtxObj;      
+        
+        // change the button status
 		$('#enableService').prop('disabled', true);
-		$('#disableService').prop('disabled', false);
+		$('#disableService').prop('disabled', false);                  
     }).catch( function(error) {
-        console.log('failed to send a requirement');
-    });    
+        console.log('failed to submit the defined intent');
+    });      
 }
 
-function cancelRequirement() 
+function cancelIntent() 
 {
     if(client == null) {         
         console.log('no nearby broker');
         return;
     }    
     
-    console.log('cancel a requirement for topology ', curTopology.entityId.id);
+    console.log('cancel the issued intent for this service topology ', curTopology.entityId.id);
     
     var entityid = {
-        id : curRequirement.entityId.id, 
-        type: 'Requirement',
+        id : curIntent.entityId.id, 
+        type: 'ServiceIntent',
         isPattern: false
     };	    
     
     client.deleteContext(entityid).then( function(data) {
         console.log(data);
-        curRequirement = null;		        
-        geoscope = { type: 'string',  value: 'all'};
+        curIntent = null;		        
+        geoscope = {
+            scopeType: "local",
+            scopeValue: "local"
+        };
         
 		$('#enableService').prop('disabled', false);
 		$('#disableService').prop('disabled', true);		
     }).catch( function(error) {
-        console.log('failed to cancel a requirement');
+        console.log('failed to cancel the service intent');
     });         
 }
 
@@ -338,6 +342,8 @@ function displayTaskList(tasks)
    
     html += '<thead><tr>';
     html += '<th>ID</th>';
+    html += '<th>Service</th>';
+    html += '<th>Task</th>';
     html += '<th>worker</th>';
     html += '<th>port</th>';	
     html += '<th>status</th>';		
@@ -347,6 +353,8 @@ function displayTaskList(tasks)
         var task = tasks[i];
         html += '<tr>';
         html += '<td>' + task.attributes.id.value + '</td>';		
+        html += '<td>' + task.attributes.service.value + '</td>';		
+        html += '<td>' + task.attributes.task.value + '</td>';		        
 		html += '<td>' + task.attributes.worker.value + '</td>';
 		html += '<td>' + task.attributes.port.value + '</td>';	
 		
@@ -545,15 +553,15 @@ function showMap()
 		if (type === 'rectangle') {
             var geometry = layer.toGeoJSON()['geometry'];
             console.log(geometry);
-            
-            geoscope.type = 'polygon';
-            geoscope.value = {
+      
+            geoscope.scopeType = 'polygon';
+            geoscope.scopeValue = {
                 vertices: []
             };
             
             points = geometry.coordinates[0];
             for(i in points){
-                geoscope.value.vertices.push({longitude: points[i][0], latitude: points[i][1]});
+                geoscope.scopeValue.vertices.push({longitude: points[i][0], latitude: points[i][1]});
             }
             
 			console.log(geoscope);            
@@ -563,8 +571,8 @@ function showMap()
             console.log(geometry);
             var radius = layer.getRadius();
             
-            geoscope.type = 'circle';
-            geoscope.value = {
+            geoscope.scopeType = 'circle';
+            geoscope.scopeValue = {
                 centerLatitude: geometry.coordinates[1],
                 centerLongitude: geometry.coordinates[0],
                 radius: radius
@@ -576,14 +584,14 @@ function showMap()
             var geometry = layer.toGeoJSON()['geometry'];
             console.log(geometry);
             
-            geoscope.type = 'polygon';
-            geoscope.value = {
+            geoscope.scopeType = 'polygon';
+            geoscope.scopeValue = {
                 vertices: []
             };
             
             points = geometry.coordinates[0];
             for(i in points){
-                geoscope.value.vertices.push({longitude: points[i][0], latitude: points[i][1]});
+                geoscope.scopeValue.vertices.push({longitude: points[i][0], latitude: points[i][1]});
             }
             
 			console.log(geoscope);            
@@ -607,14 +615,14 @@ function displaySearchScope(map)
 {
     console.log(geoscope);            
     if(geoscope != null) {
-        switch (geoscope.type) {
+        switch (geoscope.scopeType) {
             case 'circle': 
-                L.circle([geoscope.value.centerLatitude, geoscope.value.centerLongitude], geoscope.value.radius).addTo(map);                                
+                L.circle([geoscope.scopeValue.centerLatitude, geoscope.scopeValue.centerLongitude], geoscope.scopeValue.radius).addTo(map);                                
                 break;
             case 'polygon':
                 var points = [];
-                for(var i=0; i<geoscope.value.vertices.length; i++){
-                    points.push(new L.LatLng(geoscope.value.vertices[i].latitude, geoscope.value.vertices[i].longitude))
+                for(var i=0; i<geoscope.scopeValue.vertices.length; i++){
+                    points.push(new L.LatLng(geoscope.scopeValue.vertices[i].latitude, geoscope.scopeValue.vertices[i].longitude))
                 }            
                 L.polygon(points).addTo(map);
                 break;                
@@ -626,27 +634,24 @@ function displayEdgeNodeOnMap(map)
 {
     var queryReq = {}
     queryReq.entities = [{type:'Worker', isPattern: true}];
-    queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'role=EdgeNode'}]}    
     
     client.queryContext(queryReq).then( function(edgeNodeList) {
-        console.log(edgeNodeList);
-
         var edgeIcon = L.icon({
             iconUrl: '/img/gateway.png',
             iconSize: [48, 48]
         });      
         
         for(var i=0; i<edgeNodeList.length; i++){
-            	var worker = edgeNodeList[i];    
-            
-            	latitude = worker.attributes.physical_location.value.latitude;
-            	longitude = worker.attributes.physical_location.value.longitude;
-            	edgeNodeId = worker.entityId.id;
-            
-            	var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
-			marker.nodeID = edgeNodeId;
-            	marker.addTo(map).bindPopup(edgeNodeId);
-		    marker.on('click', showRunningTasks);
+        	var worker = edgeNodeList[i];    
+        
+        	latitude = worker.attributes.physical_location.value.latitude;
+        	longitude = worker.attributes.physical_location.value.longitude;
+        	edgeNodeId = worker.entityId.id;
+        
+        	var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
+		    marker.nodeID = edgeNodeId;
+        	marker.addTo(map).bindPopup(edgeNodeId);
+	        marker.on('click', showRunningTasks);
         }            
                 
     }).catch(function(error) {
@@ -688,23 +693,24 @@ function displayDeviceOnMap(map)
     var queryReq = {}
     queryReq.entities = [{id:'Device.*', isPattern: true}];
     client.queryContext(queryReq).then( function(devices) {
-        console.log(devices);
-
         for(var i=0; i<devices.length; i++){
             var device = devices[i];    
+            console.log(device);
             
-            iconImag = device.attributes.iconURL.value;            
-            var edgeIcon = L.icon({
-                iconUrl: iconImag,
-                iconSize: [48, 48]
-            });               
-            
-            latitude = device.metadata.location.value.latitude;
-            longitude = device.metadata.location.value.longitude;
-            deviceId = device.entityId.id;
-            
-            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
-            marker.addTo(map).bindPopup(deviceId);
+            if (device.attributes.iconURL != null){
+                iconImag = device.attributes.iconURL.value;            
+                var edgeIcon = L.icon({
+                    iconUrl: iconImag,
+                    iconSize: [48, 48]
+                });               
+                
+                latitude = device.metadata.location.value.latitude;
+                longitude = device.metadata.location.value.longitude;
+                deviceId = device.entityId.id;
+                
+                var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
+                marker.addTo(map).bindPopup(deviceId);                
+            }            
         }            
                 
     }).catch(function(error) {

@@ -38,8 +38,6 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 		return err
 	}
 
-	DEBUG.Println(string(body))
-
 	req, err := http.NewRequest("POST", URL+"/notifyContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")

@@ -1,8 +1,16 @@
 var request = require('request');
 var express =   require('express');
 var multer  =   require('multer');
+var config_fs_name = './config.json';
+
+var args = process.argv.slice(2);
+if (args.length > 0) {
+    config_fs_name = args[0];
+} 
+console.log(config_fs_name);
+
 var fs = require('fs');
-var globalConfigFile = require('./config.json')
+var globalConfigFile = require(config_fs_name)
 var app     =   express();
 var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
 var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');

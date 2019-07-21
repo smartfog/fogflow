@@ -1,4 +1,16 @@
 
+function makeid(length) {
+   var result           = '';
+   var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+   var charactersLength = characters.length;
+   for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+   }
+   return result;
+}
+
+var myID = makeid(5);
+
 
 //
 //  contextEntity: the received entities
@@ -15,6 +27,10 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     if (contextEntity.attributes == null) {
         return;
     }
+    if (contextEntity.attributes.Updater != null && attributes.Updater == myID) {
+        // this is the update from myself
+        return
+    }
     
     // query the data source to know the available parking lots
     if (contextEntity.attributes.datasource != null) {
@@ -30,7 +46,8 @@ exports.handler = function(contextEntity, publish, query, subscribe)
             isPattern: false
         };	  	
         updateEntity.attributes = {};	 
-        updateEntity.attributes.FreeParkingSpots = {type: 'integer', value: 10};                
+        updateEntity.attributes.FreeParkingSpots = {type: 'integer', value: 10};   
+        updateEntity.attributes.Updater = {type: 'string', value: myID};              
             
         publish(updateEntity);
         console.log("publish: ", updateEntity);	        

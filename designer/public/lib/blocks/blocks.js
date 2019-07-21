@@ -1375,7 +1375,7 @@ var Block = function(blocks, meta, id)
     this.meta = meta;
 
     // Appareance values
-    this.defaultFont = 10;
+    this.defaultFont = 12;
 
     // Custom description
     this.description = null;

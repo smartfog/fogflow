@@ -75,24 +75,9 @@ def publishMySelf():
     
     deviceCtxObj['metadata'] = {}
     deviceCtxObj['metadata']['location'] = {'type': 'point', 'value': {'latitude': profile['location']['latitude'], 'longitude': profile['location']['longitude'] }}
-    
-    updateContext(brokerURL, deviceCtxObj)
+    deviceCtxObj['metadata']['cameraID'] = {'type': 'string', 'value': profile['id']}
 
-    # stream entity
-    streamCtxObj = {}
-    streamCtxObj['entityId'] = {}
-    streamCtxObj['entityId']['id'] = 'Stream.' + profile['type'] + '.' + profile['id']
-    streamCtxObj['entityId']['type'] = profile['type']        
-    streamCtxObj['entityId']['isPattern'] = False
-    
-    streamCtxObj['attributes'] = {}
-    streamCtxObj['attributes']['url'] = {'type': 'string', 'value': 'http://' + profile['myIP'] + ':' + str(profile['myPort']) + '/image'}
-    
-    streamCtxObj['metadata'] = {}
-    streamCtxObj['metadata']['location'] = {'type': 'point', 'value': {'latitude': profile['location']['latitude'], 'longitude': profile['location']['longitude'] }}
-    streamCtxObj['metadata']['cameraID'] = {'type': 'string', 'value': profile['id']}
-    
-    updateContext(brokerURL, streamCtxObj)
+    updateContext(brokerURL, deviceCtxObj)
 
 
 def unpublishMySelf():
@@ -105,16 +90,7 @@ def unpublishMySelf():
     deviceCtxObj['entityId']['type'] = profile['type']        
     deviceCtxObj['entityId']['isPattern'] = False
     
-    deleteContext(brokerURL, deviceCtxObj)
-    
-    # stream entity
-    streamCtxObj = {}
-    streamCtxObj['entityId'] = {}
-    streamCtxObj['entityId']['id'] = 'Stream.' + profile['type'] + '.' + profile['id']
-    streamCtxObj['entityId']['type'] = profile['type']        
-    streamCtxObj['entityId']['isPattern'] = False
-    
-    deleteContext(brokerURL, streamCtxObj)    
+    deleteContext(brokerURL, deviceCtxObj) 
 
 def object2Element(ctxObj):
     ctxElement = {}
@@ -191,7 +167,7 @@ def handleTimer():
     #publishMySelf()
     print 'publishing my url'
         
-    timer = threading.Timer(2, handleTimer)
+    timer = threading.Timer(5, handleTimer)
     timer.start()
 
 def run():

@@ -63,8 +63,6 @@ var publicParkingSites = [
     datasource: "http://fiware-dev.inf.um.es:1026/v2/"
 }];
 
-
-
    
 addMenuItem('ProcessingFlow', showProcessingFlows);  
 addMenuItem('DigitalTwin', showTwins);      
@@ -299,7 +297,6 @@ function showTasks()
             
     var queryReq = {}
     queryReq.entities = [{type:'Task', isPattern: true}];
-    queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'topology=system'}]}    
 
     client.queryContext(queryReq).then( function(taskList) {
         console.log(taskList);
@@ -325,18 +322,31 @@ function displayTaskList(tasks)
     html += '<thead><tr>';
     html += '<th>ID</th>';
     html += '<th>Type</th>';
-    html += '<th>Attributes</th>';	
-    html += '<th>DomainMetadata</th>';		
+    html += '<th>Service</th>';	
+    html += '<th>Task</th>';	
+    html += '<th>Worker</th>';		
+    html += '<th>port</th>';	
+    html += '<th>status</th>';		    
     html += '</tr></thead>';    
 
     for(var i=0; i<tasks.length; i++){
         var task = tasks[i];
         html += '<tr>';
-		html += '<td>' + task.entityId.id + '</td>';
-		html += '<td>' + task.entityId.type + '</td>'; 
-		html += '<td>' + JSON.stringify(task.attributes) + '</td>';        
-		html += '<td>' + JSON.stringify(task.metadata) + '</td>';
-		html += '</tr>';			
+	    html += '<td>' + task.entityId.id + '</td>';
+	    html += '<td>' + task.entityId.type + '</td>'; 
+        html += '<td>' + task.attributes.service.value + '</td>';		
+        html += '<td>' + task.attributes.task.value + '</td>';        
+	    html += '<td>' + task.metadata.worker.value + '</td>';
+        
+   		html += '<td>' + task.attributes.port.value + '</td>';
+				
+		if (task.attributes.status.value == "paused") {
+			html += '<td><font color="red">' + task.attributes.status.value + '</font></td>';			
+		} else {
+			html += '<td><font color="green">' + task.attributes.status.value + '</font></td>';
+		}
+        
+	    html += '</tr>';			
 	}
        
     html += '</table>';            
@@ -487,19 +497,22 @@ function displayParkingSites(map)
         console.log(sites);
         
         for(var i=0; i<sites.length; i++){
-            var site = sites[i];                
-            var iconImag = site.attributes.iconURL.value;            
-            var icon = L.icon({
-                iconUrl: iconImag,
-                iconSize: [48, 48]
-            });                  
+            var site = sites[i];            
             
-            latitude = site.metadata.location.value.latitude;
-            longitude = site.metadata.location.value.longitude;
-            siteId = site.entityId.id;
-            
-            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: icon});
-            marker.addTo(map).bindPopup(siteId);                 
+            if (site.attributes.iconURL != null)  {
+                var iconImag = site.attributes.iconURL.value;            
+                var icon = L.icon({
+                    iconUrl: iconImag,
+                    iconSize: [48, 48]
+                });                  
+                
+                latitude = site.metadata.location.value.latitude;
+                longitude = site.metadata.location.value.longitude;
+                siteId = site.entityId.id;
+                
+                var marker = L.marker(new L.LatLng(latitude, longitude), {icon: icon});
+                marker.addTo(map).bindPopup(siteId);                     
+            }  
         }            
                 
     }).catch(function(error) {

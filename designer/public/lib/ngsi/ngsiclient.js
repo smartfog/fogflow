@@ -114,9 +114,6 @@ var NGSI10Client = (function() {
                 var objectList = [];
                 var ctxElements = response.data.contextResponses;
                 for(var i=0; ctxElements && i<ctxElements.length; i++){                    
-                    console.log(ctxElements[i].contextElement);
-                    console.log('===========context element=======');
-                    console.log(ctxElements[i].contextElement)
                     var obj = CtxElement2JSONObject(ctxElements[i].contextElement);
                     objectList.push(obj);
                 }

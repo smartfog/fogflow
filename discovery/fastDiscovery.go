@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"sync"
@@ -16,22 +15,44 @@ import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
+type InterSiteSubscription struct {
+	DiscoveryURL   string
+	SubscriptionID string
+}
+
+type CacheItem struct {
+	SubscriberURL string
+	Notify        *NotifyContextAvailabilityRequest
+}
+
 type FastDiscovery struct {
 	//backend entity repository
 	repository EntityRepository
 
+	//list of active brokers within the same site
+	BrokerList map[string]*BrokerProfile
+
 	//mapping from subscriptionID to subscription
-	subscriptions      map[string]*SubscribeContextAvailabilityRequest
-	subscriptions_lock sync.RWMutex
+	subscriptions                map[string]*SubscribeContextAvailabilityRequest
+	linkedInterSiteSubscriptions map[string][]InterSiteSubscription
+	subscriptions_lock           sync.RWMutex
+
+	//cache
+	notifyCache []*CacheItem
+	cache_lock  sync.RWMutex
 }
 
-func (fd *FastDiscovery) Init(cfg *DatabaseCfg) {
+func (fd *FastDiscovery) Init() {
 	fd.subscriptions = make(map[string]*SubscribeContextAvailabilityRequest)
-	fd.repository.Init(cfg)
+	fd.linkedInterSiteSubscriptions = make(map[string][]InterSiteSubscription)
+	fd.BrokerList = make(map[string]*BrokerProfile)
+	fd.notifyCache = make([]*CacheItem, 0)
+
+	fd.repository.Init()
 }
 
 func (fd *FastDiscovery) Stop() {
-	fd.repository.Close()
+
 }
 
 func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request) {
@@ -64,6 +85,15 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 	w.WriteJson(&registerCtxResp)
 }
 
+func (fd *FastDiscovery) forwardRegistrationCtxAvailability(discoveryURL string, registrationReq *RegisterContextRequest) {
+	requestURL := "http://" + discoveryURL + "/ngsi9/registerContext"
+	client := NGSI9Client{IoTDiscoveryURL: requestURL}
+	_, err := client.RegisterContext(registrationReq)
+	if err != nil {
+		ERROR.Println(err)
+	}
+}
+
 func (fd *FastDiscovery) notifySubscribers(registration *ContextRegistration, updateAction string) {
 	fd.subscriptions_lock.RLock()
 	defer fd.subscriptions_lock.RUnlock()
@@ -71,7 +101,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *ContextRegistration, up
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
-		entities := fd.matchingWithSubscription(registration, subscription)
+		entities := matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction)
 		if len(entities) == 0 {
 			continue
 		}
@@ -87,71 +117,61 @@ func (fd *FastDiscovery) notifySubscribers(registration *ContextRegistration, up
 	}
 }
 
-func (fd *FastDiscovery) matchingWithSubscription(registration *ContextRegistration, subscription *SubscribeContextAvailabilityRequest) []EntityId {
-	matchedEntities := make([]EntityId, 0)
-
-	for _, entity := range registration.EntityIdList {
-		// check entityId part
-		atLeastOneMatched := false
-		for _, tmp := range subscription.Entities {
-			matched := matchEntityId(entity, tmp)
-			if matched == true {
-				atLeastOneMatched = true
-				break
-			}
-		}
-		if atLeastOneMatched == false {
-			continue
-		}
-
-		// check attribute set
-		matched := matchAttributes(registration.ContextRegistrationAttributes, subscription.Attributes)
-		if matched == false {
-			continue
-		}
-
-		// check metadata set
-		matched = matchMetadatas(registration.Metadata, subscription.Restriction)
-		if matched == false {
-			continue
-		}
-
-		// if matched, add it into the list
-		if matched == true {
-			matchedEntities = append(matchedEntities, entity)
-		}
-	}
-
-	return matchedEntities
-}
-
 func (fd *FastDiscovery) updateRegistration(registReq *RegisterContextRequest) {
 	for _, registration := range registReq.ContextRegistrations {
 		for _, entity := range registration.EntityIdList {
-
-			INFO.Printf("registration:%+v\r\n", entity)
-
-			fd.repository.updateEntity(entity, &registration)
+			// update the registration, both in the memory cache and in the database
+			updatedRegistration := fd.repository.updateEntity(entity, &registration)
 
 			// inform the associated subscribers after updating the repository
-			updatedRegistration := fd.repository.retrieveRegistration(entity.ID)
-			if updatedRegistration != nil {
-				fd.notifySubscribers(updatedRegistration, "UPDATE")
-			}
+			go fd.notifySubscribers(updatedRegistration, "UPDATE")
 		}
 	}
 }
 
-func (fd *FastDiscovery) deleteRegistration(registration *ContextRegistration) {
-	for _, entity := range registration.EntityIdList {
-		// notify the affected subscribers before deleting the entity
-		registration := fd.repository.retrieveRegistration(entity.ID)
-		if registration != nil {
-			fd.notifySubscribers(registration, "DELETE")
-		}
-
-		fd.repository.deleteEntity(entity.ID)
+func (fd *FastDiscovery) deleteRegistration(eid string) {
+	registration := fd.repository.retrieveRegistration(eid)
+	if registration != nil {
+		fd.notifySubscribers(registration, "DELETE")
 	}
+
+	fd.repository.deleteEntity(eid)
+}
+
+func (fd *FastDiscovery) InterSiteDiscoverContextAvailability(siteURL string, discoverCtxAvailabilityReq *DiscoverContextAvailabilityRequest) ([]ContextRegistrationResponse, error) {
+	requestURL := "http://" + siteURL + "/ngsi9/interSiteContextAvailabilityQuery"
+
+	INFO.Println(requestURL)
+
+	body, err := json.Marshal(discoverCtxAvailabilityReq)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	discoverCtxAvailResp := DiscoverContextAvailabilityResponse{}
+	err = json.Unmarshal(text, &discoverCtxAvailResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return discoverCtxAvailResp.ContextRegistrationResponses, nil
 }
 
 func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *rest.Request) {
@@ -162,8 +182,13 @@ func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *r
 		return
 	}
 
-	// query database to get the result
-	result := fd.handleQueryCtxAvailability(&discoverCtxReq)
+	// query all relevant discovery instances to get the matched result
+	result := make([]ContextRegistrationResponse, 0)
+
+	registrationList := fd.handleQueryCtxAvailability(&discoverCtxReq)
+	for _, registration := range registrationList {
+		result = append(result, registration)
+	}
 
 	// send out the response
 	discoverCtxResp := DiscoverContextAvailabilityResponse{}
@@ -171,15 +196,14 @@ func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *r
 		discoverCtxResp.ErrorCode.Code = 500
 		discoverCtxResp.ErrorCode.ReasonPhrase = "database is too overloaded"
 	} else {
-		discoverCtxResp.ContextRegistrationResponses = *result
+		discoverCtxResp.ContextRegistrationResponses = result
 		discoverCtxResp.ErrorCode.Code = 200
 		discoverCtxResp.ErrorCode.ReasonPhrase = "OK"
 	}
 	w.WriteJson(&discoverCtxResp)
 }
 
-func (fd *FastDiscovery) handleQueryCtxAvailability(req *DiscoverContextAvailabilityRequest) *[]ContextRegistrationResponse {
-	//fmt.Println("************** query availability ****************")
+func (fd *FastDiscovery) handleQueryCtxAvailability(req *DiscoverContextAvailabilityRequest) []ContextRegistrationResponse {
 	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction)
 
 	// prepare the response
@@ -196,7 +220,7 @@ func (fd *FastDiscovery) handleQueryCtxAvailability(req *DiscoverContextAvailabi
 		registrationList = append(registrationList, resp)
 	}
 
-	return &registrationList
+	return registrationList
 }
 
 func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *rest.Request) {
@@ -232,10 +256,33 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	w.WriteJson(&subscribeCtxAvailabilityResp)
 
 	// trigger the process to send out the matched context availability infomation to the subscriber
-	go fd.handleSubscrieCtxAvailability(&subscribeCtxAvailabilityReq)
+	go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
 }
 
-func (fd *FastDiscovery) handleSubscrieCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
+// forward the received NGSI9 subscription to another discovery server
+func (fd *FastDiscovery) forwardSubscribeCtxAvailability(discoveryURL string, originalSID string, subReq *SubscribeContextAvailabilityRequest) {
+	requestURL := "http://" + discoveryURL + "/ngsi9/interSiteContextAvailabilityUnsubscribe"
+	client := NGSI9Client{IoTDiscoveryURL: requestURL}
+	sid, err := client.SubscribeContextAvailability(subReq)
+	if sid != "" && err == nil {
+		fd.subscriptions_lock.Lock()
+
+		if _, exist := fd.linkedInterSiteSubscriptions[originalSID]; exist == false {
+			fd.linkedInterSiteSubscriptions[originalSID] = make([]InterSiteSubscription, 1)
+		}
+
+		interSiteSubscription := InterSiteSubscription{}
+		interSiteSubscription.DiscoveryURL = discoveryURL
+		interSiteSubscription.SubscriptionID = sid
+
+		fd.linkedInterSiteSubscriptions[originalSID] = append(fd.linkedInterSiteSubscriptions[originalSID], interSiteSubscription)
+
+		fd.subscriptions_lock.Unlock()
+	}
+}
+
+// handle NGSI9 subscription based on the local database
+func (fd *FastDiscovery) handleSubscribeCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
 	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction)
 
 	if len(entityMap) > 0 {
@@ -276,14 +323,62 @@ func (fd *FastDiscovery) sendNotify(subID string, subscriberURL string, entityMa
 
 	notifyReq.ContextRegistrationResponseList = registrationList
 
-	body, err := json.Marshal(notifyReq)
-	if err != nil {
-		fmt.Println(err)
-		return
+	// if there are some notificaitons already in the tmpCache, send those in the cache first
+	fd.cache_lock.RLock()
+	if len(fd.notifyCache) > 0 {
+		//try to send the items in the cache
+		go fd.resendCachedItems()
+	}
+	fd.cache_lock.RUnlock()
+
+	//send the current notify
+	done := fd.postNotify(subscriberURL, &notifyReq)
+	if done == false { // put it into the tmpCache
+		fd.cache_lock.Lock()
+		item := CacheItem{}
+		item.SubscriberURL = subscriberURL
+		item.Notify = &notifyReq
+		fd.notifyCache = append(fd.notifyCache, &item)
+		fd.cache_lock.Unlock()
+	}
+}
+
+func (fd *FastDiscovery) resendCachedItems() {
+	fd.cache_lock.Lock()
+	cachedItem := fd.notifyCache
+	fd.notifyCache = make([]*CacheItem, 0)
+	fd.cache_lock.Unlock()
+
+	// resend them
+	newCache := make([]*CacheItem, 0)
+
+	for _, item := range cachedItem {
+		err := fd.postNotify(item.SubscriberURL, item.Notify)
+		if err == false {
+			newCache = append(newCache, item)
+		}
 	}
 
-	//fmt.Println(string(body))
-	//fmt.Println("send to subscriber at ", subscriberURL)
+	// if some of them are still failed, put them back into the cache
+	if len(newCache) > 0 {
+		fd.cache_lock.Lock()
+		fd.notifyCache = append(fd.notifyCache, newCache...)
+		fd.cache_lock.Unlock()
+	}
+}
+
+// for every 2 second
+func (fd *FastDiscovery) OnTimer() {
+	//try to send the items in the cache
+	fd.resendCachedItems()
+}
+
+func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyContextAvailabilityRequest) bool {
+	body, err := json.Marshal(notifyReq)
+	if err != nil {
+		ERROR.Println(err)
+		return false
+	}
 
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
@@ -291,24 +386,28 @@ func (fd *FastDiscovery) sendNotify(subID string, subscriberURL string, entityMa
 
 	client := &http.Client{}
 	resp, err2 := client.Do(req)
-	defer resp.Body.Close()
 	if err2 != nil {
-		fmt.Println(err2)
-		return
+		ERROR.Println(err2)
+		return false
 	}
+
+	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
 
 	notifyCtxAvailResp := NotifyContextAvailabilityResponse{}
 	err = json.Unmarshal(text, &notifyCtxAvailResp)
 	if err != nil {
-		fmt.Println(err)
-		return
+		ERROR.Println(err)
+		return false
 	}
 
 	if notifyCtxAvailResp.ResponseCode.Code != 200 {
-		fmt.Println(notifyCtxAvailResp.ResponseCode.ReasonPhrase)
+		ERROR.Println(notifyCtxAvailResp.ResponseCode.ReasonPhrase)
+		return false
 	}
+
+	return true
 }
 
 func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r *rest.Request) {
@@ -321,11 +420,13 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 
 	subID := unsubscribeCtxAvailabilityReq.SubscriptionId
 
-	fmt.Println("unsubscribe context availability, ", subID)
+	var interSiteSubList []InterSiteSubscription
 
 	// remove the subscription
 	fd.subscriptions_lock.Lock()
 	delete(fd.subscriptions, subID)
+	interSiteSubList = fd.linkedInterSiteSubscriptions[subID]
+	delete(fd.linkedInterSiteSubscriptions, subID)
 	fd.subscriptions_lock.Unlock()
 
 	// send out the response
@@ -335,6 +436,18 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 	unsubscribeCtxAvailabilityResp.StatusCode.Details = "OK"
 
 	w.WriteJson(&unsubscribeCtxAvailabilityResp)
+
+	// issue unsubscribe to the other discovery server if there are existing inter-site subscription that have been issued before
+	for _, linkedSub := range interSiteSubList {
+		go fd.sendInterSiteUnsubscribeContextAvailability(linkedSub.DiscoveryURL, linkedSub.SubscriptionID)
+	}
+}
+
+func (fd *FastDiscovery) sendInterSiteUnsubscribeContextAvailability(discoveryURL string, sid string) error {
+	requestURL := "http://" + discoveryURL + "/ngsi9/interSiteContextAvailabilityUnsubscribe"
+	client := NGSI9Client{IoTDiscoveryURL: requestURL}
+	err := client.UnsubscribeContextAvailability(sid)
+	return err
 }
 
 func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
@@ -346,15 +459,9 @@ func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Requ
 
 func (fd *FastDiscovery) deleteRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
-
-	DEBUG.Printf("delete the context availability %s\r\n", eid)
-
-	registration := fd.repository.retrieveRegistration(eid)
-	if registration != nil {
-		fd.deleteRegistration(registration)
-	}
-
 	w.WriteHeader(200)
+
+	go fd.deleteRegistration(eid)
 }
 
 func (fd *FastDiscovery) getSubscription(w rest.ResponseWriter, r *rest.Request) {
@@ -376,4 +483,85 @@ func (fd *FastDiscovery) getSubscriptions(w rest.ResponseWriter, r *rest.Request
 
 func (fd *FastDiscovery) getStatus(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(200)
+}
+
+func (fd *FastDiscovery) onForwardContextUpdate(w rest.ResponseWriter, r *rest.Request) {
+	updateCtxReq := UpdateContextRequest{}
+
+	err := r.DecodeJsonPayload(&updateCtxReq)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// send out the response
+	updateCtxResp := UpdateContextResponse{}
+	updateCtxResp.ErrorCode.Code = 200
+	updateCtxResp.ErrorCode.ReasonPhrase = "OK"
+	w.WriteJson(&updateCtxResp)
+
+	INFO.Println("============FORWARD============")
+
+	// perform the update action accordingly
+	switch updateCtxReq.UpdateAction {
+	case "UPDATE":
+		for _, ctxElem := range updateCtxReq.ContextElements {
+			selectedBroker := fd.selectBroker()
+			if selectedBroker != nil {
+				INFO.Println("selected broker ", selectedBroker.MyURL)
+
+				providerURL := selectedBroker.MyURL
+				client := NGSI10Client{IoTBrokerURL: providerURL}
+				client.InternalUpdateContext(&ctxElem)
+			} else {
+				INFO.Println("no connected broker for the forwarded update")
+			}
+		}
+
+	case "DELETE":
+		for _, ctxElem := range updateCtxReq.ContextElements {
+			eid := ctxElem.Entity.ID
+			registration := fd.repository.retrieveRegistration(eid)
+			if registration != nil {
+				providerURL := registration.ProvidingApplication
+				client := NGSI10Client{IoTBrokerURL: providerURL}
+				client.InternalDeleteContext(&ctxElem.Entity)
+			}
+		}
+	}
+}
+
+func (fd *FastDiscovery) getBrokerList(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteHeader(200)
+	w.WriteJson(fd.BrokerList)
+}
+
+func (fd *FastDiscovery) onBrokerHeartbeat(w rest.ResponseWriter, r *rest.Request) {
+	brokerProfile := BrokerProfile{}
+
+	err := r.DecodeJsonPayload(&brokerProfile)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// send out the response
+	updateCtxResp := UpdateContextResponse{}
+	updateCtxResp.ErrorCode.Code = 200
+	updateCtxResp.ErrorCode.ReasonPhrase = "OK"
+	w.WriteJson(&updateCtxResp)
+
+	if broker, exist := fd.BrokerList[brokerProfile.BID]; exist {
+		broker.MyURL = brokerProfile.MyURL
+	} else {
+		fd.BrokerList[brokerProfile.BID] = &brokerProfile
+	}
+}
+
+func (fd *FastDiscovery) selectBroker() *BrokerProfile {
+	for _, broker := range fd.BrokerList {
+		return broker
+	}
+
+	return nil
 }

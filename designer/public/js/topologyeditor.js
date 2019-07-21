@@ -8,73 +8,98 @@ blocks.register({
     description: "To specify a data processing task",
     fields: [
         {
-            name: "name",
+            name: "Name",
             type: "string",
             attrs: "editable"
         },    
         {
-            name: "operator",
+            name: "Operator",
             type: "choice",            
             choices: operators,
             attrs: "editable"
         },    
         {
-            name: "groupby",
-            type: "string",
-            defaultValue: "all",
-            attrs: "editable"
-        }, 
-        {
-            name: "inputs",
-            label: "shuffling of input streams",
-            type: "choice[]",
-            hide: true,
-            choices: ["unicast","broadcast"],
-            defaultValue: ["unicast"],       
-            attrs: "editable input",
-            card: '1',                            
-            dynamicLabel: function(block, x) {
-                return block.getValue('inputs')[x];
-            }             
+            name: "Streams",
+            type: "Stream",
+            attrs: "input"
         },                        
         {
-            name: "outputs",
-            label: "entity type of output streams",
+            name: "Outputs",
             type: "string[]",
             defaultValue: ["Out"],                                   
             hide: true,
             attrs: "editable output",
             dynamicLabel: function(block, x) {
-                return block.getValue('outputs')[x];
+                return block.getValue('Outputs')[x];
             }                                  
         }      
     ]
 });
 
+
 blocks.register({
-    name: "InputStream",
-    description: "To define the input stream",
+    name: "Shuffle",
+    description: "To decide how the selected entity stream should be forwarded to the instances of next task",
     fields: [
         {
-            name: "EntityType",
+            name: "SelectedAttributes",
+            type: "string[]",
+            defaultValue: ["all"],
+            attrs: "editable"
+        },          
+        {
+            name: "Groupby",
+            choices: ["ALL", "EntityID", "EntityType", "EntityAttribute"],
+            defaultValue: "EntityID",            
+            attrs: "editable"
+        },              
+        {
+            name: "In",
+            type: "string",
+            attrs: "input"
+        },        
+        {
+            name: "Stream",
+            type: "Stream",
+            attrs: "output"
+        }        
+    ]
+});
+
+blocks.register({
+    name: "EntityStream",
+    description: "To define an entity stream",
+    fields: [
+        {
+            name: "SelectedType",
             type: "string",
             attrs: "editable"
         },
         {
-            name: "scoped",
-            type: "bool",
-            defaultValue: false,
+            name: "SelectedAttributes",
+            type: "string[]",
+            defaultValue: ["all"],
+            attrs: "editable"
+        },          
+        {
+            name: "Groupby",
+            choices: ["ALL", "EntityID", "EntityType", "EntityAttribute"],
+            defaultValue: "EntityID",
             attrs: "editable"
         },
         {
-            name: "stream",
-            label: "Stream",
+            name: "Scoped",
+            type: "bool",
+            defaultValue: false,
+            attrs: "editable"
+        },         
+        {
+            name: "Stream",
             attrs: "output",
-            type: "string"
+            type: "Stream"
         }                          
     ]
 });
-
 
 }
 

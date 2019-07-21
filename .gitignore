@@ -1,7 +1,11 @@
-*.exe~
-*.doctree
-*.pickle
-*.exe
+.exe~
+.doctree
+.pickle
+.exe
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
 node_modules
 doc/en/_build/
 doc/en/source/figures/~$figures.pptx

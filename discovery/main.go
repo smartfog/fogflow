@@ -1,16 +1,21 @@
 package main
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/jadengore/go-json-rest-middleware-force-ssl"
 
 	. "github.com/smartfog/fogflow/common/config"
 )
@@ -21,21 +26,13 @@ func main() {
 	config, err := LoadConfig(*cfgFile)
 	if err != nil {
 		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
-		fmt.Println("please specify the configuration file, for example, \r\n\t./discovery -f config.json")
+		INFO.Println("please specify the configuration file, for example, \r\n\t./discovery -f config.json")
 		os.Exit(-1)
-	}
-
-	// overwrite the configuration with environment variables
-	if hostip, exist := os.LookupEnv("postgresql_host"); exist {
-		config.Discovery.DBCfg.Host = hostip
-	}
-	if port, exist := os.LookupEnv("postgresql_port"); exist {
-		config.Discovery.DBCfg.Port, _ = strconv.Atoi(port)
 	}
 
 	// initialize IoT Discovery
 	iotDiscovery := FastDiscovery{}
-	iotDiscovery.Init(&config.Discovery.DBCfg)
+	iotDiscovery.Init()
 
 	// start REST API server
 	router, err := rest.MakeRouter(
@@ -44,14 +41,18 @@ func main() {
 		rest.Post("/ngsi9/discoverContextAvailability", iotDiscovery.DiscoverContextAvailability),
 		rest.Post("/ngsi9/subscribeContextAvailability", iotDiscovery.SubscribeContextAvailability),
 		rest.Post("/ngsi9/unsubscribeContextAvailability", iotDiscovery.UnsubscribeContextAvailability),
+		rest.Delete("/ngsi9/registration/#eid", iotDiscovery.deleteRegisteredEntity),
 
 		// convenient ngsi9 API
 		rest.Get("/ngsi9/registration/#eid", iotDiscovery.getRegisteredEntity),
-		rest.Delete("/ngsi9/registration/#eid", iotDiscovery.deleteRegisteredEntity),
 		rest.Get("/ngsi9/subscription/#sid", iotDiscovery.getSubscription),
 		rest.Get("/ngsi9/subscription", iotDiscovery.getSubscriptions),
 
+		// for health check
 		rest.Get("/ngsi9/status", iotDiscovery.getStatus),
+
+		// hearbeat from active brokers
+		rest.Post("/ngsi9/broker", iotDiscovery.onBrokerHeartbeat),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -59,7 +60,15 @@ func main() {
 	}
 
 	api := rest.NewApi()
-	api.Use(rest.DefaultCommonStack...)
+
+	if config.HTTPS.Enabled == true {
+		api.Use(&forceSSL.Middleware{
+			TrustXFPHeader:     true,
+			Enable301Redirects: false,
+		})
+	} else {
+		api.Use(rest.DefaultCommonStack...)
+	}
 
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
@@ -75,8 +84,43 @@ func main() {
 	api.SetApp(router)
 
 	go func() {
-		INFO.Printf("Starting IoT Discovery on port %d\n", config.Discovery.Port)
-		panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
+		fmt.Printf("Starting IoT Discovery on port %d\n", config.Discovery.Port)
+
+		if config.HTTPS.Enabled == true {
+			// Create a CA certificate pool and add cert.pem to it
+			caCert, err := ioutil.ReadFile("cert.pem")
+			if err != nil {
+				log.Fatal(err)
+			}
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+
+			// Create the TLS Config with the CA pool and enable Client certificate validation
+			tlsConfig := &tls.Config{
+				ClientCAs:  caCertPool,
+				ClientAuth: tls.RequireAndVerifyClientCert,
+			}
+			tlsConfig.BuildNameToCertificate()
+
+			// Create a Server instance to listen on port 8443 with the TLS config
+			server := &http.Server{
+				Addr:      ":" + strconv.Itoa(config.Discovery.Port),
+				Handler:   api.MakeHandler(),
+				TLSConfig: tlsConfig,
+			}
+
+			panic(server.ListenAndServeTLS("cert.pem", "key.pem"))
+		} else {
+			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
+		}
+	}()
+
+	// start a timer to do something periodically
+	ticker := time.NewTicker(2 * time.Second)
+	go func() {
+		for _ = range ticker.C {
+			iotDiscovery.OnTimer()
+		}
 	}()
 
 	// wait for Control +C to quit
@@ -84,6 +128,8 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, syscall.SIGTERM)
 	<-c
+
+	fmt.Println("Stoping IoT Discovery")
 
 	iotDiscovery.Stop()
 }

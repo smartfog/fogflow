@@ -1,4 +1,4 @@
-var speakerID = null;
+var previousReq = null;
 
 //
 //  contextEntity: the received entities
@@ -20,8 +20,18 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     }       
     
     // to inform the driver where to park for the given parking request
-    if (contextEntity.attributes.ParkingRequest != null) {
+    if (contextEntity.attributes.ParkingRequest != null) { 
         var parkingReq = contextEntity.attributes.ParkingRequest.value;
+        
+        if (previousReq != null) {
+            if (previousReq.arrival_time == parkingReq.arrival_time && 
+                previousReq.destination.latitude == parkingReq.destination.latitude &&
+                previousReq.destination.longitude == parkingReq.destination.longitude) {
+                    
+                return     
+            }
+        }    
+                   
         
         console.log("~~~~~~~~~~~~~~~~~~~~~~receive the following parking request~~~~~~~~~~~~~~~~~");
         console.log(parkingReq);
@@ -37,7 +47,9 @@ exports.handler = function(contextEntity, publish, query, subscribe)
         updateEntity.attributes.RecommendedParkingSite = {type: 'string', value: 'Twin.ParkingSite.002'};                
             
         publish(updateEntity);
-        console.log("publish: ", updateEntity);	           
+        console.log("publish: ", updateEntity);	
+        
+        previousReq = parkingReq;           
     }
     
 

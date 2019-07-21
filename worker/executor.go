@@ -92,12 +92,12 @@ func (e *Executor) GetNumOfTasks() int {
 func (e *Executor) ListImages() {
 	imgs, _ := e.client.ListImages(docker.ListImagesOptions{All: false})
 	for _, img := range imgs {
-		fmt.Println("ID: ", img.ID)
-		fmt.Println("RepoTags: ", img.RepoTags)
-		fmt.Println("Created: ", img.Created)
-		fmt.Println("Size: ", img.Size)
-		fmt.Println("VirtualSize: ", img.VirtualSize)
-		fmt.Println("ParentId: ", img.ParentID)
+		INFO.Println("ID: ", img.ID)
+		INFO.Println("RepoTags: ", img.RepoTags)
+		INFO.Println("Created: ", img.Created)
+		INFO.Println("Size: ", img.Size)
+		INFO.Println("VirtualSize: ", img.VirtualSize)
+		INFO.Println("ParentId: ", img.ParentID)
 	}
 }
 
@@ -123,14 +123,14 @@ func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
 		dockerImage = dockerImage
 	}
 
-	fmt.Printf("options : %+v\r\n", auth)
+	DEBUG.Printf("options : %+v\r\n", auth)
 
 	opts := docker.PullImageOptions{
 		Repository: dockerImage,
 		Tag:        tag,
 	}
 
-	fmt.Printf("options : %+v\r\n", opts)
+	DEBUG.Printf("options : %+v\r\n", opts)
 
 	err := e.client.PullImage(opts, auth)
 	if err != nil {
@@ -161,7 +161,7 @@ func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
 func (e *Executor) ListContainers() {
 	containers, _ := e.client.ListContainers(docker.ListContainersOptions{All: true})
 	for _, container := range containers {
-		fmt.Println("Name: ", container.Names)
+		DEBUG.Println("Name: ", container.Names)
 	}
 }
 
@@ -218,6 +218,11 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 	hostConfig.NetworkMode = "host"
 	hostConfig.AutoRemove = e.workerCfg.Worker.ContainerAutoRemove
 
+	// internalPort := docker.Port(portNum + "/tcp")
+	// portBindings := map[docker.Port][]docker.PortBinding{
+	// 	internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
+	// hostConfig.PortBindings = portBindings
+
 	if functionCode != "" {
 		fileName := "/tmp/" + taskID
 		e.writeTempFile(fileName, functionCode)
@@ -273,6 +278,21 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	dockerImage := task.DockerImage
 
 	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
+	if e.workerCfg.Worker.StartActualTask == false {
+		// just for the performance evaluation of Topology Master
+		taskCtx := taskContext{}
+
+		e.taskMap_lock.Lock()
+		e.taskInstances[task.ID] = &taskCtx
+		e.taskMap_lock.Unlock()
+
+		INFO.Printf("register this task")
+
+		// register this new task entity to IoT Broker
+		e.registerTask(task, "000", "000")
+
+		return true
+	}
 
 	// first check the image locally
 	if e.InspectImage(dockerImage) == false {
@@ -347,16 +367,14 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// subscribe input streams on behalf of the launched task
 	taskCtx.Subscriptions = make([]string, 0)
 
-	for _, streamType := range task.Inputs {
-		for _, streamId := range streamType.Streams {
-			subID, err := e.subscribeInputStream(freePort, streamType.Type, streamId)
-			if err == nil {
-				fmt.Println("===========subID = ", subID)
-				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-				taskCtx.EntityID2SubID[streamId] = subID
-			} else {
-				fmt.Println(err)
-			}
+	for _, inputStream := range task.Inputs {
+		subID, err := e.subscribeInputStream(freePort, &inputStream)
+		if err == nil {
+			DEBUG.Println("===========subID = ", subID)
+			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+			taskCtx.EntityID2SubID[inputStream.ID] = subID
+		} else {
+			ERROR.Println(err)
 		}
 	}
 
@@ -415,14 +433,18 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: task.Status}
 	ctxObj.Attributes["worker"] = ValueObject{Type: "string", Value: task.WorkerID}
 
+	ctxObj.Attributes["task"] = ValueObject{Type: "string", Value: task.TaskName}
+	ctxObj.Attributes["operator"] = ValueObject{Type: "string", Value: task.OperatorName}
+	ctxObj.Attributes["service"] = ValueObject{Type: "string", Value: task.ServiceName}
+
 	ctxObj.Metadata = make(map[string]ValueObject)
 	ctxObj.Metadata["topology"] = ValueObject{Type: "string", Value: task.ServiceName}
 	ctxObj.Metadata["worker"] = ValueObject{Type: "string", Value: task.WorkerID}
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
-	err := client.UpdateContext(&ctxObj)
+	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 	}
 }
 
@@ -437,9 +459,9 @@ func (e *Executor) updateTask(taskID string, status string) {
 	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: status}
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
-	err := client.UpdateContext(&ctxObj)
+	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 	}
 }
 
@@ -452,35 +474,37 @@ func (e *Executor) deregisterTask(taskID string) {
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.DeleteContext(&entity)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 	}
 }
 
-func (e *Executor) subscribeInputStream(agentPort string, streamType string, streamId string) (string, error) {
+func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStream) (string, error) {
 	subscription := SubscribeContextRequest{}
 
 	newEntity := EntityId{}
 
-	if len(streamId) > 0 { // for a specific context entity
+	if len(inputStream.ID) > 0 { // for a specific context entity
 		newEntity.IsPattern = false
-		newEntity.Type = streamType
-		newEntity.ID = streamId
+		newEntity.Type = inputStream.Type
+		newEntity.ID = inputStream.ID
 	} else { // for all context entities with a specific type
-		newEntity.Type = streamType
+		newEntity.Type = inputStream.Type
 		newEntity.IsPattern = true
 	}
 
 	subscription.Entities = make([]EntityId, 0)
 	subscription.Entities = append(subscription.Entities, newEntity)
 
+	subscription.Attributes = inputStream.AttributeList
+
 	subscription.Reference = "http://" + e.workerCfg.InternalIP + ":" + agentPort
 
-	fmt.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
+	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	sid, err := client.SubscribeContext(&subscription, true)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 		return "", err
 	} else {
 		return sid, nil
@@ -491,7 +515,24 @@ func (e *Executor) unsubscribeInputStream(sid string) error {
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.UnsubscribeContext(sid)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
+		return err
+	} else {
+		return nil
+	}
+}
+
+func (e *Executor) createOuputStream(eID string, eType string) error {
+	ctxObj := ContextObject{}
+
+	ctxObj.Entity.ID = eID
+	ctxObj.Entity.Type = eType
+	ctxObj.Entity.IsPattern = false
+
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
+	err := client.UpdateContextObject(&ctxObj)
+	if err != nil {
+		ERROR.Println(err)
 		return err
 	} else {
 		return nil
@@ -502,7 +543,7 @@ func (e *Executor) deleteOuputStream(eid *EntityId) error {
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
 	err := client.DeleteContext(eid)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 		return err
 	} else {
 		return nil
@@ -533,6 +574,22 @@ func (e *Executor) ResumeTask(taskID string) {
 
 func (e *Executor) TerminateTask(taskID string, paused bool) {
 	INFO.Println("================== terminate task ID ============ ", taskID)
+
+	if e.workerCfg.Worker.StartActualTask == false {
+		// just for the performance evaluation of Topology Master
+		e.taskMap_lock.Lock()
+
+		if _, ok := e.taskInstances[taskID]; ok == true {
+			delete(e.taskInstances, taskID)
+		}
+
+		e.taskMap_lock.Unlock()
+
+		INFO.Printf("deregister this task")
+		go e.deregisterTask(taskID)
+
+		return
+	}
 
 	e.taskMap_lock.Lock()
 	if _, ok := e.taskInstances[taskID]; ok == false {
@@ -578,10 +635,17 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 }
 
 func (e *Executor) terminateAllTasks() {
-	var wg sync.WaitGroup
-	wg.Add(len(e.taskInstances))
+	idList := make([]string, 0)
+	e.taskMap_lock.RLock()
+	for id, _ := range e.taskInstances {
+		idList = append(idList, id)
+	}
+	e.taskMap_lock.RUnlock()
 
-	for taskID, _ := range e.taskInstances {
+	var wg sync.WaitGroup
+	wg.Add(len(idList))
+
+	for _, taskID := range idList {
 		go func(tID string) {
 			defer wg.Done()
 			e.TerminateTask(tID, false)
@@ -601,11 +665,15 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 		return
 	}
 
-	subID, err := e.subscribeInputStream(taskCtx.ListeningPort, flow.EntityType, flow.EntityID)
+	if e.workerCfg.Worker.StartActualTask == false {
+		return
+	}
+
+	subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
 	if err == nil {
-		fmt.Println("===========subscribe new input = ", flow, " , subID = ", subID)
+		DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
 		taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-		taskCtx.EntityID2SubID[flow.EntityID] = subID
+		taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
 	} else {
 		ERROR.Println(err)
 	}
@@ -615,8 +683,12 @@ func (e *Executor) onRemoveInput(flow *FlowInfo) {
 	e.taskMap_lock.Lock()
 	defer e.taskMap_lock.Unlock()
 
+	if e.workerCfg.Worker.StartActualTask == false {
+		return
+	}
+
 	taskCtx := e.taskInstances[flow.TaskInstanceID]
-	subID := taskCtx.EntityID2SubID[flow.EntityID]
+	subID := taskCtx.EntityID2SubID[flow.InputStream.ID]
 
 	err := e.unsubscribeInputStream(subID)
 	if err != nil {
@@ -630,5 +702,5 @@ func (e *Executor) onRemoveInput(flow *FlowInfo) {
 		}
 	}
 
-	delete(taskCtx.EntityID2SubID, flow.EntityID)
+	delete(taskCtx.EntityID2SubID, flow.InputStream.ID)
 }

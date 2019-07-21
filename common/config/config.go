@@ -20,12 +20,13 @@ var (
 )
 
 type DatabaseCfg struct {
-	DBReset  bool   `json:"dbreset"`
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	DBname   string `json:"dbname"`
+	UseOnlyCache bool   `json:"use_only_cache"`
+	DBReset      bool   `json:"dbreset"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	Host         string `json:"host"`
+	Port         int    `json:"port"`
+	DBname       string `json:"dbname"`
 }
 
 type RegistryConfiguration struct {
@@ -49,7 +50,7 @@ type Config struct {
 	ExternalIP    string           `json:"external_hostip"`
 	InternalIP    string           `json:"internal_hostip"`
 	PLocation     PhysicalLocation `json:"physical_location"`
-	LLocation     LogicalLocation  `json:"logical_location"`
+	SiteID        string           `json:"site_id"`
 	Logging       struct {
 		Info     string `json:"info"`
 		Protocol string `json:"protocol"`
@@ -57,12 +58,10 @@ type Config struct {
 		Debug    string `json:"debug"`
 	} `json:"logging"`
 	Discovery struct {
-		Port  int         `json:"port"`
-		DBCfg DatabaseCfg `json:"postgresql"`
+		Port int `json:"port"`
 	} `json:"discovery"`
 	Broker struct {
-		Port          int `json:"port"`
-		WebSocketPort int `json:"websocket"`
+		Port int `json:"port"`
 	} `json:"broker"`
 	Master struct {
 		AgentPort int `json:"ngsi_agent_port"`
@@ -70,19 +69,18 @@ type Config struct {
 	Worker struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
-		EdgeAddress string `json:"edge_address"`
-		CAdvisorPort int `json:"cadvisor_port"`
+		StartActualTask     bool                  `json:"start_actual_task"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`
 		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"rabbitmq"`
-	Prometheus struct {
-		Address string `json:"address"`
-		DataPort int `json:"data_port"`
-		AdminPort int `json:"admin_port"`
-	}`json:"prometheus"`
+	HTTPS struct {
+		Enabled     bool   `json:"enabled"`
+		Certificate string `json:"certificate"`
+		Key         string `json:"key"`
+	} `json:"https"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{

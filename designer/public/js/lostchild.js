@@ -9,12 +9,12 @@ var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/phot
 var cameraMarkers  = {};
 
 var geoscope = {
-    type: 'string',
-    value: 'all'
+    scopeType: "local",
+    scopeValue: "local"
 };
 
 var curTopology = null;
-var curRequirement = null;
+var curIntent = null;
 var checkingTimer = null;
 var radiusStepDistance = 1000;
 var curMap = null;
@@ -39,11 +39,11 @@ ngsiproxy.setNotifyHandler(handleNotify);
 var client = new NGSI10Client(config.brokerURL);
 subscribeResult();
 checkTopology();
-checkRequirement();
+checkIntent();
 
 showTopology();
 publishChildInfo();
-//startUpdateTimer();
+
 
 $(window).on('hashchange', function() {
     var hash = window.location.hash;
@@ -89,7 +89,7 @@ function handleNotify(contextObj)
 {
     console.log(contextObj);
     
-    if (curRequirement != null) {
+    if (curIntent != null) {
         personsFound.push(contextObj);
     }
 	
@@ -102,7 +102,7 @@ function handleNotify(contextObj)
 function checkTopology() 
 {
     var queryReq = {}
-    queryReq.entities = [{id:'Topology.child-finder', type: 'child-finder', isPattern: false}];           
+    queryReq.entities = [{id:'Topology.child-finder', type: 'Topology', isPattern: false}];           
     
     client.queryContext(queryReq).then( function(resultList) {
         console.log(resultList);
@@ -118,20 +118,19 @@ function checkTopology()
 }
 
 
-function checkRequirement() 
+function checkIntent() 
 {
     var queryReq = {};
-    queryReq.entities = [{type: 'Requirement', isPattern: true}];               
+    queryReq.entities = [{type: 'ServiceIntent', isPattern: true}];               
     queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'topology=Topology.child-finder'}]}        
     
     client.queryContext(queryReq).then( function(resultList) {
         console.log(resultList);
         if(resultList && resultList.length > 0) {
-            curRequirement = resultList[0];            
+            curIntent = resultList[0];
+            
             //update the current geoscope as well
-            var restriction = curRequirement.attributes.restriction.value;
-            geoscope.type = restriction.scopes[0].scopeType;
-            geoscope.value = restriction.scopes[0].scopeValue;            
+            geoscope = curIntent.attributes.intent.value.geoscope;            
         }
     }).catch(function(error) {
         console.log(error);
@@ -220,7 +219,7 @@ function showMgt()
     var html = '';
     html += '<div class="input-prepend">';      
     
-    if(curRequirement == null) {
+    if(curIntent == null) {
         html += '<button id="enableService" type="button" class="btn btn-default">Start</button>';    
         html += '<button id="disableService" type="button" class="btn btn-default" disabled>Stop</button>';                            
     } else {
@@ -234,23 +233,23 @@ function showMgt()
     html += '<img id="image_upload_preview" src="' + '/photo/lostchild.png?' +  new Date().getTime() + '" alt="target" style="width: 100px; height: 100px"></img>';      
     html += '</div>'; 
 
-    html += '<div class="input-prepend"><label class="checkbox"><input type="checkbox" id="ScopeUpdating" value="option1">';
-    html += 'automatically updating the search scope</label>';
-    html += '<select id="checkingInterval"><option value="5">5 seconds</option><option value="30">30 seconds</option><option  value="60">1 minute</option><option  value="120">2 minutes</option><option  value="300">5 minutes</option></select>';        
-    html += '</div>';    
+//    html += '<div class="input-prepend"><label class="checkbox"><input type="checkbox" id="ScopeUpdating" value="option1">';
+//    html += 'automatically updating the search scope</label>';
+//    html += '<select id="checkingInterval"><option value="5">5 seconds</option><option value="30">30 seconds</option><option  value="60">1 minute</option><option  value="120">2 minutes</option><option  value="300">5 minutes</option></select>';        
+//    html += '</div>';    
 
-    html += '<div class="input-prepend">';
-    html += '<label>setting the increase of radius</label>';
-    html += '<select id="radiusInterval"><option  value="10000">10000</option><option  value="20000">20000</option><option  value="50000">50000</option></select>';        
-    html += 'meters</div>';    
+//    html += '<div class="input-prepend">';
+//    html += '<label>setting the increase of radius</label>';
+//    html += '<select id="radiusInterval"><option  value="10000">10000</option><option  value="20000">20000</option><option  value="50000">50000</option></select>';        
+//    html += 'meters</div>';    
     
     html += '<div id="map"  style="width: 700px; height: 500px"></div>';                
 
     $('#content').html(html);        
     
     // associate functions to clickable buttons
-    $('#enableService').click(sendRequirement);
-    $('#disableService').click(cancelRequirement);   
+    $('#enableService').click(sendIntent);
+    $('#disableService').click(cancelIntent);   
     
     $('#photoSubmitButton').click(openFileDialog);    
     $('#lostChildImg').change(photoSelected);            
@@ -260,59 +259,66 @@ function showMgt()
 }
 
 
-function sendRequirement() 
+function sendIntent() 
 {
     if(client == null) {         
         console.log('no nearby broker');
         return;
     }
     
-    console.log('issue a requirement for topology ', curTopology);
-       
-    // define the requirement to launch data processing tasks    
-    var rid = 'Requirement.' + uuid();    
-   
-    var requirementCtxObj = {};    
-    requirementCtxObj.entityId = {
-        id : rid, 
-        type: 'Requirement',
-        isPattern: false
-    };
+    console.log('issue an service intent for this service topology ', curTopology);
     
-    var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-                
-    requirementCtxObj.attributes = {};   
-    requirementCtxObj.attributes.output = {type: 'string', value: 'ChildFound'};
-    requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};
-    requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
-                        
-    requirementCtxObj.metadata = {};               
-    requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
+    // create the intent object
+    var topology = curTopology.attributes.template.value    
     
-    console.log(requirementCtxObj);
-    
-    // check if the dynamic task controlling is selected
-    var scopeUpdating = document.getElementById('ScopeUpdating').checked;
-    var checkingInterval = parseInt($('#checkingInterval option:selected').val(), 10);    
-    var radiusInterval = parseInt($('#radiusInterval option:selected').val(), 10);    
+    var intent = {};        
+    intent.topology = topology.name;
+    intent.priority = {
+        'exclusive': false,
+        'level': 50
+    };    
+    intent.qos = "default";    
+    intent.geoscope = geoscope;  
             
-    client.updateContext(requirementCtxObj).then( function(data) {
-        console.log(data);
-        curRequirement = requirementCtxObj;
-		
-		// change the button status
-		$('#enableService').prop('disabled', true);
-		$('#disableService').prop('disabled', false); 
+    // create the intent entity            
+    var intentCtxObj = {};        
+    intentCtxObj.entityId = { 
+        id: 'ServiceIntent.' + uuid(),           
+        type: 'ServiceIntent',
+        isPattern: false
+    };    
+    intentCtxObj.attributes = {};   
+    intentCtxObj.attributes.status = {type: 'string', value: 'enabled'};
+    intentCtxObj.attributes.intent = {type: 'object', value: intent};  
+    
+    intentCtxObj.metadata = {};               
+    intentCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};    
+    
+    console.log(JSON.stringify(intentCtxObj));
         
+    // check if the dynamic task controlling is selected
+    //var scopeUpdating = document.getElementById('ScopeUpdating').checked;
+    //var checkingInterval = parseInt($('#checkingInterval option:selected').val(), 10);    
+    //var radiusInterval = parseInt($('#radiusInterval option:selected').val(), 10);            
+        
+    client.updateContext(intentCtxObj).then( function(data) {
+        console.log(data);  
+        curIntent = intentCtxObj;      
+        
+        // change the button status
+		$('#enableService').prop('disabled', true);
+		$('#disableService').prop('disabled', false);     
+         
+        /*
         if (scopeUpdating == true) {
             console.log('start the timer for checking results and updating the search scope')
             checkingTimer = setInterval(onCheckingTimer, checkingInterval * 1000);
             radiusStepDistance = radiusInterval;
-        }
-        
+        }*/
+                           
     }).catch( function(error) {
-        console.log('failed to send a requirement');
-    });  
+        console.log('failed to submit the defined intent');
+    });            
 }
 
 
@@ -320,26 +326,19 @@ function onCheckingTimer()
 {
     console.log("updating the scope if no result is found")
     console.log(personsFound);
-    console.log(curRequirement);
+    console.log(curIntent);
     console.log(geoscope);        
     
-    if (personsFound.length == 0 && curRequirement != null && geoscope.type == 'circle') {
-        console.log('current radius = ', geoscope.value.radius)
-	
-	/*
-	if (num_of_task >= 2) {
-		var cameraDeviceID = "Device.Camera.02"
-		var marker = cameraMarkers[cameraDeviceID];
-		marker.openPopup();
-		return;
-	} */
-        
+    if (personsFound.length == 0 && curIntent != null && geoscope.scopeType == 'circle') {
+        console.log('current radius = ', geoscope.scopeValue.radius)
+	        
         // increase the search scope by updating the requirement
-        geoscope.value.radius += radiusStepDistance;
+        geoscope.scopeValue.radius += radiusStepDistance;
+        curIntent.attributes.intent.value.geoscope = geoscope
         
-        var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-        curRequirement.attributes.restriction = {type: 'object', value: restriction};  
-        client.updateContext(curRequirement).then( function(data) {
+        console.log(curIntent.attributes.intent.value);
+        
+        client.updateContext(curIntent).then( function(data) {
             console.log('already updated the current requirement with the increased scope');            
             displaySearchScope();
         }).catch( function(error) {
@@ -357,37 +356,43 @@ function onCheckingTimer()
 }
 
 
-function cancelRequirement() 
+function cancelIntent() 
 {
     if(client == null) {         
         console.log('no nearby broker');
         return;
     }    
     
-    console.log('cancel a requirement for topology ', curTopology.entityId.id);
-    
+    console.log('cancel the issued intent for this service topology ', curTopology.entityId.id);
+        
     //stop the timer for result checking
     if (checkingTimer != null) {
         console.log('stop the timer for checking results and updating the search scope')        
         clearInterval(checkingTimer);
-    }
+    }        
     
     var entityid = {
-        id : curRequirement.entityId.id, 
-        type: 'Requirement',
+        id : curIntent.entityId.id, 
+        type: 'ServiceIntent',
         isPattern: false
     };	    
     
     client.deleteContext(entityid).then( function(data) {
         console.log(data);
-        curRequirement = null;		
-        geoscope = { type: 'string',  value: 'all'};
+        
+        curIntent = null;		        
+        geoscope = {
+            scopeType: "local",
+            scopeValue: "local"
+        };
+        
         personsFound = [];
+        
 		$('#enableService').prop('disabled', false);
 		$('#disableService').prop('disabled', true);		
     }).catch( function(error) {
-        console.log('failed to cancel a requirement');
-    }); 
+        console.log('failed to cancel the service intent');
+    });        
 }
 
 
@@ -637,16 +642,8 @@ function showMap()
         draw: {
             position: 'topleft',
             polyline: false,            
-			polygon: {
-                showArea: false
-            },
-            rectangle: {
-                shapeOptions: {
-                    color: '#E3225C',
-                    weight: 2,
-                    clickable: false
-                }
-            },
+            polygon: false,
+            rectangle: false,
             circle: {
                 shapeOptions: {
                     color: '#E3225C',
@@ -670,14 +667,14 @@ function showMap()
             var geometry = layer.toGeoJSON()['geometry'];
             console.log(geometry);
             
-            geoscope.type = 'polygon';
-            geoscope.value = {
+            geoscope.scopeType = 'polygon';
+            geoscope.scopeValue = {
                 vertices: []
             };
             
             points = geometry.coordinates[0];
             for(i in points){
-                geoscope.value.vertices.push({longitude: points[i][0], latitude: points[i][1]});
+                geoscope.scopeValue.vertices.push({longitude: points[i][0], latitude: points[i][1]});
             }
             
 			console.log(geoscope);            
@@ -687,8 +684,8 @@ function showMap()
             console.log(geometry);
             var radius = layer.getRadius();
             
-            geoscope.type = 'circle';
-            geoscope.value = {
+            geoscope.scopeType = 'circle';
+            geoscope.scopeValue = {
                 centerLatitude: geometry.coordinates[1],
                 centerLongitude: geometry.coordinates[0],
                 radius: radius
@@ -700,14 +697,14 @@ function showMap()
             var geometry = layer.toGeoJSON()['geometry'];
             console.log(geometry);
             
-            geoscope.type = 'polygon';
-            geoscope.value = {
+            geoscope.scopeType = 'polygon';
+            geoscope.scopeValue = {
                 vertices: []
             };
             
             points = geometry.coordinates[0];
             for(i in points){
-                geoscope.value.vertices.push({longitude: points[i][0], latitude: points[i][1]});
+                geoscope.scopeValue.vertices.push({longitude: points[i][0], latitude: points[i][1]});
             }
             
 			console.log(geoscope);            
@@ -734,7 +731,6 @@ function displayEdgeNodeOnMap(map)
 {
     var queryReq = {}
     queryReq.entities = [{type:'Worker', isPattern: true}];
-    queryReq.restriction = {scopes: [{scopeType: 'stringQuery', scopeValue: 'role=EdgeNode'}]}    
     client.queryContext(queryReq).then( function(edgeNodeList) {
         console.log(edgeNodeList);
 
@@ -795,14 +791,14 @@ function displaySearchScope()
 {
     console.log(geoscope);            
     if(geoscope != null) {
-        switch (geoscope.type) {
+        switch (geoscope.scopeType) {
             case 'circle': 
-                L.circle([geoscope.value.centerLatitude, geoscope.value.centerLongitude], geoscope.value.radius).addTo(curMap);                                
+                L.circle([geoscope.scopeValue.centerLatitude, geoscope.scopeValue.centerLongitude], geoscope.scopeValue.radius).addTo(curMap);                                
                 break;
             case 'polygon':
                 var points = [];
-                for(var i=0; i<geoscope.value.vertices.length; i++){
-                    points.push(new L.LatLng(geoscope.value.vertices[i].latitude, geoscope.value.vertices[i].longitude))
+                for(var i=0; i<geoscope.scopeValue.vertices.length; i++){
+                    points.push(new L.LatLng(geoscope.scopeValue.vertices[i].latitude, geoscope.scopeValue.vertices[i].longitude))
                 }            
                 L.polygon(points).addTo(curMap);
                 break;
@@ -820,26 +816,27 @@ function displayDeviceOnMap(map)
         for(var i=0; i<devices.length; i++){
             var device = devices[i];    
             
-            iconImag = device.attributes.iconURL.value;            
-            var edgeIcon = L.icon({
-                iconUrl: iconImag,
-                iconSize: [48, 48]
-            });                  
-            
-            latitude = device.metadata.location.value.latitude;
-            longitude = device.metadata.location.value.longitude;
-            deviceId = device.entityId.id;
-            
-            var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
-            if(device.entityId.type == 'Camera') { 
-				var imageURL = device.attributes.url.value;
-				marker.addTo(map).bindPopup("<img src=" + window.location.origin + "/proxy?url="  + imageURL + "></img>");                             				
-			    cameraMarkers[deviceId] = marker;				
-            } else {
-                marker.addTo(map).bindPopup(deviceId);                 
-            }
-        }            
+           if (device.attributes.iconURL != null){
+                iconImag = device.attributes.iconURL.value;            
+                var edgeIcon = L.icon({
+                    iconUrl: iconImag,
+                    iconSize: [48, 48]
+                });                  
                 
+                latitude = device.metadata.location.value.latitude;
+                longitude = device.metadata.location.value.longitude;
+                deviceId = device.entityId.id;
+                
+                var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
+                if(device.entityId.type == 'Camera') { 
+    				var imageURL = device.attributes.url.value;
+    				marker.addTo(map).bindPopup("<img src=" + window.location.origin + "/proxy?url="  + imageURL + "></img>");                             				
+    			    cameraMarkers[deviceId] = marker;				
+                } else {
+                    marker.addTo(map).bindPopup(deviceId);                 
+                }               
+            }           
+        }                            
     }).catch(function(error) {
         console.log(error);
         console.log('failed to query context');
@@ -858,7 +855,6 @@ function uuid() {
     
     return uuid;
 } 
-
 
 
 });

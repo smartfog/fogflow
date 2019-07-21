@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
+
+	"github.com/satori/go.uuid"
 
 	. "github.com/smartfog/fogflow/common/config"
 )
@@ -20,16 +21,26 @@ func generateID(text string) string {
 }
 
 func main() {
+	// new random uid
+	u1, err := uuid.NewV4()
+	if err != nil {
+		ERROR.Println(err)
+		return
+	}
+	rid := u1.String()
+
 	configurationFile := flag.String("f", "config.json", "A configuration file")
+	id := flag.String("i", rid, "its ID in the current site")
+
 	flag.Parse()
 	config, err := LoadConfig(*configurationFile)
 	if err != nil {
 		os.Stderr.WriteString(fmt.Sprintf("%s\n", err.Error()))
-		fmt.Println("please specify the configuration file, for example, \r\n\t./worker -f config.json")
+		INFO.Println("please specify the configuration file, for example, \r\n\t./worker -f config.json")
 		os.Exit(-1)
 	}
 
-	myID := "Worker." + strconv.Itoa(config.LLocation.LayerNo) + "." + strconv.Itoa(config.LLocation.SiteNo)
+	myID := "Worker." + config.SiteID + "." + (*id)
 
 	// start the worker to deal with tasks
 	var worker = &Worker{id: myID}

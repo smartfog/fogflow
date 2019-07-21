@@ -2,10 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"math/rand"
 	"runtime"
 	"strconv"
+	"sync"
 	"time"
 
 	. "github.com/smartfog/fogflow/common/communicator"
@@ -15,11 +14,14 @@ import (
 )
 
 type Worker struct {
-	id                string
-	communicator      *Communicator
-	ticker            *time.Ticker
-	executor          *Executor
-	allTasks          map[string]*ScheduledTaskInstance
+	id           string
+	communicator *Communicator
+	ticker       *time.Ticker
+	executor     *Executor
+
+	allTasks      map[string]*ScheduledTaskInstance
+	taskList_lock sync.RWMutex
+
 	cfg               *Config
 	selectedBrokerURL string
 	profile           WorkerProfile
@@ -31,13 +33,10 @@ func (w *Worker) Start(config *Config) bool {
 	w.profile.WID = w.id
 	w.profile.Capacity = 10
 	w.profile.PLocation = config.PLocation
-	w.profile.LLocation = config.LLocation
-	w.profile.EdgeAddress = config.Worker.EdgeAddress
-	w.profile.CAdvisorPort = config.Worker.CAdvisorPort
 
 	w.profile.OSType = runtime.GOOS
 	w.profile.HWType = runtime.GOARCH
-	INFO.Println("AMIR: profile ID:",w.profile)
+
 	w.allTasks = make(map[string]*ScheduledTaskInstance)
 
 	cfg := MessageBusConfig{}
@@ -76,6 +75,8 @@ func (w *Worker) Start(config *Config) bool {
 		}
 	}
 
+	INFO.Println("communicating with the broker ", w.selectedBrokerURL)
+
 	for {
 		err := w.publishMyself()
 		if err != nil {
@@ -99,7 +100,7 @@ func (w *Worker) Start(config *Config) bool {
 		for {
 			retry, err := w.communicator.StartConsuming(w.id, w)
 			if retry {
-				fmt.Printf("Going to retry launching the edge node. Error: %v", err)
+				INFO.Printf("Going to retry launching the edge node. Error: %v", err)
 			} else {
 				break
 			}
@@ -119,11 +120,17 @@ func (w *Worker) Start(config *Config) bool {
 }
 
 func (w *Worker) Quit() {
+	INFO.Println("unregister myself")
 	w.unpublishMyself()
-	w.communicator.StopConsuming()
+
+	INFO.Println("stop the timer")
 	w.ticker.Stop()
+
+	INFO.Println("stop consuming the messages")
+	w.communicator.StopConsuming()
+
+	INFO.Println("to stop the worker")
 	w.executor.Shutdown()
-	fmt.Println("stop consuming the messages")
 }
 
 func (w *Worker) publishMyself() error {
@@ -137,9 +144,6 @@ func (w *Worker) publishMyself() error {
 	ctxObj.Attributes["id"] = ValueObject{Type: "string", Value: w.id}
 	ctxObj.Attributes["capacity"] = ValueObject{Type: "integer", Value: 2}
 	ctxObj.Attributes["physical_location"] = ValueObject{Type: "object", Value: w.cfg.PLocation}
-	ctxObj.Attributes["logical_location"] = ValueObject{Type: "object", Value: w.cfg.LLocation}
-	ctxObj.Attributes["edge_address"] = ValueObject{Type: "string", Value: w.cfg.Worker.EdgeAddress}
-
 
 	ctxObj.Metadata = make(map[string]ValueObject)
 	mylocation := Point{}
@@ -148,7 +152,7 @@ func (w *Worker) publishMyself() error {
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
 	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
-	err := client.UpdateContext(&ctxObj)
+	err := client.UpdateContextObject(&ctxObj)
 	return err
 }
 
@@ -161,7 +165,7 @@ func (w *Worker) unpublishMyself() {
 	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
 	err := client.DeleteContext(&entity)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 	}
 }
 
@@ -195,7 +199,7 @@ func (w *Worker) Process(msg *RecvMessage) error {
 			w.onRemoveInput(msg.From, &flow)
 		}
 
-	case "prefetch_image":
+	case "PREFETCH_IMAGE":
 		imageList := make([]DockerImage, 0)
 		err = json.Unmarshal(msg.PayLoad, &imageList)
 		if err == nil {
@@ -213,12 +217,6 @@ func (w *Worker) onTimer() {
 func (w *Worker) heartbeat() {
 	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
 	w.communicator.Publish(&taskUpdateMsg)
-
-	//AMIR: Send statistics to master
-	//INFO.Println("sending heart_stat")
-	stat := WorkerStat{WID:w.id,UtilCPU:rand.Float32(),UtilMemory:rand.Float32()}
-	statsUpdateMsg := SendMessage{Type: "heart_stat", RoutingKey: "heartbeat.", From: w.id, PayLoad: stat}
-	w.communicator.Publish(&statsUpdateMsg)
 }
 
 func (w *Worker) onAddInput(from string, flow *FlowInfo) {
@@ -229,9 +227,23 @@ func (w *Worker) onRemoveInput(from string, flow *FlowInfo) {
 	w.executor.onRemoveInput(flow)
 }
 
+func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state string) {
+	tp := TaskUpdate{}
+	tp.ServiceName = task.ServiceName
+	tp.TaskName = task.TaskName
+	tp.TaskID = task.ID
+	tp.Status = state
+	taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + masterID + ".", From: w.id, PayLoad: tp}
+
+	go w.communicator.Publish(&taskUpdateMsg)
+}
+
 func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 	INFO.Println("execute task ", task.ID, " with operation", task.DockerImage)
 	INFO.Printf("task configuration %+v\n", (*task))
+
+	w.taskList_lock.Lock()
+	defer w.taskList_lock.Unlock()
 
 	Runnable := true
 	for _, existTask := range w.allTasks {
@@ -257,11 +269,7 @@ func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 			go w.executor.TerminateTask(existTask.ID, true)
 			existTask.Status = "paused"
 
-			tp := TaskUpdate{}
-			tp.TaskID = existTask.ID
-			tp.Status = "paused"
-			taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + from + ".", From: w.id, PayLoad: tp}
-			w.communicator.Publish(&taskUpdateMsg)
+			w.TaskUpdate(from, existTask, "paused")
 		}
 	}
 
@@ -276,26 +284,21 @@ func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 		w.allTasks[task.ID] = task
 
 		// send ACK back to the master
-		tp := TaskUpdate{}
-		tp.TaskID = task.ID
-		tp.Status = "running"
-		taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + from + ".", From: w.id, PayLoad: tp}
-		w.communicator.Publish(&taskUpdateMsg)
+		w.TaskUpdate(from, task, "running")
 	} else {
 		// add the new task into the local task list
-		task.Status = "pause"
+		task.Status = "paused"
 		w.allTasks[task.ID] = task
 
 		// send ACK back to the master
-		tp := TaskUpdate{}
-		tp.TaskID = task.ID
-		tp.Status = "pause"
-		taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + from + ".", From: w.id, PayLoad: tp}
-		w.communicator.Publish(&taskUpdateMsg)
+		w.TaskUpdate(from, task, "paused")
 	}
 }
 
 func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
+	w.taskList_lock.Lock()
+	defer w.taskList_lock.Unlock()
+
 	INFO.Println("terminate task ", task.ID, " with operation", task.DockerImage)
 
 	myTask := w.allTasks[task.ID]
@@ -345,11 +348,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 				go w.executor.LaunchTask(task)
 				task.Status = "running"
 
-				tp := TaskUpdate{}
-				tp.TaskID = task.ID
-				tp.Status = "running"
-				taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + from + ".", From: w.id, PayLoad: tp}
-				w.communicator.Publish(&taskUpdateMsg)
+				w.TaskUpdate(from, task, "running")
 			}
 		}
 	} else {
@@ -360,11 +359,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 				go w.executor.LaunchTask(task)
 				task.Status = "running"
 
-				tp := TaskUpdate{}
-				tp.TaskID = task.ID
-				tp.Status = "running"
-				taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + from + ".", From: w.id, PayLoad: tp}
-				w.communicator.Publish(&taskUpdateMsg)
+				w.TaskUpdate(from, task, "running")
 			}
 		}
 	}
@@ -373,6 +368,6 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 func (w *Worker) onPrefetchImage(imageList []DockerImage) {
 	for _, dockerImage := range imageList {
 		INFO.Println("I am going to fetch the docker image", dockerImage.ImageName)
-		w.executor.PullImage(dockerImage.ImageName, dockerImage.ImageTag)
+		go w.executor.PullImage(dockerImage.ImageName, dockerImage.ImageTag)
 	}
 }

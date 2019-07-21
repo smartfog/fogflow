@@ -34,32 +34,14 @@ type Communicator struct {
 
 	conn *amqp.Connection
 
-	stopChan chan int
+	consuming bool
+	stopChan  chan int
 }
 
-// A useful closure we can use when there is a problem connecting to the broker
-// It uses Fibonacci sequence to space out retry attempts
-func Fibonacci() func() int {
-	a, b := 0, 1
-	return func() int {
-		a, b = b, a+b
-		return a
-	}
-}
-
-var RetryClosure = func() func() {
-	retryIn := 0
-	fibonacci := Fibonacci()
-	return func() {
-		if retryIn > 0 {
-			durationString := fmt.Sprintf("%vs", retryIn)
-			duration, _ := time.ParseDuration(durationString)
-
-			log.Printf("Retrying in %v seconds", retryIn)
-			time.Sleep(duration)
-		}
-		retryIn = fibonacci()
-	}
+var RetryClosure = func() {
+	retryIn := 2 // retry after 2 seconds
+	log.Printf("Retrying to connect RabbitMQ in %v seconds", retryIn)
+	time.Sleep(time.Second)
 }
 
 func NewCommunicator(cnf *MessageBusConfig) *Communicator {
@@ -69,7 +51,7 @@ func NewCommunicator(cnf *MessageBusConfig) *Communicator {
 // StartConsuming enters a loop and waits for incoming messages
 func (communicator *Communicator) StartConsuming(consumerTag string, taskProcessor TaskProcessor) (bool, error) {
 	if communicator.retryFunc == nil {
-		communicator.retryFunc = RetryClosure()
+		communicator.retryFunc = RetryClosure
 	}
 
 	channel, queue, err := communicator.openSubscriber()
@@ -79,12 +61,10 @@ func (communicator *Communicator) StartConsuming(consumerTag string, taskProcess
 	}
 
 	if err != nil {
-		fmt.Printf("error to communicate with rabbitmq %+v\r\n", err)
 		communicator.retryFunc()
-		return communicator.retry, err // retry true
+		communicator.consuming = false
+		return communicator.retry, err
 	}
-
-	communicator.retryFunc = RetryClosure()
 
 	communicator.stopChan = make(chan int)
 
@@ -110,6 +90,7 @@ func (communicator *Communicator) StartConsuming(consumerTag string, taskProcess
 	}
 
 	log.Print("[*] Waiting for messages. To exit press CTRL+C")
+	communicator.consuming = true
 
 	if err := communicator.consume(deliveries, taskProcessor); err != nil {
 		return communicator.retry, err // retry true
@@ -122,17 +103,20 @@ func (communicator *Communicator) StartConsuming(consumerTag string, taskProcess
 func (communicator *Communicator) StopConsuming() {
 	// Do not retry from now on
 	communicator.retry = false
+
 	// Notifying the stop channel stops consuming of messages
-	communicator.stopChan <- 1
+	if communicator.consuming == true {
+		communicator.stopChan <- 1
+	}
 }
 
 // Publish places a new message on the default queue
 func (communicator *Communicator) Publish(msg *SendMessage) error {
 	channel, confirmsChan, err := communicator.openPublisher()
-	defer channel.Close()
 	if err != nil {
 		return err
 	}
+	defer channel.Close()
 
 	message, err := json.Marshal(msg)
 	if err != nil {
@@ -235,11 +219,11 @@ func (communicator *Communicator) openSubscriber() (*amqp.Channel, amqp.Queue, e
 	if err := channel.ExchangeDeclare(
 		communicator.config.Exchange,     // name of the exchange
 		communicator.config.ExchangeType, // type
-		true,  // durable
-		true,  // delete when complete
-		false, // internal
-		false, // noWait
-		nil,   // arguments
+		true,                             // durable
+		true,                             // delete when complete
+		false,                            // internal
+		false,                            // noWait
+		nil,                              // arguments
 	); err != nil {
 		return channel, queue, fmt.Errorf("Exchange Declare: %s\r\n", err)
 	}
@@ -247,11 +231,11 @@ func (communicator *Communicator) openSubscriber() (*amqp.Channel, amqp.Queue, e
 	// Declare a queue
 	queue, err = channel.QueueDeclare(
 		communicator.config.DefaultQueue, // name
-		true,  // durable
-		true,  // delete when unused
-		false, // exclusive
-		false, // no-wait
-		nil,   // arguments
+		true,                             // durable
+		true,                             // delete when unused
+		false,                            // exclusive
+		false,                            // no-wait
+		nil,                              // arguments
 	)
 	if err != nil {
 		return channel, queue, fmt.Errorf("Queue Declare: %s\r\n", err)
@@ -260,11 +244,11 @@ func (communicator *Communicator) openSubscriber() (*amqp.Channel, amqp.Queue, e
 	// Bind topics with the queue
 	for _, key := range communicator.config.BindingKeys {
 		if err := channel.QueueBind(
-			queue.Name, // name of the queue
-			key,        // binding topic
+			queue.Name,                   // name of the queue
+			key,                          // binding topic
 			communicator.config.Exchange, // source exchange
-			false, // noWait
-			nil,   // arguments
+			false,                        // noWait
+			nil,                          // arguments
 		); err != nil {
 			return channel, queue, fmt.Errorf("Queue Bind: %s\r\n", err)
 		}
@@ -302,11 +286,11 @@ func (communicator *Communicator) openPublisher() (*amqp.Channel, <-chan amqp.Co
 	if err := channel.ExchangeDeclare(
 		communicator.config.Exchange,     // name of the exchange
 		communicator.config.ExchangeType, // type
-		true,  // durable
-		true,  // delete when complete
-		false, // internal
-		false, // noWait
-		nil,   // arguments
+		true,                             // durable
+		true,                             // delete when complete
+		false,                            // internal
+		false,                            // noWait
+		nil,                              // arguments
 	); err != nil {
 		return channel, nil, fmt.Errorf("Exchange Declare: %s", err)
 	}

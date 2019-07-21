@@ -50,9 +50,20 @@ func Object2CtxElement(ctxObj *ContextObject) *ContextElement {
 	return &ctxElement
 }
 
-func (nc *NGSI10Client) UpdateContext(ctxObj *ContextObject) error {
+func (nc *NGSI10Client) UpdateContextObject(ctxObj *ContextObject) error {
 	elem := Object2CtxElement(ctxObj)
+	return nc.UpdateContext(elem)
+}
 
+func (nc *NGSI10Client) UpdateContext(elem *ContextElement) error {
+	return nc.sendUpdateContext(elem, false)
+}
+
+func (nc *NGSI10Client) InternalUpdateContext(elem *ContextElement) error {
+	return nc.sendUpdateContext(elem, true)
+}
+
+func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool) error {
 	updateCtxReq := &UpdateContextRequest{
 		ContextElements: []ContextElement{*elem},
 		UpdateAction:    "UPDATE",
@@ -63,9 +74,15 @@ func (nc *NGSI10Client) UpdateContext(ctxObj *ContextObject) error {
 		return err
 	}
 
+	//fmt.Printf("%s\r\n", bytes.NewBuffer(body))
+
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/updateContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
+
+	if internal == true {
+		req.Header.Add("User-Agent", "lightweight-iot-broker")
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -76,7 +93,6 @@ func (nc *NGSI10Client) UpdateContext(ctxObj *ContextObject) error {
 	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(text))
 
 	updateCtxResp := UpdateContextResponse{}
 	err = json.Unmarshal(text, &updateCtxResp)
@@ -93,6 +109,14 @@ func (nc *NGSI10Client) UpdateContext(ctxObj *ContextObject) error {
 }
 
 func (nc *NGSI10Client) DeleteContext(eid *EntityId) error {
+	return nc.sendDeleteContext(eid, false)
+}
+
+func (nc *NGSI10Client) InternalDeleteContext(eid *EntityId) error {
+	return nc.sendDeleteContext(eid, true)
+}
+
+func (nc *NGSI10Client) sendDeleteContext(eid *EntityId, internal bool) error {
 	element := ContextElement{}
 
 	entity := EntityId{}
@@ -115,6 +139,10 @@ func (nc *NGSI10Client) DeleteContext(eid *EntityId) error {
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/updateContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
+
+	if internal == true {
+		req.Header.Add("User-Agent", "lightweight-iot-broker")
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -184,7 +212,24 @@ func (nc *NGSI10Client) NotifyContext(elem *ContextElement) error {
 	}
 }
 
-func (nc *NGSI10Client) QueryContext(query *QueryContextRequest, headers *map[string]string) ([]*ContextObject, error) {
+func (nc *NGSI10Client) GetEntity(id string) (*ContextObject, error) {
+	resp, err := http.Get(nc.IoTBrokerURL + "/entity/" + id)
+	defer resp.Body.Close()
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	ctxElement := ContextElement{}
+	err = json.Unmarshal(text, &ctxElement)
+	if err != nil {
+		return nil, err
+	}
+
+	ctxObj := CtxElement2Object(&ctxElement)
+
+	return ctxObj, nil
+}
+
+func (nc *NGSI10Client) QueryContext(query *QueryContextRequest) ([]*ContextObject, error) {
 	body, err := json.Marshal(*query)
 	if err != nil {
 		return nil, err
@@ -193,13 +238,6 @@ func (nc *NGSI10Client) QueryContext(query *QueryContextRequest, headers *map[st
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/queryContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-
-	// if there is any additional header to add
-	if headers != nil {
-		for key, val := range *headers {
-			req.Header.Add(key, val)
-		}
-	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -227,7 +265,7 @@ func (nc *NGSI10Client) QueryContext(query *QueryContextRequest, headers *map[st
 	return ctxObjectList, nil
 }
 
-func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest, headers *map[string]string) ([]ContextElement, error) {
+func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest) ([]ContextElement, error) {
 	body, err := json.Marshal(*query)
 	if err != nil {
 		return nil, err
@@ -238,10 +276,7 @@ func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest, headers
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/queryContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-
-	for key, val := range *headers {
-		req.Header.Add(key, val)
-	}
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -252,7 +287,6 @@ func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest, headers
 	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(text))
 
 	queryCtxResp := QueryContextResponse{}
 	err = json.Unmarshal(text, &queryCtxResp)
@@ -274,8 +308,8 @@ func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, requireRe
 		return "", err
 	}
 
-	//fmt.Println(string(body))
 	//fmt.Println(nc.IoTBrokerURL + "/subscribeContext")
+	//fmt.Println(bytes.NewBuffer(body))
 
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/subscribeContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
@@ -406,6 +440,59 @@ func (nc *NGSI9Client) UnregisterEntity(eid string) error {
 	return nil
 }
 
+func (nc *NGSI9Client) GetProviderURL(id string) string {
+	resp, err := http.Get(nc.IoTDiscoveryURL + "/registration/" + id)
+	defer resp.Body.Close()
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	if text == nil {
+		return ""
+	}
+
+	fmt.Println(string(text))
+
+	registration := ContextRegistration{}
+	err = json.Unmarshal(text, &registration)
+	if err != nil {
+		return ""
+	} else {
+		return registration.ProvidingApplication
+	}
+}
+
+func (nc *NGSI9Client) QuerySiteList(geoscope OperationScope) ([]SiteInfo, error) {
+	body, err := json.Marshal(geoscope)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/querysite", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	siteList := make([]SiteInfo, 0)
+	err = json.Unmarshal(text, &siteList)
+	if err != nil {
+		return nil, err
+	} else {
+		return siteList, nil
+	}
+}
+
 func (nc *NGSI9Client) DiscoverContextAvailability(discoverCtxAvailabilityReq *DiscoverContextAvailabilityRequest) ([]ContextRegistration, error) {
 	body, err := json.Marshal(discoverCtxAvailabilityReq)
 	if err != nil {
@@ -464,7 +551,6 @@ func (nc *NGSI9Client) SubscribeContextAvailability(sub *SubscribeContextAvailab
 	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(text))
 
 	subscribeCtxAvailResp := SubscribeContextAvailabilityResponse{}
 	err = json.Unmarshal(text, &subscribeCtxAvailResp)
@@ -490,9 +576,6 @@ func (nc *NGSI9Client) UnsubscribeContextAvailability(sid string) error {
 		return err
 	}
 
-	fmt.Println("unsubscribe the context availability from IoT Discovery")
-	fmt.Println(string(body))
-
 	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/unsubscribeContextAvailability", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -506,7 +589,6 @@ func (nc *NGSI9Client) UnsubscribeContextAvailability(sid string) error {
 	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(text))
 
 	unsubscribeCtxAvailResp := UnsubscribeContextAvailabilityResponse{}
 	err = json.Unmarshal(text, &unsubscribeCtxAvailResp)
@@ -553,4 +635,23 @@ func (nc *NGSI9Client) DiscoveryNearbyIoTBroker(nearby NearBy) (string, error) {
 		}
 	}
 	return "", nil
+}
+
+func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
+	body, err := json.Marshal(brokerProfile)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/broker", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err == nil {
+		resp.Body.Close()
+	}
+
+	return err
 }

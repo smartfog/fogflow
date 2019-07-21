@@ -1,23 +1,16 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"io/ioutil"
-	"log"
-	"net/http"
+	"fmt"
+	"math"
 	"strconv"
 	"sync"
 	"time"
 
-	"gonum.org/v1/gonum/mat"
-
 	. "github.com/smartfog/fogflow/common/communicator"
 	. "github.com/smartfog/fogflow/common/datamodel"
 	. "github.com/smartfog/fogflow/common/ngsi"
-
-	"math"
-	url2 "net/url"
 
 	. "github.com/smartfog/fogflow/common/config"
 )
@@ -40,53 +33,52 @@ type Master struct {
 	workers         map[string]*WorkerProfile
 	workerList_lock sync.RWMutex
 
-	edgeUtilization map[string][]float64
-	edgeUtilLock    sync.RWMutex
-
-	METRIC_COUNT  int
-	metricWeights []float64
-
-	workerStats      map[string]*WorkerStat
-	workerStats_lock sync.RWMutex
-
-	// The moving average window for updating logs
-	statAlpha float32
-
-	//list of all dockerized operators
-	operatorList      map[string][]DockerImage
+	//list of all operators
+	operatorList      map[string]Operator
 	operatorList_lock sync.RWMutex
 
-	//to manage the orchestration of fog functions
-	functionMgr *FunctionMgr
+	//list of all docker images
+	dockerImageList      map[string][]DockerImage
+	dockerImageList_lock sync.RWMutex
+
+	//list of all submitted topologies
+	topologyList      map[string]*Topology
+	topologyList_lock sync.RWMutex
+
+	//list of all submitted topologies
+	fogfunctionList      map[string]*FogFunction
+	fogfunctionList_lock sync.RWMutex
 
 	//to manage the orchestration of service topology
-	topologyMgr *TopologyMgr
+	serviceMgr *ServiceMgr
+
+	//to manage the orchestration of tasks
+	taskMgr *TaskMgr
+
+	//number of deployed task
+	curNumOfTasks int
+	prevNumOfTask int
+	counter_lock  sync.RWMutex
 
 	//type of subscribed entities
 	subID2Type map[string]string
 }
 
 func (master *Master) Start(configuration *Config) {
-
 	master.cfg = configuration
-	master.statAlpha = 0.2
-	master.METRIC_COUNT = 4
+
 	master.messageBus = configuration.GetMessageBus()
 	master.discoveryURL = configuration.GetDiscoveryURL()
 
 	master.workers = make(map[string]*WorkerProfile)
 
-	master.workerStats = make(map[string]*WorkerStat)
-
-	master.operatorList = make(map[string][]DockerImage)
+	master.operatorList = make(map[string]Operator)
+	master.dockerImageList = make(map[string][]DockerImage)
+	master.topologyList = make(map[string]*Topology)
+	master.fogfunctionList = make(map[string]*FogFunction)
 
 	master.subID2Type = make(map[string]string)
-	master.edgeUtilLock.Lock()
-	master.edgeUtilization = make(map[string][]float64)
-	master.edgeUtilLock.Unlock()
 
-	//Build the Metrics Vector from Preferences Matrix Using AHP Method
-	master.InitMetricWeights()
 	// find a nearby IoT Broker
 	for {
 		nearby := NearBy{}
@@ -111,11 +103,11 @@ func (master *Master) Start(configuration *Config) {
 	}
 
 	// initialize the manager for both fog function and service topology
-	master.functionMgr = NewFogFunctionMgr(master)
-	master.functionMgr.Init()
+	master.taskMgr = NewTaskMgr(master)
+	master.taskMgr.Init()
 
-	master.topologyMgr = NewTopologyMgr(master)
-	master.topologyMgr.Init()
+	master.serviceMgr = NewServiceMgr(master)
+	master.serviceMgr.Init()
 
 	// announce myself to the nearby IoT Broker
 	master.registerMyself()
@@ -149,39 +141,37 @@ func (master *Master) Start(configuration *Config) {
 		}
 	}()
 
+	master.prevNumOfTask = 0
+	master.curNumOfTasks = 0
+
 	// start a timer to do something periodically
-	master.ticker = time.NewTicker(time.Second * 5)
+	master.ticker = time.NewTicker(time.Second)
 	go func() {
 		for {
 			<-master.ticker.C
-			master.onTimer()
+			//master.onTimer()
 		}
 	}()
 
 	// subscribe to the update of required context information
 	master.triggerInitialSubscriptions()
-	master.InitPrometheus(configuration)
-}
-
-func (master *Master) InitPrometheus(configuration *Config) {
-	INFO.Printf("Initializing Prometheus on %v with AdminPort: %v, DataProt: %v \n",
-		configuration.Prometheus.Address,
-		configuration.Prometheus.AdminPort, configuration.Prometheus.DataPort)
-	if configuration.Prometheus.Address == "auto" {
-		configuration.Prometheus.Address = "prometheus"
-	}
-	//TODO check the address to see if prometheus is up and running
 }
 
 func (master *Master) onTimer() {
-	master.UpdateUtilization()
+	master.counter_lock.Lock()
+	delta := master.curNumOfTasks - master.prevNumOfTask
+	fmt.Printf("# of orchestrated tasks = %d, throughput = %d/s\r\n", master.curNumOfTasks, delta)
+	master.prevNumOfTask = master.curNumOfTasks
+	master.counter_lock.Unlock()
 }
 
 func (master *Master) Quit() {
 	INFO.Println("to stop the master")
 	master.unregisterMyself()
-	master.communicator.StopConsuming()
+	INFO.Println("unregister myself")
 	master.ticker.Stop()
+	INFO.Println("stop the timer")
+	master.communicator.StopConsuming()
 	INFO.Println("stop consuming the messages")
 }
 
@@ -200,7 +190,7 @@ func (master *Master) registerMyself() {
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
-	err := client.UpdateContext(&ctxObj)
+	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
 	}
@@ -220,10 +210,12 @@ func (master *Master) unregisterMyself() {
 }
 
 func (master *Master) triggerInitialSubscriptions() {
-	master.subscribeContextEntity("Topology")
-	master.subscribeContextEntity("Requirement")
+	master.subscribeContextEntity("Operator")
 	master.subscribeContextEntity("DockerImage")
+	master.subscribeContextEntity("Topology")
 	master.subscribeContextEntity("FogFunction")
+	master.subscribeContextEntity("ServiceIntent")
+	master.subscribeContextEntity("TaskIntent")
 }
 
 func (master *Master) subscribeContextEntity(entityType string) {
@@ -250,65 +242,237 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 	sid := notifyCtxReq.SubscriptionId
 	stype := master.subID2Type[sid]
 
-	DEBUG.Println("NGSI10 NOTIFY ", sid, " , ", stype)
+	if len(notifyCtxReq.ContextResponses) == 0 {
+		return
+	}
+
+	contextObj := CtxElement2Object(&(notifyCtxReq.ContextResponses[0].ContextElement))
 
 	switch stype {
+	// registry of an operator
+	case "Operator":
+		master.handleOperatorRegistration(contextObj)
+
+	// registry of a docker image
 	case "DockerImage":
-		master.handleDockerImageRegistration(notifyCtxReq.ContextResponses, sid)
+		master.handleDockerImageRegistration(contextObj)
 
-	//output-driven service orchestration for service topology
+	// topology to define service template
 	case "Topology":
-		master.topologyMgr.handleTopologyUpdate(notifyCtxReq.ContextResponses, sid)
-	case "Requirement":
-		master.topologyMgr.handleRequirementUpdate(notifyCtxReq.ContextResponses, sid)
+		master.handleTopologyUpdate(contextObj)
 
-	//input-driven service orchestration for serverless function
+	// fog function that includes a pair of topology and intent
 	case "FogFunction":
-		master.functionMgr.handleFogFunctionUpdate(notifyCtxReq.ContextResponses, sid)
+		master.handleFogFunctionUpdate(contextObj)
+
+	// service orchestration
+	case "ServiceIntent":
+		master.serviceMgr.handleServiceIntentUpdate(contextObj)
+
+	// task orchestration
+	case "TaskIntent":
+		master.taskMgr.handleTaskIntentUpdate(contextObj)
+	}
+}
+
+//
+// to handle the registry of operator
+//
+func (master *Master) handleOperatorRegistration(operatorCtxObj *ContextObject) {
+	INFO.Println(operatorCtxObj)
+
+	if operatorCtxObj.IsEmpty() {
+		// does not handle the removal of operator
+		return
+	}
+
+	var operator = Operator{}
+	jsonText, _ := json.Marshal(operatorCtxObj.Attributes["operator"].Value.(map[string]interface{}))
+	err := json.Unmarshal(jsonText, &operator)
+	if err != nil {
+		ERROR.Println("failed to read the given operator")
+	} else {
+		master.operatorList_lock.Lock()
+		master.operatorList[operator.Name] = operator
+		master.operatorList_lock.Unlock()
 	}
 }
 
 //
 // to handle the management of docker images
 //
-func (master *Master) handleDockerImageRegistration(responses []ContextElementResponse, sid string) {
-	fetchedImageList := make([]DockerImage, 0)
+func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextObject) {
+	INFO.Println(dockerImageCtxObj)
 
-	for _, response := range responses {
-		dockerImageCtxObj := CtxElement2Object(&(response.ContextElement))
-		//INFO.Printf("%+v\r\n", dockerImageCtxObj)
-
-		dockerImage := DockerImage{}
-		dockerImage.OperatorName = dockerImageCtxObj.Attributes["operator"].Value.(string)
-		dockerImage.ImageName = dockerImageCtxObj.Attributes["image"].Value.(string)
-		dockerImage.ImageTag = dockerImageCtxObj.Attributes["tag"].Value.(string)
-		dockerImage.TargetedHWType = dockerImageCtxObj.Attributes["hwType"].Value.(string)
-		dockerImage.TargetedOSType = dockerImageCtxObj.Attributes["osType"].Value.(string)
-		dockerImage.Prefetched = dockerImageCtxObj.Attributes["prefetched"].Value.(bool)
-
-		master.operatorList_lock.Lock()
-		master.operatorList[dockerImage.OperatorName] = append(master.operatorList[dockerImage.OperatorName], dockerImage)
-		master.operatorList_lock.Unlock()
-
-		if dockerImage.Prefetched == true {
-			// inform all workers to prefetch this docker image in advance
-			fetchedImageList = append(fetchedImageList, dockerImage)
-		}
+	if dockerImageCtxObj.IsEmpty() {
+		// does not handle the removal of operator
+		return
 	}
 
-	if len(fetchedImageList) > 0 {
-		master.prefetchDockerImages(fetchedImageList)
+	dockerImage := DockerImage{}
+	dockerImage.OperatorName = dockerImageCtxObj.Attributes["operator"].Value.(string)
+	dockerImage.ImageName = dockerImageCtxObj.Attributes["image"].Value.(string)
+	dockerImage.ImageTag = dockerImageCtxObj.Attributes["tag"].Value.(string)
+	dockerImage.TargetedHWType = dockerImageCtxObj.Attributes["hwType"].Value.(string)
+	dockerImage.TargetedOSType = dockerImageCtxObj.Attributes["osType"].Value.(string)
+	dockerImage.Prefetched = dockerImageCtxObj.Attributes["prefetched"].Value.(bool)
+
+	master.dockerImageList_lock.Lock()
+	master.dockerImageList[dockerImage.OperatorName] = append(master.dockerImageList[dockerImage.OperatorName], dockerImage)
+	master.dockerImageList_lock.Unlock()
+
+	if dockerImage.Prefetched == true {
+		// inform all workers to prefetch this docker image in advance
+		master.prefetchDockerImages(dockerImage)
 	}
 }
 
-func (master *Master) prefetchDockerImages(imageList []DockerImage) {
+func (master *Master) prefetchDockerImages(image DockerImage) {
 	workers := master.queryWorkers()
 
 	for _, worker := range workers {
 		workerID := worker.Entity.ID
-		taskMsg := SendMessage{Type: "prefetch_image", RoutingKey: workerID + ".", From: master.id, PayLoad: imageList}
+		taskMsg := SendMessage{Type: "PREFETCH_IMAGE", RoutingKey: workerID + ".", From: master.id, PayLoad: image}
 		master.communicator.Publish(&taskMsg)
 	}
+}
+
+//
+// to update the fog function list
+//
+func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) {
+	INFO.Println(fogfunctionCtxObj)
+
+	// the fog function is going to be deleted
+	if fogfunctionCtxObj.IsEmpty() {
+		var eid = fogfunctionCtxObj.Entity.ID
+
+		master.fogfunctionList_lock.RLock()
+		fogfunction := master.fogfunctionList[eid]
+		master.fogfunctionList_lock.RUnlock()
+
+		DEBUG.Printf("%+v\r\n", fogfunction)
+
+		// remove the service intent
+		master.serviceMgr.removeServiceIntent(fogfunction.Intent.ID)
+
+		// remove the service topology
+		topology := fogfunction.Topology
+		master.topologyList_lock.Lock()
+		master.topologyList[topology.Name] = &topology
+		master.topologyList_lock.Unlock()
+
+		// remove this fog function entity
+		master.fogfunctionList_lock.Lock()
+		delete(master.fogfunctionList, eid)
+		master.fogfunctionList_lock.Unlock()
+
+		return
+	}
+
+	topology := Topology{}
+
+	topologyJsonText, err := json.Marshal(fogfunctionCtxObj.Attributes["topology"].Value.(map[string]interface{}))
+	if err != nil {
+		ERROR.Println("the topology object is not defined")
+		return
+	}
+	err = json.Unmarshal(topologyJsonText, &topology)
+	if err != nil {
+		ERROR.Println("the topology object is not correctly defined")
+		return
+	}
+
+	intent := ServiceIntent{}
+
+	intentJsonText, err := json.Marshal(fogfunctionCtxObj.Attributes["intent"].Value.(map[string]interface{}))
+	if err != nil {
+		ERROR.Println("the intent object is not defined")
+		return
+	}
+	err = json.Unmarshal(intentJsonText, &intent)
+	if err != nil {
+		ERROR.Println("the intent object is not correctly defined")
+		return
+	}
+
+	// allow the ID of this service intent
+	intent.ID = fogfunctionCtxObj.Entity.ID
+
+	fogfunction := FogFunction{}
+
+	fogfunction.Id = fogfunctionCtxObj.Entity.ID
+	fogfunction.Name = fogfunctionCtxObj.Attributes["name"].Value.(string)
+	fogfunction.Topology = topology
+	fogfunction.Intent = intent
+
+	// add the service topology
+	master.topologyList_lock.Lock()
+	master.topologyList[topology.Name] = &topology
+	master.topologyList_lock.Unlock()
+
+	// handle the associated service intent
+	master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
+
+	// create or update this fog function
+	master.fogfunctionList_lock.Lock()
+	master.fogfunctionList[fogfunction.Id] = &fogfunction
+	master.fogfunctionList_lock.Unlock()
+
+	INFO.Println(fogfunction)
+}
+
+//
+// to update the topology list
+//
+func (master *Master) handleTopologyUpdate(topologyCtxObj *ContextObject) {
+	INFO.Println(topologyCtxObj)
+
+	if topologyCtxObj.IsEmpty() {
+		// remove this service topology entity
+		master.topologyList_lock.Lock()
+
+		var eid = topologyCtxObj.Entity.ID
+
+		// find which one has this id
+		for _, topology := range master.topologyList {
+			if topology.Id == eid {
+				var name = topology.Name
+				delete(master.topologyList, name)
+				break
+			}
+		}
+
+		master.topologyList_lock.Unlock()
+
+		return
+	}
+
+	// create or update this service topology
+	topology := Topology{}
+	jsonText, _ := json.Marshal(topologyCtxObj.Attributes["template"].Value.(map[string]interface{}))
+	err := json.Unmarshal(jsonText, &topology)
+	if err == nil {
+		INFO.Println(topology)
+
+		topology.Id = topologyCtxObj.Entity.ID
+
+		master.topologyList_lock.Lock()
+		master.topologyList[topology.Name] = &topology
+		master.topologyList_lock.Unlock()
+
+		INFO.Println(topology)
+	}
+
+}
+
+func (master *Master) getTopologyByName(name string) *Topology {
+	// find the required topology object
+	master.topologyList_lock.RLock()
+	defer master.topologyList_lock.RUnlock()
+
+	topology := master.topologyList[name]
+	return topology
 }
 
 func (master *Master) queryWorkers() []*ContextObject {
@@ -322,7 +486,7 @@ func (master *Master) queryWorkers() []*ContextObject {
 	query.Entities = append(query.Entities, entity)
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
-	ctxObjects, err := client.QueryContext(&query, nil)
+	ctxObjects, err := client.QueryContext(&query)
 	if err != nil {
 		ERROR.Println(err)
 	}
@@ -351,7 +515,7 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 		for _, entity := range registration.EntityIdList {
 			// convert context registration to entity registration
 			entityRegistration := master.contextRegistration2EntityRegistration(&entity, &registration)
-			master.functionMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
+			go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
 		}
 	}
 }
@@ -395,6 +559,39 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	return &entityRegistration
 }
 
+func (master *Master) contextRegistration2EntityRegistrationNew(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
+	entityRegistration := EntityRegistration{}
+
+	entityRegistration.ID = entityId.ID
+	entityRegistration.Type = entityId.Type
+
+	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+
+	for _, attribute := range ctxRegistration.ContextRegistrationAttributes {
+		attributeRegistration := ContextRegistrationAttribute{}
+		attributeRegistration.Name = attribute.Name
+		attributeRegistration.Type = attribute.Type
+
+		entityRegistration.AttributesList[attribute.Name] = attributeRegistration
+	}
+
+	entityRegistration.MetadataList = make(map[string]ContextMetadata)
+	for _, ctxmeta := range ctxRegistration.Metadata {
+		cm := ContextMetadata{}
+		cm.Name = ctxmeta.Name
+		cm.Type = ctxmeta.Type
+		cm.Value = ctxmeta.Value
+
+		entityRegistration.MetadataList[ctxmeta.Name] = cm
+	}
+
+	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
+
+	DEBUG.Printf("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
+
+	return &entityRegistration
+}
+
 func (master *Master) subscribeContextAvailability(availabilitySubscription *SubscribeContextAvailabilityRequest) string {
 
 	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
@@ -407,6 +604,14 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 	}
 
 	return subscriptionId
+}
+
+func (master *Master) unsubscribeContextAvailability(sid string) {
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
+	err := client.UnsubscribeContextAvailability(sid)
+	if err != nil {
+		ERROR.Println(err)
+	}
 }
 
 //
@@ -429,111 +634,32 @@ func (master *Master) Process(msg *RecvMessage) error {
 		if err == nil {
 			master.onTaskUpdate(msg.From, &update)
 		}
-	case "heart_stat":
-		//INFO.Println("AMIR: recieved Heart stats:",msg.PayLoad)
-		stat := WorkerStat{}
-		err := json.Unmarshal(msg.PayLoad, &stat)
-		if err == nil {
-			master.onNewStat(msg.From, &stat)
-		}
-
 	}
 
 	return nil
 }
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
-	//INFO.Printf("HEARTBEAT: The edge address of worker %v is: %v ", profile.WID,profile.EdgeAddress)
-	if _, exists := master.workers[profile.WID]; !exists {
-		//A new worker registration!
-
-		//Create Utilization Entry for the worker
-		DEBUG.Printf("Registering new Edge: %v", profile.EdgeAddress)
-		master.edgeUtilLock.Lock()
-		master.edgeUtilization[profile.EdgeAddress+":"+strconv.Itoa(profile.CAdvisorPort)] =
-			make([]float64, master.METRIC_COUNT, master.METRIC_COUNT)
-		master.edgeUtilLock.Unlock()
-		//Add the worker to the workers
-		master.workerList_lock.Lock()
-		master.workers[profile.WID] = profile
-		master.workerList_lock.Unlock()
-
-		// Notify Prometheus
-		master.UpdatePrometheusConfig()
-
-	} else {
-		master.workerList_lock.Lock()
-		master.workers[profile.WID] = profile
-		master.workerList_lock.Unlock()
-	}
-	master.UpdateUtilization()
-	//DEBUG.Printf("List of workers: %v",master.workers)
-}
-
-func (master *Master) onNewStat(from string, newStat *WorkerStat) {
-	if oldStat, ok := master.workerStats[newStat.WID]; ok {
-		//update statistics
-		//INFO.Println("not the first time, old stat is: ",oldStat)
-		master.workerStats_lock.Lock()
-		oldStat.UtilMemory = (newStat.UtilMemory * master.statAlpha) + ((1 - master.statAlpha) * oldStat.UtilMemory)
-		oldStat.UtilCPU = (newStat.UtilCPU * master.statAlpha) + ((1 - master.statAlpha) * oldStat.UtilCPU)
-		master.workerStats[newStat.WID] = oldStat
-		master.workerStats_lock.Unlock()
-		//INFO.Println("and the new stat is: ",master.workerStats[newStat.WID])
-
-	} else {
-		// First time that we have this value. Added to map
-		master.workerStats[newStat.WID] = newStat
-		INFO.Println("first time....")
-		INFO.Println("Updating:", newStat)
-	}
-
-	if newStat.UtilMemory > 0.96 {
-		INFO.Println("received memory utilization more than 95%!")
-		master.MoveAFunction()
-	}
-
+	master.workerList_lock.Lock()
+	master.workers[profile.WID] = profile
+	master.workerList_lock.Unlock()
 }
 
 func (master *Master) onTaskUpdate(from string, update *TaskUpdate) {
 	INFO.Println("==task update=========")
 	INFO.Println(update)
-}
 
-//
-// to carry out deployment actions given by the orchestrators of fog functions and service topologies
-//
-func (master *Master) DeployTasks(taskInstances []*ScheduledTaskInstance) {
-	for _, pScheduledTaskInstance := range taskInstances {
-		// convert the operator name into the name of a proper docker image for the assigned worker
-		operatorName := (*pScheduledTaskInstance).DockerImage
-		assignedWorkerID := (*pScheduledTaskInstance).WorkerID
-		(*pScheduledTaskInstance).DockerImage = master.DetermineDockerImage(operatorName, assignedWorkerID)
-
-		taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: pScheduledTaskInstance.WorkerID + ".", From: master.id, PayLoad: *pScheduledTaskInstance}
-		INFO.Println(taskMsg)
-		master.communicator.Publish(&taskMsg)
-	}
-}
-
-func (master *Master) TerminateTasks(instances []*ScheduledTaskInstance) {
-	INFO.Println("to terminate all scheduled tasks, ", len(instances))
-	for _, instance := range instances {
-		taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: instance.WorkerID + ".", From: master.id, PayLoad: *instance}
-		INFO.Println(taskMsg)
-		master.communicator.Publish(&taskMsg)
-	}
 }
 
 func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
-	// convert the operator name into the name of a proper docker image for the assigned worker
-	operatorName := (*taskInstance).DockerImage
-	assignedWorkerID := (*taskInstance).WorkerID
-	(*taskInstance).DockerImage = master.DetermineDockerImage(operatorName, assignedWorkerID)
+	master.counter_lock.Lock()
+	master.curNumOfTasks = master.curNumOfTasks + 1
+	master.counter_lock.Unlock()
 
 	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
-	master.communicator.Publish(&taskMsg)
+
+	go master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) TerminateTask(taskInstance *ScheduledTaskInstance) {
@@ -558,25 +684,14 @@ func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
 // the shared functions for function manager and topology manager to call
 //
 func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
-	query := QueryContextRequest{}
-
-	query.Entities = make([]EntityId, 0)
-
-	entity := EntityId{}
-	entity.ID = eid
-	entity.IsPattern = false
-	query.Entities = append(query.Entities, entity)
-
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
-	ctxObjects, err := client.QueryContext(&query, nil)
-	if err == nil && ctxObjects != nil && len(ctxObjects) > 0 {
-		return ctxObjects[0]
-	} else {
-		if err != nil {
-			ERROR.Println("error occured when retrieving a context entity :", err)
-		}
+	ctxObj, err := client.GetEntity(eid)
+
+	if err != nil {
 		return nil
 	}
+
+	return ctxObj
 }
 
 //
@@ -588,10 +703,10 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	selectedDockerImageName := ""
 
 	wProfile := master.workers[wID]
-	master.operatorList_lock.RLock()
-	for _, image := range master.operatorList[operatorName] {
-		DEBUG.Println(image.TargetedOSType, image.TargetedHWType)
-		DEBUG.Println(wProfile.OSType, wProfile.HWType)
+	master.dockerImageList_lock.RLock()
+	for _, image := range master.dockerImageList[operatorName] {
+		DEBUG.Println(image)
+		DEBUG.Println(wProfile)
 
 		hwType := "X86"
 		osType := "Linux"
@@ -610,7 +725,7 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 		}
 	}
 
-	master.operatorList_lock.RUnlock()
+	master.dockerImageList_lock.RUnlock()
 
 	DEBUG.Println(selectedDockerImageName)
 
@@ -620,38 +735,17 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 //
 // to select the worker that is closest to the given points
 //
-
-func (master *Master) SelectWorkerAHP() string {
-	var selectedWorkerID string = "0"
-	var highestUtility float64 = 0
-	for _, worker := range master.workers {
-		var utility float64
-		utility = 0
-		instanceID := worker.EdgeAddress + ":" + strconv.Itoa(worker.CAdvisorPort)
-		for i := 0; i < master.METRIC_COUNT; i++ {
-			utility = utility + master.metricWeights[i]*master.edgeUtilization[instanceID][i]
-		}
-		if utility >= highestUtility {
-			selectedWorkerID = worker.WID
-		}
-
-	}
-
-	return selectedWorkerID
-	//USEFUL VARIABLES:
-	//master.metricWeights
-	//master.edgeUtilization
-}
-
 func (master *Master) SelectWorker(locations []Point) string {
 	if len(locations) == 0 {
 		for _, worker := range master.workers {
 			return worker.WID
 		}
-
 		return ""
 	}
 
+	DEBUG.Printf("points: %+v\r\n", locations)
+
+	// select the workers with the closest distance
 	closestWorkerID := ""
 	closestTotalDistance := uint64(18446744073709551615)
 	for _, worker := range master.workers {
@@ -664,9 +758,10 @@ func (master *Master) SelectWorker(locations []Point) string {
 		totalDistance := uint64(0)
 
 		for _, location := range locations {
-			if location.Latitude == 0 && location.Longitude == 0 {
+			if location.IsEmpty() == true {
 				continue
 			}
+
 			distance := Distance(wp, location)
 			totalDistance += distance
 			INFO.Printf("distance = %d between %+v, %+v\r\n", distance, wp, location)
@@ -680,203 +775,28 @@ func (master *Master) SelectWorker(locations []Point) string {
 		INFO.Println("closest worker ", closestWorkerID, " with the closest distance ", closestTotalDistance)
 	}
 
+	// select the one with lowest capacity if there are more than one with the closest distance
+
 	return closestWorkerID
 }
 
-func (master *Master) MoveAFunction() bool {
-	for _, fogflow := range master.functionMgr.functionFlows {
-		for _, taskinstance := range fogflow.DeploymentPlan {
-			taskinstance.WorkerID = master.GetAnotherWorker(taskinstance.WorkerID)
-			master.DeployTask(taskinstance)
-			INFO.Printf("AMIR: moved the function: %s......\r\n", taskinstance.TaskName)
-		}
-	}
-	return false
+func hsin(theta float64) float64 {
+	return math.Pow(math.Sin(theta/2), 2)
 }
 
-func (master *Master) GetAnotherWorker(oldWorkerId string) string {
+func Distance(p1 Point, p2 Point) uint64 {
+	// convert to radians
+	// must cast radius as float to multiply later
+	var la1, lo1, la2, lo2, r float64
+	la1 = p1.Latitude * math.Pi / 180
+	lo1 = p1.Longitude * math.Pi / 180
+	la2 = p2.Latitude * math.Pi / 180
+	lo2 = p2.Longitude * math.Pi / 180
 
-	for _, worker := range master.workers {
-		if worker.WID != oldWorkerId {
-			INFO.Printf("changed from worker: %s to new worker: %s\r\n", oldWorkerId, worker.WID)
-			return worker.WID
-		}
+	r = 6378100 // Earth radius in METERS
 
-	}
+	// calculate
+	h := hsin(la2-la1) + math.Cos(la1)*math.Cos(la2)*hsin(lo2-lo1)
 
-	INFO.Println("Could not find another worker")
-	return oldWorkerId
-}
-
-func (master *Master) UpdatePrometheusConfig() {
-
-	//TODO: Make this code more robust. If the request fails either prometheus is not ready or not running.
-	// We should retry several times and send an proper error message if prometheus is down.
-	baseConfig := `[{
-	    "targets": ["127.0.0.1:8092"],
-	    "labels": {
-	      "job": "fogflow"
-	    }
-	}]`
-	var configFile []PrometheusConfig
-
-	if err := json.Unmarshal([]byte(baseConfig), &configFile); err != nil {
-		panic(err)
-	}
-	for _, worker := range master.workers {
-		configFile[0].Targets =
-			append(configFile[0].Targets, worker.EdgeAddress+":"+strconv.Itoa(worker.CAdvisorPort))
-	}
-
-	//send update to prometheus
-	body, err := json.Marshal(configFile)
-	if err != nil {
-		panic(err)
-	}
-	url := master.cfg.Prometheus.Address + ":" + strconv.Itoa(master.cfg.Prometheus.AdminPort)
-	DEBUG.Printf("sending new config to premetheus[%v]:\n%v", url, string(body))
-
-	req, err := http.NewRequest("POST", "http://"+url+"/config", bytes.NewBuffer(body))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-}
-
-type PromReply struct {
-	Status string `json:"status"`
-	Data   struct {
-		ResultType string `json:"resultType"`
-		Result     []struct {
-			Metric struct {
-				Instance string `json:"instance"`
-			} `json:"metric"`
-			Value []string `json:"value"`
-		} `json:"result"`
-	} `json:"data"`
-}
-
-func (master *Master) InitMetricWeights() {
-	preferenceMatrix := mat.NewDense(master.METRIC_COUNT, master.METRIC_COUNT, []float64{
-		1, 0.5, 10, 5,
-		2, 1, 2, 7,
-		1, 0.5, 1, 0.3,
-		2, 4, 5, 3,
-	})
-	DEBUG.Printf("Matrix of Preference of Metrics is =\n %v\n\n", mat.Formatted(preferenceMatrix, mat.Prefix("    ")))
-
-	var eig mat.Eigen
-	ok := eig.Factorize(preferenceMatrix, mat.EigenRight)
-	if !ok {
-		log.Fatal("Eigendecomposition failed")
-	}
-
-	eigenValues := eig.Values(nil)
-	var maxIndex, maxValue float64
-	maxIndex = 0
-	maxValue = -1
-
-	//Find out the biggest Real EigenValue
-	for i := 0; i < len(eigenValues); i++ {
-		if real(eigenValues[i]) > maxValue && imag(eigenValues[i]) == 0 {
-			maxIndex = float64(i)
-			maxValue = real(eigenValues[i])
-		}
-	}
-
-	eigenVectors := eig.VectorsTo(nil)
-	r, _ := eigenVectors.Dims()
-	master.metricWeights = make([]float64, r)
-
-	for i := 0; i < r; i++ {
-		master.metricWeights[i] = real(eigenVectors.At(i, int(maxIndex)))
-	}
-
-	DEBUG.Printf("Decision Making Metric Weights : %v\n", master.metricWeights)
-
-	// It would be called in the Timer:
-	//master.UpdateUtilization()
-
-}
-
-func (master *Master) UpdateUtilization() {
-	//DEBUG.Printf("Utilization of Edge nodes: \n %v \n",master.edgeUtilization)
-	MetricQueries := make([]string, master.METRIC_COUNT)
-	MetricQueries[0] = `sum(rate(container_cpu_usage_seconds_total{job="fogflow",id="/"}[2m] )) by (instance)`
-	MetricQueries[1] = `sum(container_memory_working_set_bytes{job="fogflow",id=~"/docker.*"})by(instance)`
-	MetricQueries[2] = `sum(container_memory_working_set_bytes{job="fogflow",id=~"/docker.*"}) by(instance) / sum(machine_memory_bytes) by (instance)`
-	MetricQueries[3] = `sum(rate(container_memory_failures_total{failure_type="pgmajfault"}[20m])) by (instance)`
-
-	//for address, metric := range *util {
-	//	//AAA fmt.Printf("address %v is: %v \n", address, metric)
-	//	//fmt.Printf("the value of metrics are: %v",util[address][0])
-	//	//return worker.WID
-	//}
-
-	for metricNumber, metricQuery := range MetricQueries {
-
-		promAddress := master.cfg.Prometheus.Address + ":" + strconv.Itoa(master.cfg.Prometheus.DataPort)
-		url := "http://" + promAddress + "/api/v1/query?query=" + url2.QueryEscape(metricQuery)
-		req, err := http.NewRequest("GET", url, nil)
-		req.Header.Add("Accept", "application/json")
-
-		client := &http.Client{}
-		resp, err := client.Do(req)
-		if err != nil {
-			DEBUG.Printf("Error Talking to Prometheus Server for Orchestration")
-			panic(err)
-		}
-		defer resp.Body.Close()
-		text, _ := ioutil.ReadAll(resp.Body)
-		var data PromReply
-		json.Unmarshal(text, &data)
-
-		for _, d := range data.Data.Result {
-			f, _ := strconv.ParseFloat(d.Value[1], 64)
-			if _, exists := master.edgeUtilization[d.Metric.Instance]; !exists {
-				master.edgeUtilLock.Lock()
-				master.edgeUtilization[d.Metric.Instance] = make([]float64, master.METRIC_COUNT, master.METRIC_COUNT)
-				master.edgeUtilLock.Unlock()
-			}
-			master.edgeUtilLock.Lock()
-			master.edgeUtilization[d.Metric.Instance][metricNumber] = f
-			master.edgeUtilLock.Unlock()
-		}
-	}
-
-	//Normalize the Utlization data
-	for metricNumber, _ := range MetricQueries {
-		//Normalize data of Each Metric (metricNumber)
-		//for all hosts
-
-		// DEBUG.Printf("%v: This is host: %v, and this is data: %v\n",metricNumber,host,data[metricNumber])
-
-		//Get the sum
-		var sumMetric float64 = 0
-		for _, data := range master.edgeUtilization {
-			sumMetric += data[metricNumber]
-		}
-
-		//Divide each value to sum --> Normalize
-		for _, data := range master.edgeUtilization {
-			master.edgeUtilLock.Lock()
-			data[metricNumber] = divide(data[metricNumber], sumMetric)
-			master.edgeUtilLock.Unlock()
-		}
-	}
-}
-
-func divide(a, b float64) float64 {
-	if math.IsNaN(a / b) {
-		return 0
-	} else {
-		return a / b
-
-	}
+	return uint64(2 * r * math.Asin(math.Sqrt(h)))
 }

@@ -30,7 +30,7 @@ discovery.findNearbyIoTBroker(profile.location, 1).then( function(brokers) {
         // generating data observations periodically
         timer = setInterval(function(){ 
             updateContext();
-        }, 1000);    
+        }, 2000);    
 
         // register my device profile by sending a device update
         registerDevice();
@@ -71,6 +71,10 @@ function registerDevice()
         type: 'point',
         value: profile.location
     };    
+    ctxObj.metadata.shop = {
+        type: 'string',
+        value: profile.id
+    };      
    
     ngsi10client.updateContext(ctxObj).then( function(data) {
         console.log(data);
@@ -84,7 +88,7 @@ function updateContext()
 {
     var ctxObj = {};
     ctxObj.entityId = {
-        id: 'Stream.' + profile.type + '.' + profile.id,
+        id: 'Device.' + profile.type + '.' + profile.id,
         type: profile.type,
         isPattern: false
     };
@@ -95,22 +99,7 @@ function updateContext()
     ctxObj.attributes.usage = {
         type: 'integer',
         value: degree
-    };
-    ctxObj.attributes.deviceID = {
-        type: 'string',
-        value: profile.type + '.' + profile.id
-    };   	     
-    
-    ctxObj.metadata = {};
-    
-    ctxObj.metadata.location = {
-        type: 'point',
-        value: profile.location
-    }; 
-    ctxObj.metadata.shop = {
-        type: 'string',
-        value: profile.id
-    };	          
+    };       
     
     ngsi10client.updateContext(ctxObj).then( function(data) {
         console.log(data);
@@ -136,12 +125,6 @@ process.on('SIGINT', function()
             console.log('failed to delete context');
         });        
 
-        // to delete the stream    
-        var entity = {
-            id: 'Stream.' + profile.type + '.' + profile.id,
-            type: 'Stream',
-            isPattern: false
-        };
         ngsi10client.deleteContext(entity).then( function(data) {
             console.log(data);
         }).catch(function(error) {

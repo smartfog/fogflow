@@ -35,16 +35,16 @@ function processInputStreamData(data)
 
 // simple algorithm to detect anomaly events
 function anomalyDetection(msg) 
-{    
-    var watts = msg.attributes.usage.value;
-    var deviceID = msg.attributes.deviceID.value;    
-    var shopID =  msg.metadata.shop.value;    
-    var location = msg.metadata.location;
-    
-    console.log('============+++++++++++Current usage ', watts, ', current thrshold = ', threshold)
-    
-    if(watts > threshold) { // detect an anomaly event
-        // publish the detected event
+{	
+	var watts = msg.attributes.usage.value;
+	var deviceID = msg.entityId.id;
+	var shopID =  msg.metadata.shop.value;	
+	var location = msg.metadata.location;
+	
+	console.log('============+++++++++++Current usage ', watts, ', current thrshold = ', threshold)
+	
+	if(watts > threshold) { // detect an anomaly event
+		// publish the detected event
         var anomaly = {};
         
         var now = new Date();
@@ -179,10 +179,15 @@ function handleNotify(req, ctxObjects, res)
 {    
     console.log('handle notify');
 
-    for(var i = 0; i < ctxObjects.length; i++) {
-        console.log(ctxObjects[i]);
-        processInputStreamData(ctxObjects[i]);
-    }
+	for(var i = 0; i < ctxObjects.length; i++) {
+		console.log(ctxObjects[i]);
+        
+        try {
+            processInputStreamData(ctxObjects[i]);        
+        } catch (error) {
+            console.log(error)
+        }        
+	}
 }
 
 // get the listening port number from the environment variables given by the FogFlow edge worker

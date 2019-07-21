@@ -22,9 +22,10 @@ type RecvMessage struct {
 }
 
 type TaskUpdate struct {
-	TaskID   string
-	Topology string
-	Status   string
+	ServiceName string
+	TaskName    string
+	TaskID      string
+	Status      string
 }
 
 // =========== messages used as the interfaces between different components ====================
@@ -32,9 +33,6 @@ type TaskUpdate struct {
 type PhysicalLocation struct {
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
-	Section   string  `json:"section"`
-	District  string  `json:"district"`
-	City      string  `json:"city"`
 }
 
 type LogicalLocation struct {
@@ -56,31 +54,80 @@ type ProfileInfo struct {
 	City       string  `json:"city"`
 }
 
-type Requirement struct {
-	ID             string
-	Output         string
-	ScheduleMethod string
+type OptPreference struct {
+	Minimize []string
+	Maximize []string
+}
 
-	Restriction *Restriction
-	Topology    *Topology
+type OptConstraint struct {
+	Subject   string
+	Relation  string
+	Objective string
+}
+
+type QoS struct {
+	Preference  OptPreference
+	Constraints []OptConstraint
+}
+
+type ServiceIntent struct {
+	ID             string         `json:"id"`
+	QoS            string         `json:"qos"`
+	GeoScope       OperationScope `json:"geoscope"`
+	Priority       Priority       `json:"priority"`
+	TopologyName   string         `json:"topology"`
+	TopologyObject *Topology
+}
+
+type TaskIntent struct {
+	ID          string         `json:"id"`
+	QoS         string         `json:"qos"`
+	GeoScope    OperationScope `json:"geoscope"`
+	Priority    Priority       `json:"priority"`
+	ServiceName string         `json:"service"`
+	TaskObject  Task           `json:"task"`
 }
 
 type InputStreamConfig struct {
-	Topic     string `json:"type"`
-	Shuffling string `json:"shuffling"`
-	Scoped    bool   `json:"scoped"`
+	EntityType         string   `json:"selected_type"`
+	SelectedAttributes []string `json:"selected_attributes"`
+	GroupBy            string   `json:"groupby"`
+	Scoped             bool     `json:"scoped"`
 }
 
 type OutputStreamConfig struct {
-	Topic string `json:"type"`
+	EntityType string `json:"entity_type"`
+}
+
+type Parameter struct {
+	Name   string   `json:"name"`
+	Values []string `json:"values"`
+}
+
+type Operator struct {
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	Parameters  []Parameter `json:"parameters"`
 }
 
 type Task struct {
 	Name          string               `json:"name"`
 	Operator      string               `json:"operator"`
-	Granularity   string               `json:"groupBy"`
 	InputStreams  []InputStreamConfig  `json:"input_streams"`
 	OutputStreams []OutputStreamConfig `json:"output_streams"`
+}
+
+func (task *Task) CanBeDivided() bool {
+	var flag = true
+
+	for _, inputStream := range task.InputStreams {
+		if inputStream.GroupBy != "EntityID" {
+			flag = false
+			break
+		}
+	}
+
+	return flag
 }
 
 type TaskOrchestration struct {
@@ -100,11 +147,17 @@ type Priority struct {
 }
 
 type Topology struct {
-	Description string   `json:"description"`
-	Name        string   `json:"name"`
-	Priority    Priority `json:"priority"`
-	Trigger     string   `json:"trigger"`
-	Tasks       []Task   `json:"tasks"`
+	Id          string `json:"id"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	Tasks       []Task `json:"tasks"`
+}
+
+type FogFunction struct {
+	Id       string        `json:"id"`
+	Name     string        `json:"name"`
+	Topology Topology      `json:"topology"`
+	Intent   ServiceIntent `json:"intent"`
 }
 
 type DockerImage struct {
@@ -117,9 +170,17 @@ type DockerImage struct {
 }
 
 type InputStream struct {
-	Type    string
-	Streams []string // a set of stream IDs
-	URLs    map[string]string
+	Type          string
+	ID            string
+	AttributeList []string
+}
+
+func (myInputStream *InputStream) Equal(otherInputStream *InputStream) bool {
+	if myInputStream.Type == otherInputStream.Type && myInputStream.ID == myInputStream.ID {
+		return true
+	} else {
+		return false
+	}
 }
 
 type OutputStream struct {
@@ -137,28 +198,6 @@ type TaskInstance struct {
 	WorkerID string
 }
 
-func compareStreamSet(setA []string, setB []string) bool {
-	if len(setA) != len(setB) {
-		return false
-	}
-
-	for _, idA := range setA {
-		var exist = false
-		for _, idB := range setB {
-			if idB == idA {
-				exist = true
-				break
-			}
-		}
-
-		if exist == false {
-			return false
-		}
-	}
-
-	return true
-}
-
 func (myInstance *TaskInstance) Equal(otherInstance *TaskInstance) bool {
 	// check the task name
 	if myInstance.TaskNode.Task.Name != otherInstance.TaskNode.Task.Name {
@@ -172,11 +211,9 @@ func (myInstance *TaskInstance) Equal(otherInstance *TaskInstance) bool {
 	for _, myInputStream := range myInstance.Inputs {
 		var exist = false
 		for _, otherInputStream := range otherInstance.Inputs {
-			if myInputStream.Type == otherInputStream.Type {
-				if compareStreamSet(myInputStream.Streams, otherInputStream.Streams) == true {
-					exist = true
-					break
-				}
+			if myInputStream.Equal(&otherInputStream) == true {
+				exist = true
+				break
 			}
 		}
 
@@ -189,17 +226,19 @@ func (myInstance *TaskInstance) Equal(otherInstance *TaskInstance) bool {
 }
 
 type FlowInfo struct {
-	EntityID       string
-	EntityType     string
+	InputStream    InputStream
 	TaskInstanceID string
 	WorkerID       string
 }
 
 type ScheduledTaskInstance struct {
-	ID           string
-	ServiceName  string
+	ID          string
+	ServiceName string
+	TaskName    string
+
+	OperatorName string
+
 	TaskType     string
-	TaskName     string
 	FunctionCode string
 	DockerImage  string
 
@@ -217,19 +256,12 @@ type ScheduledTaskInstance struct {
 type WorkerProfile struct {
 	WID       string
 	PLocation PhysicalLocation
-	LLocation LogicalLocation
+	GeohashID string
 	Capacity  int
 	OSType    string
 	HWType    string
-	CAdvisorPort int
-	EdgeAddress string
 }
 
-type WorkerStat struct {
-	WID        string
-	UtilCPU    float32
-	UtilMemory float32
-}
 type StreamProfile struct {
 	ID         string
 	StreamType string
@@ -238,10 +270,4 @@ type StreamProfile struct {
 	Location   PhysicalLocation
 
 	StreamObject *ContextObject
-}
-type PrometheusConfig struct {
-	Targets []string `json:"targets"`
-	Labels  struct {
-		Job string `json:"job"`
-	} `json:"labels"`
 }
