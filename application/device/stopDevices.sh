@@ -1,0 +1,3 @@
+killall node
+killall python
+

@@ -89,18 +89,6 @@ func (e *Executor) GetNumOfTasks() int {
 	return len(e.taskInstances)
 }
 
-func (e *Executor) ListImages() {
-	imgs, _ := e.client.ListImages(docker.ListImagesOptions{All: false})
-	for _, img := range imgs {
-		INFO.Println("ID: ", img.ID)
-		INFO.Println("RepoTags: ", img.RepoTags)
-		INFO.Println("Created: ", img.Created)
-		INFO.Println("Size: ", img.Size)
-		INFO.Println("VirtualSize: ", img.VirtualSize)
-		INFO.Println("ParentId: ", img.ParentID)
-	}
-}
-
 func (e *Executor) InspectImage(dockerImage string) bool {
 	_, err := e.client.InspectImage(dockerImage)
 	if err != nil {
@@ -217,11 +205,11 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 
 	hostConfig.NetworkMode = "host"
 	hostConfig.AutoRemove = e.workerCfg.Worker.ContainerAutoRemove
-
-	// internalPort := docker.Port(portNum + "/tcp")
-	// portBindings := map[docker.Port][]docker.PortBinding{
-	// 	internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
-	// hostConfig.PortBindings = portBindings
+	/*
+		internalPort := docker.Port(portNum + "/tcp")
+		portBindings := map[docker.Port][]docker.PortBinding{
+			internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
+		hostConfig.PortBindings = portBindings */
 
 	if functionCode != "" {
 		fileName := "/tmp/" + taskID
