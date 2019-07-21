@@ -8,4 +8,4 @@ docker build -t "fogflow/master" .
 
 #build the arm version of master
 CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o master_arm
-docker build -f Dockerfile4Arm -t "fogflow/master:arm.intent"  .
+docker build -f Dockerfile4Arm -t "fogflow/master:arm"  .
