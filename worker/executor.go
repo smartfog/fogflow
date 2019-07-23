@@ -194,7 +194,7 @@ func (e *Executor) writeTempFile(fileName string, fileContent string) {
 	}
 }
 
-func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string) (string, error) {
+func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string, adminCfg string) (string, error) {
 	// prepare the configuration for a docker container, host mode for the container network
 	evs := make([]string, 0)
 	evs = append(evs, fmt.Sprintf("myport=%s", portNum))
@@ -203,13 +203,18 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 
 	hostConfig := docker.HostConfig{}
 
-	hostConfig.NetworkMode = "host"
-	hostConfig.AutoRemove = e.workerCfg.Worker.ContainerAutoRemove
-	/*
+	if runtime.GOOS == "darwin" {
 		internalPort := docker.Port(portNum + "/tcp")
 		portBindings := map[docker.Port][]docker.PortBinding{
 			internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
-		hostConfig.PortBindings = portBindings */
+		hostConfig.PortBindings = portBindings
+		config.ExposedPorts = map[docker.Port]struct{}{internalPort: {}}
+	} else {
+		hostConfig.NetworkMode = "host"
+	}
+
+	// to configure if the container will be removed once it is terminated
+	hostConfig.AutoRemove = e.workerCfg.Worker.ContainerAutoRemove
 
 	if functionCode != "" {
 		fileName := "/tmp/" + taskID
@@ -301,17 +306,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// function code
 	functionCode := task.FunctionCode
 
-	// start a container to run the scheduled task instance
-	containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID)
-	if err != nil {
-		ERROR.Println(err)
-		return false
-	}
-	INFO.Printf(" task %s  started within container = %s\n", task.ID, containerId)
-
-	taskCtx.ListeningPort = freePort
-	taskCtx.ContainerID = containerId
-
 	// configure the task with its output streams via its admin interface
 	commands := make([]interface{}, 0)
 
@@ -343,12 +337,24 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 		taskCtx.OutputStreams = append(taskCtx.OutputStreams, eid)
 	}
 
-	INFO.Printf("configure the task with %+v, via port %s\r\n", commands, freePort)
-
-	if e.configurateTask(freePort, commands) == false {
-		ERROR.Println("failed to configure the task instance")
+	// start a container to run the scheduled task instance
+	containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID, commands)
+	if err != nil {
+		ERROR.Println(err)
 		return false
 	}
+	INFO.Printf(" task %s  started within container = %s\n", task.ID, containerId)
+
+	taskCtx.ListeningPort = freePort
+	taskCtx.ContainerID = containerId
+
+	/*
+		INFO.Printf("configure the task with %+v, via port %s\r\n", commands, freePort)
+
+		if e.configurateTask(freePort, commands) == false {
+			ERROR.Println("failed to configure the task instance")
+			return false
+		} */
 
 	INFO.Printf("subscribe its input streams")
 
