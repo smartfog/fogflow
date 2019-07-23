@@ -190,11 +190,21 @@ function handleNotify(req, ctxObjects, res)
 
 // get the listening port number from the environment variables given by the FogFlow edge worker
 var myport = process.env.myport;
+var adminCfg = process.env.adminCfg;
+
+console.log("handle the initial admin configuration", adminCfg)
+try {
+  const commands = JSON.parse(adminCfg)
+    handleCmds(commands);
+} catch(err) {
+  console.error(err)
+}
 
 // set up the NGSI agent to listen on 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.setAdminHandler(handleAdmin);
 NGSIAgent.start(myport, startApp);
+
 
 process.on('SIGINT', function() {
     NGSIAgent.stop();   

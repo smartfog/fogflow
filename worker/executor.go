@@ -194,10 +194,13 @@ func (e *Executor) writeTempFile(fileName string, fileContent string) {
 	}
 }
 
-func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string, adminCfg string) (string, error) {
+func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string, adminCfg []interface{}) (string, error) {
 	// prepare the configuration for a docker container, host mode for the container network
 	evs := make([]string, 0)
 	evs = append(evs, fmt.Sprintf("myport=%s", portNum))
+
+	jsonString, _ := json.Marshal(adminCfg)
+	evs = append(evs, fmt.Sprintf("adminCfg=%s", jsonString))
 
 	config := docker.Config{Image: dockerImage, Env: evs}
 

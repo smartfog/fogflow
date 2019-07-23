@@ -30,7 +30,10 @@ func main() {
 		config.Broker.Port, _ = strconv.Atoi(*port)
 	}
 
-	myID := "Broker." + config.SiteID + "." + (*id)
+	myID := "Broker." + config.SiteID
+	if (*id) != "0" {
+		myID = myID + "." + (*id)
+	}
 
 	// check if IoT Discovery is ready
 	for {

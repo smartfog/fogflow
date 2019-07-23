@@ -9,8 +9,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/satori/go.uuid"
-
 	. "github.com/smartfog/fogflow/common/config"
 )
 
@@ -21,16 +19,8 @@ func generateID(text string) string {
 }
 
 func main() {
-	// new random uid
-	u1, err := uuid.NewV4()
-	if err != nil {
-		ERROR.Println(err)
-		return
-	}
-	rid := u1.String()
-
 	configurationFile := flag.String("f", "config.json", "A configuration file")
-	id := flag.String("i", rid, "its ID in the current site")
+	id := flag.String("i", "0", "its ID in the current site")
 
 	flag.Parse()
 	config, err := LoadConfig(*configurationFile)
@@ -40,7 +30,10 @@ func main() {
 		os.Exit(-1)
 	}
 
-	myID := "Worker." + config.SiteID + "." + (*id)
+	myID := "Worker." + config.SiteID
+	if (*id) != "0" {
+		myID = myID + "." + (*id)
+	}
 
 	// start the worker to deal with tasks
 	var worker = &Worker{id: myID}

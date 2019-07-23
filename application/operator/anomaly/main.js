@@ -129,7 +129,6 @@ function handleAdmin(req, commands, res)
     console.log('=============commands=============');
     console.log(commands);
     handleCmds(commands);
-    
     isConfigured = true;
     
     res.status(200).json({});
@@ -192,6 +191,16 @@ function handleNotify(req, ctxObjects, res)
 
 // get the listening port number from the environment variables given by the FogFlow edge worker
 var myport = process.env.myport;
+var adminCfg = process.env.adminCfg;
+
+console.log("handle the initial admin configuration", adminCfg)
+try {
+    const commands = JSON.parse(adminCfg)
+    handleCmds(commands);
+    isConfigured = true;
+} catch(err) {
+  console.error(err)
+}
 
 // set up the NGSI agent to listen on 
 NGSIAgent.setNotifyHandler(handleNotify);
