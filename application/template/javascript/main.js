@@ -190,8 +190,8 @@ function handleNotify(req, ctxObjects, res)
 
 // get the listening port number from the environment variables given by the FogFlow edge worker
 var myport = process.env.myport;
-var adminCfg = process.env.adminCfg;
 
+var adminCfg = process.env.adminCfg;
 console.log("handle the initial admin configuration", adminCfg)
 try {
   const commands = JSON.parse(adminCfg)

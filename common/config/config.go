@@ -49,7 +49,7 @@ type Config struct {
 	CoreSerivceIP string           `json:"coreservice_ip"`
 	ExternalIP    string           `json:"external_hostip"`
 	InternalIP    string           `json:"internal_hostip"`
-	PLocation     PhysicalLocation `json:"physical_location"`
+	PLocation     PhysicalLocation `json:"location"`
 	SiteID        string           `json:"site_id"`
 	Logging       struct {
 		Info     string `json:"info"`

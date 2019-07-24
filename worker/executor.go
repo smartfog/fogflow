@@ -199,6 +199,7 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 	evs := make([]string, 0)
 	evs = append(evs, fmt.Sprintf("myport=%s", portNum))
 
+	// pass the initial configuration as the environmental variable
 	jsonString, _ := json.Marshal(adminCfg)
 	evs = append(evs, fmt.Sprintf("adminCfg=%s", jsonString))
 
