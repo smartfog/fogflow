@@ -1,5 +1,1 @@
-docker build -t tejinderkaur3015/gpadapter:latest .
-
-
-
-docker push tejinderkaur3015/gpadapter:latest
+docker build -t "fogflow/generalpurposeadapter" .
