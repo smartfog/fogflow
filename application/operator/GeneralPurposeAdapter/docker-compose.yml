@@ -1,0 +1,13 @@
+version: '3.3'
+services:
+  adapter:
+    image: dievexx/adapter:dev
+    ports:
+      - "1026:1026"
+    environment:
+      - IOT_BROKER_IP=192.168.1.5    # Edge Node Broker deployed IP
+      - IOT_BROKER_PORT=8080          # Edge Node Broker deployed listen port
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
