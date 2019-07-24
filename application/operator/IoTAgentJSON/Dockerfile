@@ -1,4 +1,4 @@
-ARG NODE_VERSION=8.15.0-slim
+ARG NODE_VERSION=8.16.0-slim
 FROM node:${NODE_VERSION}
 ARG GITHUB_ACCOUNT=telefonicaid
 ARG GITHUB_REPOSITORY=iotagent-json
@@ -82,9 +82,9 @@ RUN \
 	apt-get -y autoremove && \ 
 	chmod +x docker/entrypoint.sh
         
-COPY ./function.js ./function.js
-COPY ./main.js ./main.js
-COPY ./iota-config.sh ./iota-config.sh
+COPY ./function.js .
+COPY ./main.js .
+COPY ./iota-config.sh .
 COPY ./ngsi ./ngsi
 
 RUN chmod +x ./iota-config.sh && \
