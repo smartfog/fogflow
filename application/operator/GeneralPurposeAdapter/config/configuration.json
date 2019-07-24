@@ -1,6 +1,0 @@
-{
-  "iot_broker": {
-    "server_uri": "192.168.0.3",
-    "server_port": "8080"
-  }
-}

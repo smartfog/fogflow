@@ -4,194 +4,194 @@ const NGSIClient = require('/app/source/ngsi/ngsiclient.js');
 const NGSIAgent = require('/app/source/ngsi/ngsiagent.js');
 const fogfunction = require('/app/source/function.js');
 
-var ngsi10client;
+var ngsi10client = null;
 var brokerURL;
 var outputs = [];
-var tBegin = Date.now();
-console.log(tBegin);
-
+var myReferenceURL;
+var mySubscriptionId = null;
 var isConfigured = false;
-var tInterval = 5000; // 5 seconds
-var totalNumAnomaly = 0; // total number of detected anomaly events
 
-function startApp() 
+var buffer = [];
+
+function startApp()
 {
     console.log('start to receive input data streams via a listening port');
-    setInterval(onTimer, tInterval);
 }
 
-function stopApp() 
-{                         
-    console.log('clean up the app');
-}
-
-// process the input data stream and generate output stream
-function processInputStreamData(data) 
+function stopApp()
 {
-    // do the internal data processing    
-    counter(data);
+        console.log('clean up the app');
 }
-
-function onTimer()
-{
-    var now = Date.now();
-    
-    if( (now - tBegin) >= tInterval ) {
-        // publish the total number of anomaly events in the current time window
-        var stat = {};
-        
-        stat['time'] = tBegin; // time.toISOString(); var time = new Date(now);
-        stat['counter'] = totalNumAnomaly;    
-        
-        updateContext(stat)                
-        
-        tBegin = tBegin + tInterval;
-        totalNumAnomaly = 0;
-    } 
-}
-
-function counter(msg) 
-{    
-    var now = Date.now();
-    
-    if( (now - tBegin) >= tInterval ) {
-        // publish the total number of anomaly events in the current time window
-        var stat = {};
-        
-        stat['time'] = tBegin; //time.toISOString(); var time = new Date(now);
-        stat['counter'] = totalNumAnomaly;    
-        
-        updateContext(stat)                
-        
-        tBegin = tBegin + tInterval;
-        totalNumAnomaly = 1;
-    } else {
-        totalNumAnomaly = totalNumAnomaly + 1;
-    }
-}
-
-// update context for streams
-function updateContext(stat) 
-{
-    if (isConfigured == false) {
-        console.log('the task is not configured yet!!!');
-        return;
-    }
-        
-    var ctxObj = {};
-   
-    ctxObj.entityId = {};
-    
-    var outputStream = outputs[0];
-    
-    ctxObj.entityId.id = outputStream.id;
-    ctxObj.entityId.type = outputStream.type;
-    ctxObj.entityId.isPattern = false;    
-    
-    ctxObj.attributes = {};
-            
-    ctxObj.attributes.time = {        
-        type: 'integer',
-        value: stat.time
-    };
-    ctxObj.attributes.counter = {
-        type: 'integer',
-        value: stat.counter
-    };  
-    
-    console.log(ctxObj);    
-    ngsi10client.updateContext(ctxObj).then( function(data) {
-        console.log('======send update======, ');
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to update context');
-    });    
-}
-
 
 // handle the commands received from the engine
-function handleAdmin(req, commands, res) 
-{    
-    console.log('=============commands=============');
-    console.log(commands);
-    handleCmds(commands);
-    
-    isConfigured = true;
-    
-    res.status(200).json({});
-}
-
-function handleCmds(commands) 
+function handleAdmin(req, commands, res)
 {
-    for(var i = 0; i < commands.length; i++) {
-        var cmd = commands[i];
-        handleCmd(cmd);
-    }    
+    console.log(commands);
+
+        handleCmds(commands);
+
+        isConfigured = true;
+
+        res.status(200).json({});
 }
 
-function handleCmd(commandObj) 
-{    
-    switch(commandObj.command) {
-        case 'CONNECT_BROKER':
-            connectBroker(commandObj);
-            break;
-        case 'SET_OUTPUTS':
-            setOutputs(commandObj);
-            break;
-    }    
+function handleCmds(commands)
+{
+        for(var i = 0; i < commands.length; i++) {
+                var cmd = commands[i];
+        console.log(cmd);
+                handleCmd(cmd);
+        console.log("handle next command");
+        }
+
+        // send the updates in the buffer
+        sendUpdateWithinBuffer();
+}
+
+function handleCmd(commandObj)
+{
+    if (commandObj.command == 'CONNECT_BROKER') {
+                connectBroker(commandObj);
+    } else if (commandObj.command == 'SET_OUTPUTS') {
+                setOutputs(commandObj);
+    } else if (commandObj.command == 'SET_REFERENCE'){
+        setReferenceURL(commandObj);
+        }
 }
 
 // connect to the IoT Broker
-function connectBroker(cmd) 
+function connectBroker(cmd)
 {
     brokerURL = cmd.brokerURL;
     ngsi10client = new NGSIClient.NGSI10Client(brokerURL);
-    console.log('connected to broker', cmd.brokerURL);
+        console.log('connected to broker', cmd.brokerURL);
 }
 
-
-function setOutputs(cmd) 
+function setReferenceURL(cmd)
 {
-    var outputStream = {};
-    outputStream.id = cmd.id;
-    outputStream.type = cmd.type;
-
-    outputs.push(outputStream);
-
-    console.log('output has been set: ', cmd);
+    myReferenceURL = cmd.url
+        console.log('your application can subscribe addtional inputs under the reference URL: ', myReferenceURL);
 }
 
+
+function setOutputs(cmd)
+{
+        var outputStream = {};
+        outputStream.id = cmd.id;
+        outputStream.type = cmd.type;
+
+        outputs.push(outputStream);
+
+        console.log('output has been set: ', outputs);
+}
+
+function sendUpdateWithinBuffer()
+{
+        for(var i=0; i<buffer.length; i++){
+                var tmp = buffer[i];
+
+                if (tmp.outputIdx > 0) {
+                        tmp.ctxObj.entityId.id = outputs[i].id;
+                        tmp.ctxObj.entityId.type = outputs[i].type;
+                }
+
+        ngsi10client.updateContext(tmp.ctxObj).then( function(data) {
+            console.log(data);
+        }).catch(function(error) {
+                console.log(error);
+            console.log('failed to update context');
+        });
+        }
+
+        buffer= [];
+        console.log('Updates Alarm, Finished!!!');
+}
+
+//
+// query results from the assigned nearby IoT broker
+//
+function query(queryCtxReq, f)
+{
+        if (ngsi10client == null) {
+        console.log("=== broker is not configured for your query");
+                return
+        }
+
+    ngsi10client.queryContext(queryCtxReq).then(f).catch( function(error) {
+        console.log('failed to subscribe context');
+    });
+}
+
+//
+// send subscriptions to IoT broker
+//
+function subscribe(subscribeCtxReq)
+{
+        if (ngsi10client == null) {
+        console.log("=== broker is not configured for your subscription");
+                return
+        }
+
+    subscribeCtxReq.reference =  myReferenceURL;
+
+        console.log("================trigger my own subscription===================");
+        console.log(subscribeCtxReq);
+
+    ngsi10client.subscribeContext(subscribeCtxReq).then( function(subscriptionId) {
+        console.log("subscription id = " + subscriptionId);
+                mySubscriptionId = subscriptionId;
+    }).catch(function(error) {
+        console.log('failed to subscribe context');
+    });
+}
+
+//
+// publish context entities:
+//
+function publish(ctxUpdate)
+{
+        buffer.push(ctxUpdate)
+
+        if (ngsi10client == null) {
+        console.log("=== broker is not configured for your update");
+                return
+        }
+
+        for(var i=0; i<buffer.length; i++){
+                var update = buffer[i];
+
+        ngsi10client.updateContext(update).then( function(data) {
+                    console.log('======send update======');
+            console.log(data);
+        }).catch(function(error) {
+                    console.log(error);
+            console.log('failed to update context');
+        });
+        }
+
+        buffer= [];
+}
 
 // handle the received results
-function handleNotify(req, ctxObjects, res) 
-{    
-    for(var i = 0; i < ctxObjects.length; i++) {
-        //console.log(ctxObjects[i]);
-        processInputStreamData(ctxObjects[i]);
-    }
+function handleNotify(req, ctxObjects, res)
+{
+        for(var i = 0; i < ctxObjects.length; i++) {
+                console.log(ctxObjects[i]);
+        fogfunction.handler(ctxObjects[i], publish, query, subscribe);
+        }
 }
 
 // get the listening port number from the environment variables given by the FogFlow edge worker
 var myport = process.env.myport;
-var adminCfg = process.env.adminCfg;
 
-console.log("handle the initial admin configuration", adminCfg)
-try {
-    const commands = JSON.parse(adminCfg)
-    handleCmds(commands);
-    isConfigured = true;    
-} catch(err) {
-  console.error(err)
-}
-
-
-// set up the NGSI agent to listen on 
+// set up the NGSI agent to listen on
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.setAdminHandler(handleAdmin);
 NGSIAgent.start(myport, startApp);
+
 process.on('SIGINT', function() {
-    NGSIAgent.stop();    
-    stopApp();
-    
-    process.exit(0);
+        NGSIAgent.stop();
+        stopApp();
+
+        process.exit(0);
 });
