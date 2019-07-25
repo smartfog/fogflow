@@ -642,7 +642,13 @@ func (master *Master) Process(msg *RecvMessage) error {
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	master.workerList_lock.Lock()
 
-	master.workers[profile.WID] = profile
+	workerID := profile.WID
+	if worker, exist := master.workers[workerID]; exist {
+		worker.Capacity = profile.Capacity
+	} else {
+		profile.Workload = 0
+		master.workers[workerID] = profile
+	}
 
 	master.workerList_lock.Unlock()
 }
@@ -660,6 +666,14 @@ func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
 
 	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
+
+	// update the workload of this worker
+	workerID := taskInstance.WorkerID
+
+	master.workerList_lock.Lock()
+	workerProfile := master.workers[workerID]
+	workerProfile.Workload = workerProfile.Workload + 1
+	master.workerList_lock.Unlock()
 
 	go master.communicator.Publish(&taskMsg)
 }
@@ -759,11 +773,16 @@ func (master *Master) SelectWorker(locations []Point) string {
 
 	DEBUG.Printf("points: %+v\r\n", locations)
 
-	// select the workers with the closest distance
+	// select the workers with the closest distance and also the worker is currently not overloaded
 	closestWorkerID := ""
 	closestTotalDistance := uint64(18446744073709551615)
 	for _, worker := range master.workers {
 		INFO.Printf("check worker %+v\r\n", worker)
+
+		// if this worker is already overloaded, check the next one
+		if worker.IsOverloaded() == true {
+			continue
+		}
 
 		wp := Point{}
 		wp.Latitude = worker.PLocation.Latitude

@@ -257,6 +257,14 @@ type WorkerProfile struct {
 	Workload  int
 }
 
+func (worker *WorkerProfile) IsOverloaded() bool {
+	if worker.Workload >= worker.Capacity {
+		return true
+	} else {
+		return false
+	}
+}
+
 type StreamProfile struct {
 	ID         string
 	StreamType string
