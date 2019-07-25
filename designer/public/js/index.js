@@ -190,12 +190,15 @@ function displayServiceList(serviceList)
    
     html += '<thead><tr>';
     html += '<th>ID</th>';
+    html += '<th>Access Point</th>';    
     html += '<th>DomainMetadata</th>';
     html += '</tr></thead>';    
 
     for(var i=0; i<serviceList.length; i++){
-        var service = serviceList[i];
-        html += '<tr><td>' + service.entityId.id + '</td><td>' + JSON.stringify(service.metadata) + '</td></tr>';			
+        var service = serviceList[i];        
+        html += '<tr><td>' + service.entityId.id + '</td>';
+        html += '<td>' + service.metadata.IP.value + ":" +  service.metadata.port.value + '</td>';
+        html += '<td>' + JSON.stringify(service.metadata) + '</td></tr>';			
 	}
        
     html += '</table>';            
