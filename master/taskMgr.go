@@ -835,6 +835,9 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			workerID := scheduledTaskInstance.WorkerID
 			scheduledTaskInstance.DockerImage = tMgr.master.DetermineDockerImage(operator, workerID)
 
+			// carry the paramemters associated with this operator
+			scheduledTaskInstance.Parameters = tMgr.master.GetOperatorParamters(operator)
+
 			INFO.Println("TASK INSTANCE TO BE DEPLOYED")
 			INFO.Println(scheduledTaskInstance)
 

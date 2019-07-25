@@ -35,13 +35,6 @@ type PhysicalLocation struct {
 	Longitude float64 `json:"longitude"`
 }
 
-type LogicalLocation struct {
-	LayerNo      int `json:"layer_no"`
-	SiteNo       int `json:"site_no"`
-	NodeNo       int `json:"node_no"`
-	ParentSiteNo int `json:"parent_site_no"`
-}
-
 type ProfileInfo struct {
 	StreamType string  `json:"type"`
 	URL        string  `json:"url"`
@@ -241,6 +234,7 @@ type ScheduledTaskInstance struct {
 	TaskType     string
 	FunctionCode string
 	DockerImage  string
+	Parameters   []Parameter
 
 	WorkerID string
 

@@ -23,6 +23,7 @@ addMenuItem('Broker', showBrokers);
 addMenuItem('Master', showMaster);    
 addMenuItem('Worker', showWorkers);    
 addMenuItem('Device', showDevices); 
+addMenuItem('uService', showEndPointService); 
 addMenuItem('Stream', showStreams); 
 
 
@@ -163,6 +164,45 @@ function displayMasterList(masters)
 	$('#content').html(html);    
 }
 
+
+function showEndPointService() 
+{
+    $('#info').html('list of all available end-point services');
+
+    var queryReq = {}
+    queryReq.entities = [{type:'uService', isPattern: true}];
+    client.queryContext(queryReq).then( function(serviceList) {
+        displayServiceList(serviceList);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query context');
+    });    
+}
+
+function displayServiceList(serviceList) 
+{
+    if(serviceList == null || serviceList.length == 0){
+        $('#content').html('there is no endpoint service running');           
+        return                
+    }
+    
+    var html = '<table class="table table-striped table-bordered table-condensed">';
+   
+    html += '<thead><tr>';
+    html += '<th>ID</th>';
+    html += '<th>DomainMetadata</th>';
+    html += '</tr></thead>';    
+
+    for(var i=0; i<serviceList.length; i++){
+        var service = serviceList[i];
+        html += '<tr><td>' + service.entityId.id + '</td><td>' + JSON.stringify(service.metadata) + '</td></tr>';			
+	}
+       
+    html += '</table>';            
+	
+	$('#content').html(html);    
+}
+
 function showWorkers() 
 {
     $('#info').html('show all edge nodes on the map');
@@ -176,10 +216,10 @@ function showWorkers()
     queryReq.entities = [{"type":'Worker', "isPattern": true}];    
     client.queryContext(queryReq).then( function(edgeNodeList) {
         // list all edge nodes in the table
-        displayEdgeNodeList(edgeNodeList);                
+        displayWorkerList(edgeNodeList);                
         
         // show edge nodes on the map
-        displayEdgeNodeOnMap(edgeNodeList);                
+        displayWorkerOnMap(edgeNodeList);                
     }).catch(function(error) {
         console.log(error);
         console.log('failed to query the list of workers');
@@ -187,7 +227,7 @@ function showWorkers()
 }
 
 
-function displayEdgeNodeList(workerList)
+function displayWorkerList(workerList)
 {           
     var queryReq = {}
     queryReq.entities = [{type:'Task', isPattern: true}];
@@ -223,7 +263,7 @@ function displayEdgeNodeList(workerList)
                  
             html += '<tr>'; 
     		html += '<td>' + wid + '</td>'; 
-    		html += '<td>' + JSON.stringify(worker.attributes.physical_location.value) + '</td>';                    
+    		html += '<td>' + JSON.stringify(worker.attributes.location.value) + '</td>';                    
     		html += '<td>' + JSON.stringify(worker.attributes.capacity.value) + '</td>';        
     		html += '<td>' + num_task_instances  + '</td>';
     		html += '</tr>';	            
@@ -239,7 +279,7 @@ function displayEdgeNodeList(workerList)
      
 }
 
-function displayEdgeNodeOnMap(workerList)
+function displayWorkerOnMap(workerList)
 {
     var curMap = showMap();
         
@@ -251,8 +291,8 @@ function displayEdgeNodeOnMap(workerList)
     for(var i=0; i<workerList.length; i++) {
         var worker = workerList[i];
                 
-        var latitude = worker.attributes.physical_location.value.latitude;
-        var longitude = worker.attributes.physical_location.value.longitude;
+        var latitude = worker.attributes.location.value.latitude;
+        var longitude = worker.attributes.location.value.longitude;
         var edgeNodeId = worker.entityId.id;
         
         var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});

@@ -25,7 +25,8 @@
     },
     "worker": {
         "container_autoremove": false,
-        "start_actual_task": true               
+        "start_actual_task": true,
+        "capacity": 8              
     },
     "designer": {
         "webSrvPort": 80,

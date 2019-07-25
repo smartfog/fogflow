@@ -32,7 +32,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
 
 	command = "/opt/iotajson/iota-config.sh " + MongoIP  + " " + MongoPort + " " + BrokerIP + " " + BrokerPort;
 	
-        const shell = require('shelljs');
+    const shell = require('shelljs');
 	shell.exec(command);
 };
 

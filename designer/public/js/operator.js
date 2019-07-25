@@ -270,6 +270,10 @@ function initOperatorList()
         description: "",
         parameters:[]
     },{
+        name: "iotagent",
+        description: "",
+        parameters:[]
+    },{
         name: "counter",
         description: "",
         parameters:[]
@@ -373,6 +377,13 @@ function initDockerImageList()
         hwType: "X86",
         osType: "Linux",
         operatorName: "connectedcar",
+        prefetched: false
+    },{
+        name: "fiware/iotagent-json",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "iotagent",
         prefetched: false
     },{
         name: "fogflow/recommender",

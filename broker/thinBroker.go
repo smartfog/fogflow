@@ -51,7 +51,7 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	tb.myEntityId = tb.id
 
 	tb.IoTDiscoveryURL = cfg.GetDiscoveryURL()
-	tb.MyLocation = cfg.PLocation
+	tb.MyLocation = cfg.Location
 
 	tb.subscriptions = make(map[string]*SubscribeContextRequest)
 	tb.tmpNGSI10NotifyCache = make([]string, 0)

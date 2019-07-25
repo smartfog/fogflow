@@ -49,7 +49,7 @@ type Config struct {
 	CoreSerivceIP string           `json:"coreservice_ip"`
 	ExternalIP    string           `json:"external_hostip"`
 	InternalIP    string           `json:"internal_hostip"`
-	PLocation     PhysicalLocation `json:"location"`
+	Location      PhysicalLocation `json:"physical_location"`
 	SiteID        string           `json:"site_id"`
 	Logging       struct {
 		Info     string `json:"info"`
@@ -70,6 +70,7 @@ type Config struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
+		Capacity            int                   `json:"capacity"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`

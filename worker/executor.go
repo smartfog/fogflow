@@ -22,11 +22,12 @@ import (
 )
 
 type taskContext struct {
-	ListeningPort  string
-	Subscriptions  []string
-	EntityID2SubID map[string]string
-	OutputStreams  []EntityId
-	ContainerID    string
+	ListeningPort      string
+	EndPointServiceIDs []EntityId
+	Subscriptions      []string
+	EntityID2SubID     map[string]string
+	OutputStreams      []EntityId
+	ContainerID        string
 }
 
 type pullResult struct {
@@ -35,9 +36,10 @@ type pullResult struct {
 }
 
 type Executor struct {
-	client        *docker.Client
-	workerCfg     *Config
-	brokerURL     string
+	client    *docker.Client
+	workerCfg *Config
+	brokerURL string
+
 	taskInstances map[string]*taskContext
 	taskMap_lock  sync.RWMutex
 }
@@ -194,7 +196,7 @@ func (e *Executor) writeTempFile(fileName string, fileContent string) {
 	}
 }
 
-func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string, adminCfg []interface{}) (string, error) {
+func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string, adminCfg []interface{}, servicePorts []string) (string, error) {
 	// prepare the configuration for a docker container, host mode for the container network
 	evs := make([]string, 0)
 	evs = append(evs, fmt.Sprintf("myport=%s", portNum))
@@ -211,8 +213,14 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 		internalPort := docker.Port(portNum + "/tcp")
 		portBindings := map[docker.Port][]docker.PortBinding{
 			internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
+
+		// add the other listening ports into the exposed port list
+		for _, port := range servicePorts {
+			internalPort := docker.Port(port + "/tcp")
+			portBindings[internalPort] = []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: port}}
+		}
+
 		hostConfig.PortBindings = portBindings
-		config.ExposedPorts = map[docker.Port]struct{}{internalPort: {}}
 	} else {
 		hostConfig.NetworkMode = "host"
 	}
@@ -303,6 +311,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	taskCtx := taskContext{}
 	taskCtx.EntityID2SubID = make(map[string]string)
+	taskCtx.EndPointServiceIDs = make([]EntityId, 0)
 
 	// find a free listening port number available on the host machine
 	freePort := strconv.Itoa(e.findFreePortNumber())
@@ -341,8 +350,18 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 		taskCtx.OutputStreams = append(taskCtx.OutputStreams, eid)
 	}
 
+	// check if it is required to set up the portmapping for its endpoint services
+	servicePorts := make([]string, 0)
+
+	for _, parameter := range task.Parameters {
+		// deal with the service port
+		if parameter.Name == "service_port" {
+			servicePorts = append(servicePorts, parameter.Values...)
+		}
+	}
+
 	// start a container to run the scheduled task instance
-	containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID, commands)
+	containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID, commands, servicePorts)
 	if err != nil {
 		ERROR.Println(err)
 		return false
@@ -352,13 +371,12 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.ListeningPort = freePort
 	taskCtx.ContainerID = containerId
 
-	/*
-		INFO.Printf("configure the task with %+v, via port %s\r\n", commands, freePort)
-
-		if e.configurateTask(freePort, commands) == false {
-			ERROR.Println("failed to configure the task instance")
-			return false
-		} */
+	// register the service ports of uservices
+	if len(servicePorts) > 0 {
+		// currently, we assume that each task will only provide one end-point service
+		eid := e.registerEndPointService(task.ServiceName, task.ID, task.OperatorName, e.workerCfg.ExternalIP, servicePorts[0], e.workerCfg.Location)
+		taskCtx.EndPointServiceIDs = append(taskCtx.EndPointServiceIDs, eid)
+	}
 
 	INFO.Printf("subscribe its input streams")
 
@@ -387,6 +405,38 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	e.registerTask(task, freePort, containerId)
 
 	return true
+}
+
+func (e *Executor) registerEndPointService(serviceName string, taskID string, operateName string, ipAddr string, port string, location PhysicalLocation) EntityId {
+	ctxObj := ContextObject{}
+
+	ctxObj.Entity.ID = "uService." + serviceName + "." + taskID
+	ctxObj.Entity.Type = "uService"
+	ctxObj.Entity.IsPattern = false
+
+	ctxObj.Metadata = make(map[string]ValueObject)
+	ctxObj.Metadata["service"] = ValueObject{Type: "string", Value: serviceName}
+	ctxObj.Metadata["taskID"] = ValueObject{Type: "string", Value: taskID}
+	ctxObj.Metadata["operator"] = ValueObject{Type: "string", Value: operateName}
+	ctxObj.Metadata["IP"] = ValueObject{Type: "string", Value: ipAddr}
+	ctxObj.Metadata["port"] = ValueObject{Type: "object", Value: port}
+	ctxObj.Metadata["location"] = ValueObject{Type: "string", Value: location}
+
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
+	err := client.UpdateContextObject(&ctxObj)
+	if err != nil {
+		ERROR.Println(err)
+	}
+
+	return ctxObj.Entity
+}
+
+func (e *Executor) deRegisterEndPointService(eid EntityId) {
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL}
+	err := client.DeleteContext(&eid)
+	if err != nil {
+		ERROR.Println(err)
+	}
 }
 
 func (e *Executor) configurateTask(port string, commands []interface{}) bool {
@@ -617,6 +667,11 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 	// delete the output streams of the terminated task
 	for _, outStream := range e.taskInstances[taskID].OutputStreams {
 		e.deleteOuputStream(&outStream)
+	}
+
+	// deregister the associated end point service
+	for _, serviceEntityID := range e.taskInstances[taskID].EndPointServiceIDs {
+		go e.deRegisterEndPointService(serviceEntityID)
 	}
 
 	delete(e.taskInstances, taskID)

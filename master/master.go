@@ -82,8 +82,8 @@ func (master *Master) Start(configuration *Config) {
 	// find a nearby IoT Broker
 	for {
 		nearby := NearBy{}
-		nearby.Latitude = master.cfg.PLocation.Latitude
-		nearby.Longitude = master.cfg.PLocation.Longitude
+		nearby.Latitude = master.cfg.Location.Latitude
+		nearby.Longitude = master.cfg.Location.Longitude
 		nearby.Limit = 1
 
 		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
@@ -185,8 +185,8 @@ func (master *Master) registerMyself() {
 	ctxObj.Metadata = make(map[string]ValueObject)
 
 	mylocation := Point{}
-	mylocation.Latitude = master.cfg.PLocation.Latitude
-	mylocation.Longitude = master.cfg.PLocation.Longitude
+	mylocation.Latitude = master.cfg.Location.Latitude
+	mylocation.Longitude = master.cfg.Location.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
@@ -730,6 +730,18 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	DEBUG.Println(selectedDockerImageName)
 
 	return selectedDockerImageName
+}
+
+func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
+	master.operatorList_lock.RLock()
+
+	operator := master.operatorList[operatorName]
+	parameters := make([]Parameter, len(operator.Parameters))
+	copy(parameters, operator.Parameters)
+
+	master.operatorList_lock.RUnlock()
+
+	return parameters
 }
 
 //

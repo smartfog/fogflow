@@ -1,0 +1,55 @@
+{
+    "webportal_ip": "127.0.0.1",
+    "coreservice_ip": "172.17.0.1",     
+    "external_hostip": "172.17.0.1",      
+    "internal_hostip": "172.17.0.1",  
+    "physical_location":{
+        "longitude": 139.709059,
+        "latitude": 35.692221,
+        "section": "01",
+        "district": "02",
+        "city": "Tokyo"
+    },  
+    "logical_location": {
+        "node_no": 1,
+        "site_no": 1,               
+        "layer_no": 2,
+        "parent_site_no": 1
+    },          
+    "logging":{
+        "info":"stdout",
+        "error":"stderr",
+            "protocol": "stdout",
+            "debug": "stdout"
+    },
+    "discovery": {
+        "port": 443,
+        "postgresql": {
+            "dbreset": true,
+            "username": "postgres",
+            "password": "postgres",
+            "host": "postgis",
+            "port": 5432,
+            "dbname": "ngsi9"
+        }    
+    },
+    "broker": {
+        "port": 8080,
+        "websocket": 8090        
+    },    
+    "master": {
+        "ngsi_agent_port": 1060         
+    },
+    "worker": {
+        "container_autoremove": false       
+    },
+    "designer": {
+        "webSrvPort": 80,
+        "agentPort": 1030               
+    },    
+    "rabbitmq": {
+        "port": 5672,
+        "username": "admin",
+        "password":"mypass"
+    }    
+}

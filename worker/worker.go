@@ -31,8 +31,8 @@ func (w *Worker) Start(config *Config) bool {
 	w.cfg = config
 
 	w.profile.WID = w.id
-	w.profile.Capacity = 10
-	w.profile.PLocation = config.PLocation
+	w.profile.Capacity = config.Worker.Capacity
+	w.profile.PLocation = config.Location
 
 	w.profile.OSType = runtime.GOOS
 	w.profile.HWType = runtime.GOARCH
@@ -54,8 +54,8 @@ func (w *Worker) Start(config *Config) bool {
 		// find a nearby IoT Broker
 		for {
 			nearby := NearBy{}
-			nearby.Latitude = w.cfg.PLocation.Latitude
-			nearby.Longitude = w.cfg.PLocation.Longitude
+			nearby.Latitude = w.cfg.Location.Latitude
+			nearby.Longitude = w.cfg.Location.Longitude
 			nearby.Limit = 1
 
 			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL()}
@@ -143,12 +143,12 @@ func (w *Worker) publishMyself() error {
 	ctxObj.Attributes = make(map[string]ValueObject)
 	ctxObj.Attributes["id"] = ValueObject{Type: "string", Value: w.id}
 	ctxObj.Attributes["capacity"] = ValueObject{Type: "integer", Value: w.profile.Capacity}
-	ctxObj.Attributes["location"] = ValueObject{Type: "object", Value: w.cfg.PLocation}
+	ctxObj.Attributes["location"] = ValueObject{Type: "object", Value: w.cfg.Location}
 
 	ctxObj.Metadata = make(map[string]ValueObject)
 	mylocation := Point{}
-	mylocation.Latitude = w.cfg.PLocation.Latitude
-	mylocation.Longitude = w.cfg.PLocation.Longitude
+	mylocation.Latitude = w.cfg.Location.Latitude
+	mylocation.Longitude = w.cfg.Location.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
 	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}

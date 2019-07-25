@@ -23,7 +23,7 @@ blocks.register({
             name: "Streams",
             type: "Stream",
             attrs: "input"
-        },                        
+        },                       
         {
             name: "Outputs",
             type: "string[]",
