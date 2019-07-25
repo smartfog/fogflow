@@ -251,9 +251,10 @@ type WorkerProfile struct {
 	WID       string
 	PLocation PhysicalLocation
 	GeohashID string
-	Capacity  int
 	OSType    string
 	HWType    string
+	Capacity  int
+	Workload  int
 }
 
 type StreamProfile struct {

@@ -214,6 +214,8 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 		portBindings := map[docker.Port][]docker.PortBinding{
 			internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
 
+		config.ExposedPorts = map[docker.Port]struct{}{internalPort: {}}
+
 		// add the other listening ports into the exposed port list
 		for _, port := range servicePorts {
 			internalPort := docker.Port(port + "/tcp")

@@ -383,6 +383,18 @@ function showDevices()
     });   
 }
 
+function showWorkerList() {
+    var queryReq = {}
+    queryReq.entities = [{"type":'Worker', "isPattern": true}];    
+    client.queryContext(queryReq).then( function(edgeNodeList) {
+        // show edge nodes on the map
+        displayWorkerOnMap(edgeNodeList);                
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to query the list of workers');
+    });     
+}
+
 
 function updateDeviceList()
 {
@@ -526,8 +538,7 @@ function deviceRegistration()
     
     $('#content').html(html);        
    
-    // show the map to set locations
-    showMap();   
+    showWorkerList();    
     
     // associate functions to clickable buttons
     $('#submitRegistration').click(registerNewDevice);  

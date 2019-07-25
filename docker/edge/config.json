@@ -1,39 +1,37 @@
 {
-    "coreservice_ip": "10.160.0.2",     
-    "external_hostip": "10.160.0.3",      
-    "internal_hostip": "172.17.0.1",  
+    "coreservice_ip": "host.docker.internal",   
+    "external_hostip": "host.docker.internal",         
+    "internal_hostip": "host.docker.internal",  
     "physical_location":{
-        "longitude": 137.709059,
-        "latitude": 33.692221,
-        "section": "01",
-        "district": "02",
-        "city": "Tokyo"
-    },  
-    "logical_location": {
-        "node_no": 1,
-        "site_no": 2,               
-        "layer_no": 2,
-        "parent_site_no": 1
-    },          
+        "longitude": 138.709059,
+        "latitude": 36.692221
+    },
+    "site_id": "002",
     "logging":{
         "info":"stdout",
-        "error":"stderr",
-            "protocol": "stdout",
-            "debug": "stdout"
+        "error":"stdout",
+        "protocol": "stdout",
+        "debug": "stdout"
     },
     "discovery": {
-        "port": 443
+        "port": 443   
     },
     "broker": {
-        "port": 8080,
-        "websocket": 8090        
+        "port": 8082
     },    
     "worker": {
-        "container_autoremove": false       
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 4              
     },
     "rabbitmq": {
         "port": 5672,
         "username": "admin",
         "password":"mypass"
-    }    
+    },
+    "https": {
+        "enabled" : false,
+        "certificate": "cert.pem",
+        "key": "key.pem"
+    }
 }

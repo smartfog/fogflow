@@ -1,6 +1,6 @@
 {
-    "discoveryURL": "http://10.146.0.2:443/ngsi9",
-    "myIP": "10.146.0.2",
+    "discoveryURL": "http://127.0.0.1:443/ngsi9",
+    "myIP": "host.docker.internal",
     "myPort": 8092,
     "location": {
         "latitude": 36.146094,

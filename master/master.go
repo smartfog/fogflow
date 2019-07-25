@@ -641,7 +641,9 @@ func (master *Master) Process(msg *RecvMessage) error {
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	master.workerList_lock.Lock()
+
 	master.workers[profile.WID] = profile
+
 	master.workerList_lock.Unlock()
 }
 
