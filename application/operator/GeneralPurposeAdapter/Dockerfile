@@ -1,25 +1,13 @@
-FROM python:3.7-alpine
+FROM dievexx/adapter:dev
 
 WORKDIR "/app/source"
 
-RUN apk add --no-cache gcc libc-dev unixodbc-dev && \
-    wget https://gitlab.hopu.eu/public-projects/Py-IoTAgent-Adapter/-/archive/master/Py-IoTAgent-Adapter-master.zip && \
-    unzip Py-IoTAgent-Adapter-master.zip && mv ./Py-IoTAgent-Adapter-master/* . && \
-    rm -rf Py-IoTAgent-Adapter-master.zip Py-IoTAgent-Adapter-master
-
-
-RUN pip install --no-cache-dir --trusted-host=pypi.python.org -r /app/source/requirements.txt && \
-    apk update -f && \
+RUN apk update -f && \
     apk add --update nodejs nodejs-npm && \
-    apk add zip && \
     npm install shelljs && \
     npm install express && \
     npm install logops && \
     npm install axios
-
-EXPOSE 1026
-
-ENV PYTHONPATH /app/source
 
 WORKDIR "/app/source"
 
