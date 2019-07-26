@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/jadengore/go-json-rest-middleware-force-ssl"
+	//"github.com/jadengore/go-json-rest-middleware-force-ssl"
 
 	. "github.com/smartfog/fogflow/common/config"
 )
@@ -61,14 +61,18 @@ func main() {
 
 	api := rest.NewApi()
 
-	if config.HTTPS.Enabled == true {
-		api.Use(&forceSSL.Middleware{
-			TrustXFPHeader:     true,
-			Enable301Redirects: false,
-		})
-	} else {
-		api.Use(rest.DefaultCommonStack...)
-	}
+	api.Use(rest.DefaultCommonStack...)
+
+	/*
+		if config.HTTPS.Enabled == true {
+			api.Use(&forceSSL.Middleware{
+				TrustXFPHeader:     true,
+				Enable301Redirects: false,
+			})
+		} else {
+			api.Use(rest.DefaultCommonStack...)
+		}
+	*/
 
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
@@ -84,8 +88,6 @@ func main() {
 	api.SetApp(router)
 
 	go func() {
-		fmt.Printf("Starting IoT Discovery on port %d\n", config.Discovery.Port)
-
 		if config.HTTPS.Enabled == true {
 			// Create a CA certificate pool and add cert.pem to it
 			caCert, err := ioutil.ReadFile("cert.pem")
@@ -102,15 +104,17 @@ func main() {
 			}
 			tlsConfig.BuildNameToCertificate()
 
-			// Create a Server instance to listen on port 8443 with the TLS config
+			// Create a Server instance to listen on the port with the TLS config
 			server := &http.Server{
 				Addr:      ":" + strconv.Itoa(config.Discovery.Port),
 				Handler:   api.MakeHandler(),
 				TLSConfig: tlsConfig,
 			}
 
+			fmt.Printf("Starting IoT Discovery on port %d for HTTPS requests\n", config.Discovery.Port)
 			panic(server.ListenAndServeTLS("cert.pem", "key.pem"))
 		} else {
+			fmt.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port)
 			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
 		}
 	}()

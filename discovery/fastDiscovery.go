@@ -483,6 +483,7 @@ func (fd *FastDiscovery) getSubscriptions(w rest.ResponseWriter, r *rest.Request
 
 func (fd *FastDiscovery) getStatus(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(200)
+	w.WriteJson("ok")
 }
 
 func (fd *FastDiscovery) onForwardContextUpdate(w rest.ResponseWriter, r *rest.Request) {

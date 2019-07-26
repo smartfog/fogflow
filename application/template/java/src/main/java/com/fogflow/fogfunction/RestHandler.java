@@ -1,10 +1,13 @@
 package com.fogflow.fogfunction;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
@@ -16,7 +19,10 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 class Config {
@@ -394,8 +400,15 @@ class UpdateContextResponse {
 public class RestHandler {
 	private String BrokerURL;
 		
-    private String outputEntityId;
-    private String outputEntityType;
+	private String outputEntityId;
+	private String outputEntityType;
+    
+    @PostConstruct
+    private void setup() {	
+    	System.out.print("=========test========");
+    	String jsonText = System.getenv("adminCfg");
+    	this.handleInitAdminCfg(jsonText);    	
+    }
 	
 	@PostMapping("/admin")
 	public ResponseEntity<Void> handleConfig(@RequestBody List<Config> configs) {				
@@ -414,6 +427,22 @@ public class RestHandler {
 		System.out.println(this.outputEntityType.toString());		
 		
 		return ResponseEntity.ok().build();
+	}
+	
+	
+	public void handleInitAdminCfg(String config)  {		
+        ObjectMapper mapper = new ObjectMapper();
+        
+        try {
+        	List<Config> myAdminCfgs =  mapper.readValue(config, new TypeReference<List<Config>>(){});
+        	this.handleConfig(myAdminCfgs);        	
+        } catch (JsonGenerationException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 	
 	@PostMapping("/notifyContext")
@@ -437,7 +466,7 @@ public class RestHandler {
 		System.out.println(entity.type);
 		
 		ContextObject resultEntity = new ContextObject();
-		resultEntity.id = "result." + entity.id;
+		resultEntity.id = "Test." + entity.id;
 		resultEntity.type = "Result";
 		
 		ContextAttribute attr = new ContextAttribute();
@@ -452,12 +481,12 @@ public class RestHandler {
 	
 
 	// to publish the generated result entity		
-	private void publishResult(ContextObject resultEntity) {
-		if (outputEntityId != "") {
+	private void publishResult(ContextObject resultEntity) {		
+		if (resultEntity.id == "") {
 			resultEntity.id = outputEntityId;
 		}
 		
-		if (outputEntityType != "") {
+		if (resultEntity.type == "") {
 			resultEntity.type = outputEntityType;
 		}
 		
