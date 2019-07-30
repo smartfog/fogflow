@@ -1,0 +1,1 @@
+[{"targets":["172.17.0.1:9999"],"labels":{"job":"fogflow_broker"}}]
