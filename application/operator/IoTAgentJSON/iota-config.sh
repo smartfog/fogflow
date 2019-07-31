@@ -1,14 +1,15 @@
 #!/bin/sh
-echo "Creating config.js for IoTAgent....."
+echo "Configuring IoTAgent....."
 
-sed -i  "s/        port: '27017'/        port: '$2'/" ./config.js
+sed -i '122s/localhost/'$1'/' ./config.js
 
-sed -i  "s/        port: '1026'/        port: '$4'/" ./config.js
+sed -i  "s/        port: '1026'/        port: '$2'/" ./config.js
 
-sed -i '122s/localhost/'$3'/' ./config.js
+echo "Starting MongoDB....."
+cd /usr/local/bin/
+./docker-entrypoint.sh mongod &
 
-sed -i '205s/localhost/'$1'/' ./config.js
 
 echo "Starting IoTAgent....."
-
-./docker/entrypoint.sh ./config.js
+cd /opt/iotajson
+./docker/entrypoint.sh config.js
