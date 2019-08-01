@@ -255,6 +255,8 @@ type WorkerProfile struct {
 	HWType    string
 	Capacity  int
 	Workload  int
+	CAdvisorPort int
+	EdgeAddress string
 }
 
 func (worker *WorkerProfile) IsOverloaded() bool {

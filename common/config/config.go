@@ -71,6 +71,8 @@ type Config struct {
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
 		Capacity            int                   `json:"capacity"`
+		EdgeAddress         string				  `json:"edge_address"`
+		CAdvisorPort 		int 				  `json:"cadvisor_port"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`
@@ -82,6 +84,11 @@ type Config struct {
 		Certificate string `json:"certificate"`
 		Key         string `json:"key"`
 	} `json:"https"`
+	Prometheus struct {
+		Address string `json:"address"`
+		DataPort int `json:"data_port"`
+		AdminPort int `json:"admin_port"`
+	}`json:"prometheus"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{
