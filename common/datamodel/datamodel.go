@@ -276,3 +276,10 @@ type StreamProfile struct {
 
 	StreamObject *ContextObject
 }
+
+type PrometheusConfig struct {
+	Targets []string `json:"targets"`
+	Labels  struct {
+		Job string `json:"job"`
+	} `json:"labels"`
+}
