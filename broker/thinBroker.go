@@ -420,6 +420,15 @@ func (tb *ThinBroker) handleExternalUpdateContext(updateCtxReq *UpdateContextReq
 	switch updateCtxReq.UpdateAction {
 	case "UPDATE":
 		for _, ctxElem := range updateCtxReq.ContextElements {
+                        tb.entities_lock.Lock()
+                        ctxElem.Entity.ID=updateCtxReq.ContextElements[0].ID
+                        ctxElem.Entity.Type=updateCtxReq.ContextElements[0].Type
+                        if updateCtxReq.ContextElements[0].IsPattern == "false" {
+                        	ctxElem.Entity.IsPattern =false
+			} else {
+				ctxElem.Entity.IsPattern =true
+                        }
+                        tb.entities_lock.Unlock()
 			brokerURL := tb.queryOwnerOfEntity(ctxElem.Entity.ID)
 			if brokerURL == tb.myProfile.MyURL {
 				tb.UpdateContext2LocalSite(&ctxElem)

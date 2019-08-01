@@ -202,7 +202,7 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 type ContextAttribute struct {
 	Name     string            `json:"name"`
 	Type     string            `json:"type,omitempty"`
-	Value    interface{}       `json:"contextValue"`
+	Value    interface{}       `json:"value"`
 	Metadata []ContextMetadata `json:"metadata,omitempty"`
 }
 
@@ -217,7 +217,7 @@ func (pAttr *ContextAttribute) UnmarshalJSON(b []byte) error {
 	type InternalAttributeObject struct {
 		Name     string            `json:"name"`
 		Type     string            `json:"type,omitempty"`
-		Value    json.RawMessage   `json:"contextValue"`
+		Value    json.RawMessage   `json:"value"`
 		Metadata []ContextMetadata `json:"metadata,omitempty"`
 	}
 
