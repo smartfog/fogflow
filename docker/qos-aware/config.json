@@ -1,0 +1,53 @@
+{
+  "webportal_ip": "host.docker.internal",
+  "coreservice_ip": "host.docker.internal",
+  "external_hostip": "host.docker.internal",
+  "internal_hostip": "host.docker.internal",
+  "physical_location":{
+    "longitude": 139.709059,
+    "latitude": 35.692221
+  },
+  "site_id": "001",
+  "logging":{
+    "info":"stdout",
+    "error":"stdout",
+    "protocol": "stdout",
+    "debug": "stdout"
+  },
+  "discovery": {
+    "port": 443
+  },
+  "broker": {
+    "port": 8080
+  },
+  "master": {
+    "ngsi_agent_port": 1060
+  },
+  "worker": {
+    "container_autoremove": false,
+    "start_actual_task": true,
+    "capacity": 8,
+    "edge_address": "172.17.0.1",
+    "cadvisor_port": 9091
+
+  },
+  "designer": {
+    "webSrvPort": 80,
+    "agentPort": 1030
+  },
+  "rabbitmq": {
+    "port": 5672,
+    "username": "admin",
+    "password":"mypass"
+  },
+  "https": {
+    "enabled" : false,
+    "certificate": "cert.pem",
+    "key": "key.pem"
+  },
+  "prometheus": {
+    "address": "auto",
+    "data_port": 9090,
+    "admin_port": 4545
+  }
+}

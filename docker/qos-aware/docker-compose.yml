@@ -1,0 +1,88 @@
+version: "2.1"
+services:
+  designer:
+    image: rahafrouz/fogflow-designer
+    volumes:
+      - ./config.json:/app/config.json
+    ports:
+      - 80:80
+      - 1030:1030
+    depends_on:
+      - discovery
+      - broker
+
+  discovery:
+    image: rahafrouz/fogflow-discovery
+    volumes:
+      - ./config.json:/config.json
+    ports:
+      - 443:443
+    depends_on:
+      - postgis
+
+  broker:
+    image: rahafrouz/fogflow-broker
+    volumes:
+      - ./config.json:/config.json
+    ports:
+      - 8080:8080
+    depends_on:
+      - discovery
+
+  master:
+    image: rahafrouz/fogflow-master
+    volumes:
+      - ./config.json:/config.json
+    links:
+      - rabbitmq
+    ports:
+      - 1060:1060
+    depends_on:
+      - rabbitmq
+      - discovery
+      - broker
+
+  cloud_worker_1:
+    image: rahafrouz/fogflow-worker
+    volumes:
+      - /tmp:/tmp
+      - ./config.json:/config.json
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  cloud_worker_2:
+    image: rahafrouz/fogflow-worker
+    volumes:
+      - /tmp:/tmp
+      - ./config.json:/config.json
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  cadvisor:
+    image: google/cadvisor
+    ports:
+      - 9091:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  postgis:
+    image: mdillon/postgis
+    ports:
+      - 5432:5432
+
+  rabbitmq:
+    image: tutum/rabbitmq
+    ports:
+      - 5672:5672
+    environment:
+      - RABBITMQ_PASS=mypass
+
+  prometheus:
+    image: rahafrouz/fogflow-prometheus
+    ports:
+      - 9090:9090
+      - 4545:4545
+
+
+
