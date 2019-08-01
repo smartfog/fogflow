@@ -29,9 +29,10 @@ build_module() { #first argument is module name
     docker build -t "rahafrouz/fogflow-$1" .
 
     #push to dockerhub
-    docker login
-    docker push "rahafrouz/fogflow-$1"
+    #docker login
+    #docker push "rahafrouz/fogflow-$1"
 }
+
 for module in "designer" "broker" "discovery" "worker" "master" "prometheus";
 do
     build_module $module &

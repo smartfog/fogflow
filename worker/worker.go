@@ -141,7 +141,7 @@ func (w *Worker) publishMyself() error {
 	ctxObj.Entity.IsPattern = false
 
 	ctxObj.Attributes = make(map[string]ValueObject)
-	ctxObj.Attributes["id"] = ValueObject{Type: "string", Value: w.id}
+	//ctxObj.Attributes["id"] = ValueObject{Type: "string", Value: w.id}
 	ctxObj.Attributes["capacity"] = ValueObject{Type: "integer", Value: w.profile.Capacity}
 	ctxObj.Attributes["location"] = ValueObject{Type: "object", Value: w.cfg.Location}
 

@@ -10,14 +10,14 @@ services:
         depends_on: 
             - discovery
             - broker
+            
     discovery:
         image: fogflow/discovery
         volumes:
             - ./config.json:/config.json                        
         ports:
             - 443:443
-        depends_on: 
-            - postgis
+            
     broker:
         image: fogflow/broker
         volumes:
@@ -26,6 +26,7 @@ services:
             - 8080:8080
         depends_on: 
             - discovery
+            
     master:
         image: fogflow/master
         volumes:
@@ -38,19 +39,43 @@ services:
             - rabbitmq
             - discovery
             - broker     
+            
     cloud_worker:
         image: fogflow/worker
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                
-            - /var/run/docker.sock:/var/run/docker.sock                    
-    postgis:
-        image: mdillon/postgis
-        ports:
-            - 5432:5432        
+            - /var/run/docker.sock:/var/run/docker.sock      
+                                
     rabbitmq:
         image: tutum/rabbitmq
         ports:
             - 5672:5672
         environment:
             - RABBITMQ_PASS=mypass   
+            
+    cadvisor:
+      image: google/cadvisor
+      ports:
+        - 9091:8080
+      volumes:
+        - /:/rootfs:ro
+        - /var/run:/var/run:rw
+        - /sys:/sys:ro
+        - /var/lib/docker/:/var/lib/docker:ro
+        
+    prometheus:
+      image: fogflow/prometheus
+      ports:
+        - 9090:9090
+        - 4545:4545
+        
+    grafana:
+      image: grafana/grafana
+      ports:
+        - "3000:3000"
+      volumes:
+        - ./data/grafana:/var/lib/grafana:rw
+      environment:
+        - GF_SECURITY_ADMIN_PASSWORD=admin
+        - GF_USERS_ALLOW_SIGN_UP=false        

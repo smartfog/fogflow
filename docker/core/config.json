@@ -1,47 +1,32 @@
 {
-    "webportal_ip": "127.0.0.1",
-    "coreservice_ip": "host.docker.internal",     
-    "external_hostip": "host.docker.internal",      
-    "internal_hostip": "172.17.0.1",  
+    "webportal_ip": "host.docker.internal",     
+    "coreservice_ip": "host.docker.internal",   
+    "external_hostip": "host.docker.internal",         
+    "internal_hostip": "host.docker.internal",  
     "physical_location":{
         "longitude": 139.709059,
-        "latitude": 35.692221,
-        "section": "01",
-        "district": "02",
-        "city": "Tokyo"
-    },  
-    "logical_location": {
-        "node_no": 1,
-        "site_no": 1,               
-        "layer_no": 2,
-        "parent_site_no": 1
-    },          
+        "latitude": 35.692221
+    },
+    "site_id": "001",
     "logging":{
         "info":"stdout",
-        "error":"stderr",
-            "protocol": "stdout",
-            "debug": "stdout"
+        "error":"stdout",
+        "protocol": "stdout",
+        "debug": "stdout"
     },
     "discovery": {
-        "port": 443,
-        "postgresql": {
-            "dbreset": true,
-            "username": "postgres",
-            "password": "postgres",
-            "host": "postgis",
-            "port": 5432,
-            "dbname": "ngsi9"
-        }    
+        "port": 443   
     },
     "broker": {
-        "port": 8080,
-        "websocket": 8090        
+        "port": 8080
     },    
     "master": {
-        "ngsi_agent_port": 1060         
+        "ngsi_agent_port": 1060    
     },
     "worker": {
-        "container_autoremove": false       
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 8              
     },
     "designer": {
         "webSrvPort": 80,
@@ -51,5 +36,15 @@
         "port": 5672,
         "username": "admin",
         "password":"mypass"
+    },
+    "https": {
+        "enabled" : false,
+        "certificate": "cert.pem",
+        "key": "key.pem"
+    },
+    "prometheus": {
+        "address": "auto",
+        "data_port": 9090,
+        "admin_port": 4545
     }    
 }

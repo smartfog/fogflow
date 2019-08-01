@@ -17,8 +17,6 @@ services:
       - ./config.json:/config.json
     ports:
       - 443:443
-    depends_on:
-      - postgis
 
   broker:
     image: rahafrouz/fogflow-broker
@@ -65,11 +63,6 @@ services:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
-
-  postgis:
-    image: mdillon/postgis
-    ports:
-      - 5432:5432
 
   rabbitmq:
     image: tutum/rabbitmq

@@ -431,6 +431,24 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 	}
 }
 
+func (element *ContextElement) SetEntityID() {
+	if element.ID != "" {
+		element.Entity.ID = element.ID
+	}
+
+	if element.Type != "" {
+		element.Entity.Type = element.Type
+	}
+
+	if element.IsPattern != "" {
+		if element.IsPattern == "true" {
+			element.Entity.IsPattern = true
+		} else {
+			element.Entity.IsPattern = false
+		}
+	}
+}
+
 type StatusCode struct {
 	Code         int    `json:"code"`
 	ReasonPhrase string `json:"reasonPhrase,omitempty"`

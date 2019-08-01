@@ -23,13 +23,14 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 	router, err := rest.MakeRouter(
 		// standard ngsi10 API
 		rest.Post("/ngsi10/updateContext", broker.UpdateContext),
-                // api for iot-agent
-                rest.Post("/v1/updateContext", broker.UpdateContext),
 		rest.Post("/ngsi10/queryContext", broker.QueryContext),
 		rest.Post("/ngsi10/notifyContext", broker.NotifyContext),
 		rest.Post("/ngsi10/subscribeContext", broker.SubscribeContext),
 		rest.Post("/ngsi10/unsubscribeContext", broker.UnsubscribeContext),
 		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
+
+		// api for iot-agent
+		rest.Post("/v1/updateContext", broker.UpdateContext),
 
 		// convenient ngsi10 API
 		rest.Get("/ngsi10/entity", apisrv.getEntities),

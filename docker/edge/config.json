@@ -17,7 +17,7 @@
         "port": 443   
     },
     "broker": {
-        "port": 8082
+        "port": 8080
     },    
     "worker": {
         "container_autoremove": false,
