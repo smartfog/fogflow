@@ -38,7 +38,7 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : false,
+        "enabled" : true,
         "certificate": "cert.pem",
         "key": "key.pem"
     }

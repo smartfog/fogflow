@@ -29,12 +29,12 @@ var myFogFunctionExamples = [
     topology: {"name":"Test","description":"just for a simple test","tasks":[{"name":"Main","operator":"dummy","input_streams":[{"selected_type":"Temperature","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
     designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"dummy","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Temperature","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
     intent: {"topology":"Test","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
-},{
+},/*{
     name: "Agent",
     topology: {"name":"Agent","description":"just for a simple test","tasks":[{"name":"Main","operator":"iotagent","input_streams":[{"selected_type":"Worker","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
     designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"iotagent","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Worker","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
     intent: {"topology":"Agent","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
-},{
+},*/{
     name: "PrivateSiteEstimation",
     topology: {"name":"PrivateSiteEstimation","description":"to estimate the free parking lots from a private parking site","tasks":[{"name":"Estimation","operator":"privatesite","input_streams":[{"selected_type":"PrivateSite","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
     designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":26,"y":-47,"type":"Task","module":null,"values":{"name":"Estimation","operator":"privatesite","outputs":["Out"]}},{"id":2,"x":-302,"y":-87,"type":"EntityStream","module":null,"values":{"selectedtype":"PrivateSite","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
@@ -236,8 +236,8 @@ function boardScene2Topology(scene)
     };        
     intent.qos = "default";    
     intent.geoscope = {
-        "scopeType": "local",
-        "scopeValue": "local"
+        "scopeType": "global",
+        "scopeValue": "global"
     };   
     
     // step 3: create this fog function            

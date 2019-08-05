@@ -17,7 +17,7 @@ function CtxElement2JSONObject(e) {
         var attr = e.attributes[i];
         jsonObj.attributes[attr.name] = {
             type: attr.type, 
-            value: attr.contextValue
+            value: attr.value
         };
     }
     

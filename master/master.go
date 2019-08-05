@@ -716,9 +716,18 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 func (master *Master) DetermineDockerImage(operatorName string, wID string) string {
 	INFO.Println("select a suitable image to execute on the selected worker")
 
+	master.workerList_lock.RLock()
+	wProfile := master.workers[wID]
+	master.workerList_lock.RUnlock()
+
+	if wProfile == nil {
+		ERROR.Println("could not find this worker from the curent worker list: ", wID)
+		return ""
+	}
+
+	//select a suitable image to execute on the selected worker
 	selectedDockerImageName := ""
 
-	wProfile := master.workers[wID]
 	master.dockerImageList_lock.RLock()
 	for _, image := range master.dockerImageList[operatorName] {
 		DEBUG.Println(image)
@@ -764,6 +773,9 @@ func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
 // to select the worker that is closest to the given points
 //
 func (master *Master) SelectWorker(locations []Point) string {
+	master.workerList_lock.RLock()
+	defer master.workerList_lock.RUnlock()
+
 	if len(locations) == 0 {
 		for _, worker := range master.workers {
 			return worker.WID

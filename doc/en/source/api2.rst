@@ -126,7 +126,7 @@ Example:
                             {
                               "name": "temp",
                               "type": "integer",
-                              "contextValue": 10
+                              "value": 10
                             }
                             ],
                             "domainMetadata": [

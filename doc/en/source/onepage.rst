@@ -192,12 +192,12 @@ There are two ways to trigger the fog function:
 	                    {
 	                    "name": "temperature",
 	                    "type": "float",
-	                    "contextValue": 73
+	                    "value": 73
 	                    },
 	                    {
 	                    "name": "pressure",
 	                    "type": "float",
-	                    "contextValue": 44
+	                    "value": 44
 	                    }
 	                ],
 	            "domainMetadata": [

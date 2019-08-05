@@ -149,7 +149,7 @@ def element2Object(element):
     ctxObj['attributes'] = {}  
     if 'attributes' in element:
         for attr in element['attributes']:
-            ctxObj['attributes'][attr['name']] = {'type': attr['type'], 'value': attr['contextValue']}   
+            ctxObj['attributes'][attr['name']] = {'type': attr['type'], 'value': attr['value']}   
     
     ctxObj['metadata'] = {}
     if 'domainMetadata' in element:    
@@ -168,7 +168,7 @@ def object2Element(ctxObj):
     if 'attributes' in ctxObj:
         for key in ctxObj['attributes']:
             attr = ctxObj['attributes'][key]
-            ctxElement['attributes'].append({'name': key, 'type': attr['type'], 'contextValue': attr['value']})
+            ctxElement['attributes'].append({'name': key, 'type': attr['type'], 'value': attr['value']})
     
     ctxElement['domainMetadata'] = []
     if 'metadata' in ctxObj:    

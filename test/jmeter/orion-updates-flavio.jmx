@@ -265,7 +265,7 @@ for (int i = 0; i &lt; attributesNumber ; i++) {
 
 // if METADATA property is true, the metadata is appended in each attribute
 //if (metadata.toLowerCase().equals(&quot;true&quot;)) {
-//	meta = &quot;, \&quot;metadata\&quot;: {\&quot;contextValue\&quot;: \&quot;true\&quot;, \&quot;type\&quot;: \&quot;MT\&quot;}&quot;;	
+//	meta = &quot;, \&quot;metadata\&quot;: {\&quot;value\&quot;: \&quot;true\&quot;, \&quot;type\&quot;: \&quot;MT\&quot;}&quot;;	
 //}
 
 // generate a payload with N attributes.

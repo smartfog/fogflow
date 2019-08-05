@@ -1,7 +1,7 @@
 Related publications
 ======================
 
-1. \B. Cheng, J. Fürst, G. Solmaz, T. Sanada, "`Fog Function: Serverless Fog Computing for Data Intensive IoT Services`_," in the proceedings of 2019 IEEE Conference on Service Computing (SCC'19), Milan, 2019, pp.28-35
+1. \B. Cheng, J. Fürst, G. Solmaz, T. Sanada, "`Fog Function: Serverless Fog Computing for Data Intensive IoT Services`_," in the proceedings of 2019 IEEE Conference on Service Computing (SCC'19) (Won the best paper award), Milan, 2019, pp.28-35
 2. \B. Cheng, E. Kovacs, A. Kitazawa, K. Terasawa, T. Hada, M. Takeuchi, "`FogFlow: Orchestrating IoT Services over Cloud and Edges`_",NEC Technical Journal, 2018/11
 3. \M. Fadel Argerich, B. Cheng, J. Fuerst, "`Reinforcement Learning based Orchestration for Elastic Services`_",NEC Technical Journal, 2018/11
 4. \B. Cheng, G. Solmaz, F. Cirillo, E. Kovacs, K. Terasawa and A. Kitazawa, "`FogFlow: Easy Programming of IoT Services Over Cloud and Edges for Smart Cities`_", in IEEE Internet of Things Journal

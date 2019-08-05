@@ -119,10 +119,10 @@ class ContextMetadata {
 		this.type = type;
 	}	
 	
-	public Object getContextValue() {
+	public Object getValue() {
 		return value;
 	}	
-	public void setContextValue(Object value) {
+	public void setValue(Object value) {
 		this.value = value;
 	}		
 }
@@ -130,7 +130,7 @@ class ContextMetadata {
 class ContextAttribute {
 	public String name;
 	public String type;
-	public Object contextValue;
+	public Object value;
 	
 	@JsonProperty("metadata")		
 	public List<ContextMetadata> metadata;	
@@ -153,11 +153,11 @@ class ContextAttribute {
 		this.type = type;
 	}	
 	
-	public Object getContextValue() {
-		return contextValue;
+	public Object getValue() {
+		return value;
 	}	
-	public void setContextValue(Object contextValue) {
-		this.contextValue = contextValue;
+	public void setValue(Object value) {
+		this.value = value;
 	}		
 	
 	@JsonIgnore
@@ -472,7 +472,7 @@ public class RestHandler {
 		ContextAttribute attr = new ContextAttribute();
 		attr.name = "avg";
 		attr.type = "integer";
-		attr.contextValue = 10;
+		attr.value = 10;
 		
 		resultEntity.attributes.put("avg", attr);
 		

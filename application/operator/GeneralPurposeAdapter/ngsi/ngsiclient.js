@@ -9,7 +9,7 @@ function CtxElement2JSONObject(e) {
         var attr = e.attributes[i];
         jsonObj.attributes[attr.name] = {
             type: attr.type,
-            value: attr.contextValue
+            value: attr.value
         };
     }
 
@@ -34,7 +34,7 @@ function JSONObject2CtxElement(ob) {
     if(ob.attributes) {
         for( key in ob.attributes ) {
             attr = ob.attributes[key];
-            contextElement.attributes.push({name: key, type: attr.type, contextValue: attr.value});
+            contextElement.attributes.push({name: key, type: attr.type, value: attr.value});
         }
     }
 

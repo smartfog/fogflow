@@ -383,6 +383,7 @@ func (tb *ThinBroker) UpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 	err := r.DecodeJsonPayload(&updateCtxReq)
 	if err != nil {
+		DEBUG.Println("not able to decode the orion updates")
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -424,6 +425,7 @@ func (tb *ThinBroker) handleExternalUpdateContext(updateCtxReq *UpdateContextReq
 			ctxElem.SetEntityID()
 
 			brokerURL := tb.queryOwnerOfEntity(ctxElem.Entity.ID)
+
 			if brokerURL == tb.myProfile.MyURL {
 				tb.UpdateContext2LocalSite(&ctxElem)
 			} else {
@@ -582,6 +584,8 @@ func (tb *ThinBroker) sendReliableNotify(elements []ContextElement, sid string) 
 		tb.subscriptions_lock.Unlock()
 		return
 	}
+
+	DEBUG.Println("test B")
 
 	subscriberURL := subscription.Reference
 	IsOrionBroker := subscription.Subscriber.IsOrion

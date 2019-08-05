@@ -181,7 +181,7 @@
             {  &#xd;
                &quot;name&quot;:&quot;${ATTRIBUTE}&quot;,&#xd;
                &quot;type&quot;:&quot;integer&quot;,&#xd;
-               &quot;contextValue&quot;: ${__Random(1,100)}&#xd;
+               &quot;value&quot;: ${__Random(1,100)}&#xd;
             }&#xd;
          ],&#xd;
          &quot;domainMetadata&quot;:[  &#xd;

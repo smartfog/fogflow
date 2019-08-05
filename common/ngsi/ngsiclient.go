@@ -450,7 +450,7 @@ func (nc *NGSI9Client) GetProviderURL(id string) string {
 		return ""
 	}
 
-	fmt.Println(string(text))
+	//fmt.Println(string(text))
 
 	registration := ContextRegistration{}
 	err = json.Unmarshal(text, &registration)

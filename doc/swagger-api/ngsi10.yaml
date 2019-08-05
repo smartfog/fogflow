@@ -180,7 +180,7 @@ definitions:
               attributes:
                 - name: "brand"
                   type: "string"
-                  contextValue: "BMW"
+                  value: "BMW"
               domainMetadata:
                 - name: "location"
                   type: "point"
@@ -411,7 +411,7 @@ definitions:
         type: string
       type:
         type: string
-      contextValue:
+      value:
         type: object
       metadata:
         type: array

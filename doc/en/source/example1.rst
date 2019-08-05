@@ -236,7 +236,7 @@ You can run the following command to issue a POST request to the FogFlow broker.
                 {
                   "name": "temp",
                   "type": "integer",
-                  "contextValue": 10
+                  "value": 10
                 }
                 ],
                 "domainMetadata": [

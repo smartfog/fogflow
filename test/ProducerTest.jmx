@@ -80,7 +80,7 @@
                 {&#xd;
                   &quot;name&quot;: &quot;temp&quot;,&#xd;
                   &quot;type&quot;: &quot;integer&quot;,&#xd;
-                  &quot;contextValue&quot;: 10&#xd;
+                  &quot;value&quot;: 10&#xd;
                 }&#xd;
                 ],&#xd;
                 &quot;domainMetadata&quot;: [&#xd;

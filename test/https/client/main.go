@@ -11,7 +11,7 @@ import (
 
 func main() {
 	// Read the key pair to create certificate
-	cert, err := tls.LoadX509KeyPair("client.pem", "client.key")
+	cert, err := tls.LoadX509KeyPair("server.pem", "server.key")
 	if err != nil {
 		log.Fatal(err)
 	}

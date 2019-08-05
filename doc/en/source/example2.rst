@@ -140,32 +140,32 @@ Here are the Curl and the Javascript-based code examples to register an operator
 	               		{
 	                  		"name": "image",
 	                  		"type": "string",
-	                  		"contextValue": "counter"
+	                  		"value": "counter"
 				},
 	               		{
 	                  		"name": "tag",
 	                  		"type": "string",
-	                  		"contextValue": "latest"
+	                  		"value": "latest"
 				},
 	               		{
 	                  		"name": "hwType",
 	                  		"type": "string",
-	                  		"contextValue": "X86"
+	                  		"value": "X86"
 				},
 	               		{
 	                  		"name": "osType",
 	                  		"type": "string",
-	                  		"contextValue": "Linux"
+	                  		"value": "Linux"
 				},
 	               		{
 	                  		"name": "operatorName",
 	                  		"type": "string",
-	                  		"contextValue": "counter"
+	                  		"value": "counter"
 				},
 	               		{
 	                  		"name": "prefetched",
 	                  		"type": "string",
-	                  		"contextValue": false
+	                  		"value": false
 				}],		
 	                	"domainMetadata": [
 	                	{
@@ -303,11 +303,11 @@ Here are the Curl and the Javascript-based code examples to register an operator
 	               		{
 	                  		"name": "status",
 	                  		"type": "string",
-	                  		"contextValue": "enabled"
+	                  		"value": "enabled"
 				}, {
 	                  		"name": "template",
 	                  		"type": "object",
-	                  		"contextValue": { 
+	                  		"value": { 
 				       		"description":"detect anomaly events from time series data points",
 				       		"name":"anomaly-detection",
 				       		"priority": {
@@ -494,15 +494,15 @@ Here are the Curl and the Javascript-based code examples to trigger a service to
 	                	{
 	                  		"name": "output",
 	                  		"type": "string",
-	                  		"contextValue": "Stat"
+	                  		"value": "Stat"
 	                	}, {
 	                  		"name": "scheduler",
 	                  		"type": "string",
-	                  		"contextValue": "closest_first"
+	                  		"value": "closest_first"
 				}, {
 	                  		"name": "restriction",
 	                  		"type": "object",
-	                  		"contextValue": { 
+	                  		"value": { 
 			  			"scopes": [{ 
 				   			"scopeType": "circle", 
 				   			"scopeValue": {
