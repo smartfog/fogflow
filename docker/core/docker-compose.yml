@@ -48,11 +48,12 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock      
                                 
     rabbitmq:
-        image: tutum/rabbitmq
+        image: rabbitmq:3
         ports:
             - 5672:5672
         environment:
-            - RABBITMQ_PASS=mypass   
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=mypass   
             
     cadvisor:
       image: google/cadvisor
