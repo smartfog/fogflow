@@ -71,8 +71,8 @@ type Config struct {
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
 		Capacity            int                   `json:"capacity"`
-		EdgeAddress         string				  `json:"edge_address"`
-		CAdvisorPort 		int 				  `json:"cadvisor_port"`
+		EdgeAddress         string                `json:"edge_address"`
+		CAdvisorPort        int                   `json:"cadvisor_port"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`
@@ -81,14 +81,15 @@ type Config struct {
 	} `json:"rabbitmq"`
 	HTTPS struct {
 		Enabled     bool   `json:"enabled"`
-		Certificate string `json:"certificate"`
-		Key         string `json:"key"`
+		Certificate string `json:"my_certificate"`
+		Key         string `json:"my_key"`
+		CA          string `json:"my_ca"`
 	} `json:"https"`
 	Prometheus struct {
-		Address string `json:"address"`
-		DataPort int `json:"data_port"`
-		AdminPort int `json:"admin_port"`
-	}`json:"prometheus"`
+		Address   string `json:"address"`
+		DataPort  int    `json:"data_port"`
+		AdminPort int    `json:"admin_port"`
+	} `json:"prometheus"`
 }
 
 var logTargets map[string]io.Writer = map[string]io.Writer{

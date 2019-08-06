@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
+
 	//"github.com/jadengore/go-json-rest-middleware-force-ssl"
 
 	. "github.com/smartfog/fogflow/common/config"
@@ -60,7 +61,6 @@ func main() {
 	}
 
 	api := rest.NewApi()
-
 	api.Use(rest.DefaultCommonStack...)
 
 	/*
@@ -90,7 +90,7 @@ func main() {
 	go func() {
 		if config.HTTPS.Enabled == true {
 			// Create a CA certificate pool and add cert.pem to it
-			caCert, err := ioutil.ReadFile("server.pem")
+			caCert, err := ioutil.ReadFile(config.HTTPS.CA)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -112,7 +112,7 @@ func main() {
 			}
 
 			fmt.Printf("Starting IoT Discovery on port %d for HTTPS requests\n", config.Discovery.Port)
-			panic(server.ListenAndServeTLS("server.pem", "server.key"))
+			panic(server.ListenAndServeTLS(config.HTTPS.Certificate, config.HTTPS.Key))
 		} else {
 			fmt.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port)
 			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
