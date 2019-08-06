@@ -6,12 +6,13 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	. "github.com/smartfog/fogflow/common/config"
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
-func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool) error {
+func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg HTTPS) error {
 	//INFO.Println("NOTIFY: ", URL)
 	elementRespList := make([]ContextElementResponse, 0)
 
@@ -43,6 +44,10 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	req.Header.Add("Accept", "application/json")
 
 	client := &http.Client{}
+	if strings.HasPrefix(URL, "https") == true {
+		client = GetHTTPClient(httpsCfg)
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -127,7 +132,7 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 	return nil
 }
 
-func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string) (string, error) {
+func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, httpsCfg HTTPS) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
@@ -139,7 +144,7 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string) 
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 	req.Header.Add("Require-Reliability", "true")
 
-	client := &http.Client{}
+	client := GetHTTPClient(httpsCfg)
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
@@ -162,7 +167,7 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string) 
 	}
 }
 
-func unsubscribeContextProvider(sid string, ProviderURL string) error {
+func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg HTTPS) error {
 	unsubscription := &UnsubscribeContextRequest{
 		SubscriptionId: sid,
 	}
@@ -177,7 +182,7 @@ func unsubscribeContextProvider(sid string, ProviderURL string) error {
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 
-	client := &http.Client{}
+	client := GetHTTPClient(httpsCfg)
 	resp, err := client.Do(req)
 	if err != nil {
 		return err

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,7 +25,9 @@ type Worker struct {
 
 	cfg               *Config
 	selectedBrokerURL string
-	profile           WorkerProfile
+	httpBrokerURL     string
+
+	profile WorkerProfile
 }
 
 func (w *Worker) Start(config *Config) bool {
@@ -49,7 +52,12 @@ func (w *Worker) Start(config *Config) bool {
 	// if no broker is configured in the configuration file, the worker needs to find a nearby IoT Broker
 	// otherwise, just use the configured broker
 	if config.Broker.Port != 0 {
-		w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
+		if w.cfg.HTTPS.Enabled == true {
+			w.selectedBrokerURL = "https://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
+		} else {
+			w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
+		}
+		w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port+2) + "/ngsi10"
 	} else {
 		// find a nearby IoT Broker
 		for {
@@ -58,11 +66,15 @@ func (w *Worker) Start(config *Config) bool {
 			nearby.Longitude = w.cfg.Location.Longitude
 			nearby.Limit = 1
 
-			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL()}
+			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL(), SecurityCfg: w.cfg.HTTPS}
 			selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
+			INFO.Println("find out a nearby broker ", selectedBroker)
 			if err == nil && selectedBroker != "" {
-				w.selectedBrokerURL = selectedBroker
-				INFO.Println("find out a nearby broker ", selectedBroker)
+				if w.cfg.HTTPS.Enabled == true {
+					w.selectedBrokerURL = strings.Replace(selectedBroker, "http://", "https://", 1)
+				} else {
+					w.selectedBrokerURL = selectedBroker
+				}
 				break
 			} else {
 				if err != nil {
@@ -90,7 +102,7 @@ func (w *Worker) Start(config *Config) bool {
 
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	w.executor.Init(w.cfg, w.selectedBrokerURL)
+	w.executor.Init(w.cfg, w.selectedBrokerURL, w.httpBrokerURL)
 
 	// create the communicator with the broker info and topics
 	w.communicator = NewCommunicator(&cfg)
@@ -151,7 +163,7 @@ func (w *Worker) publishMyself() error {
 	mylocation.Longitude = w.cfg.Location.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
+	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: w.cfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	return err
 }
@@ -162,7 +174,7 @@ func (w *Worker) unpublishMyself() {
 	entity.Type = "Worker"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL}
+	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: w.cfg.HTTPS}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		ERROR.Println(err)

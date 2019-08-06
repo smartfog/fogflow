@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func main() {
@@ -37,7 +37,8 @@ func main() {
 
 	// check if IoT Discovery is ready
 	for {
-		resp, err := http.Get(config.GetDiscoveryURL() + "/status")
+		httpClient := GetHTTPClient(config.HTTPS)
+		resp, err := httpClient.Get(config.GetDiscoveryURL() + "/status")
 		if err != nil {
 			ERROR.Println(err)
 		} else {

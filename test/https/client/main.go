@@ -11,13 +11,13 @@ import (
 
 func main() {
 	// Read the key pair to create certificate
-	cert, err := tls.LoadX509KeyPair("minica.pem", "minica-key.pem")
+	cert, err := tls.LoadX509KeyPair("client.pem", "client.key")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create a CA certificate pool and add cert.pem to it
-	caCert, err := ioutil.ReadFile("minica.pem")
+	caCert, err := ioutil.ReadFile("root_ca.pem")
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -91,14 +91,19 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 			}
 
 			fmt.Printf("Starting IoT Broker on port %d for HTTPS requests\n", cfg.Broker.Port)
-			panic(server.ListenAndServeTLS(cfg.HTTPS.Certificate, cfg.HTTPS.Certificate))
+			panic(server.ListenAndServeTLS(cfg.HTTPS.Certificate, cfg.HTTPS.Key))
 		} else {
 			fmt.Printf("Starting IoT Broker on port %d for HTTP requests\n", cfg.Broker.Port)
 			panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.Port), api.MakeHandler()))
 		}
+	}()
 
-		//fmt.Printf("Starting IoT Broker on %d\n", cfg.Broker.Port)
-		//panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.Port), api.MakeHandler()))
+	// for temporary use
+	go func() {
+		if cfg.HTTPS.Enabled == true {
+			fmt.Printf("Starting IoT Broker on port %d for HTTP requests\n", cfg.Broker.Port+2)
+			panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.Port+2), api.MakeHandler()))
+		}
 	}()
 }
 

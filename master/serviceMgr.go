@@ -66,7 +66,7 @@ func (sMgr *ServiceMgr) updateServiceIntentStatus(eid string, status string, rea
 	ctxObj.Metadata["status"] = ValueObject{Type: "string", Value: status}
 	ctxObj.Metadata["reason"] = ValueObject{Type: "string", Value: reason}
 
-	client := NGSI10Client{IoTBrokerURL: sMgr.master.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: sMgr.master.BrokerURL, SecurityCfg: sMgr.master.cfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -136,7 +136,7 @@ func (sMgr *ServiceMgr) intentPartition(taskIntent *TaskIntent) []*TaskIntentRec
 
 	listTaskIntent := make([]*TaskIntentRecord, 0)
 
-	client := NGSI9Client{IoTDiscoveryURL: sMgr.master.discoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: sMgr.master.discoveryURL, SecurityCfg: sMgr.master.cfg.HTTPS}
 	siteList, err := client.QuerySiteList(geoscope)
 	if err != nil {
 		ERROR.Println("error happens when querying the site list from IoT Discovery")
@@ -216,7 +216,7 @@ func (sMgr *ServiceMgr) ForwardIntentToRemoteSite(taskIntent *TaskIntent, site S
 
 	ctxElem.Attributes = append(ctxElem.Attributes, attribute)
 
-	client := NGSI10Client{IoTBrokerURL: brokerURL}
+	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: sMgr.master.cfg.HTTPS}
 	client.UpdateContext(&ctxElem)
 }
 
@@ -226,7 +226,7 @@ func (sMgr *ServiceMgr) RemoveIntentFromRemoteSite(taskIntentRecord *TaskIntentR
 	ctxElem := ContextElement{}
 	ctxElem.Entity.ID = "TaskIntent." + taskIntentRecord.taskIntent.ID
 
-	client := NGSI10Client{IoTBrokerURL: brokerURL}
+	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: sMgr.master.cfg.HTTPS}
 	client.UpdateContext(&ctxElem)
 }
 

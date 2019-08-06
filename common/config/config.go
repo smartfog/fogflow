@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	. "github.com/smartfog/fogflow/common/datamodel"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 var (
@@ -79,12 +80,7 @@ type Config struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	} `json:"rabbitmq"`
-	HTTPS struct {
-		Enabled     bool   `json:"enabled"`
-		Certificate string `json:"my_certificate"`
-		Key         string `json:"my_key"`
-		CA          string `json:"my_ca"`
-	} `json:"https"`
+	HTTPS      HTTPS
 	Prometheus struct {
 		Address   string `json:"address"`
 		DataPort  int    `json:"data_port"`
@@ -99,8 +95,13 @@ var logTargets map[string]io.Writer = map[string]io.Writer{
 }
 
 func (c *Config) GetDiscoveryURL() string {
-	discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.Port)
-	return discoveryURL
+	if c.HTTPS.Enabled == true {
+		discoveryURL := fmt.Sprintf("https://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.Port)
+		return discoveryURL
+	} else {
+		discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.Port)
+		return discoveryURL
+	}
 }
 
 func (c *Config) GetMessageBus() string {

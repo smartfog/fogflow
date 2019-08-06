@@ -18,6 +18,7 @@ type ThinBroker struct {
 	MyLocation      PhysicalLocation
 	MyURL           string
 	IoTDiscoveryURL string
+	SecurityCfg     HTTPS
 
 	myEntityId string
 
@@ -51,6 +52,8 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	tb.myEntityId = tb.id
 
 	tb.IoTDiscoveryURL = cfg.GetDiscoveryURL()
+	tb.SecurityCfg = cfg.HTTPS
+
 	tb.MyLocation = cfg.Location
 
 	tb.subscriptions = make(map[string]*SubscribeContextRequest)
@@ -113,7 +116,7 @@ func (tb *ThinBroker) OnTimer() { // for every 2 second
 }
 
 func (tb *ThinBroker) sendHeartBeat() {
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	err := client.SendHeartBeat(&tb.myProfile)
 	if err != nil {
 		ERROR.Println("failed to send my heartbeat info")
@@ -147,7 +150,7 @@ func (tb *ThinBroker) registerMyself() bool {
 	registerCtxReq.ContextRegistrations = append(registerCtxReq.ContextRegistrations, registration)
 	registerCtxReq.Duration = "PT10M"
 
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
 		ERROR.Println("not able to register myself to IoT Discovery: ", tb.myEntityId, ", error information: ", err)
@@ -159,7 +162,7 @@ func (tb *ThinBroker) registerMyself() bool {
 }
 
 func (tb *ThinBroker) deregisterMyself() {
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	err := client.UnregisterEntity(tb.myEntityId)
 	if err != nil {
 		ERROR.Println(err)
@@ -215,7 +218,7 @@ func (tb *ThinBroker) deleteEntity(eid string) error {
 	tb.notifySubscribers(&emptyElement, false)
 
 	//unregister this entity from IoT Discovery
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	err := client.UnregisterEntity(eid)
 	if err != nil {
 		ERROR.Println(err)
@@ -276,7 +279,7 @@ func (tb *ThinBroker) deleteSubscription(sid string) error {
 		if index == 0 {
 			tb.UnsubscribeContextAvailability(otherSubID)
 		} else {
-			unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL)
+			unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
 		}
 	}
 
@@ -351,7 +354,7 @@ func (tb *ThinBroker) discoveryEntities(ids []EntityId, attributes []string, res
 	discoverCtxAvailabilityReq.Attributes = attributes
 	discoverCtxAvailabilityReq.Restriction = restriction
 
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
 
 	result := make(map[string][]EntityId)
@@ -373,7 +376,7 @@ func (tb *ThinBroker) fetchEntities(ids []EntityId, providerURL string) []Contex
 	queryCtxReq := QueryContextRequest{}
 	queryCtxReq.Entities = ids
 
-	client := NGSI10Client{IoTBrokerURL: providerURL}
+	client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
 	ctxElementList, _ := client.InternalQueryContext(&queryCtxReq)
 	return ctxElementList
 }
@@ -456,7 +459,7 @@ func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
 	if inLocalBroker == true {
 		return tb.myProfile.MyURL
 	} else {
-		client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+		client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 		brokerURL := client.GetProviderURL(eid)
 		if brokerURL == "" {
 			return tb.myProfile.MyURL
@@ -487,11 +490,11 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 	switch updateAction {
 	case "UPDATE":
 		INFO.Println(brokerURL)
-		client := NGSI10Client{IoTBrokerURL: brokerURL}
+		client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
 		client.UpdateContext(ctxElem)
 
 	case "DELETE":
-		client := NGSI10Client{IoTBrokerURL: brokerURL}
+		client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
 		client.DeleteContext(&ctxElem.Entity)
 	}
 }
@@ -585,8 +588,6 @@ func (tb *ThinBroker) sendReliableNotify(elements []ContextElement, sid string) 
 		return
 	}
 
-	DEBUG.Println("test B")
-
 	subscriberURL := subscription.Reference
 	IsOrionBroker := subscription.Subscriber.IsOrion
 
@@ -605,7 +606,7 @@ func (tb *ThinBroker) sendReliableNotify(elements []ContextElement, sid string) 
 
 	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", IsOrionBroker)
 
-	err := postNotifyContext(elements, sid, subscriberURL, IsOrionBroker)
+	err := postNotifyContext(elements, sid, subscriberURL, IsOrionBroker, tb.SecurityCfg)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 
@@ -728,7 +729,7 @@ func (tb *ThinBroker) SubscribeContextAvailability(sid string) error {
 
 	availabilitySubscription.Reference = tb.MyURL + "/notifyContextAvailability"
 
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	subscriptionId, err := client.SubscribeContextAvailability(&availabilitySubscription)
 	if subscriptionId != "" {
 		tb.subLinks_lock.Lock()
@@ -754,7 +755,7 @@ func (tb *ThinBroker) SubscribeContextAvailability(sid string) error {
 }
 
 func (tb *ThinBroker) UnsubscribeContextAvailability(sid string) error {
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	err := client.UnsubscribeContextAvailability(sid)
 	return err
 }
@@ -787,7 +788,7 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 			if index == 0 {
 				tb.UnsubscribeContextAvailability(otherSubID)
 			} else {
-				unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL)
+				unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
 			}
 		}
 	}
@@ -890,7 +891,7 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 			newSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {
-				sid, err := subscribeContextProvider(&newSubscription, registration.ProvidingApplication)
+				sid, err := subscribeContextProvider(&newSubscription, registration.ProvidingApplication, tb.SecurityCfg)
 				if err == nil {
 					INFO.Println("issue a new subscription ", sid)
 
@@ -932,7 +933,7 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 	registerCtxReq.ContextRegistrations = []ContextRegistration{registration}
 	registerCtxReq.Duration = "PT10M"
 
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
 		ERROR.Println(err)
@@ -960,7 +961,7 @@ func (tb *ThinBroker) deregisterContextElements(ContextElements []ContextElement
 	registerCtxReq.ContextRegistrations = registrationList
 	registerCtxReq.Duration = "0"
 
-	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
 		ERROR.Println(err)

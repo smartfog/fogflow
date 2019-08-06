@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -86,11 +87,15 @@ func (master *Master) Start(configuration *Config) {
 		nearby.Longitude = master.cfg.Location.Longitude
 		nearby.Limit = 1
 
-		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
+		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: master.cfg.HTTPS}
 		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
 
 		if err == nil && selectedBroker != "" {
-			master.BrokerURL = selectedBroker
+			if master.cfg.HTTPS.Enabled == true {
+				master.BrokerURL = strings.Replace(selectedBroker, "http://", "https://", 1)
+			} else {
+				master.BrokerURL = selectedBroker
+			}
 			break
 		} else {
 			if err != nil {
@@ -112,9 +117,14 @@ func (master *Master) Start(configuration *Config) {
 	// announce myself to the nearby IoT Broker
 	master.registerMyself()
 
+	if master.cfg.HTTPS.Enabled == true {
+		master.myURL = "https://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
+	} else {
+		master.myURL = "http://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
+	}
+
 	// start the NGSI agent
-	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort}
-	master.myURL = "http://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
+	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort, SecurityCfg: master.cfg.HTTPS}
 	master.agent.Start()
 	master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
@@ -189,7 +199,7 @@ func (master *Master) registerMyself() {
 	mylocation.Longitude = master.cfg.Location.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -202,7 +212,7 @@ func (master *Master) unregisterMyself() {
 	entity.Type = "Master"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		ERROR.Println(err)
@@ -228,7 +238,7 @@ func (master *Master) subscribeContextEntity(entityType string) {
 	subscription.Entities = append(subscription.Entities, newEntity)
 	subscription.Reference = master.myURL
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
 	sid, err := client.SubscribeContext(&subscription, true)
 	if err != nil {
 		ERROR.Println(err)
@@ -485,7 +495,7 @@ func (master *Master) queryWorkers() []*ContextObject {
 	entity.IsPattern = true
 	query.Entities = append(query.Entities, entity)
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
 	ctxObjects, err := client.QueryContext(&query)
 	if err != nil {
 		ERROR.Println(err)
@@ -596,7 +606,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 
 	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
 
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: master.cfg.HTTPS}
 	subscriptionId, err := client.SubscribeContextAvailability(availabilitySubscription)
 	if err != nil {
 		ERROR.Println(err)
@@ -607,7 +617,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 }
 
 func (master *Master) unsubscribeContextAvailability(sid string) {
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL()}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: master.cfg.HTTPS}
 	err := client.UnsubscribeContextAvailability(sid)
 	if err != nil {
 		ERROR.Println(err)
@@ -700,7 +710,7 @@ func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
 // the shared functions for function manager and topology manager to call
 //
 func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
 	ctxObj, err := client.GetEntity(eid)
 
 	if err != nil {

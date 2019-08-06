@@ -17,8 +17,14 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 
 var config = globalConfigFile.designer;
 
+if (globalConfigFile.https.enabled == true) {
+    globalConfigFile.discovery.port = globalConfigFile.discovery.port + 2
+    globalConfigFile.broker.port = globalConfigFile.broker.port + 2   
+}
+
 config.discoveryURL = 'http://' + globalConfigFile.webportal_ip + ':' + globalConfigFile.discovery.port + '/ngsi9';
 config.brokerURL = 'http://' + globalConfigFile.webportal_ip + ':' + globalConfigFile.broker.port + '/ngsi10';
+
 config.agentIP = globalConfigFile.internal_hostip;
 config.agentPort = globalConfigFile.designer.agentPort; 
 config.webSrvPort = globalConfigFile.designer.webSrvPort

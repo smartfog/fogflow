@@ -248,15 +248,15 @@ type ScheduledTaskInstance struct {
 }
 
 type WorkerProfile struct {
-	WID       string
-	PLocation PhysicalLocation
-	GeohashID string
-	OSType    string
-	HWType    string
-	Capacity  int
-	Workload  int
+	WID          string
+	PLocation    PhysicalLocation
+	GeohashID    string
+	OSType       string
+	HWType       string
+	Capacity     int
+	Workload     int
 	CAdvisorPort int
-	EdgeAddress string
+	EdgeAddress  string
 }
 
 func (worker *WorkerProfile) IsOverloaded() bool {

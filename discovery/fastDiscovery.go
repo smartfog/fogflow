@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -29,6 +30,8 @@ type FastDiscovery struct {
 	//backend entity repository
 	repository EntityRepository
 
+	SecurityCfg HTTPS
+
 	//list of active brokers within the same site
 	BrokerList map[string]*BrokerProfile
 
@@ -42,11 +45,13 @@ type FastDiscovery struct {
 	cache_lock  sync.RWMutex
 }
 
-func (fd *FastDiscovery) Init() {
+func (fd *FastDiscovery) Init(httpsCfg HTTPS) {
 	fd.subscriptions = make(map[string]*SubscribeContextAvailabilityRequest)
 	fd.linkedInterSiteSubscriptions = make(map[string][]InterSiteSubscription)
 	fd.BrokerList = make(map[string]*BrokerProfile)
 	fd.notifyCache = make([]*CacheItem, 0)
+
+	fd.SecurityCfg = httpsCfg
 
 	fd.repository.Init()
 }
@@ -136,42 +141,6 @@ func (fd *FastDiscovery) deleteRegistration(eid string) {
 	}
 
 	fd.repository.deleteEntity(eid)
-}
-
-func (fd *FastDiscovery) InterSiteDiscoverContextAvailability(siteURL string, discoverCtxAvailabilityReq *DiscoverContextAvailabilityRequest) ([]ContextRegistrationResponse, error) {
-	requestURL := "http://" + siteURL + "/ngsi9/interSiteContextAvailabilityQuery"
-
-	INFO.Println(requestURL)
-
-	body, err := json.Marshal(discoverCtxAvailabilityReq)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", requestURL, bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	text, _ := ioutil.ReadAll(resp.Body)
-
-	discoverCtxAvailResp := DiscoverContextAvailabilityResponse{}
-	err = json.Unmarshal(text, &discoverCtxAvailResp)
-	if err != nil {
-		return nil, err
-	}
-
-	return discoverCtxAvailResp.ContextRegistrationResponses, nil
 }
 
 func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *rest.Request) {
@@ -380,11 +349,15 @@ func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyConte
 		return false
 	}
 
+	if fd.SecurityCfg.Enabled == true {
+		subscriberURL = strings.Replace(subscriberURL, "http://", "https://", 1)
+	}
+
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
-	client := &http.Client{}
+	client := GetHTTPClient(fd.SecurityCfg)
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		ERROR.Println(err2)
@@ -484,52 +457,6 @@ func (fd *FastDiscovery) getSubscriptions(w rest.ResponseWriter, r *rest.Request
 func (fd *FastDiscovery) getStatus(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(200)
 	w.WriteJson("ok")
-}
-
-func (fd *FastDiscovery) onForwardContextUpdate(w rest.ResponseWriter, r *rest.Request) {
-	updateCtxReq := UpdateContextRequest{}
-
-	err := r.DecodeJsonPayload(&updateCtxReq)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// send out the response
-	updateCtxResp := UpdateContextResponse{}
-	updateCtxResp.ErrorCode.Code = 200
-	updateCtxResp.ErrorCode.ReasonPhrase = "OK"
-	w.WriteJson(&updateCtxResp)
-
-	INFO.Println("============FORWARD============")
-
-	// perform the update action accordingly
-	switch updateCtxReq.UpdateAction {
-	case "UPDATE":
-		for _, ctxElem := range updateCtxReq.ContextElements {
-			selectedBroker := fd.selectBroker()
-			if selectedBroker != nil {
-				INFO.Println("selected broker ", selectedBroker.MyURL)
-
-				providerURL := selectedBroker.MyURL
-				client := NGSI10Client{IoTBrokerURL: providerURL}
-				client.InternalUpdateContext(&ctxElem)
-			} else {
-				INFO.Println("no connected broker for the forwarded update")
-			}
-		}
-
-	case "DELETE":
-		for _, ctxElem := range updateCtxReq.ContextElements {
-			eid := ctxElem.Entity.ID
-			registration := fd.repository.retrieveRegistration(eid)
-			if registration != nil {
-				providerURL := registration.ProvidingApplication
-				client := NGSI10Client{IoTBrokerURL: providerURL}
-				client.InternalDeleteContext(&ctxElem.Entity)
-			}
-		}
-	}
 }
 
 func (fd *FastDiscovery) getBrokerList(w rest.ResponseWriter, r *rest.Request) {

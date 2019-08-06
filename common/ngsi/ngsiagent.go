@@ -1,6 +1,10 @@
 package ngsi
 
 import (
+	"crypto/tls"
+	"crypto/x509"
+	"io/ioutil"
+
 	"fmt"
 	"log"
 	"net/http"
@@ -14,6 +18,7 @@ type NotifyContextAvailabilityFunc func(notifyCtxAvailReq *NotifyContextAvailabi
 
 type NGSIAgent struct {
 	Port                        int
+	SecurityCfg                 HTTPS
 	CtxNotifyHandler            NotifyContextFunc
 	CtxAvailbilityNotifyHandler NotifyContextAvailabilityFunc
 }
@@ -33,8 +38,35 @@ func (agent *NGSIAgent) Start() {
 	api.SetApp(router)
 
 	go func() {
-		fmt.Printf("Starting IoT agent, listening on %d\n", agent.Port)
-		log.Fatal(http.ListenAndServe(":"+strconv.Itoa(agent.Port), api.MakeHandler()))
+		if agent.SecurityCfg.Enabled == true {
+			// Create a CA certificate pool and add cert.pem to it
+			caCert, err := ioutil.ReadFile(agent.SecurityCfg.CA)
+			if err != nil {
+				log.Fatal(err)
+			}
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+
+			// Create the TLS Config with the CA pool and enable Client certificate validation
+			tlsConfig := &tls.Config{
+				ClientCAs:  caCertPool,
+				ClientAuth: tls.RequireAndVerifyClientCert,
+			}
+			tlsConfig.BuildNameToCertificate()
+
+			// Create a Server instance to listen on the port with the TLS config
+			server := &http.Server{
+				Addr:      ":" + strconv.Itoa(agent.Port),
+				Handler:   api.MakeHandler(),
+				TLSConfig: tlsConfig,
+			}
+
+			fmt.Printf("Starting IoT agent on port %d for HTTPS requests\n", agent.Port)
+			panic(server.ListenAndServeTLS(agent.SecurityCfg.Certificate, agent.SecurityCfg.Key))
+		} else {
+			fmt.Printf("Starting IoT Discovery on port %d for HTTP requests\n", agent.Port)
+			panic(http.ListenAndServe(":"+strconv.Itoa(agent.Port), api.MakeHandler()))
+		}
 	}()
 }
 

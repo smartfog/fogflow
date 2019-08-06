@@ -1,7 +1,12 @@
 package ngsi
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
+	"io/ioutil"
+	"log"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -800,4 +805,41 @@ type NotifyContextAvailabilityRequest struct {
 
 type NotifyContextAvailabilityResponse struct {
 	ResponseCode StatusCode `json:"responseCode"`
+}
+
+type HTTPS struct {
+	Enabled     bool   `json:"enabled"`
+	Certificate string `json:"my_certificate"`
+	Key         string `json:"my_key"`
+	CA          string `json:"my_ca"`
+}
+
+func GetHTTPClient(https HTTPS) *http.Client {
+	if https.Enabled == false {
+		return &http.Client{}
+	}
+
+	// Read the key pair to create certificate
+	cert, err := tls.LoadX509KeyPair(https.Certificate, https.Key)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create a CA certificate pool and add cert.pem to it
+	caCert, err := ioutil.ReadFile(https.CA)
+	if err != nil {
+		log.Fatal(err)
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+
+	// Create a HTTPS client and supply the created CA pool and certificate
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs:      caCertPool,
+				Certificates: []tls.Certificate{cert},
+			},
+		},
+	}
 }

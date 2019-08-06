@@ -33,7 +33,7 @@ func main() {
 
 	// initialize IoT Discovery
 	iotDiscovery := FastDiscovery{}
-	iotDiscovery.Init()
+	iotDiscovery.Init(config.HTTPS)
 
 	// start REST API server
 	router, err := rest.MakeRouter(
@@ -111,11 +111,19 @@ func main() {
 				TLSConfig: tlsConfig,
 			}
 
-			fmt.Printf("Starting IoT Discovery on port %d for HTTPS requests\n", config.Discovery.Port)
+			INFO.Printf("Starting IoT Discovery on port %d for HTTPS requests\n", config.Discovery.Port)
 			panic(server.ListenAndServeTLS(config.HTTPS.Certificate, config.HTTPS.Key))
 		} else {
-			fmt.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port)
+			INFO.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port)
 			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
+		}
+	}()
+
+	// for temporary use
+	go func() {
+		if config.HTTPS.Enabled == true {
+			INFO.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port+2)
+			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port+2), api.MakeHandler()))
 		}
 	}()
 

@@ -39,8 +39,8 @@
     },
     "https": {
         "enabled" : true,
-        "my_certificate": "minica.pem",
-        "my_key": "minica-key.pem",
-        "my_ca": "minica.pem"
+        "my_certificate": "server.pem",
+        "my_key": "server.key",
+        "my_ca": "root_ca.pem"
     }
 }
