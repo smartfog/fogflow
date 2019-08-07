@@ -9,14 +9,14 @@ services:
             - 1030:1030
         depends_on: 
             - discovery
-            - broker
+            - cloud_broker
     discovery:
         image: fogflow/discovery
         volumes:
             - ./config.json:/config.json                        
         ports:
             - 443:443
-    broker:
+    cloud_broker:
         image: fogflow/broker
         volumes:
             - ./config.json:/config.json                        
@@ -35,7 +35,7 @@ services:
         depends_on: 
             - rabbitmq
             - discovery
-            - broker     
+            - cloud_broker     
     cloud_worker:
         image: fogflow/worker
         volumes:

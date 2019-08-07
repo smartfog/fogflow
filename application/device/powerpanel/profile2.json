@@ -1,5 +1,5 @@
 {
-    "discoveryURL":"http://127.0.0.1:443/ngsi9",        
+    "discoveryURL":"http://10.156.0.9:443/ngsi9",        
     "location": {
         "latitude": 36.912221,
         "longitude": 138.329059
