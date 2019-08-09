@@ -12,23 +12,18 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     // ============================== processing ======================================================
     // processing the received ContextEntity:    
     
-	console.log('ContextEntity.......',contextEntity);
 
-/*
 	var BrokerIP = contextEntity.attributes.brokerIP.value;
-    BrokerIP = BrokerIP.toString();
+        BrokerIP = BrokerIP.toString();
 	console.log('brokerIP:  ',BrokerIP);
 
 	var BrokerPort = contextEntity.attributes.brokerPort.value;
 	BrokerPort = BrokerPort.toString();
-	console.log('brokerPort:  ',BrokerPort);  */
-    
-    var BrokerIP = "host.docker.internal";
-    var BrokerPort = 8080;
+	console.log('brokerPort:  ',BrokerPort);
 
 	command = "/opt/iotajson/iota-config.sh " + BrokerIP + " " + BrokerPort;
 	
-    const shell = require('shelljs');
+        const shell = require('shelljs');
 	shell.exec(command);
 };
 
