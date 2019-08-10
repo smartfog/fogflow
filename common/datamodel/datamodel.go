@@ -154,12 +154,12 @@ type FogFunction struct {
 }
 
 type DockerImage struct {
-	OperatorName   string
-	ImageName      string
-	ImageTag       string
-	TargetedHWType string
-	TargetedOSType string
-	Prefetched     bool
+	OperatorName   string `json:"operater"`
+	ImageName      string `json:"name"`
+	ImageTag       string `json:"tag"`
+	TargetedHWType string `json:"hwType"`
+	TargetedOSType string `json:"osType"`
+	Prefetched     bool   `json:"prefetched"`
 }
 
 type InputStream struct {

@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func generateID(text string) string {
@@ -30,6 +31,10 @@ func main() {
 		os.Exit(-1)
 	}
 
+	// load the certificate
+	config.HTTPS.LoadConfig()
+
+	// construct the unique id for this worker
 	myID := "Worker." + config.SiteID
 	if (*id) != "0" {
 		myID = myID + "." + (*id)

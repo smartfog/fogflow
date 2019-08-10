@@ -44,7 +44,7 @@ func matchingWithFilters(registration *ContextRegistration, idFilter []EntityId,
 	matchedEntities := make([]EntityId, 0)
 
 	for _, entity := range registration.EntityIdList {
-		// check entityId part
+		// (1) check entityId part
 		atLeastOneMatched := false
 		for _, tmp := range idFilter {
 			matched := matchEntityId(entity, tmp)
@@ -57,21 +57,29 @@ func matchingWithFilters(registration *ContextRegistration, idFilter []EntityId,
 			continue
 		}
 
-		// check attribute set
+		// (2) check attribute set
 		matched := matchAttributes(registration.ContextRegistrationAttributes, attrFilter)
 		if matched == false {
 			continue
 		}
 
-		// check metadata set
+		// (3) check metadata set
 		matched = matchMetadatas(registration.Metadata, metaFilter)
 		if matched == false {
 			continue
 		}
 
-		// if matched, add it into the list
+		// if all matched, add it into the list
 		if matched == true {
 			matchedEntities = append(matchedEntities, entity)
+		}
+	}
+
+	// deal with the nearby query, sort all the candidates to select the top n with the closest distance
+	if nearby := metaFilter.GetNearbyFilter(); nearby != nil {
+		maxNum := nearby.Limit
+		if len(matchedEntities) > maxNum {
+
 		}
 	}
 

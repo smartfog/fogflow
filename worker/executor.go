@@ -426,7 +426,7 @@ func (e *Executor) registerEndPointService(serviceName string, taskID string, op
 	ctxObj.Metadata["port"] = ValueObject{Type: "object", Value: port}
 	ctxObj.Metadata["location"] = ValueObject{Type: "string", Value: location}
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -436,7 +436,7 @@ func (e *Executor) registerEndPointService(serviceName string, taskID string, op
 }
 
 func (e *Executor) deRegisterEndPointService(eid EntityId) {
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.DeleteContext(&eid)
 	if err != nil {
 		ERROR.Println(err)
@@ -493,7 +493,7 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 	ctxObj.Metadata["topology"] = ValueObject{Type: "string", Value: task.ServiceName}
 	ctxObj.Metadata["worker"] = ValueObject{Type: "string", Value: task.WorkerID}
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -510,7 +510,7 @@ func (e *Executor) updateTask(taskID string, status string) {
 	ctxObj.Attributes = make(map[string]ValueObject)
 	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: status}
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -523,7 +523,7 @@ func (e *Executor) deregisterTask(taskID string) {
 	entity.Type = "Task"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		ERROR.Println(err)
@@ -553,7 +553,7 @@ func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStre
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	sid, err := client.SubscribeContext(&subscription, true)
 	if err != nil {
 		ERROR.Println(err)
@@ -564,7 +564,7 @@ func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStre
 }
 
 func (e *Executor) unsubscribeInputStream(sid string) error {
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.UnsubscribeContext(sid)
 	if err != nil {
 		ERROR.Println(err)
@@ -581,7 +581,7 @@ func (e *Executor) createOuputStream(eID string, eType string) error {
 	ctxObj.Entity.Type = eType
 	ctxObj.Entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -592,7 +592,7 @@ func (e *Executor) createOuputStream(eID string, eType string) error {
 }
 
 func (e *Executor) deleteOuputStream(eid *EntityId) error {
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: e.workerCfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	err := client.DeleteContext(eid)
 	if err != nil {
 		ERROR.Println(err)

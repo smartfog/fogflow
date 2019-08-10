@@ -10,6 +10,7 @@ services:
         depends_on: 
             - discovery
             - broker
+        restart: always
             
     discovery:
         image: fogflow/discovery
@@ -17,6 +18,7 @@ services:
             - ./config.json:/config.json                        
         ports:
             - 443:443
+        restart: always
             
     broker:
         image: fogflow/broker
@@ -26,7 +28,8 @@ services:
             - 8080:8080
         depends_on: 
             - discovery
-            
+        restart: always
+                    
     master:
         image: fogflow/master
         volumes:
@@ -39,14 +42,16 @@ services:
             - rabbitmq
             - discovery
             - broker     
-            
+        restart: always
+                    
     cloud_worker:
         image: fogflow/worker
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                
             - /var/run/docker.sock:/var/run/docker.sock      
-                                
+        restart: always
+                                        
     rabbitmq:
         image: rabbitmq:3
         ports:

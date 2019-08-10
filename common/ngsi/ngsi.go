@@ -13,6 +13,13 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+var (
+	INFO     *log.Logger
+	PROTOCOL *log.Logger
+	ERROR    *log.Logger
+	DEBUG    *log.Logger
+)
+
 type SiteInfo struct {
 	ExternalAddress string `json:"externalAddress"`
 	GeohashID       string `json:"geohashID"`
@@ -555,6 +562,17 @@ func (restriction *Restriction) GetScope() OperationScope {
 	return myscope
 }
 
+func (restriction *Restriction) GetNearbyFilter() *NearBy {
+	for _, scope := range restriction.Scopes {
+		if scope.Type == "nearby" {
+			nearby := scope.Value.(NearBy)
+			return &nearby
+		}
+	}
+
+	return nil
+}
+
 type SubscribeResponse struct {
 	SubscriptionId string `json:"subscriptionId"`
 	Duration       string `json:"duration,omitempty"`
@@ -812,33 +830,47 @@ type HTTPS struct {
 	Certificate string `json:"my_certificate"`
 	Key         string `json:"my_key"`
 	CA          string `json:"my_ca"`
+	myCert      tls.Certificate
+	caCertPool  *x509.CertPool
 }
 
-func GetHTTPClient(https HTTPS) *http.Client {
-	if https.Enabled == false {
-		return &http.Client{}
+func (cfg *HTTPS) LoadConfig() bool {
+	if cfg.Enabled == false {
+		return true
 	}
 
+	var err1 error
+
 	// Read the key pair to create certificate
-	cert, err := tls.LoadX509KeyPair(https.Certificate, https.Key)
-	if err != nil {
-		log.Fatal(err)
+	cfg.myCert, err1 = tls.LoadX509KeyPair(cfg.Certificate, cfg.Key)
+	if err1 != nil {
+		ERROR.Fatal(err1)
+		return false
 	}
 
 	// Create a CA certificate pool and add cert.pem to it
-	caCert, err := ioutil.ReadFile(https.CA)
-	if err != nil {
-		log.Fatal(err)
+	caCert, err2 := ioutil.ReadFile(cfg.CA)
+	if err2 != nil {
+		ERROR.Fatal(err2)
+		return false
 	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
+	cfg.caCertPool = x509.NewCertPool()
+	cfg.caCertPool.AppendCertsFromPEM(caCert)
+
+	return true
+}
+
+func (cfg *HTTPS) GetHTTPClient() *http.Client {
+	if cfg.Enabled == false {
+		return &http.Client{}
+	}
 
 	// Create a HTTPS client and supply the created CA pool and certificate
 	return &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				RootCAs:      caCertPool,
-				Certificates: []tls.Certificate{cert},
+				RootCAs:      cfg.caCertPool,
+				Certificates: []tls.Certificate{cfg.myCert},
 			},
 		},
 	}

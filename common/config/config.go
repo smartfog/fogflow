@@ -13,13 +13,6 @@ import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
-var (
-	INFO     *log.Logger
-	PROTOCOL *log.Logger
-	ERROR    *log.Logger
-	DEBUG    *log.Logger
-)
-
 type DatabaseCfg struct {
 	UseOnlyCache bool   `json:"use_only_cache"`
 	DBReset      bool   `json:"dbreset"`
@@ -59,10 +52,12 @@ type Config struct {
 		Debug    string `json:"debug"`
 	} `json:"logging"`
 	Discovery struct {
-		Port int `json:"port"`
+		HTTPPort  int `json:"http_port"`
+		HTTPSPort int `json:"https_port"`
 	} `json:"discovery"`
 	Broker struct {
-		Port int `json:"port"`
+		HTTPPort  int `json:"http_port"`
+		HTTPSPort int `json:"https_port"`
 	} `json:"broker"`
 	Master struct {
 		AgentPort int `json:"ngsi_agent_port"`
@@ -94,12 +89,17 @@ var logTargets map[string]io.Writer = map[string]io.Writer{
 	"discard": ioutil.Discard,
 }
 
-func (c *Config) GetDiscoveryURL() string {
+func (c *Config) GetDiscoveryURL(flag4HTTPS bool) string {
+	if flag4HTTPS == false {
+		discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.HTTPPort)
+		return discoveryURL
+	}
+
 	if c.HTTPS.Enabled == true {
-		discoveryURL := fmt.Sprintf("https://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.Port)
+		discoveryURL := fmt.Sprintf("https://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.HTTPSPort)
 		return discoveryURL
 	} else {
-		discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.Port)
+		discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.HTTPPort)
 		return discoveryURL
 	}
 }

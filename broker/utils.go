@@ -8,11 +8,10 @@ import (
 	"net/http"
 	"strings"
 
-	. "github.com/smartfog/fogflow/common/config"
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
-func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg HTTPS) error {
+func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
 	//INFO.Println("NOTIFY: ", URL)
 	elementRespList := make([]ContextElementResponse, 0)
 
@@ -45,14 +44,16 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
-		client = GetHTTPClient(httpsCfg)
+		client = httpsCfg.GetHTTPClient()
 	}
 
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	ioutil.ReadAll(resp.Body)
 
@@ -124,15 +125,17 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	return nil
 }
 
-func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, httpsCfg HTTPS) (string, error) {
+func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
@@ -144,12 +147,14 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 	req.Header.Add("Require-Reliability", "true")
 
-	client := GetHTTPClient(httpsCfg)
+	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
 
@@ -167,7 +172,7 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 	}
 }
 
-func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg HTTPS) error {
+func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
 	unsubscription := &UnsubscribeContextRequest{
 		SubscriptionId: sid,
 	}
@@ -182,12 +187,14 @@ func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg HTTPS) 
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 
-	client := GetHTTPClient(httpsCfg)
+	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)
 

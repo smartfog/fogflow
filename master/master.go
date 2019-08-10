@@ -69,7 +69,7 @@ func (master *Master) Start(configuration *Config) {
 	master.cfg = configuration
 
 	master.messageBus = configuration.GetMessageBus()
-	master.discoveryURL = configuration.GetDiscoveryURL()
+	master.discoveryURL = configuration.GetDiscoveryURL(false)
 
 	master.workers = make(map[string]*WorkerProfile)
 
@@ -87,7 +87,7 @@ func (master *Master) Start(configuration *Config) {
 		nearby.Longitude = master.cfg.Location.Longitude
 		nearby.Limit = 1
 
-		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: master.cfg.HTTPS}
+		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(master.cfg.HTTPS.Enabled), SecurityCfg: &master.cfg.HTTPS}
 		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
 
 		if err == nil && selectedBroker != "" {
@@ -199,7 +199,7 @@ func (master *Master) registerMyself() {
 	mylocation.Longitude = master.cfg.Location.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	if err != nil {
 		ERROR.Println(err)
@@ -212,7 +212,7 @@ func (master *Master) unregisterMyself() {
 	entity.Type = "Master"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		ERROR.Println(err)
@@ -238,7 +238,7 @@ func (master *Master) subscribeContextEntity(entityType string) {
 	subscription.Entities = append(subscription.Entities, newEntity)
 	subscription.Reference = master.myURL
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	sid, err := client.SubscribeContext(&subscription, true)
 	if err != nil {
 		ERROR.Println(err)
@@ -338,11 +338,13 @@ func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextOb
 }
 
 func (master *Master) prefetchDockerImages(image DockerImage) {
-	workers := master.queryWorkers()
+	master.workerList_lock.RLock()
+	defer master.workerList_lock.RUnlock()
 
-	for _, worker := range workers {
-		workerID := worker.Entity.ID
+	for _, worker := range master.workers {
+		workerID := worker.WID
 		taskMsg := SendMessage{Type: "PREFETCH_IMAGE", RoutingKey: workerID + ".", From: master.id, PayLoad: image}
+		INFO.Println(taskMsg)
 		master.communicator.Publish(&taskMsg)
 	}
 }
@@ -495,7 +497,7 @@ func (master *Master) queryWorkers() []*ContextObject {
 	entity.IsPattern = true
 	query.Entities = append(query.Entities, entity)
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	ctxObjects, err := client.QueryContext(&query)
 	if err != nil {
 		ERROR.Println(err)
@@ -606,7 +608,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 
 	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
 
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: master.cfg.HTTPS}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(master.cfg.HTTPS.Enabled), SecurityCfg: &master.cfg.HTTPS}
 	subscriptionId, err := client.SubscribeContextAvailability(availabilitySubscription)
 	if err != nil {
 		ERROR.Println(err)
@@ -617,7 +619,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 }
 
 func (master *Master) unsubscribeContextAvailability(sid string) {
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: master.cfg.HTTPS}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(master.cfg.HTTPS.Enabled), SecurityCfg: &master.cfg.HTTPS}
 	err := client.UnsubscribeContextAvailability(sid)
 	if err != nil {
 		ERROR.Println(err)
@@ -650,6 +652,7 @@ func (master *Master) Process(msg *RecvMessage) error {
 }
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
+	DEBUG.Println("Update the worker list with the received heartbeat message")
 	master.workerList_lock.Lock()
 
 	workerID := profile.WID
@@ -710,7 +713,7 @@ func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
 // the shared functions for function manager and topology manager to call
 //
 func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: master.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	ctxObj, err := client.GetEntity(eid)
 
 	if err != nil {

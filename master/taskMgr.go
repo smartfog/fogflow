@@ -8,7 +8,6 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/smartfog/fogflow/common/config"
 	. "github.com/smartfog/fogflow/common/datamodel"
 	. "github.com/smartfog/fogflow/common/ngsi"
 )

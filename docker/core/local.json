@@ -15,10 +15,12 @@
         "debug": "stdout"
     },
     "discovery": {
-        "port": 443   
+        "http_port": 8090,
+        "https_port": 8092           
     },
     "broker": {
-        "port": 8080
+        "http_port": 8070,
+        "https_port": 8072   
     },    
     "master": {
         "ngsi_agent_port": 1060    
@@ -29,8 +31,8 @@
         "capacity": 8              
     },
     "designer": {
-        "webSrvPort": 80,
-        "agentPort": 1030               
+        "webSrvPort": 8080,
+        "agentPort": 1030,
     },    
     "rabbitmq": {
         "port": 5672,
@@ -38,7 +40,7 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : false,
+        "enabled" : true,
         "my_certificate": "server.pem",
         "my_key": "server.key",
         "my_ca": "root_ca.pem"

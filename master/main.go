@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func main() {
@@ -19,6 +20,9 @@ func main() {
 		INFO.Println("please specify the configuration file, for example, \r\n\t./master -f config.json")
 		os.Exit(-1)
 	}
+
+	// load the certificate
+	config.HTTPS.LoadConfig()
 
 	myID := "Master." + config.SiteID
 

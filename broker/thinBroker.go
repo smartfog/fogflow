@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -18,7 +19,7 @@ type ThinBroker struct {
 	MyLocation      PhysicalLocation
 	MyURL           string
 	IoTDiscoveryURL string
-	SecurityCfg     HTTPS
+	SecurityCfg     *HTTPS
 
 	myEntityId string
 
@@ -48,11 +49,17 @@ type ThinBroker struct {
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
-	tb.MyURL = "http://" + cfg.ExternalIP + ":" + strconv.Itoa(cfg.Broker.Port) + "/ngsi10"
+	if cfg.HTTPS.Enabled == true {
+		tb.MyURL = "https://" + cfg.ExternalIP + ":" + strconv.Itoa(cfg.Broker.HTTPSPort) + "/ngsi10"
+		tb.IoTDiscoveryURL = cfg.GetDiscoveryURL(true)
+	} else {
+		tb.MyURL = "http://" + cfg.ExternalIP + ":" + strconv.Itoa(cfg.Broker.HTTPPort) + "/ngsi10"
+		tb.IoTDiscoveryURL = cfg.GetDiscoveryURL(false)
+	}
+
 	tb.myEntityId = tb.id
 
-	tb.IoTDiscoveryURL = cfg.GetDiscoveryURL()
-	tb.SecurityCfg = cfg.HTTPS
+	tb.SecurityCfg = &cfg.HTTPS
 
 	tb.MyLocation = cfg.Location
 
@@ -421,8 +428,8 @@ func (tb *ThinBroker) handleInternalUpdateContext(updateCtxReq *UpdateContextReq
 // handle context updates forwarded by IoT Discovery
 func (tb *ThinBroker) handleExternalUpdateContext(updateCtxReq *UpdateContextRequest) {
 	// perform the update action accordingly
-	switch updateCtxReq.UpdateAction {
-	case "UPDATE":
+	switch strings.ToUpper(updateCtxReq.UpdateAction) {
+	case "UPDATE", "APPEND":
 		for _, ctxElem := range updateCtxReq.ContextElements {
 			// just in case this is orion ngsi v1
 			ctxElem.SetEntityID()

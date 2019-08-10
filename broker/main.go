@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 
@@ -16,7 +15,6 @@ import (
 func main() {
 	cfgFile := flag.String("f", "config.json", "A configuration file")
 	id := flag.String("i", "0", "its ID in the current site")
-	port := flag.String("p", "0", "the listening port")
 
 	flag.Parse()
 	config, err := LoadConfig(*cfgFile)
@@ -26,9 +24,8 @@ func main() {
 		os.Exit(-1)
 	}
 
-	if (*port) != "0" {
-		config.Broker.Port, _ = strconv.Atoi(*port)
-	}
+	// load the certificates
+	config.HTTPS.LoadConfig()
 
 	myID := "Broker." + config.SiteID
 	if (*id) != "0" {
@@ -37,8 +34,8 @@ func main() {
 
 	// check if IoT Discovery is ready
 	for {
-		httpClient := GetHTTPClient(config.HTTPS)
-		resp, err := httpClient.Get(config.GetDiscoveryURL() + "/status")
+		httpClient := config.HTTPS.GetHTTPClient()
+		resp, err := httpClient.Get(config.GetDiscoveryURL(true) + "/status")
 		if err != nil {
 			ERROR.Println(err)
 		} else {

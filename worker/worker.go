@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"runtime"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -51,30 +50,19 @@ func (w *Worker) Start(config *Config) bool {
 
 	// if no broker is configured in the configuration file, the worker needs to find a nearby IoT Broker
 	// otherwise, just use the configured broker
-	if config.Broker.Port != 0 {
-		if w.cfg.HTTPS.Enabled == true {
-			w.selectedBrokerURL = "https://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
-		} else {
-			w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port) + "/ngsi10"
-		}
-		w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.Port+2) + "/ngsi10"
-	} else {
-		// find a nearby IoT Broker
+	if config.Broker.HTTPPort == 0 {
+		// need to look for a nearby IoT Broker
 		for {
 			nearby := NearBy{}
 			nearby.Latitude = w.cfg.Location.Latitude
 			nearby.Longitude = w.cfg.Location.Longitude
 			nearby.Limit = 1
 
-			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL(), SecurityCfg: w.cfg.HTTPS}
+			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL(w.cfg.HTTPS.Enabled), SecurityCfg: &w.cfg.HTTPS}
 			selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
 			INFO.Println("find out a nearby broker ", selectedBroker)
 			if err == nil && selectedBroker != "" {
-				if w.cfg.HTTPS.Enabled == true {
-					w.selectedBrokerURL = strings.Replace(selectedBroker, "http://", "https://", 1)
-				} else {
-					w.selectedBrokerURL = selectedBroker
-				}
+				w.selectedBrokerURL = selectedBroker
 				break
 			} else {
 				if err != nil {
@@ -85,6 +73,13 @@ func (w *Worker) Start(config *Config) bool {
 				time.Sleep(5 * time.Second)
 			}
 		}
+	} else {
+		if w.cfg.HTTPS.Enabled == true {
+			w.selectedBrokerURL = "https://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPSPort) + "/ngsi10"
+		} else {
+			w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
+		}
+		w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
 	}
 
 	INFO.Println("communicating with the broker ", w.selectedBrokerURL)
@@ -120,7 +115,7 @@ func (w *Worker) Start(config *Config) bool {
 	}()
 
 	// start a timer to do something periodically
-	w.ticker = time.NewTicker(time.Second * 5)
+	w.ticker = time.NewTicker(time.Second * 10)
 	go func() {
 		for {
 			<-w.ticker.C
@@ -163,7 +158,7 @@ func (w *Worker) publishMyself() error {
 	mylocation.Longitude = w.cfg.Location.Longitude
 	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
 
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: w.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: &w.cfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
 	return err
 }
@@ -174,7 +169,7 @@ func (w *Worker) unpublishMyself() {
 	entity.Type = "Worker"
 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: w.cfg.HTTPS}
+	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: &w.cfg.HTTPS}
 	err := client.DeleteContext(&entity)
 	if err != nil {
 		ERROR.Println(err)
@@ -212,10 +207,10 @@ func (w *Worker) Process(msg *RecvMessage) error {
 		}
 
 	case "PREFETCH_IMAGE":
-		imageList := make([]DockerImage, 0)
-		err = json.Unmarshal(msg.PayLoad, &imageList)
+		var dockerImage DockerImage
+		err = json.Unmarshal(msg.PayLoad, &dockerImage)
 		if err == nil {
-			w.onPrefetchImage(imageList)
+			w.onPrefetchImage(&dockerImage)
 		}
 	}
 
@@ -377,9 +372,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 	}
 }
 
-func (w *Worker) onPrefetchImage(imageList []DockerImage) {
-	for _, dockerImage := range imageList {
-		INFO.Println("I am going to fetch the docker image", dockerImage.ImageName)
-		go w.executor.PullImage(dockerImage.ImageName, dockerImage.ImageTag)
-	}
+func (w *Worker) onPrefetchImage(dockerImage *DockerImage) {
+	INFO.Println("I am going to fetch the docker image", dockerImage.ImageName)
+	go w.executor.PullImage(dockerImage.ImageName, dockerImage.ImageTag)
 }

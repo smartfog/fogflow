@@ -186,7 +186,6 @@ function submitOperator(operator, designboard)
         
     
     client.updateContext(operatorObj).then( function(data) {
-        console.log(data);                
         showOperator();                       
     }).catch( function(error) {
         console.log('failed to submit the defined operator');

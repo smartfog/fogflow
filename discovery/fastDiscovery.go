@@ -12,7 +12,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/satori/go.uuid"
 
-	. "github.com/smartfog/fogflow/common/config"
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
@@ -30,7 +29,7 @@ type FastDiscovery struct {
 	//backend entity repository
 	repository EntityRepository
 
-	SecurityCfg HTTPS
+	SecurityCfg *HTTPS
 
 	//list of active brokers within the same site
 	BrokerList map[string]*BrokerProfile
@@ -45,7 +44,7 @@ type FastDiscovery struct {
 	cache_lock  sync.RWMutex
 }
 
-func (fd *FastDiscovery) Init(httpsCfg HTTPS) {
+func (fd *FastDiscovery) Init(httpsCfg *HTTPS) {
 	fd.subscriptions = make(map[string]*SubscribeContextAvailabilityRequest)
 	fd.linkedInterSiteSubscriptions = make(map[string][]InterSiteSubscription)
 	fd.BrokerList = make(map[string]*BrokerProfile)
@@ -357,13 +356,12 @@ func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyConte
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
-	client := GetHTTPClient(fd.SecurityCfg)
+	client := fd.SecurityCfg.GetHTTPClient()
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		ERROR.Println(err2)
 		return false
 	}
-
 	defer resp.Body.Close()
 
 	text, _ := ioutil.ReadAll(resp.Body)

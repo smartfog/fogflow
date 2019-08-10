@@ -13,6 +13,7 @@ import (
 	"github.com/ant0ine/go-json-rest/rest"
 
 	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type RestApiSrv struct {
@@ -66,6 +67,13 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 	api.SetApp(router)
 
+	// for internal HTTP-based communication
+	go func() {
+		INFO.Printf("Starting IoT Broker on port %d for HTTP requests\n", cfg.Broker.HTTPPort)
+		panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.HTTPPort), api.MakeHandler()))
+	}()
+
+	// for external HTTPS-based communication
 	go func() {
 		if cfg.HTTPS.Enabled == true {
 			// Create a CA certificate pool and add cert.pem to it
@@ -85,24 +93,13 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 			// Create a Server instance to listen on the port with the TLS config
 			server := &http.Server{
-				Addr:      ":" + strconv.Itoa(cfg.Broker.Port),
+				Addr:      ":" + strconv.Itoa(cfg.Broker.HTTPSPort),
 				Handler:   api.MakeHandler(),
 				TLSConfig: tlsConfig,
 			}
 
-			fmt.Printf("Starting IoT Broker on port %d for HTTPS requests\n", cfg.Broker.Port)
+			fmt.Printf("Starting IoT Broker on port %d for HTTPS requests\n", cfg.Broker.HTTPSPort)
 			panic(server.ListenAndServeTLS(cfg.HTTPS.Certificate, cfg.HTTPS.Key))
-		} else {
-			fmt.Printf("Starting IoT Broker on port %d for HTTP requests\n", cfg.Broker.Port)
-			panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.Port), api.MakeHandler()))
-		}
-	}()
-
-	// for temporary use
-	go func() {
-		if cfg.HTTPS.Enabled == true {
-			fmt.Printf("Starting IoT Broker on port %d for HTTP requests\n", cfg.Broker.Port+2)
-			panic(http.ListenAndServe(":"+strconv.Itoa(cfg.Broker.Port+2), api.MakeHandler()))
 		}
 	}()
 }

@@ -16,9 +16,8 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 
-	//"github.com/jadengore/go-json-rest-middleware-force-ssl"
-
 	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func main() {
@@ -31,9 +30,12 @@ func main() {
 		os.Exit(-1)
 	}
 
+	// load the certificate
+	config.HTTPS.LoadConfig()
+
 	// initialize IoT Discovery
 	iotDiscovery := FastDiscovery{}
-	iotDiscovery.Init(config.HTTPS)
+	iotDiscovery.Init(&config.HTTPS)
 
 	// start REST API server
 	router, err := rest.MakeRouter(
@@ -63,17 +65,6 @@ func main() {
 	api := rest.NewApi()
 	api.Use(rest.DefaultCommonStack...)
 
-	/*
-		if config.HTTPS.Enabled == true {
-			api.Use(&forceSSL.Middleware{
-				TrustXFPHeader:     true,
-				Enable301Redirects: false,
-			})
-		} else {
-			api.Use(rest.DefaultCommonStack...)
-		}
-	*/
-
 	api.Use(&rest.CorsMiddleware{
 		RejectNonCorsRequests: false,
 		OriginValidator: func(origin string, request *rest.Request) bool {
@@ -87,6 +78,13 @@ func main() {
 
 	api.SetApp(router)
 
+	// for internal HTTP-based communication
+	go func() {
+		INFO.Printf("Starting IoT Discovery on port %d for internal HTTP requests\n", config.Discovery.HTTPPort)
+		panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.HTTPPort), api.MakeHandler()))
+	}()
+
+	// for external HTTPS-based communication
 	go func() {
 		if config.HTTPS.Enabled == true {
 			// Create a CA certificate pool and add cert.pem to it
@@ -106,24 +104,13 @@ func main() {
 
 			// Create a Server instance to listen on the port with the TLS config
 			server := &http.Server{
-				Addr:      ":" + strconv.Itoa(config.Discovery.Port),
+				Addr:      ":" + strconv.Itoa(config.Discovery.HTTPSPort),
 				Handler:   api.MakeHandler(),
 				TLSConfig: tlsConfig,
 			}
 
-			INFO.Printf("Starting IoT Discovery on port %d for HTTPS requests\n", config.Discovery.Port)
+			INFO.Printf("Starting IoT Discovery on port %d for HTTPS requests\n", config.Discovery.HTTPSPort)
 			panic(server.ListenAndServeTLS(config.HTTPS.Certificate, config.HTTPS.Key))
-		} else {
-			INFO.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port)
-			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port), api.MakeHandler()))
-		}
-	}()
-
-	// for temporary use
-	go func() {
-		if config.HTTPS.Enabled == true {
-			INFO.Printf("Starting IoT Discovery on port %d for HTTP requests\n", config.Discovery.Port+2)
-			panic(http.ListenAndServe(":"+strconv.Itoa(config.Discovery.Port+2), api.MakeHandler()))
 		}
 	}()
 

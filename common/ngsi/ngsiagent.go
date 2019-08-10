@@ -4,9 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"io/ioutil"
-
-	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -30,7 +27,7 @@ func (agent *NGSIAgent) Start() {
 		rest.Post("/notifyContextAvailability", agent.handleNotifyContextAvailability),
 	)
 	if err != nil {
-		log.Fatal(err)
+		ERROR.Fatal(err)
 	}
 
 	api := rest.NewApi()
@@ -42,7 +39,7 @@ func (agent *NGSIAgent) Start() {
 			// Create a CA certificate pool and add cert.pem to it
 			caCert, err := ioutil.ReadFile(agent.SecurityCfg.CA)
 			if err != nil {
-				log.Fatal(err)
+				ERROR.Fatal(err)
 			}
 			caCertPool := x509.NewCertPool()
 			caCertPool.AppendCertsFromPEM(caCert)
@@ -61,10 +58,10 @@ func (agent *NGSIAgent) Start() {
 				TLSConfig: tlsConfig,
 			}
 
-			fmt.Printf("Starting IoT agent on port %d for HTTPS requests\n", agent.Port)
+			INFO.Printf("Starting IoT agent on port %d for HTTPS requests\n", agent.Port)
 			panic(server.ListenAndServeTLS(agent.SecurityCfg.Certificate, agent.SecurityCfg.Key))
 		} else {
-			fmt.Printf("Starting IoT Discovery on port %d for HTTP requests\n", agent.Port)
+			INFO.Printf("Starting IoT Discovery on port %d for HTTP requests\n", agent.Port)
 			panic(http.ListenAndServe(":"+strconv.Itoa(agent.Port), api.MakeHandler()))
 		}
 	}()
@@ -74,7 +71,7 @@ func (agent *NGSIAgent) handleNotifyContext(w rest.ResponseWriter, r *rest.Reque
 	notifyCtxReq := NotifyContextRequest{}
 	err := r.DecodeJsonPayload(&notifyCtxReq)
 	if err != nil {
-		fmt.Println(err)
+		INFO.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -92,7 +89,7 @@ func (agent *NGSIAgent) handleNotifyContextAvailability(w rest.ResponseWriter, r
 	notifyCtxAvailReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyCtxAvailReq)
 	if err != nil {
-		fmt.Println(err)
+		ERROR.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
