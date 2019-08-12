@@ -24,13 +24,24 @@ services:
             - 8092:8092            
         restart: always
         
+    cloud_broker:
+        image: fogflow/broker
+        volumes:
+            - ./config.json:/config.json 
+            - ./edge_node.pem:/edge_node.pem
+            - ./edge_node.key:/edge_node.key        
+            - ./root_ca.pem:/root_ca.pem                                       
+        ports:
+            - 8070:8070
+            - 8072:8072     
+        depends_on: 
+            - discovery
+        restart: always     
+           
     master:
         image: fogflow/master
         volumes:
-            - ./config.json:/config.json   
-            - ./cloud_node.pem:/cloud_node.pem
-            - ./cloud_node.key:/cloud_node.key        
-            - ./root_ca.pem:/root_ca.pem                                     
+            - ./config.json:/config.json                                   
         links:
             - rabbitmq        
         ports:
@@ -40,29 +51,12 @@ services:
             - discovery
             - cloud_broker     
         restart: always        
-            
-    cloud_broker:
-        image: fogflow/broker
-        volumes:
-            - ./config.json:/config.json 
-            - ./cloud_node.pem:/cloud_node.pem
-            - ./cloud_node.key:/cloud_node.key        
-            - ./root_ca.pem:/root_ca.pem                                       
-        ports:
-            - 8070:8070
-            - 8072:8072     
-        depends_on: 
-            - discovery
-        restart: always
                                         
     cloud_worker:
         image: fogflow/worker
         volumes:
             - /tmp:/tmp        
-            - ./config.json:/config.json    
-            - ./cloud_node.pem:/cloud_node.pem
-            - ./cloud_node.key:/cloud_node.key        
-            - ./root_ca.pem:/root_ca.pem                            
+            - ./config.json:/config.json                            
             - /var/run/docker.sock:/var/run/docker.sock      
         restart: always
                                         
