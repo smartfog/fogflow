@@ -20,13 +20,6 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 
 var config = globalConfigFile.designer;
 
-/*
-if (globalConfigFile.https.enabled == true) {
-    globalConfigFile.discovery.port = globalConfigFile.discovery.port + 2
-    globalConfigFile.broker.port = globalConfigFile.broker.port + 2   
-}
-*/
-
 config.agentIP = globalConfigFile.internal_hostip;
 config.agentPort = globalConfigFile.designer.agentPort; 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
@@ -105,21 +98,15 @@ if (process.env.agentIP) {
     config.agentIP = process.env.agentIP;   
 }
 
+config.discoveryURL = './ngsi9';
+config.brokerURL = './ngsi10';    
+
 console.log(config);
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
 
 var webServer;
-
-//if (config.for_https_proxy == true) {
-config.discoveryURL = 'https://' + globalConfigFile.webportal_ip + '/ngsi9';
-config.brokerURL = 'https://' + globalConfigFile.webportal_ip + '/ngsi10';    
-/*} else {
-    config.discoveryURL = 'http://' + globalConfigFile.webportal_ip + ':' + globalConfigFile.discovery.http_port + '/ngsi9';
-    config.brokerURL = 'http://' + globalConfigFile.webportal_ip + ':' + globalConfigFile.broker.http_port + '/ngsi10';    
-} */  
-
 webServer = app.listen(config.webSrvPort, function(){
     console.log("HTTP-based web server is listening on port ", config.webSrvPort);
 });

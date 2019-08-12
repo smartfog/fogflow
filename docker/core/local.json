@@ -1,5 +1,4 @@
 {
-    "webportal_ip": "host.docker.internal",     
     "coreservice_ip": "host.docker.internal",   
     "external_hostip": "host.docker.internal",         
     "internal_hostip": "host.docker.internal",  

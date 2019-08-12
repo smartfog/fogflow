@@ -60,6 +60,8 @@ Download the docker-compose file and the config.json file to setup flogflow.
 
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/config.json
 
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/nginx.conf
+
 
 you need to change the following addresses in config.json according to your own environment.
 

@@ -5,7 +5,7 @@ services:
         volumes:
             - ./config.json:/app/config.json                
         ports:
-            - 80:80
+            - 8080:8080
             - 1030:1030
         depends_on: 
             - discovery
@@ -92,7 +92,7 @@ services:
       image: nginx:latest
       volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf
-        - ./designer.crt:/etc/nginx/designer.crt
+        - ./designer.pem:/etc/nginx/designer.pem
         - ./designer.key:/etc/nginx/designer.key        
       ports:
         - 443:443

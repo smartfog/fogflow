@@ -1,8 +1,7 @@
 {
-    "webportal_ip": "localhost",
-    "coreservice_ip": "host.docker.internal",   
-    "external_hostip": "host.docker.internal",
-    "internal_hostip": "host.docker.internal",  
+    "coreservice_ip": "35.234.89.72",   
+    "external_hostip": "10.156.0.9",
+    "internal_hostip": "172.17.0.1", 
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221
@@ -33,7 +32,7 @@
         "cadvisor_port": 9091
     },
     "designer": {
-        "webSrvPort": 80,
+        "webSrvPort": 8080,
         "agentPort": 1030               
     },    
     "rabbitmq": {
