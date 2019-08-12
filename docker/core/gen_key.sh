@@ -47,13 +47,5 @@ openssl req -new -key designer.key -out designer.csr -subj "/C=DE/ST=BW/L=Heidel
 echo -e "${BOLD}Generating Certificate for Client Certificate${CLEAR}"
 openssl x509 -req -in designer.csr -CA root_ca.pem -CAkey root_ca.key -CAcreateserial -out designer.pem -outform PEM -days 1825 
 
-
-cp cloud_node.pem cloud_node.key root_ca.pem  ../master
-
-cp edge_node.pem edge_node.key root_ca.pem  ../broker
-cp edge_node.pem edge_node.key root_ca.pem  ../worker
-
-cp designer.pem designer.key root_ca.pem  ../designer
-
 echo "Done!"
 
