@@ -9,7 +9,7 @@ services:
             - 1030:1030
         depends_on: 
             - discovery
-            - broker
+            - cloud_broker
         restart: always
             
     discovery:
@@ -32,7 +32,7 @@ services:
         depends_on: 
             - rabbitmq
             - discovery
-            - broker     
+            - cloud_broker     
         restart: always        
             
     cloud_broker:
