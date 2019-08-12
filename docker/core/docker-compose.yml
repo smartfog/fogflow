@@ -17,7 +17,8 @@ services:
         volumes:
             - ./config.json:/config.json                        
         ports:
-            - 443:443
+            - 8090:8090
+            - 8092:8092            
         restart: always
             
     broker:
@@ -25,7 +26,8 @@ services:
         volumes:
             - ./config.json:/config.json                        
         ports:
-            - 8080:8080
+            - 8070:8070
+            - 8072:8072     
         depends_on: 
             - discovery
         restart: always
@@ -90,7 +92,8 @@ services:
       image: nginx:latest
       volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf
+        - ./designer.crt:/etc/nginx/designer.crt
+        - ./designer.key:/etc/nginx/designer.key        
       ports:
-        - 80:80
         - 443:443
     

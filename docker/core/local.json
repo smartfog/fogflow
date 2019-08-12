@@ -28,7 +28,9 @@
     "worker": {
         "container_autoremove": false,
         "start_actual_task": true,
-        "capacity": 8              
+        "capacity": 8,
+        "edge_address": "host.docker.internal",
+        "cadvisor_port": 9091                   
     },
     "designer": {
         "webSrvPort": 8080,

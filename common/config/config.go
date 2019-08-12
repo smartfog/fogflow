@@ -67,8 +67,8 @@ type Config struct {
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
 		Capacity            int                   `json:"capacity"`
-		EdgeAddress         string                `json:"edge_address"`
-		CAdvisorPort        int                   `json:"cadvisor_port"`
+		//EdgeAddress         string                `json:"edge_address"`
+		CAdvisorPort int `json:"cadvisor_port"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		Port     int    `json:"port"`

@@ -15,11 +15,13 @@
         "debug": "stdout"
     },
     "discovery": {
-        "port": 443   
+        "http_port": 8090,
+        "https_port": 8092           
     },
     "broker": {
-        "port": 8080
-    },    
+        "http_port": 8070,
+        "https_port": 8072   
+    },     
     "master": {
         "ngsi_agent_port": 1060    
     },
@@ -29,7 +31,6 @@
         "capacity": 8,
         "edge_address": "host.docker.internal",
         "cadvisor_port": 9091
-
     },
     "designer": {
         "webSrvPort": 80,
