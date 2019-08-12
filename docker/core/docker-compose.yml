@@ -62,22 +62,6 @@ services:
             - RABBITMQ_DEFAULT_USER=admin
             - RABBITMQ_DEFAULT_PASS=mypass   
             
-    cadvisor:
-      image: google/cadvisor
-      ports:
-        - 9091:8080
-      volumes:
-        - /:/rootfs:ro
-        - /var/run:/var/run:rw
-        - /sys:/sys:ro
-        - /var/lib/docker/:/var/lib/docker:ro
-        
-    prometheus:
-      image: fogflow/prometheus
-      ports:
-        - 9090:9090
-        - 4545:4545
-
     nginx: 
       image: nginx:latest
       volumes:
