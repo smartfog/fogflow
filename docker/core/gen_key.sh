@@ -42,7 +42,7 @@ echo -e "${BOLD}Generating RSA Private Key for Designer Certificate${CLEAR}"
 openssl genrsa -out designer.key 4096
 
 echo -e "${BOLD}Generating Certificate Signing Request for Designer Certificate${CLEAR}"
-openssl req -new -key designer.key -out designer.csr -subj "/C=DE/ST=BW/L=Heidelberg/O=NEC/OU=NLE/CN=$2"
+openssl req -new -key designer.key -out designer.csr -subj "/C=DE/ST=BW/L=Heidelberg/O=NEC/OU=NLE/CN=www.fogflow.org"
 
 echo -e "${BOLD}Generating Certificate for Designer Certificate${CLEAR}"
 openssl x509 -req -in designer.csr -CA root_ca.pem -CAkey root_ca.key -CAcreateserial -out designer.pem -outform PEM -days 1825 
