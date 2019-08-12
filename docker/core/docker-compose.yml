@@ -28,8 +28,8 @@ services:
         image: fogflow/broker
         volumes:
             - ./config.json:/config.json 
-            - ./edge_node.pem:/edge_node.pem
-            - ./edge_node.key:/edge_node.key        
+            - ./cloud_node.pem:/cloud_node.pem
+            - ./cloud_node.key:/cloud_node.key        
             - ./root_ca.pem:/root_ca.pem                                       
         ports:
             - 8070:8070
