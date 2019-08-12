@@ -47,8 +47,8 @@ Please check the following examples.
                    "restriction":{
                       "scopes":[
                          {
-                            "type":"nearby",
-                            "value":{
+                            "scopeType":"nearby",
+                            "scopeValue":{
                                "latitude":35.692221,
                                "longitude":139.709059,
                                "limit":1

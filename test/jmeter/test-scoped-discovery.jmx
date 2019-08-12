@@ -191,8 +191,8 @@
     ],	&#xd;
     &quot;restriction&quot;: {&#xd;
     	  &quot;scopes&quot;:[{&#xd;
-    	  	&quot;type&quot;: &quot;circle&quot;,&#xd;
-    	  	&quot;value&quot;: {&#xd;
+    	  	&quot;scopeType&quot;: &quot;circle&quot;,&#xd;
+    	  	&quot;scopeValue&quot;: {&#xd;
     	  		&quot;centerLatitude&quot;: 40.418889,&#xd;
     	  		&quot;centerLongitude&quot;: -3.00094, &#xd;
     	  		&quot;radius&quot;: 10&#xd;
@@ -461,8 +461,8 @@
     ],	&#xd;
     &quot;restriction&quot;: {&#xd;
     	  &quot;scopes&quot;:[{&#xd;
-    	  	&quot;type&quot;: &quot;circle&quot;,&#xd;
-    	  	&quot;value&quot;: {&#xd;
+    	  	&quot;scopeType&quot;: &quot;circle&quot;,&#xd;
+    	  	&quot;scopeValue&quot;: {&#xd;
     	  		&quot;centerLatitude&quot;: 40.418889,&#xd;
     	  		&quot;centerLongitude&quot;: -3.00094, &#xd;
     	  		&quot;radius&quot;: 1&#xd;

@@ -32,7 +32,7 @@
     },
     "designer": {
         "webSrvPort": 8080,
-        "agentPort": 1030,
+        "agentPort": 1030
     },    
     "rabbitmq": {
         "port": 5672,
@@ -40,7 +40,7 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : true,
+        "enabled" : false,
         "my_certificate": "server.pem",
         "my_key": "server.key",
         "my_ca": "root_ca.pem"

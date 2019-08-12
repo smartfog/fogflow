@@ -8,6 +8,39 @@ import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
+func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) bool {
+	// (1) check entityId part
+	entity := EntityId{}
+	entity.ID = registration.ID
+	entity.Type = registration.Type
+	entity.IsPattern = false
+
+	atLeastOneMatched := false
+	for _, tmp := range idFilter {
+		matched := matchEntityId(entity, tmp)
+		if matched == true {
+			atLeastOneMatched = true
+			break
+		}
+	}
+	if atLeastOneMatched == false {
+		return false
+	}
+
+	// (2) check attribute set
+	if matchAttributes(registration.AttributesList, attrFilter) == false {
+		return false
+	}
+
+	// (3) check metadata set
+	if matchMetadatas(registration.MetadataList, metaFilter) == false {
+		return false
+	}
+
+	// if all matched, return true
+	return true
+}
+
 func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 	if subscribedEntity.IsPattern == true {
 		if subscribedEntity.ID != "" {
@@ -40,63 +73,9 @@ func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 	return true
 }
 
-func matchingWithFilters(registration *ContextRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) []EntityId {
-	matchedEntities := make([]EntityId, 0)
-
-	for _, entity := range registration.EntityIdList {
-		// (1) check entityId part
-		atLeastOneMatched := false
-		for _, tmp := range idFilter {
-			matched := matchEntityId(entity, tmp)
-			if matched == true {
-				atLeastOneMatched = true
-				break
-			}
-		}
-		if atLeastOneMatched == false {
-			continue
-		}
-
-		// (2) check attribute set
-		matched := matchAttributes(registration.ContextRegistrationAttributes, attrFilter)
-		if matched == false {
-			continue
-		}
-
-		// (3) check metadata set
-		matched = matchMetadatas(registration.Metadata, metaFilter)
-		if matched == false {
-			continue
-		}
-
-		// if all matched, add it into the list
-		if matched == true {
-			matchedEntities = append(matchedEntities, entity)
-		}
-	}
-
-	// deal with the nearby query, sort all the candidates to select the top n with the closest distance
-	if nearby := metaFilter.GetNearbyFilter(); nearby != nil {
-		maxNum := nearby.Limit
-		if len(matchedEntities) > maxNum {
-
-		}
-	}
-
-	return matchedEntities
-}
-
-func matchAttributes(registeredAttributes []ContextRegistrationAttribute, requiredAttributeNames []string) bool {
+func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribute, requiredAttributeNames []string) bool {
 	for _, attrName := range requiredAttributeNames {
-		exist := false
-		for _, attribute := range registeredAttributes {
-			if attribute.Name == attrName {
-				exist = true
-				break
-			}
-		}
-
-		if exist == false {
+		if _, exist := registeredAttributes[attrName]; exist == false {
 			return false
 		}
 	}
@@ -104,7 +83,7 @@ func matchAttributes(registeredAttributes []ContextRegistrationAttribute, requir
 	return true
 }
 
-func matchMetadatas(metadatas []ContextMetadata, restriction Restriction) bool {
+func matchMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	for _, scope := range restriction.Scopes {
 		switch strings.ToLower(scope.Type) {
 		case "circle": // check if the location metadata belongs to the circle
@@ -227,42 +206,15 @@ func intersectsWithRaycast(point *Point, start *Point, end *Point) bool {
 }
 
 func PointInCircle(point *Point, circle *Circle) bool {
+	center := Point{}
+	center.Longitude = circle.Longitude
+	center.Latitude = circle.Latitude
 
-	dist := Distance(point.Latitude, point.Longitude, circle.Latitude, circle.Longitude)
+	dist := Distance(point, &center)
 
-	if dist <= circle.Radius {
+	if dist <= uint64(circle.Radius) {
 		return true
 	} else {
 		return false
 	}
-}
-
-func hsin(theta float64) float64 {
-	return math.Pow(math.Sin(theta/2), 2)
-}
-
-// Distance function returns the distance (in meters) between two points of
-//     a given longitude and latitude relatively accurately (using a spherical
-//     approximation of the Earth) through the Haversin Distance Formula for
-//     great arc distance on a sphere with accuracy for small distances
-//
-// point coordinates are supplied in degrees and converted into rad. in the func
-//
-// distance returned is METERS!!!!!!
-// http://en.wikipedia.org/wiki/Haversine_formula
-func Distance(lat1, lon1, lat2, lon2 float64) float64 {
-	// convert to radians
-	// must cast radius as float to multiply later
-	var la1, lo1, la2, lo2, r float64
-	la1 = lat1 * math.Pi / 180
-	lo1 = lon1 * math.Pi / 180
-	la2 = lat2 * math.Pi / 180
-	lo2 = lon2 * math.Pi / 180
-
-	r = 6378100 // Earth radius in METERS
-
-	// calculate
-	h := hsin(la2-la1) + math.Cos(la1)*math.Cos(la2)*hsin(lo2-lo1)
-
-	return 2 * r * math.Asin(math.Sqrt(h))
 }

@@ -103,8 +103,8 @@
        &quot;restriction&quot;:{&#xd;
           &quot;scopes&quot;:[&#xd;
              {&#xd;
-                &quot;type&quot;:&quot;nearby&quot;,&#xd;
-                &quot;value&quot;:{&#xd;
+                &quot;scopeType&quot;:&quot;nearby&quot;,&#xd;
+                &quot;scopeValue&quot;:{&#xd;
                    &quot;latitude&quot;:35.692221,&#xd;
                    &quot;longitude&quot;:139.709059,&#xd;
                    &quot;limit&quot;:1&#xd;

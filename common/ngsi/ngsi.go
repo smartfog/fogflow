@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -564,6 +565,9 @@ func (restriction *Restriction) GetScope() OperationScope {
 
 func (restriction *Restriction) GetNearbyFilter() *NearBy {
 	for _, scope := range restriction.Scopes {
+
+		DEBUG.Println(" SCOPE: ", scope)
+
 		if scope.Type == "nearby" {
 			nearby := scope.Value.(NearBy)
 			return &nearby
@@ -605,10 +609,10 @@ func (registredEntity *EntityRegistration) GetLocation() Point {
 	return Point{0.0, 0.0}
 }
 
+//
+// used by master to group the received input
+//
 func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
-	//DEBUG.Printf(" ====restriction = %+v\r\n", restrictions)
-	//DEBUG.Printf(" ====registration = %+v\r\n", registredEntity)
-
 	matched := true
 
 	for key, value := range restrictions {
@@ -634,8 +638,6 @@ func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]int
 			}
 		}
 	}
-
-	//DEBUG.Printf(" ====matched = %+v\r\n", matched)
 
 	return matched
 }
@@ -874,4 +876,25 @@ func (cfg *HTTPS) GetHTTPClient() *http.Client {
 			},
 		},
 	}
+}
+
+func hsin(theta float64) float64 {
+	return math.Pow(math.Sin(theta/2), 2)
+}
+
+func Distance(p1 *Point, p2 *Point) uint64 {
+	// convert to radians
+	// must cast radius as float to multiply later
+	var la1, lo1, la2, lo2, r float64
+	la1 = p1.Latitude * math.Pi / 180
+	lo1 = p1.Longitude * math.Pi / 180
+	la2 = p2.Latitude * math.Pi / 180
+	lo2 = p2.Longitude * math.Pi / 180
+
+	r = 6378100 // Earth radius in METERS
+
+	// calculate
+	h := hsin(la2-la1) + math.Cos(la1)*math.Cos(la2)*hsin(lo2-lo1)
+
+	return uint64(2 * r * math.Asin(math.Sqrt(h)))
 }

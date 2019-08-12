@@ -40,8 +40,8 @@
 	&quot;restriction&quot;: {&#xd;
 		&quot;attributeExpression&quot;: &quot;&quot;,&#xd;
 		&quot;scopes&quot;: [{&#xd;
-			&quot;type&quot;: &quot;nearby&quot;,&#xd;
-			&quot;value&quot;: {&#xd;
+			&quot;scopeType&quot;: &quot;nearby&quot;,&#xd;
+			&quot;scopeValue&quot;: {&#xd;
 				&quot;latitude&quot;: 50.405938,&#xd;
 				&quot;longitude&quot;: 9.684173,&#xd;
 				&quot;limit&quot;: 2&#xd;

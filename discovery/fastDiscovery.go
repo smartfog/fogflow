@@ -98,26 +98,31 @@ func (fd *FastDiscovery) forwardRegistrationCtxAvailability(discoveryURL string,
 	}
 }
 
-func (fd *FastDiscovery) notifySubscribers(registration *ContextRegistration, updateAction string) {
+func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, updateAction string) {
 	fd.subscriptions_lock.RLock()
 	defer fd.subscriptions_lock.RUnlock()
 
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
-		entities := matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction)
-		if len(entities) == 0 {
-			continue
+		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction) == true {
+			subscriberURL := subscription.Reference
+			subID := subscription.SubscriptionId
+			entities := make([]EntityId, 0)
+
+			entity := EntityId{}
+			entity.ID = registration.ID
+			entity.Type = registration.Type
+			entity.IsPattern = false
+
+			entities = append(entities, entity)
+
+			entityMap := make(map[string][]EntityId)
+			entityMap[providerURL] = entities
+
+			// send out AvailabilityNotify to subscribers
+			go fd.sendNotify(subID, subscriberURL, entityMap, updateAction)
 		}
-
-		subscriberURL := subscription.Reference
-		subID := subscription.SubscriptionId
-
-		entityMap := make(map[string][]EntityId)
-		entityMap[providerURL] = entities
-
-		// send out AvailabilityNotify to subscribers
-		go fd.sendNotify(subID, subscriberURL, entityMap, updateAction)
 	}
 }
 

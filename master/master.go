@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 	"sync"
@@ -652,7 +651,6 @@ func (master *Master) Process(msg *RecvMessage) error {
 }
 
 func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
-	DEBUG.Println("Update the worker list with the received heartbeat message")
 	master.workerList_lock.Lock()
 
 	workerID := profile.WID
@@ -820,7 +818,7 @@ func (master *Master) SelectWorker(locations []Point) string {
 				continue
 			}
 
-			distance := Distance(wp, location)
+			distance := Distance(&wp, &location)
 			totalDistance += distance
 			INFO.Printf("distance = %d between %+v, %+v\r\n", distance, wp, location)
 		}
@@ -836,25 +834,4 @@ func (master *Master) SelectWorker(locations []Point) string {
 	// select the one with lowest capacity if there are more than one with the closest distance
 
 	return closestWorkerID
-}
-
-func hsin(theta float64) float64 {
-	return math.Pow(math.Sin(theta/2), 2)
-}
-
-func Distance(p1 Point, p2 Point) uint64 {
-	// convert to radians
-	// must cast radius as float to multiply later
-	var la1, lo1, la2, lo2, r float64
-	la1 = p1.Latitude * math.Pi / 180
-	lo1 = p1.Longitude * math.Pi / 180
-	la2 = p2.Latitude * math.Pi / 180
-	lo2 = p2.Longitude * math.Pi / 180
-
-	r = 6378100 // Earth radius in METERS
-
-	// calculate
-	h := hsin(la2-la1) + math.Cos(la1)*math.Cos(la2)*hsin(lo2-lo1)
-
-	return uint64(2 * r * math.Asin(math.Sqrt(h)))
 }

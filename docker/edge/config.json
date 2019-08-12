@@ -14,11 +14,13 @@
         "debug": "stdout"
     },
     "discovery": {
-        "port": 443   
+        "http_port": 8090,
+        "https_port": 8092           
     },
     "broker": {
-        "port": 8080
-    },    
+        "http_port": 8170,
+        "https_port": 8172   
+    },     
     "worker": {
         "container_autoremove": false,
         "start_actual_task": true,
@@ -31,8 +33,8 @@
     },
     "https": {
         "enabled" : false,
-        "my_certificate": "minica.pem",
-        "my_key": "minica-key.pem",
-        "my_ca": "minica.pem"
+        "my_certificate": "edge_cert.pem",
+        "my_key": "edge.key",
+        "my_ca": "rootca.pem"
     }
 }
