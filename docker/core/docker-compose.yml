@@ -20,18 +20,7 @@ services:
             - 8090:8090
             - 8092:8092            
         restart: always
-            
-    broker:
-        image: fogflow/broker
-        volumes:
-            - ./config.json:/config.json                        
-        ports:
-            - 8070:8070
-            - 8072:8072     
-        depends_on: 
-            - discovery
-        restart: always
-                    
+        
     master:
         image: fogflow/master
         volumes:
@@ -44,8 +33,19 @@ services:
             - rabbitmq
             - discovery
             - broker     
+        restart: always        
+            
+    cloud_broker:
+        image: fogflow/broker
+        volumes:
+            - ./config.json:/config.json                        
+        ports:
+            - 8070:8070
+            - 8072:8072     
+        depends_on: 
+            - discovery
         restart: always
-                    
+                                        
     cloud_worker:
         image: fogflow/worker
         volumes:
