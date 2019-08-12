@@ -70,4 +70,7 @@ services:
         - ./designer.key:/etc/nginx/designer.key        
       ports:
         - 443:443
-    
+      depends_on: 
+        - discovery    
+        - cloud_broker
+        - designer
