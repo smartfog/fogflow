@@ -27,7 +27,10 @@ services:
     master:
         image: fogflow/master
         volumes:
-            - ./config.json:/config.json                        
+            - ./config.json:/config.json   
+            - ./cloud_node.pem:/cloud_node.pem
+            - ./cloud_node.key:/cloud_node.key        
+            - ./root_ca.pem:/root_ca.pem                                     
         links:
             - rabbitmq        
         ports:
@@ -56,7 +59,10 @@ services:
         image: fogflow/worker
         volumes:
             - /tmp:/tmp        
-            - ./config.json:/config.json                
+            - ./config.json:/config.json    
+            - ./cloud_node.pem:/cloud_node.pem
+            - ./cloud_node.key:/cloud_node.key        
+            - ./root_ca.pem:/root_ca.pem                            
             - /var/run/docker.sock:/var/run/docker.sock      
         restart: always
                                         

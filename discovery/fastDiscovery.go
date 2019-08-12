@@ -35,9 +35,8 @@ type FastDiscovery struct {
 	BrokerList map[string]*BrokerProfile
 
 	//mapping from subscriptionID to subscription
-	subscriptions                map[string]*SubscribeContextAvailabilityRequest
-	linkedInterSiteSubscriptions map[string][]InterSiteSubscription
-	subscriptions_lock           sync.RWMutex
+	subscriptions      map[string]*SubscribeContextAvailabilityRequest
+	subscriptions_lock sync.RWMutex
 
 	//cache
 	notifyCache []*CacheItem
@@ -46,7 +45,6 @@ type FastDiscovery struct {
 
 func (fd *FastDiscovery) Init(httpsCfg *HTTPS) {
 	fd.subscriptions = make(map[string]*SubscribeContextAvailabilityRequest)
-	fd.linkedInterSiteSubscriptions = make(map[string][]InterSiteSubscription)
 	fd.BrokerList = make(map[string]*BrokerProfile)
 	fd.notifyCache = make([]*CacheItem, 0)
 
@@ -232,28 +230,6 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
 }
 
-// forward the received NGSI9 subscription to another discovery server
-func (fd *FastDiscovery) forwardSubscribeCtxAvailability(discoveryURL string, originalSID string, subReq *SubscribeContextAvailabilityRequest) {
-	requestURL := "http://" + discoveryURL + "/ngsi9/interSiteContextAvailabilityUnsubscribe"
-	client := NGSI9Client{IoTDiscoveryURL: requestURL}
-	sid, err := client.SubscribeContextAvailability(subReq)
-	if sid != "" && err == nil {
-		fd.subscriptions_lock.Lock()
-
-		if _, exist := fd.linkedInterSiteSubscriptions[originalSID]; exist == false {
-			fd.linkedInterSiteSubscriptions[originalSID] = make([]InterSiteSubscription, 1)
-		}
-
-		interSiteSubscription := InterSiteSubscription{}
-		interSiteSubscription.DiscoveryURL = discoveryURL
-		interSiteSubscription.SubscriptionID = sid
-
-		fd.linkedInterSiteSubscriptions[originalSID] = append(fd.linkedInterSiteSubscriptions[originalSID], interSiteSubscription)
-
-		fd.subscriptions_lock.Unlock()
-	}
-}
-
 // handle NGSI9 subscription based on the local database
 func (fd *FastDiscovery) handleSubscribeCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
 	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction)
@@ -353,15 +329,21 @@ func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyConte
 		return false
 	}
 
-	if fd.SecurityCfg.Enabled == true {
-		subscriberURL = strings.Replace(subscriberURL, "http://", "https://", 1)
-	}
+	/*
+		if fd.SecurityCfg.Enabled == true {
+			subscriberURL = strings.Replace(subscriberURL, "http://", "https://", 1)
+		}
+	*/
 
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
-	client := fd.SecurityCfg.GetHTTPClient()
+	client := &http.Client{}
+	if strings.HasPrefix(subscriberURL, "https") == true {
+		client = fd.SecurityCfg.GetHTTPClient()
+	}
+
 	resp, err2 := client.Do(req)
 	if err2 != nil {
 		ERROR.Println(err2)
@@ -396,13 +378,9 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 
 	subID := unsubscribeCtxAvailabilityReq.SubscriptionId
 
-	var interSiteSubList []InterSiteSubscription
-
 	// remove the subscription
 	fd.subscriptions_lock.Lock()
 	delete(fd.subscriptions, subID)
-	interSiteSubList = fd.linkedInterSiteSubscriptions[subID]
-	delete(fd.linkedInterSiteSubscriptions, subID)
 	fd.subscriptions_lock.Unlock()
 
 	// send out the response
@@ -412,18 +390,6 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 	unsubscribeCtxAvailabilityResp.StatusCode.Details = "OK"
 
 	w.WriteJson(&unsubscribeCtxAvailabilityResp)
-
-	// issue unsubscribe to the other discovery server if there are existing inter-site subscription that have been issued before
-	for _, linkedSub := range interSiteSubList {
-		go fd.sendInterSiteUnsubscribeContextAvailability(linkedSub.DiscoveryURL, linkedSub.SubscriptionID)
-	}
-}
-
-func (fd *FastDiscovery) sendInterSiteUnsubscribeContextAvailability(discoveryURL string, sid string) error {
-	requestURL := "http://" + discoveryURL + "/ngsi9/interSiteContextAvailabilityUnsubscribe"
-	client := NGSI9Client{IoTDiscoveryURL: requestURL}
-	err := client.UnsubscribeContextAvailability(sid)
-	return err
 }
 
 func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {

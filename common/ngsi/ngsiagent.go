@@ -61,7 +61,7 @@ func (agent *NGSIAgent) Start() {
 			INFO.Printf("Starting IoT agent on port %d for HTTPS requests\n", agent.Port)
 			panic(server.ListenAndServeTLS(agent.SecurityCfg.Certificate, agent.SecurityCfg.Key))
 		} else {
-			INFO.Printf("Starting IoT Discovery on port %d for HTTP requests\n", agent.Port)
+			INFO.Printf("Starting IoT agent on port %d for HTTP requests\n", agent.Port)
 			panic(http.ListenAndServe(":"+strconv.Itoa(agent.Port), api.MakeHandler()))
 		}
 	}()

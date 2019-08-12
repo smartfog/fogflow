@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -79,32 +78,9 @@ func (master *Master) Start(configuration *Config) {
 
 	master.subID2Type = make(map[string]string)
 
-	// find a nearby IoT Broker
-	for {
-		nearby := NearBy{}
-		nearby.Latitude = master.cfg.Location.Latitude
-		nearby.Longitude = master.cfg.Location.Longitude
-		nearby.Limit = 1
-
-		client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(master.cfg.HTTPS.Enabled), SecurityCfg: &master.cfg.HTTPS}
-		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
-
-		if err == nil && selectedBroker != "" {
-			if master.cfg.HTTPS.Enabled == true {
-				master.BrokerURL = strings.Replace(selectedBroker, "http://", "https://", 1)
-			} else {
-				master.BrokerURL = selectedBroker
-			}
-			break
-		} else {
-			if err != nil {
-				ERROR.Println(err)
-			}
-
-			INFO.Println("continue to look up a nearby IoT broker")
-			time.Sleep(5 * time.Second)
-		}
-	}
+	// communicate with the cloud_broker
+	master.BrokerURL = "http://" + master.cfg.ExternalIP + ":" + strconv.Itoa(master.cfg.Broker.HTTPPort) + "/ngsi10"
+	INFO.Println("communicate with the cloud broker via ", master.BrokerURL)
 
 	// initialize the manager for both fog function and service topology
 	master.taskMgr = NewTaskMgr(master)
@@ -116,11 +92,7 @@ func (master *Master) Start(configuration *Config) {
 	// announce myself to the nearby IoT Broker
 	master.registerMyself()
 
-	if master.cfg.HTTPS.Enabled == true {
-		master.myURL = "https://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
-	} else {
-		master.myURL = "http://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
-	}
+	master.myURL = "http://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
 
 	// start the NGSI agent
 	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort, SecurityCfg: master.cfg.HTTPS}

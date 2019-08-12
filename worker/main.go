@@ -31,7 +31,7 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// communicate with the nearby broker via HTTP
+	// force to use only http for the communication between worker and broker
 	config.HTTPS.Enabled = false
 
 	// construct the unique id for this worker

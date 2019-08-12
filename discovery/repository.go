@@ -131,8 +131,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 		}
 	}
 
-	DEBUG.Println("nearby  ", nearby)
-
 	if nearby != nil {
 		if len(candidates) > nearby.Limit {
 			// for the nearby query, just select the closest n matched entities

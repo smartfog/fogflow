@@ -21,10 +21,6 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// load the certificate
-	//config.HTTPS.LoadConfig()
-
-	// communicate with the nearby broker via HTTP
 	config.HTTPS.Enabled = false
 
 	myID := "Master." + config.SiteID

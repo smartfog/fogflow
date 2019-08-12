@@ -50,37 +50,40 @@ func (w *Worker) Start(config *Config) bool {
 
 	// if no broker is configured in the configuration file, the worker needs to find a nearby IoT Broker
 	// otherwise, just use the configured broker
-	if config.Broker.HTTPPort == 0 {
-		// need to look for a nearby IoT Broker
-		for {
-			nearby := NearBy{}
-			nearby.Latitude = w.cfg.Location.Latitude
-			nearby.Longitude = w.cfg.Location.Longitude
-			nearby.Limit = 1
+	// if config.Broker.HTTPPort == 0 {
+	// 	// need to look for a nearby IoT Broker
+	// 	for {
+	// 		nearby := NearBy{}
+	// 		nearby.Latitude = w.cfg.Location.Latitude
+	// 		nearby.Longitude = w.cfg.Location.Longitude
+	// 		nearby.Limit = 1
 
-			client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL(w.cfg.HTTPS.Enabled), SecurityCfg: &w.cfg.HTTPS}
-			selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
-			INFO.Println("find out a nearby broker ", selectedBroker)
-			if err == nil && selectedBroker != "" {
-				w.selectedBrokerURL = selectedBroker
-				break
-			} else {
-				if err != nil {
-					ERROR.Println(err)
-				}
+	// 		client := NGSI9Client{IoTDiscoveryURL: w.cfg.GetDiscoveryURL(w.cfg.HTTPS.Enabled), SecurityCfg: &w.cfg.HTTPS}
+	// 		selectedBroker, err := client.DiscoveryNearbyIoTBroker(nearby)
+	// 		INFO.Println("find out a nearby broker ", selectedBroker)
+	// 		if err == nil && selectedBroker != "" {
+	// 			w.selectedBrokerURL = selectedBroker
+	// 			break
+	// 		} else {
+	// 			if err != nil {
+	// 				ERROR.Println(err)
+	// 			}
 
-				INFO.Println("continue to look up a nearby IoT broker")
-				time.Sleep(5 * time.Second)
-			}
-		}
-	} else {
-		if w.cfg.HTTPS.Enabled == true {
-			w.selectedBrokerURL = "https://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPSPort) + "/ngsi10"
-		} else {
-			w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
-		}
-		w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
-	}
+	// 			INFO.Println("continue to look up a nearby IoT broker")
+	// 			time.Sleep(5 * time.Second)
+	// 		}
+	// 	}
+	// } else {
+	// 	if w.cfg.HTTPS.Enabled == true {
+	// 		w.selectedBrokerURL = "https://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPSPort) + "/ngsi10"
+	// 	} else {
+	// 		w.selectedBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
+	// 	}
+	// 	w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
+	// }
+
+	w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
+	w.selectedBrokerURL = w.httpBrokerURL
 
 	INFO.Println("communicating with the broker ", w.selectedBrokerURL)
 
