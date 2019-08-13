@@ -64,6 +64,7 @@ services:
            - coredns                 
         depends_on: 
             - discovery
+            - coredns
         restart: always     
                                         
     cloud_worker:
