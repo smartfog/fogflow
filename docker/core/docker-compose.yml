@@ -1,5 +1,15 @@
-version: "2"
+version: "3"
 services:
+  coredns:
+    image: coredns/coredns
+    container_name: coredns
+    restart: always
+    ports:
+      - 53:53
+    volumes:
+      - './Corefile:/etc/coredns/Corefile'
+      - './nodes.db:/etc/coredns/nodes.db'
+      
     designer:
         image: fogflow/designer
         volumes:
@@ -21,7 +31,9 @@ services:
             - ./root_ca.pem:/root_ca.pem                                      
         ports:
             - 8090:8090
-            - 8092:8092            
+            - 8092:8092
+        dns:
+           - coredns                        
         restart: always
 
     master:
@@ -47,7 +59,9 @@ services:
             - ./root_ca.pem:/root_ca.pem                                       
         ports:
             - 8070:8070
-            - 8072:8072     
+            - 8072:8072    
+        dns:
+           - coredns                 
         depends_on: 
             - discovery
         restart: always     
