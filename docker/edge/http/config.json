@@ -1,0 +1,35 @@
+{
+    "coreservice_ip": "host.docker.internal",   
+    "external_hostip": "host.docker.internal",         
+    "internal_hostip": "host.docker.internal",  
+    "physical_location":{
+        "longitude": 138.709059,
+        "latitude": 36.692221
+    },
+    "site_id": "002",
+    "logging":{
+        "info":"stdout",
+        "error":"stdout",
+        "protocol": "stdout",
+        "debug": "stdout"
+    },
+    "discovery": {
+        "http_port": 80
+    },
+    "broker": {
+        "http_port": 8170
+    },     
+    "worker": {
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 4              
+    },
+    "rabbitmq": {
+        "port": 5672,
+        "username": "admin",
+        "password":"mypass"
+    },
+    "https": {
+        "enabled" : false
+    }
+}
