@@ -211,23 +211,23 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 
 	hostConfig := docker.HostConfig{}
 
-	if runtime.GOOS == "darwin" {
-		internalPort := docker.Port(portNum + "/tcp")
-		portBindings := map[docker.Port][]docker.PortBinding{
-			internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
+	//if runtime.GOOS == "darwin" {   already use the bridge model
+	internalPort := docker.Port(portNum + "/tcp")
+	portBindings := map[docker.Port][]docker.PortBinding{
+		internalPort: []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
 
-		config.ExposedPorts = map[docker.Port]struct{}{internalPort: {}}
+	config.ExposedPorts = map[docker.Port]struct{}{internalPort: {}}
 
-		// add the other listening ports into the exposed port list
-		for _, port := range servicePorts {
-			internalPort := docker.Port(port + "/tcp")
-			portBindings[internalPort] = []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: port}}
-		}
-
-		hostConfig.PortBindings = portBindings
-	} else {
-		hostConfig.NetworkMode = "host"
+	// add the other listening ports into the exposed port list
+	for _, port := range servicePorts {
+		internalPort := docker.Port(port + "/tcp")
+		portBindings[internalPort] = []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: port}}
 	}
+
+	hostConfig.PortBindings = portBindings
+	//} else {
+	//	hostConfig.NetworkMode = "host"
+	//}
 
 	// to configure if the container will be removed once it is terminated
 	hostConfig.AutoRemove = e.workerCfg.Worker.ContainerAutoRemove
