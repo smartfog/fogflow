@@ -56,16 +56,15 @@ Download the docker-compose file and the config.json file to setup flogflow.
 
 .. code-block:: console    
 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/nginx.conf
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
 
 
 you need to change the following addresses in config.json according to your own environment.
 
-- **webportal_ip**: this is the IP address to access the FogFlow web portal provided by Task Designer. It must be accessible from outside by user's browser.  
 - **coreservice_ip**: it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
 - **external_hostip**: this is the same as coreservice_ip, for the cloud part of FogFlow;        
 - **internal_hostip**: is the IP of your default docker bridge, which is the "docker0" network interface on your host
