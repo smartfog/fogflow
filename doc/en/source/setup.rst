@@ -30,10 +30,10 @@ Download the deployment script and the configuration file
 .. code-block:: console    
      
 	#download the deployment script
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
 	
 	#download the configuration file          
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
 
 
 Change the configuration file according to your local environment

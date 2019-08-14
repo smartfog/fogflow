@@ -25,8 +25,8 @@ Download the deployment script
 .. code-block:: console    
          
 	#download the deployment scripts
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/start.sh
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/stop.sh 
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
 	
 	#make them executable
 	chmod +x start.sh  stop.sh       
@@ -38,7 +38,7 @@ Download the default configuration file
 .. code-block:: console   
          	
 	#download the configuration file          
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/config.json
 
 
 Change the configuration file accordingly
