@@ -1,14 +1,14 @@
 version: "3"
 services:
-  coredns:
-    image: coredns/coredns
-    container_name: coredns
-    restart: always
-    ports:
-      - 53:53
-    volumes:
-      - './Corefile:/etc/coredns/Corefile'
-      - './nodes.db:/etc/coredns/nodes.db'
+    coredns:
+      image: coredns/coredns
+      container_name: coredns
+      restart: always
+      ports:
+        - 53:53
+      volumes:
+        - './Corefile:/etc/coredns/Corefile'
+        - './nodes.db:/etc/coredns/nodes.db'
       
     designer:
         image: fogflow/designer
