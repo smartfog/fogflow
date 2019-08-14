@@ -827,7 +827,14 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			// find out the worker close to the available inputs
 			locations := fogflow.getLocationOfInputs(taskID)
-			scheduledTaskInstance.WorkerID = tMgr.master.SelectWorker(locations)
+			selectedWorkerID := tMgr.master.SelectWorker(locations)
+
+			if selectedWorkerID == "" {
+				ERROR.Println("==NOT ABLE TO FIND A WORKER FOR THIS TASK===")
+				return
+			}
+
+			scheduledTaskInstance.WorkerID = selectedWorkerID
 
 			// find out which implementation image to be used by the assigned worker
 			operator := scheduledTaskInstance.OperatorName

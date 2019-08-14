@@ -86,18 +86,6 @@ function handleNotify(req, ctxObjects, res) {
     }
 }
 
-
-//overwrite the configuration with the environment variables
-if (process.env.discoveryURL) {
-    config.discoveryURL = process.env.discoveryURL;   
-}
-if (process.env.brokerURL) {
-    config.brokerURL = process.env.brokerURL;   
-}
-if (process.env.agentIP) {
-    config.agentIP = process.env.agentIP;   
-}
-
 config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';    
 

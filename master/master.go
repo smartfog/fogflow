@@ -650,6 +650,8 @@ func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
 	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
 
+	go master.communicator.Publish(&taskMsg)
+
 	// update the workload of this worker
 	workerID := taskInstance.WorkerID
 
@@ -657,14 +659,20 @@ func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
 	workerProfile := master.workers[workerID]
 	workerProfile.Workload = workerProfile.Workload + 1
 	master.workerList_lock.Unlock()
-
-	go master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) TerminateTask(taskInstance *ScheduledTaskInstance) {
 	taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
+
+	// update the workload of this worker
+	workerID := taskInstance.WorkerID
+
+	master.workerList_lock.Lock()
+	workerProfile := master.workers[workerID]
+	workerProfile.Workload = workerProfile.Workload - 1
+	master.workerList_lock.Unlock()
 }
 
 func (master *Master) AddInputEntity(flowInfo FlowInfo) {
