@@ -20,9 +20,17 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 
 var config = globalConfigFile.designer;
 
-config.agentIP = globalConfigFile.internal_hostip;
+// set the agent IP address from the environment variable
+config.agentIP = 'designer';
 config.agentPort = globalConfigFile.designer.agentPort; 
+
+config.discoveryURL = './ngsi9';
+config.brokerURL = './ngsi10';    
+
 config.webSrvPort = globalConfigFile.designer.webSrvPort
+
+console.log(config);
+
 
 // all subscriptions that expect data forwarding
 var subscriptions = {};
@@ -85,11 +93,6 @@ function handleNotify(req, ctxObjects, res) {
         }
     }
 }
-
-config.discoveryURL = './ngsi9';
-config.brokerURL = './ngsi10';    
-
-console.log(config);
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);

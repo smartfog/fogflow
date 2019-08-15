@@ -12,6 +12,7 @@ docker push  fogflow/designer
 
 docker push  fogflow/prometheus
 
+docker push  fogflow/coredns
 
 
 

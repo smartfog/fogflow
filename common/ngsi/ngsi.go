@@ -247,41 +247,53 @@ func (pAttr *ContextAttribute) UnmarshalJSON(b []byte) error {
 			var temp int64
 			if err = json.Unmarshal(attr.Value, &temp); err == nil {
 				(*pAttr).Value = temp
+			} else {
+				(*pAttr).Value = 0
 			}
 
 		case "float":
 			var temp float64
 			if err = json.Unmarshal(attr.Value, &temp); err == nil {
 				(*pAttr).Value = temp
+			} else {
+				(*pAttr).Value = 0.0
 			}
 
 		case "boolean":
 			var temp bool
 			if err = json.Unmarshal(attr.Value, &temp); err == nil {
 				(*pAttr).Value = temp
+			} else {
+				(*pAttr).Value = false
 			}
 
 		case "string":
 			var temp string
 			if err = json.Unmarshal(attr.Value, &temp); err == nil {
 				(*pAttr).Value = temp
+			} else {
+				(*pAttr).Value = ""
 			}
 
 		case "object":
 			var temp map[string]interface{}
 			if err = json.Unmarshal(attr.Value, &temp); err == nil {
 				(*pAttr).Value = temp
+			} else {
+				(*pAttr).Value = nil
 			}
 
 		default:
 			(*pAttr).Value = attr.Value
 		}
+	} else {
+		return err
 	}
 
 	// take the metadatas as well
 	(*pAttr).Metadata = attr.Metadata
 
-	return err
+	return nil
 }
 
 type EntityId struct {
@@ -444,6 +456,9 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 	}
 }
 
+//
+// the part to deal with NGSI v1 update supported by Orion Context Broker
+//
 func (element *ContextElement) SetEntityID() {
 	if element.ID != "" {
 		element.Entity.ID = element.ID

@@ -16,6 +16,9 @@ cd ../designer
 cd ../prometheus
 ./build
 
+cd ../coredns
+./build
+
 cd ../
 echo "finished building all FogFlow core components and generating their docker images" 
 
