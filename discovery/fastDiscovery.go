@@ -444,8 +444,8 @@ func (fd *FastDiscovery) onBrokerHeartbeat(w rest.ResponseWriter, r *rest.Reques
 
 	// send out the response
 	updateCtxResp := UpdateContextResponse{}
-	updateCtxResp.ErrorCode.Code = 200
-	updateCtxResp.ErrorCode.ReasonPhrase = "OK"
+	// updateCtxResp.ErrorCode.Code = 200
+	// updateCtxResp.ErrorCode.ReasonPhrase = "OK"
 	w.WriteJson(&updateCtxResp)
 
 	if broker, exist := fd.BrokerList[brokerProfile.BID]; exist {

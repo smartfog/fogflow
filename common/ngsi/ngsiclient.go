@@ -100,12 +100,13 @@ func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool) e
 		return err
 	}
 
-	if updateCtxResp.ErrorCode.Code == 200 {
-		return nil
-	} else {
-		err = errors.New(updateCtxResp.ErrorCode.ReasonPhrase)
-		return err
-	}
+	return nil
+	// if updateCtxResp.ErrorCode.Code == 200 {
+	// 	return nil
+	// } else {
+	// 	err = errors.New(updateCtxResp.ErrorCode.ReasonPhrase)
+	// 	return err
+	// }
 }
 
 func (nc *NGSI10Client) DeleteContext(eid *EntityId) error {
@@ -162,12 +163,13 @@ func (nc *NGSI10Client) sendDeleteContext(eid *EntityId, internal bool) error {
 		return err
 	}
 
-	if updateCtxResp.ErrorCode.Code == 200 {
-		return nil
-	} else {
-		err = errors.New(updateCtxResp.ErrorCode.ReasonPhrase)
-		return err
-	}
+	return nil
+	// if updateCtxResp.ErrorCode.Code == 200 {
+	// 	return nil
+	// } else {
+	// 	err = errors.New(updateCtxResp.ErrorCode.ReasonPhrase)
+	// 	return err
+	// }
 }
 
 func (nc *NGSI10Client) NotifyContext(elem *ContextElement) error {

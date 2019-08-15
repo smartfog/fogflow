@@ -401,11 +401,10 @@ func (tb *ThinBroker) UpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	// send out the response
 	w.WriteHeader(200)
 
-	// the following response is not needed for iot-agent
-	// updateCtxResp := UpdateContextResponse{}
+	updateCtxResp := UpdateContextResponse{}
 	// updateCtxResp.ErrorCode.Code = 200
 	// updateCtxResp.ErrorCode.ReasonPhrase = "OK"
-	// w.WriteJson(&updateCtxResp)
+	w.WriteJson(&updateCtxResp)
 
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		tb.handleInternalUpdateContext(&updateCtxReq)

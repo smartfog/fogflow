@@ -767,7 +767,7 @@ type UpdateContextRequest struct {
 
 type UpdateContextResponse struct {
 	ContextResponses []ContextElementResponse `json:"contextResponses"`
-	ErrorCode        StatusCode               `json:"errorCode,omitempty"`
+	//ErrorCode        StatusCode               `json:"errorCode,omitempty"`
 }
 
 // NGSI9
