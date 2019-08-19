@@ -4,7 +4,7 @@ Follow these steps to run General Purpose Adapter as a FogFunction:
 
 2. Register a FogFunction and set an Entity Type (say GPA) as SelectedType. Choose the operator registered in Step#1 as Fog Function Operator.
 
-4. Trigger the Fog Function by sending an update request to Fogflow Broker with an Entity Type "GPA". It should include Fogflow Broker IP and Port. Example request is given below:
+4. Trigger the Fog Function by sending an update request to Fogflow Broker with an Entity Type (say GPA). It should include Fogflow Broker IP and Port. Example request is given below:
 
 *******************************************************************
 curl -iX POST \
@@ -28,7 +28,7 @@ curl -iX POST \
              {
                  "name": "brokerPort",
                  "type": "string",
-                 "contextValue": "8080"
+                 "contextValue": "<Broker_Port>"
              }
          ],
          "domainMetadata": [
@@ -49,4 +49,4 @@ curl -iX POST \
 *******************************************************************
 
 
-GPA task will be created soon and it will be listening on port 1026. GPA can be verified after running IoT Agent such that GPA serves as Context Broker to IoT Agent. This can be done by providing the GPA IP and Port in IoT Agent. Refer the IoT Agent Operator README for more detail.
+GPA task will be created soon on the nearest edge and it will be listening on port 1026. GPA can be verified after running IoT Agent as a Fog Function such that GPA serves as Context Broker to IoT Agent. This can be done by providing the GPA IP and Port in IoT Agent configuration. Refer the IoT Agent Operator README for more detail.
