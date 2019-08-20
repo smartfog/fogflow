@@ -50,7 +50,6 @@ Currently, FogFlow has been applied into various business use cases in the areas
 
     cloud.rst
     edge.rst
-    registry.rst   
 
 .. toctree::
     :maxdepth: 1

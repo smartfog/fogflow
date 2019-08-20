@@ -1,0 +1,13 @@
+version: "3"
+services:
+    coredns:
+      image: coredns/coredns
+      restart: always
+      expose:
+        - '53'
+        - '53/udp'
+      ports:
+        - '53:53'
+        - '53:53/udp'
+      volumes:
+        - './dns:/etc/coredns'

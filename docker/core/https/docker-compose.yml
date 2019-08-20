@@ -1,0 +1,95 @@
+version: "3"
+services:
+    coredns:
+      image: coredns/coredns
+      restart: always
+      ports:
+        - 53:53
+      volumes:
+        - './dns:/etc/coredns'
+      
+    designer:
+        image: fogflow/designer
+        volumes:
+            - ./config.json:/app/config.json                
+        ports:
+            - 8080:8080
+            - 1030:1030
+        depends_on: 
+            - discovery
+            - cloud_broker
+        restart: always
+            
+    discovery:
+        image: fogflow/discovery
+        volumes:
+            - ./config.json:/config.json                        
+            - ./cloud_node.pem:/cloud_node.pem
+            - ./cloud_node.key:/cloud_node.key        
+            - ./root_ca.pem:/root_ca.pem                                      
+        ports:
+            - 8090:8090
+            - 8092:8092
+        dns:
+           - coredns                        
+        restart: always
+
+    master:
+        image: fogflow/master
+        volumes:
+            - ./config.json:/config.json                                   
+        links:
+            - rabbitmq        
+        ports:
+            - 1060:1060 
+        depends_on: 
+            - rabbitmq
+            - discovery
+            - cloud_broker     
+        restart: always 
+        
+    cloud_broker:
+        image: fogflow/broker
+        volumes:
+            - ./config.json:/config.json 
+            - ./edge_node.pem:/cloud_node.pem
+            - ./edge_node.key:/cloud_node.key        
+            - ./root_ca.pem:/root_ca.pem                                       
+        ports:
+            - 8070:8070
+            - 8072:8072    
+        dns:
+           - coredns                 
+        depends_on: 
+            - discovery
+            - coredns
+        restart: always     
+                                        
+    cloud_worker:
+        image: fogflow/worker
+        volumes:
+            - /tmp:/tmp        
+            - ./config.json:/config.json                            
+            - /var/run/docker.sock:/var/run/docker.sock      
+        restart: always
+                                        
+    rabbitmq:
+        image: rabbitmq:3
+        ports:
+            - 5672:5672
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=mypass   
+            
+    nginx: 
+      image: nginx:latest
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf
+        - ./designer.pem:/etc/nginx/designer.pem
+        - ./designer.key:/etc/nginx/designer.key        
+      ports:
+        - 443:443
+      depends_on: 
+        - discovery    
+        - cloud_broker
+        - designer

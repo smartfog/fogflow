@@ -1,0 +1,47 @@
+{
+    "coreservice_ip": "cloud.fogflow.io",   
+    "external_hostip": "cloud.fogflow.io",
+    "internal_hostip": "host.docker.internal", 
+    "physical_location":{
+        "longitude": 139.709059,
+        "latitude": 35.692221
+    },
+    "site_id": "001",
+    "logging":{
+        "info":"stdout",
+        "error":"stdout",
+        "protocol": "stdout",
+        "debug": "stdout"
+    },
+    "discovery": {
+        "http_port": 8090,
+        "https_port": 8092           
+    },
+    "broker": {
+        "http_port": 8070,
+        "https_port": 8072   
+    },     
+    "master": {
+        "ngsi_agent_port": 1060    
+    },
+    "worker": {
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 8
+    },
+    "designer": {
+        "webSrvPort": 8080,
+        "agentPort": 1030               
+    },    
+    "rabbitmq": {
+        "port": 5672,
+        "username": "admin",
+        "password":"mypass"
+    },
+    "https": {
+        "enabled" : true,
+        "my_certificate": "cloud_node.pem",
+        "my_key": "cloud_node.key",
+        "my_ca": "root_ca.pem"
+    } 
+}
