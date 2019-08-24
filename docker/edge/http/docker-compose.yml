@@ -5,7 +5,7 @@ services:
         volumes:
             - ./config.json:/config.json 
         ports:
-            - 8070:8070
+            - 80:80
         restart: always     
                                         
     edge_worker:
