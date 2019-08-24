@@ -1,0 +1,24 @@
+version: "3.5"
+services:     
+    edge_broker:
+        image: fogflow/broker
+        volumes:
+            - ./config.json:/config.json 
+        ports:
+            - 8070:8070
+        depends_on: 
+            - discovery
+        restart: always     
+                                        
+    edge_worker:
+        image: fogflow/worker
+        volumes:
+            - /tmp:/tmp        
+            - ./config.json:/config.json                            
+            - /var/run/docker.sock:/var/run/docker.sock      
+        depends_on: 
+            - cloud_broker
+            - rabbitmq
+        restart: always
+                                        
+
