@@ -34,7 +34,7 @@ services:
             - IOTA_REGISTRY_TYPE=mongodb #Whether to hold IoT device info in memory or in a database
             - IOTA_LOG_LEVEL=DEBUG # The log level of the IoT Agent
             - IOTA_TIMESTAMP=true # Supply timestamp information with each measurement
-            - IOTA_CB_NGSI_VERSION=v2 # use NGSIv2 when sending updates for active attributes
+            - IOTA_CB_NGSI_VERSION=v1 # use NGSIv2 when sending updates for active attributes
             - IOTA_AUTOCAST=true # Ensure Ultralight number values are read as numbers not strings
             - IOTA_MONGO_HOST=mongo-db # The host name of MongoDB
             - IOTA_MONGO_PORT=27017 # The port mongoDB is listening on
