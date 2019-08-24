@@ -75,3 +75,4 @@ services:
             - cloud_broker
             - designer
         restart: always
+
