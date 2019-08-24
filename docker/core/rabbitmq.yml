@@ -1,9 +1,0 @@
-version: "2"
-services:
-    rabbitmq:
-        image: rabbitmq:3
-        ports:
-            - 5672:5672
-        environment:
-            - RABBITMQ_DEFAULT_USER=admin
-            - RABBITMQ_DEFAULT_PASS=mypass   
