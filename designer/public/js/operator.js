@@ -268,11 +268,11 @@ function initOperatorList()
         name: "python",
         description: "",
         parameters:[]
-    },/*{
+    },{
         name: "iotagent",
         description: "",
         parameters:[]
-    },*/{
+    },{
         name: "counter",
         description: "",
         parameters:[]
@@ -377,14 +377,14 @@ function initDockerImageList()
         osType: "Linux",
         operatorName: "connectedcar",
         prefetched: false
-    },/*{
+    },{
         name: "fiware/iotagent-json",
         tag: "latest",
         hwType: "X86",
         osType: "Linux",
         operatorName: "iotagent",
         prefetched: false
-    },*/{
+    },{
         name: "fogflow/recommender",
         tag: "latest",
         hwType: "X86",

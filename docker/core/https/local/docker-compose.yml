@@ -1,17 +1,5 @@
 version: "3"
-services:
-    coredns:
-      image: fogflow/coredns
-      restart: always
-      expose:
-        - '53'
-        - '53/udp'
-      ports:
-        - '53:53'
-        - '53:53/udp'
-      volumes:
-        - './dns:/etc/coredns'
-      
+services:     
     designer:
         image: fogflow/designer
         volumes:
@@ -33,7 +21,8 @@ services:
             - ./root_ca.pem:/root_ca.pem                                      
         ports:
             - 8090:8090
-            - 8092:8092                      
+            - 8092:8092   
+        dns: 192.168.65.2                               
         restart: always
 
     master:
@@ -44,11 +33,11 @@ services:
             - rabbitmq        
         ports:
             - 1060:1060 
+        dns: 192.168.65.2
         depends_on: 
             - rabbitmq
             - discovery
             - cloud_broker  
-            - coredns   
         restart: always 
         
     cloud_broker:
@@ -61,13 +50,14 @@ services:
         ports:
             - 8070:8070
             - 8072:8072    
+        dns: 192.168.65.2
         depends_on: 
             - discovery
-            - coredns
         restart: always     
                                         
     cloud_worker:
         image: fogflow/worker
+        dns: 192.168.65.2                                       
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                            

@@ -1,7 +1,7 @@
 {
     "coreservice_ip": "cloud.fogflow.io",   
     "external_hostip": "cloud.fogflow.io",
-    "internal_hostip": "host.docker.internal", 
+    "internal_hostip": "192.168.65.2", 
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221
