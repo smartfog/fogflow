@@ -6,8 +6,6 @@ services:
             - ./config.json:/config.json 
         ports:
             - 8070:8070
-        depends_on: 
-            - discovery
         restart: always     
                                         
     edge_worker:
