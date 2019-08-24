@@ -28,8 +28,8 @@ services:
         ports:
             - "4041:4041"
         environment:
-            - IOTA_CB_HOST=orion # name of the context broker to update context
-            - IOTA_CB_PORT=1026 # port the context broker listens on to update context
+            - IOTA_CB_HOST=edge_broker # name of the context broker to update context
+            - IOTA_CB_PORT=80 # port the context broker listens on to update context
             - IOTA_NORTH_PORT=4041
             - IOTA_REGISTRY_TYPE=mongodb #Whether to hold IoT device info in memory or in a database
             - IOTA_LOG_LEVEL=DEBUG # The log level of the IoT Agent
@@ -51,7 +51,7 @@ services:
             - "27017:27017"
         command: --bind_ip_all --smallfiles
         volumes:
-            - mongo-db:/data
+            - ./mongo-db:/data
 
     mosquitto:
         image: eclipse-mosquitto
