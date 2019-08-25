@@ -1,13 +1,5 @@
 version: "3"
-services:
-    coredns:
-      image: coredns/coredns
-      restart: always
-      ports:
-        - 53:53
-      volumes:
-        - './dns:/etc/coredns'
-      
+services:     
     designer:
         image: fogflow/designer
         volumes:
@@ -29,9 +21,7 @@ services:
             - ./root_ca.pem:/root_ca.pem                                      
         ports:
             - 8090:8090
-            - 8092:8092
-        dns:
-           - coredns                        
+            - 8092:8092   
         restart: always
 
     master:
@@ -45,7 +35,7 @@ services:
         depends_on: 
             - rabbitmq
             - discovery
-            - cloud_broker     
+            - cloud_broker  
         restart: always 
         
     cloud_broker:
@@ -58,11 +48,8 @@ services:
         ports:
             - 8070:8070
             - 8072:8072    
-        dns:
-           - coredns                 
         depends_on: 
             - discovery
-            - coredns
         restart: always     
                                         
     cloud_worker:
@@ -71,6 +58,8 @@ services:
             - /tmp:/tmp        
             - ./config.json:/config.json                            
             - /var/run/docker.sock:/var/run/docker.sock      
+        depends_on: 
+            - cloud_broker
         restart: always
                                         
     rabbitmq:
@@ -82,7 +71,7 @@ services:
             - RABBITMQ_DEFAULT_PASS=mypass   
             
     nginx: 
-      image: nginx:latest
+      image: nginx
       volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf
         - ./designer.pem:/etc/nginx/designer.pem

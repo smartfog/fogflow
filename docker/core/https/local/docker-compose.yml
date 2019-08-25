@@ -22,7 +22,6 @@ services:
         ports:
             - 8090:8090
             - 8092:8092   
-        dns: 192.168.65.2                               
         restart: always
 
     master:
@@ -33,7 +32,6 @@ services:
             - rabbitmq        
         ports:
             - 1060:1060 
-        dns: 192.168.65.2
         depends_on: 
             - rabbitmq
             - discovery
@@ -50,18 +48,18 @@ services:
         ports:
             - 8070:8070
             - 8072:8072    
-        dns: 192.168.65.2
         depends_on: 
             - discovery
         restart: always     
                                         
     cloud_worker:
         image: fogflow/worker
-        dns: 192.168.65.2                                       
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                            
             - /var/run/docker.sock:/var/run/docker.sock      
+        depends_on: 
+            - cloud_broker
         restart: always
                                         
     rabbitmq:

@@ -16,5 +16,7 @@ docker push  fogflow/facecounter
 
 docker push  fogflow/sum
 
+docker push  fogflow/dummy
+
 
 
