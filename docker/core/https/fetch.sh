@@ -5,12 +5,9 @@ wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/https
 wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/https/key4cloudnode.sh
 wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/https/key4edgenode.sh
 
-mkdir bind
-cd bind
-wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/https/bind/docker-compose.yml
-mkdir data
+wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/https/bind.tar.gz
 
-cd ..
+
 
 
 
