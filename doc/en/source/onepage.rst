@@ -25,11 +25,7 @@ This is because a subscription with Orion Context Broker as the reference URL ha
     :width: 100 %
 
 
-Start Up FogFlow
-===============================================================
-
-
-Here are the prerequisite commands for starting FogFlow:
+Here are the prerequisite commands for running FogFlow:
 
 1. docker
 
@@ -37,143 +33,178 @@ Here are the prerequisite commands for starting FogFlow:
 
 For ubuntu-16.04, you need to install docker-ce and docker-compose.
 
-To install Docker CE, please refer to `Install Docker CE`, required version > 18.03.1-ce;
+To install Docker CE, please refer to `Install Docker CE`_, required version > 18.03.1-ce;
 
 .. important:: 
 	**please also allow your user to execute the Docker Command without Sudo**
 
 
-To install Docker Compose, please refer to `Install Docker Compose`, 
+To install Docker Compose, please refer to `Install Docker Compose`_, 
 required version 18.03.1-ce, required version > 2.4.2
 
 .. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 .. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
 
 
-**Setup FogFlow:**
 
-Download the docker-compose file and the config.json file to setup flogflow.
+Set up all FogFlow components on a single machine
+===========================================================
+
+
+Fetch all required scripts
+-------------------------------------------------------------
+
+Download the docker-compose file and the configuration files as below.
 
 .. code-block:: console    
 
+	# the docker-compose file to start all FogFlow components on the cloud node
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
 
+	# the configuration file used by all FogFlow components
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
 
+	# the configuration file used by the nginx proxy
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
 
 
-you need to change the following addresses in config.json according to your own environment.
+Change the IP configuration accordingly
+-------------------------------------------------------------
 
-- **coreservice_ip**: it is used by all edge nodes to access the FogFlow core services, including Discovery, Broker(Cloud), and RabbitMQ;
-- **external_hostip**: this is the same as coreservice_ip, for the cloud part of FogFlow;        
-- **internal_hostip**: is the IP of your default docker bridge, which is the "docker0" network interface on your host
+
+You need to change the following IP addresses in config.json according to your own environment.
+
+- **coreservice_ip**: it is used by all FogFlow edge nodes to access the core services (e.g., nginx on port 80 and rabbitmq on port 5672) on the FogFlow cloud node; usually this will be the public IP of the FogFlow cloud node.
+- **external_hostip**: for the configuration of the FogFlow cloud node, this is the same as coreservice_ip used by the components (Cloud Worker and Cloud Broker) to access the running FogFlow core services;        
+- **internal_hostip**: this is the IP of your default docker bridge, which is the "docker0" network interface on your Linux host. For the docker engine on Windows or Mac OS, there is no "docker0" network interface; instead, you need to use the special domain name "host.docker.internal".  
+
+- **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
+- **physical_location**: the geo-location of the FogFlow node;
+- **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
+
 
 .. important:: 
 
 	please DO NOT use "127.0.0.1" as the IP address of **coreservice_ip** and **external_hostip**, because they will be used by a running task inside a docker container. 
 	
-	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80, 443, 8080, and 5672 for TCP
-    
+	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80 and 5672 for TCP
+
+
+
+Start all Fogflow components 
+-------------------------------------------------------------
+
+
 Pull the docker images of all FogFlow components and start the FogFlow system
 
 .. code-block:: console    
 
-	docker-compose pull
+    # if you already download the docker images of FogFlow components, this command can fetch the updated images
+	docker-compose pull  
 
 	docker-compose up -d
 
 
-Check all the containers are Up and Running using "docker ps -a"
+Validate your setup
+-------------------------------------------------------------
+
+
+There are two ways to check if the FogFlow cloud node is started correctly: 
+
+
+- Check all the containers are Up and Running using "docker ps -a"
 
 .. code-block:: console    
 
-	root@fffog-ynomljrk3y7bs23:~# docker ps -a
-	CONTAINER ID  IMAGE              COMMAND           CREATED      STATUS       PORTS                                       NAMES
-	122a61ece2ce  fogflow/master     "/master"         26 hours ago Up 26 hours  0.0.0.0:1060->1060/tcp                      fogflow_master_1
-	e625df7a1e51  fogflow/designer   "node main.js"    26 hours ago Up 26 hours  0.0.0.0:80->80/tcp, 0.0.0.0:1030->1030/tcp  fogflow_designer_1
-	42ada6ee39ae  fogflow/broker     "/broker"         26 hours ago Up 26 hours  0.0.0.0:8080->8080/tcp                      fogflow_broker_1
-	39b166181acc  fogflow/discovery  "/discovery"      26 hours ago Up 26 hours  0.0.0.0:443->443/tcp                        fogflow_discovery_1
-	8951aaac0049  tutum/rabbitmq     "/run.sh"         26 hours ago Up 26 hours  0.0.0.0:5672->5672/tcp, 15672/tcp           fogflow_rabbitmq_1
-	7f32d441c54a  mdillon/postgis    "docker-entry…"   26 hours ago Up 26 hours  0.0.0.0:5432->5432/tcp                      fogflow_postgis_1
-	53bf689d3db6  fogflow/worker     "/worker"         26 hours ago Up 26 hours                                              fogflow_cloud_worker_1
-	root@fffog-ynomljrk3y7bs23:~# 
-
-
-**Test the Fogflow Dashboard:**
-
-Open the link “http://<webportal_ip>” in your browser to check the status of all FogFlow running components in the cloud.
-So now you can also check all the components using dashboard.
-
-
-Start Up Orion
-====================
-
-You may follow the orion docs to set up a Orion Context Broker instance from here: `Installing Orion`.
-
-.. _`Installing Orion`: https://fiware-orion.readthedocs.io/en/master/admin/install/index.html
-
-
-You may also setup Orion on docker using below commands.(docker is required this method)
-Note: Orion container has a dependency on MongoDB database.
-
-**Prerequisite:** Docker should be installed.
-
-First launch MongoDB container using below command:
-
-.. code-block:: console    
-
-	sudo docker run --name mongodb -d mongo:3.4
-
-
-And then run Orion with this command
-
-.. code-block:: console    
-
-	sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
-
-
-Check that everything works with
-
-.. code-block:: console    
-
-	curl http://<Orion IP>:1026/version
-
-Note: Allow port 1026 in firewall for public access.
-
-
-Program a simple fog function via FogFlow Dashboard
-=======================================================
-
-
-**Create a simple Fog Function that:**
-
-	- accepts "Temperature" Entity Type as SelectCondition, "id" as granularity and "all" as SelectedAttributes,
-
-	- publishes a context entity of type "result" in Streams.
-
-
-.. figure:: figures/fogfunction.png
-    :width: 100 %
+	docker ps -a
 	
+	CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                                   NAMES
+	90868b310608        nginx:latest        "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                      fogflow_nginx_1
+	d4fd1aee2655        fogflow/worker      "/worker"                6 seconds ago       Up 2 seconds                                                                fogflow_cloud_worker_1
+	428e69bf5998        fogflow/master      "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                                  fogflow_master_1
+	9da1124a43b4        fogflow/designer    "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp          fogflow_designer_1
+	bb8e25e5a75d        fogflow/broker      "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                                  fogflow_cloud_broker_1
+	7f3ce330c204        rabbitmq:3          "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp   fogflow_rabbitmq_1
+	9e95c55a1eb7        fogflow/discovery   "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                                  fogflow_discovery_1
+	
+.. important:: 
+
+	if you see any container is missing, you can run "docker ps -a" to check if any FogFlow component is terminated with some problem. If there is, you can further check its output log by running "docker logs [container ID]"
+
+
+- Check the system status from the FogFlow DashBoard
+
+You can open the FogFlow dashboard in your web browser to see the current system status via the URL: http://<coreservice_ip>/index.html
+
+.. important:: 
+
+	If the FogFlow cloud node is behind a gateway, you need to create a mapping from the gateway IP to the coreservice_ip and then access the FogFlow dashboard via the gateway IP;
+	If the FogFlow cloud node is a VM in a public cloud like Azure Cloud, Google Cloud, or Amazon Cloud, you need to access the FogFlow dashboard via the public IP of your VM;
+
+Once you are able to access the FogFlow dashboard, you can see the following web page
+
+.. figure:: figures/dashboard.png
+    :width: 100 %
+
+
+Try out an existing IoT service
+===========================================================
+
+Once the FogFlow cloud node is set up, you can try out some existing IoT services without running any FogFlow edge node.
+For example, you can try out a simple fog function as below.  
+
+
+Initialize all defined services with three clicks
+-------------------------------------------------------------
+
+- Click "Operator Registry" in the top navigator bar to triger the initialization of pre-defined operators. 
+
+After you first click "Operator Registry", a list of pre-defined operators will be registered in the FogFlow system. 
+With a second click, you can see the refreshed list as shown in the following figure.
+
+.. figure:: figures/operator-list.png
+    :width: 100 %
+
+
+- Click "Service Topology" in the top navigator bar to triger the initialization of pre-defined service topologies. 
+
+After you first click "Service Topology", a list of pre-defined topologies will be registered in the FogFlow system. 
+With a second click, you can see the refreshed list as shown in the following figure.
+
+.. figure:: figures/topology-list.png
+    :width: 100 %
+
+
+- Click "Fog Function" in the top navigator bar to triger the initialization of pre-defined fog functions. 
+
+After you first click "Fog Function", a list of pre-defined functions will be registered in the FogFlow system. 
+With a second click, you can see the refreshed list as shown in the following figure.
+
+.. figure:: figures/function-list.png
+    :width: 100 %
+
 
 Simulate an IoT device to trigger the Fog Function
-=====================================================
+-------------------------------------------------------------
 
 There are two ways to trigger the fog function:
 
-**1. Create a “Temperature” sensor entity by filling the following element:**
+**1. Create a “Temperature” sensor entity via the FogFlow dashboard**
+
+
+You can register a device entity via the device registration page: "System Status" -> "Device" -> "Add". 
+Then you can create a “Temperature” sensor entity by filling the following element:**
  - **Device ID:** to specify a unique entity ID
  - **Device Type:** use “Temperature” as the entity type
  - **Location:** select a location on the map
  
 
-.. figure:: figures/createdevice.png
+.. figure:: figures/device-registration.png
     :width: 100 %
 
-**2. Send an NGSI entity update to create the “Temperature” sensor entity:**
- - Send a curl request to the FogFlow broker for entity update:
-
+**2. Send an NGSI entity update to create the “Temperature” sensor entity**
+ 
+Send a curl request to the FogFlow broker for entity update:
 
 .. code-block:: console    
 
@@ -217,22 +248,80 @@ There are two ways to trigger the fog function:
 
 
 Check if the fog function is triggered
-============================================
+-------------------------------------------------------------
 
-**1.  Check if a task is created under "Task" in System Management.**
+Check if a task is created under "Task" in System Management.**
 
 .. figure:: figures/task.png
     :width: 100 %
 
-
-**2. Check if a Stream is created under "Stream" in System Management.**
+Check if a Stream is created under "Stream" in System Management.**
 
 .. figure:: figures/result.png
     :width: 100 %
 
 
+
+- Create an IoT device entity to trigger the Fog Function
+
+You can register a device entity via the device registration page: 
+1) click "System Status"; 
+2) click "Device";
+3) click "Add";
+
+
+
+Then you will see the following device registration page. 
+
+.. figure:: figures/device-registration.png
+    :width: 100 %
+
+
+
+
+Integrate FogFlow with Orion Broker
+======================================
+
+
+Start Up Orion
+-------------------------------------------------------------
+
+You may follow the orion docs to set up a Orion Context Broker instance from here: `Installing Orion`.
+
+.. _`Installing Orion`: https://fiware-orion.readthedocs.io/en/master/admin/install/index.html
+
+
+You may also setup Orion on docker using below commands.(docker is required this method)
+Note: Orion container has a dependency on MongoDB database.
+
+**Prerequisite:** Docker should be installed.
+
+First launch MongoDB container using below command:
+
+.. code-block:: console    
+
+	sudo docker run --name mongodb -d mongo:3.4
+
+
+And then run Orion with this command
+
+.. code-block:: console    
+
+	sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
+
+
+Check that everything works with
+
+.. code-block:: console    
+
+	curl http://<Orion IP>:1026/version
+
+Note: Allow port 1026 in firewall for public access.
+
+
+
 Issue a subscription to forward the generated result to Orion Context Broker
-================================================================================
+----------------------------------------------------------------------------------
 
 Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
 
@@ -259,7 +348,7 @@ Please note that this subscription request does not use any restrictions and att
 
 
 Query the result from Orion Context Broker
-==============================================
+-------------------------------------------------------------
 
 Visit the following URL in your browser and search for the desired context entities:
 

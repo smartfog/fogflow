@@ -1,5 +1,5 @@
 *****************************************
-Edge programming models
+Intent-based programming model
 *****************************************
 
 Currently the following two programing models are provided by FogFlow to support different types of workload patterns.

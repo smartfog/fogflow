@@ -25,10 +25,12 @@ Currently, FogFlow has been applied into various business use cases in the areas
     introduction.rst
     onepage.rst
     setup.rst
+    edge.rst
     example1.rst
     example2.rst
     example3.rst
-    example4.rst        
+    example4.rst  
+    https.rst      
    
 .. toctree::
     :maxdepth: 1
@@ -42,18 +44,10 @@ Currently, FogFlow has been applied into various business use cases in the areas
     programming.rst
     api.rst
     test.rst
-    
-.. toctree::
-    :maxdepth: 1
-    :caption: Tutorial for Platform Operators
-    :numbered:    
-
-    cloud.rst
-    edge.rst
 
 .. toctree::
     :maxdepth: 1
-    :caption: Help      
+    :caption: Others      
     
     publication.rst
     troubleshooting.rst
