@@ -7,6 +7,8 @@ Configure your DNS server
 ==================================
 
 
+bind/data/bind/lib/fogflow.io.hosts
+
 
 
 Change the configuration file
