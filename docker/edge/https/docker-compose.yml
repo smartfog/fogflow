@@ -8,8 +8,8 @@ services:
             - ./edge_node.key:/edge_node.key        
             - ./root_ca.pem:/root_ca.pem                                       
         ports:
-            - 8070:8070
-            - 8072:8072    
+            - 80:80
+            - 443:443    
         restart: always     
                                         
     edge_worker:
@@ -21,5 +21,5 @@ services:
         depends_on: 
             - edge_broker
         restart: always
-                                        
+
 
