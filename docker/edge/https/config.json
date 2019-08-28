@@ -1,6 +1,6 @@
 {
-    "coreservice_ip": "cloud.fogflow.io",   
-    "external_hostip": "edge1.fogflow.io",         
+    "coreservice_ip": "cloudnode.mooo.com",   
+    "external_hostip": "edgenode1.mooo.com",         
     "internal_hostip": "172.17.0.1",  
     "physical_location":{
         "longitude": 138.709059,
@@ -14,7 +14,7 @@
         "debug": "stdout"
     },
     "discovery": {
-        "https_port": 443           
+        "https_port": 8092           
     },
     "broker": {
         "http_port": 80,
@@ -31,9 +31,10 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : false,
+        "enabled" : true,
         "my_certificate": "edge_node.pem",
         "my_key": "edge_node.key",
         "my_ca": "root_ca.pem"
     }
 }
+
