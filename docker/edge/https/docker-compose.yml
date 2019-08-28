@@ -1,11 +1,15 @@
-version: "3.5"
+version: "3"
 services:     
     edge_broker:
         image: fogflow/broker
         volumes:
             - ./config.json:/config.json 
+            - ./edge_node.pem:/edge_node.pem
+            - ./edge_node.key:/edge_node.key        
+            - ./root_ca.pem:/root_ca.pem                                       
         ports:
-            - 80:80
+            - 8070:8070
+            - 8072:8072    
         restart: always     
                                         
     edge_worker:
@@ -17,53 +21,5 @@ services:
         depends_on: 
             - edge_broker
         restart: always
-        
-    iot-agent:
-        image: fiware/iotagent-ul:1.7.0
-        depends_on:
-            - mongo-db
-            - mosquitto
-        expose:
-            - "4041"
-        ports:
-            - "4041:4041"
-        environment:
-            - IOTA_CB_HOST=edge_broker # name of the context broker to update context
-            - IOTA_CB_PORT=80 # port the context broker listens on to update context
-            - IOTA_NORTH_PORT=4041
-            - IOTA_REGISTRY_TYPE=mongodb #Whether to hold IoT device info in memory or in a database
-            - IOTA_LOG_LEVEL=DEBUG # The log level of the IoT Agent
-            - IOTA_TIMESTAMP=true # Supply timestamp information with each measurement
-            - IOTA_CB_NGSI_VERSION=v1 # use NGSIv1 when sending updates for active attributes
-            - IOTA_AUTOCAST=true # Ensure Ultralight number values are read as numbers not strings
-            - IOTA_MONGO_HOST=mongo-db # The host name of MongoDB
-            - IOTA_MONGO_PORT=27017 # The port mongoDB is listening on
-            - IOTA_MONGO_DB=iotagentul # The name of the database used in mongoDB
-            - IOTA_MQTT_HOST=mosquitto # The host name of the MQTT Broker
-            - IOTA_MQTT_PORT=1883 # The port the MQTT Broker is listening on to receive topics
-            - IOTA_PROVIDER_URL=http://iot-agent:4041                                        
-        restart: always
+                                        
 
-    mongo-db:
-        image: mongo:3.6
-        expose:
-            - "27017"
-        ports:
-            - "27017:27017"
-        command: --bind_ip_all --smallfiles
-        volumes:
-            - ./mongo-db:/data
-        restart: always
-            
-    mosquitto:
-        image: eclipse-mosquitto
-        expose:
-            - "1883"
-            - "9001"
-        ports:
-            - "1883:1883"
-            - "9001:9001"
-        volumes:
-            - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
-        restart: always
-            

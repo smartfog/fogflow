@@ -99,7 +99,7 @@ Pull the docker images of all FogFlow components and start the FogFlow system
 
 .. code-block:: console    
 
-    # if you already download the docker images of FogFlow components, this command can fetch the updated images
+	#if you already download the docker images of FogFlow components, this command can fetch the updated images
 	docker-compose pull  
 
 	docker-compose up -d
@@ -208,43 +208,44 @@ Send a curl request to the FogFlow broker for entity update:
 
 .. code-block:: console    
 
+	
 	curl -iX POST \
-	  'http://<Fogflow IP>:8080/ngsi10/updateContext' \
-	  -H 'Content-Type: application/json' \
-	  -d '
-	{
-	    "contextElements": [
-	        {
-	            "entityId": {
-	                "id": "Temperature001",
-	                "type": "Temperature",
-	                "isPattern": false
-	                },
-	            "attributes": [
-	                    {
-	                    "name": "temperature",
-	                    "type": "float",
-	                    "value": 73
-	                    },
-	                    {
-	                    "name": "pressure",
-	                    "type": "float",
-	                    "value": 44
-	                    }
-	                ],
-	            "domainMetadata": [
-	                    {
-	                    "name": "location",
-	                    "type": "point",
-	                    "value": {
-	                    "latitude": -33.1,
-	                    "longitude": -1.1
-	                    }}
-	                ]
-	        }
-	    ],
-	    "updateAction": "UPDATE"
-	}'
+		  'http://coreservice_ip/ngsi10/updateContext' \
+		  -H 'Content-Type: application/json' \
+		  -d '
+		{
+		    "contextElements": [
+		        {
+		            "entityId": {
+		                "id": "Device.Temp001",
+		                "type": "Temperature",
+		                "isPattern": false
+		                },
+		            "attributes": [
+		                    {
+		                    "name": "temperature",
+		                    "type": "float",
+		                    "value": 73
+		                    },
+		                    {
+		                    "name": "pressure",
+		                    "type": "float",
+		                    "value": 44
+		                    }
+		                ],
+		            "domainMetadata": [
+		                    {
+		                    "name": "location",
+		                    "type": "point",
+		                    "value": {
+		                    "latitude": -33.1,
+		                    "longitude": -1.1
+		                    }}
+		                ]
+		        }
+		    ],
+		    "updateAction": "UPDATE"
+		}'
 
 
 Check if the fog function is triggered
@@ -328,7 +329,7 @@ Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
 .. code-block:: console    
 
 	curl -iX POST \
-	  'http://<Fogflow IP>:8080/ngsi10/subscribeContext' \
+	  'http://coreservice_ip/ngsi10/subscribeContext' \
 	  -H 'Content-Type: application/json'  \
 	  -H 'Destination: orion-broker'  \
 	  -d '
@@ -336,7 +337,7 @@ Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
 	  "entities": [
 	    {
 	      "id": ".*",
-	      "type": "result",
+	      "type": "Result",
 	      "isPattern": true
 	    }
 	  ],
