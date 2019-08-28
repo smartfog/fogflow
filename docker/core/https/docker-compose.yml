@@ -42,8 +42,8 @@ services:
         image: fogflow/broker
         volumes:
             - ./config.json:/config.json 
-            - ./edge_node.pem:/cloud_node.pem
-            - ./edge_node.key:/cloud_node.key        
+            - ./cloud_node.pem:/cloud_node.pem
+            - ./cloud_node.key:/cloud_node.key        
             - ./root_ca.pem:/root_ca.pem                                       
         ports:
             - 8070:8070
@@ -74,8 +74,8 @@ services:
       image: nginx
       volumes:
         - ./nginx.conf:/etc/nginx/nginx.conf
-        - ./designer.pem:/etc/nginx/designer.pem
-        - ./designer.key:/etc/nginx/designer.key        
+        - ./cloud_node.pem:/etc/nginx/designer.pem
+        - ./cloud_node.key:/etc/nginx/designer.key        
       ports:
         - 443:443
       depends_on: 
