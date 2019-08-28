@@ -2,13 +2,35 @@
 Secure the cloud-edge communication
 *****************************************************************
 
+To secure the communication between the FogFlow cloud node and the FogFlow edge nodes, 
+FogFlow can be configured to use HTTPs for the NGSI9 and NGSI10 communication, 
+which is mainly for data exchange between cloud node and edge nodes, or between two edge nodes. 
+Also, the control channel between Topology Master and Worker can be secured by enabling TLS in RabbitMQ. 
+Here we introduce the steps to secure the data exchange between one FogFlow cloud node and one FogFlow edge node. 
+
 
 
 Configure your DNS server
 ===========================================================
 
+As illustrated by the following picture, in order to set up FogFlow to support the HTTPs-based communication, 
+the FogFlow cloud node and the FogFlow edge node are required to have their own domain names, 
+because their signed certificates must be associated with their domain namers.
+Therefore, you need to use a DNS service to resolve the domain names for both the cloud node and the edge node. 
+For example, you can use `freeDNS`_ for this purpose. 
+
+.. _`freeDNS`: https://freedns.afraid.org
 
 
+.. figure:: figures/https-setup.png
+    :width: 100 %
+
+
+.. important:: 
+
+	please make sure that the domain names of the cloud node and the edge node can be properly resolved
+	and you can see the correct IP address.  
+	
 
 Set up the FogFlow cloud node
 ===========================================================
@@ -139,7 +161,7 @@ Validate your setup
 
 .. code-block:: console    
 
-    docker ps 
+	docker ps 
 
 	CONTAINER ID        IMAGE               COMMAND             CREATED              STATUS              PORTS                                      NAMES
 	16af186fb54e        fogflow/worker      "/worker"           About a minute ago   Up About a minute                                              https_edge_worker_1
