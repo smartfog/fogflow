@@ -690,15 +690,28 @@ func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
 //
 // the shared functions for function manager and topology manager to call
 //
-func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	ctxObj, err := client.GetEntity(eid)
 
-	if err != nil {
+func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
+	query := QueryContextRequest{}
+
+	query.Entities = make([]EntityId, 0)
+
+	entity := EntityId{}
+	entity.ID = eid
+	entity.IsPattern = false
+	query.Entities = append(query.Entities, entity)
+
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
+	ctxObjects, err := client.QueryContext(&query)
+	if err == nil && ctxObjects != nil && len(ctxObjects) > 0 {
+		return ctxObjects[0]
+	} else {
+		if err != nil {
+			ERROR.Println("error occured when retrieving a context entity :", err)
+		}
+
 		return nil
 	}
-
-	return ctxObj
 }
 
 //
