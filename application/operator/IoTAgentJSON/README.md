@@ -8,7 +8,7 @@ Follow these steps to run IoT Agent JSON as a Fog Function using Fogflow Dashboa
 
    b. Name: service_port ; Value: 7896
    
-   Register an image by name fogflow/iota-mongo:latest and associate it with the above operator by choosing the operator from DropDown.
+   Register an image by name fogflow/iota-mongo-embedded:latest and associate it with the above operator by choosing the operator from DropDown.
 
 2. Register a FogFunction and set an Entity Type (say IOTA) as SelectedType. Choose the operator registered in Step#1 as Fog Function Operator.
 
