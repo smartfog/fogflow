@@ -4,24 +4,24 @@ var http = require('http'),
     express = require('express'),
     logger = require('logops'),
     bodyParser = require('body-parser'),
-    northboundServer,    
-	notifyHandler,
-	adminHandler;
+    northboundServer,
+        notifyHandler,
+        adminHandler;
 
 
 function CtxElement2JSONObject(e) {
     var jsonObj = {};
     jsonObj.entityId = e.entityId;
 
-    jsonObj.attributes = {}    
+    jsonObj.attributes = {}
     for(var i=0; e.attributes && i<e.attributes.length; i++) {
         var attr = e.attributes[i];
         jsonObj.attributes[attr.name] = {
-            type: attr.type, 
+            type: attr.type,
             value: attr.value
         };
     }
-    
+
     jsonObj.metadata = {}
     for(var i=0; e.domainMetadata && i<e.domainMetadata.length; i++) {
         var meta = e.domainMetadata[i];
@@ -30,9 +30,9 @@ function CtxElement2JSONObject(e) {
             value: meta.value
         };
     }
-    
+
     return jsonObj;
-}    
+}
 
 function ensureType(req, res, next) {
     if (req.is('json')) {
@@ -47,15 +47,15 @@ function loadContextRoutes(router) {
             ensureType,
             handleNotify
         ],
-		adminHandlers = [
+                adminHandlers = [
             ensureType,
             handleAdmin
         ];
 
     router.post('/notifyContext', notifyHandlers);
-    router.post('/admin', adminHandlers);		
+    router.post('/admin', adminHandlers);
 }
-		
+
 function handleError(error, req, res, next) {
     var code = 500;
 
@@ -86,24 +86,24 @@ function setAdminHandler(newHandler) {
 }
 
 function readContextElements(body) {
-	var ctxObjects = [];
-	
-	for(var i = 0; i < body.contextResponses.length; i++){
-		var response = body.contextResponses[i];
-		if(response.statusCode.code == '200'){		       
-			var flexObj = CtxElement2JSONObject(response.contextElement);
-			ctxObjects.push(flexObj);
-		}
-	}
+        var ctxObjects = [];
 
-	return ctxObjects;
+        for(var i = 0; i < body.contextResponses.length; i++){
+                var response = body.contextResponses[i];
+                if(response.statusCode.code == '200'){
+                        var flexObj = CtxElement2JSONObject(response.contextElement);
+                        ctxObjects.push(flexObj);
+                }
+        }
+
+        return ctxObjects;
 }
 
 function handleNotify(req, res, next) {
-	if (notifyHandler) {
-        logger.debug('Handling notification from [%s]', req.get('host'));		
-		var ctxs = readContextElements(req.body);
-		notifyHandler(req, ctxs, res);		
+        if (notifyHandler) {
+        logger.debug('Handling notification from [%s]', req.get('host'));
+                var ctxs = readContextElements(req.body);
+                notifyHandler(req, ctxs, res);
         next();
     } else {
         var errorNotFound = new Error({
@@ -115,13 +115,13 @@ function handleNotify(req, res, next) {
 }
 
 function handleAdmin(req, res, next) {
-	if (adminHandler) {
+        if (adminHandler) {
         logger.debug('Handling admin from [%s]', req.get('host'));
-		
-		if( Array.isArray(req.body) ) {
-			adminHandler(req, req.body, res);			
-		}
-		
+
+                if( Array.isArray(req.body) ) {
+                        adminHandler(req, req.body, res);
+                }
+
         next();
     } else {
         var errorNotFound = new Error({
@@ -147,9 +147,9 @@ function start(port, callback) {
     northboundServer.app.set('port', port);
     northboundServer.app.set('host', '0.0.0.0');
     northboundServer.app.use(bodyParser.json());
-	
+
     northboundServer.app.use(baseRoot, northboundServer.router);
-	
+
     loadContextRoutes(northboundServer.router);
 
     northboundServer.app.use(handleError);
@@ -163,7 +163,7 @@ function stop() {
 
     if (northboundServer) {
         northboundServer.server.close();
-    } 
+    }
 }
 
 exports.start = start;

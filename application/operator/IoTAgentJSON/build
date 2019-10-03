@@ -1,1 +1,1 @@
-docker build . -t "fogflow/iotagent:latest"
+docker build . -t "fogflow/iota-mongo-embedded:latest"

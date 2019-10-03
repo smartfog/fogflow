@@ -198,7 +198,7 @@ console.log("handle the initial admin configuration", adminCfg)
 try {
     const commands = JSON.parse(adminCfg)
     handleCmds(commands);
-    isConfigured = true;    
+    isConfigured = true;
 } catch(err) {
   console.error(err)
 }
