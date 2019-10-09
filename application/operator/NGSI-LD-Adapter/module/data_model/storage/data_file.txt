@@ -1,0 +1,10 @@
+urn:ngsi-ld:Temprature700
+urn:ngsi-ld:Temprature701
+urn:ngsi-ld:Temprature702
+urn:ngsi-ld:Room5
+urn:ngsi-ld:Temp456
+urn:ngsi-ld:Tempo123
+urn:ngsi-ld:Tempo457
+urn:ngsi-ld:Livestock111
+urn:ngsi-ld:Livestock9999
+urn:ngsi-ld:Livestock2000
