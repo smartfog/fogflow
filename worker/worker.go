@@ -194,6 +194,16 @@ func (w *Worker) heartbeat() {
 	w.communicator.Publish(&taskUpdateMsg)
 }
 
+func (w *Worker) join() {
+	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	w.communicator.Publish(&taskUpdateMsg)
+}
+
+func (w *Worker) leave() {
+	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	w.communicator.Publish(&taskUpdateMsg)
+}
+
 func (w *Worker) onAddInput(from string, flow *FlowInfo) {
 	w.executor.onAddInput(flow)
 }

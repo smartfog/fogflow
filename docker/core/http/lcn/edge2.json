@@ -3,10 +3,10 @@
     "external_hostip": "host.docker.internal",         
     "internal_hostip": "host.docker.internal",  
     "physical_location":{
-        "longitude": 137,
-        "latitude": 35
+        "longitude": 139,
+        "latitude": 36
     },
-    "site_id": "002",
+    "site_id": "003",
     "logging":{
         "info":"stdout",
         "error":"stdout",
@@ -17,7 +17,7 @@
         "http_port": 80
     },
     "broker": {
-        "http_port": 8170
+        "http_port": 8270
     },     
     "worker": {
         "container_autoremove": false,

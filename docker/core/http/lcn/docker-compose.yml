@@ -51,6 +51,42 @@ services:
             - ./config.json:/config.json                            
             - /var/run/docker.sock:/var/run/docker.sock      
         restart: always
+                       
+    edge_broker1:
+        image: fogflow/broker
+        volumes:
+            - ./edge1.json:/config.json 
+        ports:
+            - 8170:8170
+        depends_on: 
+            - discovery
+        restart: always                         
+                                       
+    edge_worker1:
+        image: fogflow/worker
+        volumes:
+            - /tmp:/tmp        
+            - ./edge1.json:/config.json                            
+            - /var/run/docker.sock:/var/run/docker.sock      
+        restart: always                                        
+
+    edge_broker2:
+        image: fogflow/broker
+        volumes:
+            - ./edge2.json:/config.json 
+        ports:
+            - 8270:8270
+        depends_on: 
+            - discovery
+        restart: always      
+
+    edge_worker2:
+        image: fogflow/worker
+        volumes:
+            - /tmp:/tmp        
+            - ./edge2.json:/config.json                            
+            - /var/run/docker.sock:/var/run/docker.sock      
+        restart: always
                                         
     rabbitmq:
         image: rabbitmq:3
