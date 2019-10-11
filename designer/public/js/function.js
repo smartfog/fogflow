@@ -23,13 +23,46 @@ var blocks = null;
 // client to interact with IoT Broker
 var client = new NGSI10Client(config.brokerURL);
 
+
 var myFogFunctionExamples = [
+{
+    name: "Convert1",
+    topology: {"name":"Convert1","description":"test","tasks":[{"name":"Main","operator":"converter","input_streams":[{"selected_type":"RainSensor","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[{"entity_type":"RainObservation"}]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"converter","outputs":["RainObservation"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"RainSensor","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
+    intent: {"topology":"Convert1","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},{
+    name: "Convert2",
+    topology: {"name":"Convert2","description":"test","tasks":[{"name":"Main","operator":"converter","input_streams":[{"selected_type":"SmartAwning","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"converter","outputs":[]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"SmartAwning","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
+    intent: {"topology":"Convert2","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},{
+    name: "Convert3",
+    topology: {"name":"Convert3","description":"test","tasks":[{"name":"Main","operator":"converter","input_streams":[{"selected_type":"ConnectedCar","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[{"entity_type":"RainObservation"}]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"converter","outputs":["RainObservation"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"ConnectedCar","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
+    intent: {"topology":"Convert3","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},{
+    name: "Prediction",
+    topology: {"name":"Prediction","description":"test","tasks":[{"name":"Main","operator":"predictor","input_streams":[{"selected_type":"RainObservation","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[{"entity_type":"Prediction"}]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"predictor","outputs":[""]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"RainObservation","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
+    intent: {"topology":"Prediction","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},{
+    name: "Prediction",
+    topology: {"name":"Prediction","description":"test","tasks":[{"name":"Main","operator":"predictor","input_streams":[{"selected_type":"RainObservation","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[{"entity_type":"Prediction"}]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"predictor","outputs":[""]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"RainObservation","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
+    intent: {"topology":"Prediction","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},{
+    name: "Controller",
+    topology: {"name":"Controller","description":"test","tasks":[{"name":"Main","operator":"controller","input_streams":[{"selected_type":"SmartAwning","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"ControlAction"}]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"controller","outputs":["ControlAction"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"SmartAwning","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
+    intent: {"topology":"Controller","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},
 {
     name: "Test",
     topology: {"name":"Test","description":"just for a simple test","tasks":[{"name":"Main","operator":"dummy","input_streams":[{"selected_type":"Temperature","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
     designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"dummy","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Temperature","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
     intent: {"topology":"Test","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
-},/*{
+},
+/*{
     name: "Agent",
     topology: {"name":"Agent","description":"just for a simple test","tasks":[{"name":"Main","operator":"iotagent","input_streams":[{"selected_type":"Worker","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
     designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"iotagent","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Worker","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
