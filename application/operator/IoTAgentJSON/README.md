@@ -1,8 +1,14 @@
 Pre-requisite: GPA should be running as a Fog Function. Refer [README for GPA](https://github.com/smartfog/fogflow/blob/master/application/operator/GeneralPurposeAdapter/README.md).
 
-Follow these steps to run IoT Agent JSON as a Fog Function:
+Follow these steps to run IoT Agent JSON as a Fog Function using Fogflow Dashboard:
 
-1. Register a new operator with image "fogflow/iotagent" in Operator Registry in FogFlow.
+1. Register a new Operator with two Parameter Elements as given below:
+
+   a. Name: service_port ; Value: 4041
+
+   b. Name: service_port ; Value: 7896
+   
+   Register an image by name fogflow/iota-mongo-embedded:latest and associate it with the above operator by choosing the operator from DropDown.
 
 2. Register a FogFunction and set an Entity Type (say IOTA) as SelectedType. Choose the operator registered in Step#1 as Fog Function Operator.
 

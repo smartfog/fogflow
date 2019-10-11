@@ -1,4 +1,4 @@
-FROM fogflow/mongo-iotagent-custom:latest
+FROM fogflow/iota-mongo-custom:latest
 
 USER root
 
@@ -15,3 +15,4 @@ RUN chmod +x ./iota-config.sh && \
     chmod +x /usr/local/bin/docker-entrypoint.sh
 
 CMD ["node","main.js"]
+EXPOSE 4041 7896 27017

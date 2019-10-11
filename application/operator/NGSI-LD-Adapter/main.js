@@ -1,8 +1,8 @@
 'use strict';
 
-const NGSIClient = require('/opt/iotajson/ngsi/ngsiclient.js');
-const NGSIAgent = require('/opt/iotajson/ngsi/ngsiagent.js');
-const fogfunction = require('/opt/iotajson/function.js');
+const NGSIClient = require('/opt/ngsildAdapter/ngsi/ngsiclient.js');
+const NGSIAgent = require('/opt/ngsildAdapter/ngsi/ngsiagent.js');
+const fogfunction = require('/opt/ngsildAdapter/function.js');
 
 var ngsi10client = null;
 var brokerURL;
@@ -27,9 +27,6 @@ function stopApp()
 // handle the commands received from the engine
 function handleAdmin(req, commands, res)
 {
-    console.log('=============configuration commands=============');
-    console.log(commands);
-
         handleCmds(commands);
 
         isConfigured = true;
@@ -39,7 +36,6 @@ function handleAdmin(req, commands, res)
 
 function handleCmds(commands)
 {
-        console.log("handleCmds....commands+++++++++++++++++++++", commands);
         for(var i = 0; i < commands.length; i++) {
                 var cmd = commands[i];
         console.log(cmd);
@@ -53,7 +49,6 @@ function handleCmds(commands)
 
 function handleCmd(commandObj)
 {
-    console.log("handleCmd....commandObj+++++++++++++++++++++", commandObj);
 
     if (commandObj.command == 'CONNECT_BROKER') {
                 connectBroker(commandObj);
@@ -81,7 +76,6 @@ function setReferenceURL(cmd)
 
 function setOutputs(cmd)
 {
-        console.log('Inside setOutputs.......... ', cmd);
         var outputStream = {};
         outputStream.id = cmd.id;
         outputStream.type = cmd.type;
@@ -93,7 +87,6 @@ function setOutputs(cmd)
 
 function sendUpdateWithinBuffer()
 {
-        console.log('Inside sendUpdateWithinBuffer ==========================');
         for(var i=0; i<buffer.length; i++){
                 var tmp = buffer[i];
 
@@ -183,7 +176,6 @@ function publish(ctxUpdate)
 // handle the received results
 function handleNotify(req, ctxObjects, res)
 {
-        console.log('============handle notify==========================');
         for(var i = 0; i < ctxObjects.length; i++) {
                 console.log(ctxObjects[i]);
         fogfunction.handler(ctxObjects[i], publish, query, subscribe);
