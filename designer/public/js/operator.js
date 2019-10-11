@@ -316,6 +316,22 @@ function initOperatorList()
         name: "dummy",
         description: "",
         parameters:[]
+    },{
+        name: "geohash",
+        description: "",
+        parameters:[]
+    },{
+        name: "converter",
+        description: "",
+        parameters:[]
+    },{
+        name: "predictor",
+        description: "",
+        parameters:[]
+    },{
+        name: "controller",
+        description: "",
+        parameters:[]
     }
     ];
     
@@ -453,6 +469,34 @@ function initDockerImageList()
         hwType: "X86",
         osType: "Linux",
         operatorName: "dummy",
+        prefetched: false
+    },{
+        name: "geohash",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "geohash",
+        prefetched: false
+    },{
+        name: "converter",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "converter",
+        prefetched: false
+    },{
+        name: "predictor",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "predictor",
+        prefetched: false
+    },{
+        name: "controller",
+        tag: "latest",
+        hwType: "X86",
+        osType: "Linux",
+        operatorName: "controller",
         prefetched: false
     }
     ];
