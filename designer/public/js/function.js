@@ -32,8 +32,8 @@ var myFogFunctionExamples = [
     intent: {"topology":"Convert1","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
 },{
     name: "Convert2",
-    topology: {"name":"Convert2","description":"test","tasks":[{"name":"Main","operator":"converter","input_streams":[{"selected_type":"SmartAwning","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[]}]},
-    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"converter","outputs":[]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"SmartAwning","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
+    topology: {"name":"Convert2","description":"test","tasks":[{"name":"Main","operator":"geohash","input_streams":[{"selected_type":"SmartAwning","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"geohash","outputs":[]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"SmartAwning","selectedattributes":["all"],"groupby":"ALL","scoped":false}}]},
     intent: {"topology":"Convert2","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
 },{
     name: "Convert3",

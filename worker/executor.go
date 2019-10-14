@@ -475,7 +475,7 @@ func (e *Executor) configurateTask(port string, commands []interface{}) bool {
 func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, containerID string) {
 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = "Task." + task.ID
+	ctxObj.Entity.ID = task.ID
 	ctxObj.Entity.Type = "Task"
 	ctxObj.Entity.IsPattern = false
 
@@ -503,7 +503,7 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 func (e *Executor) updateTask(taskID string, status string) {
 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = "Task." + taskID
+	ctxObj.Entity.ID = taskID
 	ctxObj.Entity.Type = "Task"
 	ctxObj.Entity.IsPattern = false
 
@@ -519,7 +519,7 @@ func (e *Executor) updateTask(taskID string, status string) {
 
 func (e *Executor) deregisterTask(taskID string) {
 	entity := EntityId{}
-	entity.ID = "Task." + taskID
+	entity.ID = taskID
 	entity.Type = "Task"
 	entity.IsPattern = false
 

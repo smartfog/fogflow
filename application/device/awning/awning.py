@@ -5,7 +5,7 @@ import signal
 import sys
 import json
 import requests 
-import wiringpi
+#import wiringpi
 from flask import Flask, jsonify, abort, request, make_response
 from threading import Thread, Lock
 import logging
@@ -17,14 +17,12 @@ app = Flask(__name__, static_url_path = "")
 
 mutex = Lock()
 
-brokerURL = 'http://192.168.1.102:8070/ngsi10'
+brokerURL = 'http://host.docker.internal/ngsi10'
 profile = {}
 
-myip = '192.168.1.110'  
-myport = 8080
+myip = 'host.docker.internal0'  
+myport = 8088
 myStatus = 'close'
-
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 
 
 @app.route('/notifyContext', methods = ['POST'])
@@ -63,16 +61,18 @@ def processInputStreamData(obj):
         attributes = obj['attributes']
         if 'command' in attributes:
             #print attributes['command']['value']
-            #print myStatus
+            print(myStatus)
             
             if attributes['command']['value'] == 'close':
                 if myStatus == 'open':
-                    turnOff()
+                    #turnOff()
                     myStatus = 'close'
             else:
                 if myStatus == 'close':
-                    turnOn()
+                    #turnOn()
                     myStatus = 'open'
+
+            print(myStatus)
 
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
@@ -96,10 +96,10 @@ def findNearbyBroker():
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(discoveryURL + '/discoverContextAvailability', data=json.dumps(discoveryReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to find a nearby IoT Broker'
+        print('failed to find a nearby IoT Broker')
         return ''
     
-    print response.text
+    print(response.text)
     registrations = json.loads(response.text)
     
     for registration in registrations['contextRegistrationResponses']:
@@ -190,8 +190,8 @@ def updateContext(broker, ctxObj):
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(broker + '/updateContext', data=json.dumps(updateCtxReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to update context'
-        print response.text
+        print('failed to update context')
+        print(response.text)
 
 
 def deleteContext(broker, ctxObj):        
@@ -205,8 +205,8 @@ def deleteContext(broker, ctxObj):
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(broker + '/updateContext', data=json.dumps(updateCtxReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to delete context'
-        print response.text
+        print('failed to delete context')
+        print(response.text)
 
 def subscribeCmd():                
     deviceID = 'Device.' + profile['type'] + '.' + profile['id']
@@ -219,8 +219,8 @@ def subscribeCmd():
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to subscribe context'
-        print response.text      
+        print('failed to subscribe context')
+        print(response.text)
         
 def init():
     # use 'GPIO naming'
@@ -254,7 +254,7 @@ def turnOn():
         pwm +=5
         
     mutex.release()        
-    print "turn on>>>>>>>"
+    print("turn on>>>>>>>")
 
 # close awning
 def  turnOff():
@@ -268,7 +268,7 @@ def  turnOff():
         pwm -=5
         
     mutex.release()        
-    print '<<<<<<<turn off'
+    print('<<<<<<<turn off')
     
 def run():
     #global brokerURL
@@ -277,7 +277,7 @@ def run():
     #    print 'failed to find a nearby broker'
     #    sys.exit(0)
         
-    init()
+    #init()
             
     #announce myself        
     publishMySelf()
@@ -301,7 +301,7 @@ if __name__ == '__main__':
         with open(cfgFileName) as json_file:
             profile = json.load(json_file)
     except Exception as error:
-        print 'failed to load the device profile'
+        print('failed to load the device profile')
         sys.exit(0)  
         
     run()

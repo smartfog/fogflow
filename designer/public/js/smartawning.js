@@ -252,8 +252,8 @@ function displayEdgeNodeOnMap(map)
             
             console.log(worker);
             
-            latitude = worker.attributes.physical_location.value.latitude;
-            longitude = worker.attributes.physical_location.value.longitude;
+            latitude = worker.attributes.location.value.latitude;
+            longitude = worker.attributes.location.value.longitude;
             edgeNodeId = worker.entityId.id;
             
             console.log(latitude, longitude, edgeNodeId);

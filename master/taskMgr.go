@@ -291,7 +291,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 		} else {
 			task := TaskConfig{}
 
-			task.TaskID = hashID
+			task.TaskID = "Task." + flow.Intent.ServiceName + "." + flow.Intent.TaskObject.Name + "." + hashID
 			task.Operator = flow.Intent.TaskObject.Operator
 			task.Name = flow.Intent.TaskObject.Name
 
@@ -419,10 +419,10 @@ func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *Inp
 	return deploymentActions
 }
 
-func (flow *FogFlow) getLocationOfInputs(taskID string) []Point {
+func (flow *FogFlow) getLocationOfInputs(hashID string) []Point {
 	locations := make([]Point, 0)
 
-	task := flow.ExecutionPlan[taskID]
+	task := flow.ExecutionPlan[hashID]
 
 	for _, input := range task.Inputs {
 		locations = append(locations, input.Location)
@@ -823,10 +823,11 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
 
 			// figure out where to deploy this task instance
-			taskID := scheduledTaskInstance.ID
+			itemList := strings.Split(scheduledTaskInstance.ID, ".")
+			hashID := itemList[len(itemList)-1]
 
 			// find out the worker close to the available inputs
-			locations := fogflow.getLocationOfInputs(taskID)
+			locations := fogflow.getLocationOfInputs(hashID)
 			selectedWorkerID := tMgr.master.SelectWorker(locations)
 
 			if selectedWorkerID == "" {

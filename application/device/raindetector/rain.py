@@ -34,10 +34,10 @@ def findNearbyBroker():
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(discoveryURL + '/discoverContextAvailability', data=json.dumps(discoveryReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to find a nearby IoT Broker'
+        print('failed to find a nearby IoT Broker')
         return ''
     
-    print response.text
+    print(response.text)
     registrations = json.loads(response.text)
     
     for registration in registrations['contextRegistrationResponses']:
@@ -133,8 +133,8 @@ def updateContext(broker, ctxObj):
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(broker + '/updateContext', data=json.dumps(updateCtxReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to update context'
-        print response.text
+        print('failed to update context')
+        print(response.text)
 
 
 def deleteContext(broker, ctxObj):        
@@ -148,8 +148,8 @@ def deleteContext(broker, ctxObj):
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(broker + '/updateContext', data=json.dumps(updateCtxReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to delete context'
-        print response.text
+        print('failed to delete context')
+        print(response.text)
 
 def updateMyStatus(raining):                
     # stream entity
@@ -222,7 +222,7 @@ if __name__ == '__main__':
         with open(cfgFileName) as json_file:
             profile = json.load(json_file)
     except Exception as error:
-        print 'failed to load the device profile'
+        print('failed to load the device profile')
         sys.exit(0)
 
     run()

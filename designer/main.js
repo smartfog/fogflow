@@ -21,7 +21,7 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 var config = globalConfigFile.designer;
 
 // set the agent IP address from the environment variable
-config.agentIP = 'designer';
+config.agentIP = globalConfigFile.external_hostip;
 config.agentPort = globalConfigFile.designer.agentPort; 
 
 config.discoveryURL = './ngsi9';

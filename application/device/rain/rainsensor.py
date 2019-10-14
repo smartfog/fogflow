@@ -28,7 +28,7 @@ def loadImage(file):
         with open(file, 'rb') as file:
             return file.read()   
     except Exception as error:
-        print 'failed to load the generated image file'     
+        print('failed to load the generated image file')
 
 def findNearbyBroker():    
     global profile, discoveryURL
@@ -46,7 +46,7 @@ def findNearbyBroker():
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
     response = requests.post(discoveryURL + '/discoverContextAvailability', data=json.dumps(discoveryReq), headers=headers)
     if response.status_code != 200:
-        print 'failed to find a nearby IoT Broker'
+        print('failed to find a nearby IoT Broker')
         return ''
     
     print response.text

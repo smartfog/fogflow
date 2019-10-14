@@ -644,8 +644,8 @@ function displayEdgeNodeOnMap(map)
         for(var i=0; i<edgeNodeList.length; i++){
         	var worker = edgeNodeList[i];    
         
-        	latitude = worker.attributes.physical_location.value.latitude;
-        	longitude = worker.attributes.physical_location.value.longitude;
+        	latitude = worker.attributes.location.value.latitude;
+        	longitude = worker.attributes.location.value.longitude;
         	edgeNodeId = worker.entityId.id;
         
         	var marker = L.marker(new L.LatLng(latitude, longitude), {icon: edgeIcon});
