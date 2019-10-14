@@ -199,15 +199,15 @@ func (communicator *Communicator) openSubscriber() (*amqp.Channel, amqp.Queue, e
 	)
 
 	// Connect, reuse the same connection if there is an established connection with the broker
-	if communicator.conn != nil {
-		conn = communicator.conn
-	} else {
-		conn, err = amqp.Dial(communicator.config.Broker)
-		if err != nil {
-			return channel, queue, fmt.Errorf("Dial: %s\r\n", err)
-		}
-		communicator.conn = conn
+	// if communicator.conn != nil {
+	// 	conn = communicator.conn
+	// } else {
+	conn, err = amqp.Dial(communicator.config.Broker)
+	if err != nil {
+		return channel, queue, fmt.Errorf("Dial: %s\r\n", err)
 	}
+	communicator.conn = conn
+	//}
 
 	// Open a channel
 	channel, err = conn.Channel()
@@ -266,15 +266,15 @@ func (communicator *Communicator) openPublisher() (*amqp.Channel, <-chan amqp.Co
 	)
 
 	// Connect
-	if communicator.conn != nil {
-		conn = communicator.conn
-	} else {
-		conn, err = amqp.Dial(communicator.config.Broker)
-		if err != nil {
-			return channel, nil, fmt.Errorf("Dial: %s", err)
-		}
-		communicator.conn = conn
+	// if communicator.conn != nil {
+	// 	conn = communicator.conn
+	// } else {
+	conn, err = amqp.Dial(communicator.config.Broker)
+	if err != nil {
+		return channel, nil, fmt.Errorf("Dial: %s", err)
 	}
+	communicator.conn = conn
+	//}
 
 	// Open a channel
 	channel, err = conn.Channel()
