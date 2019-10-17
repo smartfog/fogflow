@@ -1,0 +1,18 @@
+version: "3"
+services:     
+    rabbitmq:
+        image: rabbitmq:3
+        ports:
+            - 5672:5672
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=mypass   
+        restart: always     
+                                        
+    nginx: 
+      image: nginx:latest
+      volumes:
+        - ./tmp.conf:/etc/nginx/nginx.conf
+      ports:
+        - 80:80
+      restart: always             
