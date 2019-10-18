@@ -1,0 +1,9 @@
+{
+    "discoveryURL": "http://192.168.1.100/ngsi9",
+    "location": {
+        "latitude": 35.742752,
+        "longitude": 139.685090
+    },
+    "iconURL": "/img/home.png",
+    "homeID": "0001"
+}

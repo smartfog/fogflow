@@ -1,2 +1,2 @@
-docker build -f dockerfile -t "fogflow/motor"  .
+docker build -f dockerfile -t "fogflow/lego"  .
 

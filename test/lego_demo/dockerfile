@@ -7,6 +7,7 @@ RUN sudo apt-get install python-dev python-rpi.gpio
 RUN pip3 install RPi.GPIO scipy
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN sudo python2.7 get-pip.py
+
 RUN pip2.7 install pyusb
 RUN wget https://github.com/Eelviny/nxt-python/archive/v2.2.2.tar.gz
 RUN tar -xvf v2.2.2.tar.gz

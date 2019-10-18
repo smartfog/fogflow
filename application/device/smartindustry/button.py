@@ -180,7 +180,7 @@ def run():
             continue                                
   
 if __name__ == '__main__':
-    cfgFileName = 'profile.json' 
+    cfgFileName = 'button.json' 
     if len(sys.argv) >= 2:
         cfgFileName = sys.argv[1]
     
