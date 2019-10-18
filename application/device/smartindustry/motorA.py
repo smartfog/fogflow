@@ -5,7 +5,6 @@ import signal
 import sys
 import json
 import requests 
-import wiringpi
 from flask import Flask, jsonify, abort, request, make_response
 from threading import Thread, Lock
 import logging
@@ -55,7 +54,7 @@ def processInputStreamData(obj):
     if 'attributes' in obj:
         attributes = obj['attributes']
         if 'command' in attributes:
-            var command = attributes['command']['value']
+            command = attributes['command']['value']
             handleCommand(command)
 
 
@@ -65,15 +64,15 @@ def handleCommand(cmd):
     cmdType = cmd['type']
         
     if cmdType == 'STOP': 
-		print("STOP")
+        print("STOP")
         mx.brake()        
     elif cmdType == 'FORWARD': 
-		print("FORWARD")
+        print("FORWARD")
         mx.run(100)
         time.sleep(2)
         mx.brake()
     elif cmdType == 'BACKWARD': 
-		print("BACKWARD")
+        print("BACKWARD")
         mx.run(-100)
         time.sleep(2)
         mx.brake()        

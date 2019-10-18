@@ -1,6 +1,8 @@
 FROM resin/raspberry-pi-python
 
 RUN pip install flask
+RUN pip install requests
+RUN pip install opencv-python
 
 RUN pip install pyusb
 RUN wget https://github.com/Eelviny/nxt-python/archive/v2.2.2.tar.gz

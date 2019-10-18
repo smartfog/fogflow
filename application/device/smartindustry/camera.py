@@ -190,7 +190,7 @@ def run():
     httpd.serve_forever()
   
 if __name__ == '__main__':
-    cfgFileName = 'profile.json' 
+    cfgFileName = 'camera.json' 
     if len(sys.argv) >= 2:
         cfgFileName = sys.argv[1]
     

@@ -13,6 +13,7 @@ docker push  fogflow/worker:arm
 docker push  fogflow/designer
 docker push  fogflow/designer:arm
 
+docker push  fogflow/lego
 
 
 
