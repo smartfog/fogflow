@@ -1,0 +1,2 @@
+docker build -f dockerfile -t "fogflow/lego"  .
+
