@@ -24,6 +24,8 @@ def signal_handler(signal, frame):
 def saveImage(file):
     camera_port = 0
     camera = cv2.VideoCapture(camera_port)
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     time.sleep(0.1)  # If you don't wait, the image will be dark
     success, image = camera.read()
     cv2.imwrite(file, image)
