@@ -1,0 +1,12 @@
+{
+    "discoveryURL": "http://192.168.1.100/ngsi9",
+    "myIP": "192.168.1.100",
+    "myPort": 8040,    
+    "location": {
+        "latitude": 35.742752,
+        "longitude": 139.685090
+    },
+    "iconURL": "/img/camera.png",
+	"type": "Camera",
+	"id": "01"	
+}

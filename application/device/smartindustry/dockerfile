@@ -1,0 +1,13 @@
+FROM resin/raspberry-pi-python
+
+RUN pip install pyusb
+RUN wget https://github.com/Eelviny/nxt-python/archive/v2.2.2.tar.gz
+RUN tar -xvf v2.2.2.tar.gz
+WORKDIR "nxt-python-2.2.2/"
+RUN python setup.py install
+
+RUN mkdir /motor
+WORKDIR "/motor/"
+ADD motor.py /motor/
+
+CMD ["python", "./motor.py"]
