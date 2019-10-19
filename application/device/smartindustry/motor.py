@@ -312,23 +312,23 @@ def handleEvent(event):
     
     eventType = event['type']
         
-    if cmdType == 'BUTTON_PRESS': 
+    if eventType == 'BUTTON_PRESS': 
         print("STOP")
         mxA.brake()  
         mxB.brake()        
       
-    elif cmdType == 'BUTTON_RELEASE': 
+    elif eventType == 'BUTTON_RELEASE': 
         print("FORWARD")
         mxA.run(100)
         mxB.run(100)        
         time.sleep(2)
         mxA.brake()
         mxB.brake()
-    elif cmdType == 'BACKWARD': 
-        print("BACKWARD")
-        #mx.run(-100)
-        #time.sleep(2)
-        #mx.brake()  
+    # elif cmdType == 'BACKWARD': 
+    #     print("BACKWARD")
+    #     #mx.run(-100)
+    #     #time.sleep(2)
+    #     #mx.brake()  
 
 def handleCommand(cmd):
     print cmd
