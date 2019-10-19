@@ -6,8 +6,8 @@ ADD requirements.txt  ./
 
 RUN pip3 install -r requirements.txt
 
-ADD tpu.py ./
+ADD main.py ./
 
 
-CMD ["python3", "./tpu.py"]
+CMD ["python3", "./main.py"]
 

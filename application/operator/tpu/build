@@ -1,1 +1,1 @@
-docker build -t "tpu-fog-function"  .
+docker build -t "fogflow/tpu"  .
