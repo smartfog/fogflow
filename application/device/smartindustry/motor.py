@@ -45,6 +45,9 @@ def readContextElements(data):
     return ctxObjects
 
 def handleNotify(contextObjs):
+    print("received notification")
+    print(contextObjs)
+    
     for ctxObj in contextObjs:
         processInputStreamData(ctxObj)
 
@@ -229,7 +232,7 @@ def subscribeCmd():
     subscribeCtxReq['entities'] = []
     
     # subscribe push button on behalf of TPU
-    myID = 'Device.Pushbutton.001'   
+    myID = 'Device.Pushbutton.001'
     
     subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
     #subscribeCtxReq['attributes'] = ['command']      
