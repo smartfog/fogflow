@@ -1,11 +1,12 @@
 FROM lemariva/raspbian-edgetpu
 
-RUN mkdir /task
-ADD requirements.txt  /task
-WORKDIR /task
+WORKDIR "/notebooks/"
+
+ADD requirements.txt  ./
 
 RUN pip3 install -r requirements.txt
 
-ADD tpu.py /task
+ADD tpu.py ./
+
 
 CMD ["python3", "./tpu.py"]
