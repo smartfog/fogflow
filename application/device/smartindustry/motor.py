@@ -20,6 +20,7 @@ profile = {}
 b = nxt.find_one_brick()
 mx = nxt.Motor(b, nxt.PORT_A)
 
+
 @app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
     if not request.json:
@@ -62,6 +63,8 @@ def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
     # delete my registration and context entity
     unpublishMySelf()
+    mx.brake()
+    
     sys.exit(0)  
 
 def findNearbyBroker():    
@@ -262,6 +265,7 @@ def run():
     subscribeCmd()
     
     signal.signal(signal.SIGINT, signal_handler) 
+    signal.signal(signal.SIGTERM, signal_handler)
 
     print('start to handle the incoming control commands')     
     myport = profile['myPort']     

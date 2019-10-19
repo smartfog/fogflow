@@ -8,7 +8,6 @@ import sys
 import json
 import requests 
 
-
 discoveryURL = 'http://192.168.1.80:8070/ngsi9'
 brokerURL = ''
 profile = {}
@@ -182,8 +181,10 @@ def run():
     #announce myself        
     publishMySelf()
 
-    print('http server is listening on port ', profile["myPort"])  
     signal.signal(signal.SIGINT, signal_handler)  
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    print('http server is listening on port ', profile["myPort"])      
     server_address = ('0.0.0.0', profile['myPort'])
 
     httpd = HTTPServer(server_address, RequestHandler)
