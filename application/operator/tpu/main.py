@@ -122,8 +122,8 @@ def handleNotify(contextObjs):
         processInputStreamData(ctxObj)
 
 def processInputStreamData(obj):
-    #print('===============receive context entity====================')
-    #print(obj)
+    print('===============receive context entity====================')
+    print(obj)
     
     entityId = obj['entityId']
     if entityId['type'] == 'Camera':
@@ -143,13 +143,13 @@ def handleConfig(configurations):
 def handleTimer():
     global timer
 
-    # publish the counting result
-    entity = {}       
-    entity['id'] = "result.01"
-    entity['type'] = "Result"
-    entity['counter'] = counter    
+    # # publish the counting result
+    # entity = {}       
+    # entity['id'] = "result.01"
+    # entity['type'] = "Result"
+    # entity['counter'] = counter    
      
-    publishResult(entity)
+    # publishResult(entity)
         
     timer = threading.Timer(10, handleTimer)
     timer.start()
