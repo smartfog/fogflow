@@ -17,8 +17,8 @@ discoveryURL = 'http://192.168.1.80:8070/ngsi9'
 brokerURL = ''
 profile = {}
 
-b = nxt.find_one_brick()
-mx = nxt.Motor(b, nxt.PORT_A)
+#b = nxt.find_one_brick()
+#mx = nxt.Motor(b, nxt.PORT_A)
 
 
 @app.route('/notifyContext', methods = ['POST'])
@@ -246,6 +246,32 @@ def subscribeCmd():
     if response.status_code != 200:
         print 'failed to subscribe context'
         print response.text    
+
+    # subscribe push button on behalf of TPU
+    myID = 'Device.Pushbutton.001'   
+    
+    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    subscribeCtxReq['attributes'] = ['command']      
+    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':8008'
+    
+    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    if response.status_code != 200:
+        print 'failed to subscribe context'
+        print response.text         
+    
+    # subscribe camera on behalf of TPU
+    myID = 'Device.Camera.001'   
+    
+    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    subscribeCtxReq['attributes'] = ['command']      
+    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':8008'
+    
+    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    if response.status_code != 200:
+        print 'failed to subscribe context'
+        print response.text        
   
 def run():
 	# find a nearby broker for data exchange
@@ -279,17 +305,17 @@ def handleCommand(cmd):
         
     if cmdType == 'STOP': 
         print("STOP")
-        mx.brake()        
+        #mx.brake()        
     elif cmdType == 'FORWARD': 
         print("FORWARD")
-        mx.run(100)
-        time.sleep(2)
-        mx.brake()
+        #mx.run(100)
+        #time.sleep(2)
+        #mx.brake()
     elif cmdType == 'BACKWARD': 
         print("BACKWARD")
-        mx.run(-100)
-        time.sleep(2)
-        mx.brake()     
+        #mx.run(-100)
+        #time.sleep(2)
+        #mx.brake()     
   
 if __name__ == '__main__':
     cfgFileName = 'motor.json' 

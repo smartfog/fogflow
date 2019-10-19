@@ -225,7 +225,8 @@ def doTraining(event):
         print("detected result %s" %(result))              
 
     lock.release()
-                             
+
+                                             
 if __name__ == '__main__':
     handleTimer()    
     
@@ -234,7 +235,7 @@ if __name__ == '__main__':
     myCfg = os.environ['adminCfg']
     adminCfg = json.loads(myCfg)
     handleConfig(adminCfg)  
-    
+        
     app.run(host='0.0.0.0', port=myport)
     
     timer.cancel()
