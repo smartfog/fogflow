@@ -228,6 +228,7 @@ def doTraining(event):
 
                                              
 if __name__ == '__main__':
+    print("start the tpu module")
     handleTimer()    
     
     myport = int(os.environ['myport'])

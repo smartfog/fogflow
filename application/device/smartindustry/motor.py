@@ -10,7 +10,6 @@ from threading import Thread, Lock
 import logging
 import nxt
 
-
 app = Flask(__name__, static_url_path = "")
 
 discoveryURL = 'http://192.168.1.80:8070/ngsi9'
@@ -63,7 +62,8 @@ def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
     # delete my registration and context entity
     unpublishMySelf()
-    mx.brake()
+    
+    #mx.brake()
     
     sys.exit(0)  
 
