@@ -13,6 +13,12 @@ discoveryURL = 'http://192.168.1.100/ngsi9'
 brokerURL = ''
 profile = {}
 
+def handle_exit(sig, frame):
+    unpublishMySelf()  
+    raise(SystemExit)
+
+signal.signal(signal.SIGTERM, handle_exit)
+
 def findNearbyBroker():    
     global profile, discoveryURL
 
