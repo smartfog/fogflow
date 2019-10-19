@@ -55,14 +55,14 @@ def admin():
 
 @app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
-    #print("=============notify=============")
+    print("=============notify=============")
 
     if not request.json:
         abort(400)
     	
     objs = readContextElements(request.json)
 
-    #print(objs)
+    print(objs)
 
     handleNotify(objs)
     

@@ -16,8 +16,9 @@ discoveryURL = 'http://192.168.1.80:8070/ngsi9'
 brokerURL = ''
 profile = {}
 
-#b = nxt.find_one_brick()
-#mx = nxt.Motor(b, nxt.PORT_A)
+b = nxt.find_one_brick()
+mxA = nxt.Motor(b, nxt.PORT_A)
+mxB = nxt.Motor(b, nxt.PORT_B)
 
 
 @app.route('/notifyContext', methods = ['POST'])
@@ -53,9 +54,14 @@ def processInputStreamData(obj):
     
     if 'attributes' in obj:
         attributes = obj['attributes']
-        if 'command' in attributes:
-            command = attributes['command']['value']
-            handleCommand(command)
+        
+        if 'detectedEvent' in attributes:
+            event = attributes['detectedEvent']['value']
+            handleEvent(event)
+        
+        # if 'command' in attributes:
+        #     command = attributes['command']['value']
+        #     handleCommand(command)
    
 
 def signal_handler(signal, frame):
@@ -63,7 +69,8 @@ def signal_handler(signal, frame):
     # delete my registration and context entity
     unpublishMySelf()
     
-    #mx.brake()
+    mxA.brake()
+    mxB.brake()
     
     sys.exit(0)  
 
@@ -221,58 +228,58 @@ def subscribeCmd():
     subscribeCtxReq = {}
     subscribeCtxReq['entities'] = []
     
-    # subscribe to motor1
-    myID = 'Device.' + profile['type'] + '.' + '001'   
-    
-    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
-    subscribeCtxReq['attributes'] = ['command']      
-    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
-    
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
-    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
-    if response.status_code != 200:
-        print 'failed to subscribe context'
-        print response.text          
-  
-    # subscribe to motor2
-    myID = 'Device.' + profile['type'] + '.' + '002'   
-    
-    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
-    subscribeCtxReq['attributes'] = ['command']      
-    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
-    
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
-    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
-    if response.status_code != 200:
-        print 'failed to subscribe context'
-        print response.text    
-
     # subscribe push button on behalf of TPU
     myID = 'Device.Pushbutton.001'   
     
     subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
-    subscribeCtxReq['attributes'] = ['command']      
-    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':8008'
+    #subscribeCtxReq['attributes'] = ['command']      
+    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
     
     headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
     response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
     if response.status_code != 200:
         print 'failed to subscribe context'
-        print response.text         
-    
-    # subscribe camera on behalf of TPU
-    myID = 'Device.Camera.001'   
-    
-    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
-    subscribeCtxReq['attributes'] = ['command']      
-    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':8008'
-    
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
-    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
-    if response.status_code != 200:
-        print 'failed to subscribe context'
-        print response.text        
+        print response.text           
   
+    # # subscribe to motor1
+    # myID = 'Device.' + profile['type'] + '.' + '001'   
+    
+    # subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    # subscribeCtxReq['attributes'] = ['command']      
+    # subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
+    
+    # headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    # response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    # if response.status_code != 200:
+    #     print 'failed to subscribe context'
+    #     print response.text          
+  
+    # # subscribe to motor2
+    # myID = 'Device.' + profile['type'] + '.' + '002'   
+    
+    # subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    # subscribeCtxReq['attributes'] = ['command']      
+    # subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
+    
+    # headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    # response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    # if response.status_code != 200:
+    #     print 'failed to subscribe context'
+    #     print response.text    
+
+    # # subscribe camera on behalf of TPU
+    # myID = 'Device.Camera.001'   
+    
+    # subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    # subscribeCtxReq['attributes'] = ['command']      
+    # subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':8008'
+    
+    # headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    # response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    # if response.status_code != 200:
+    #     print 'failed to subscribe context'
+    #     print response.text    
+
 def run():
 	# find a nearby broker for data exchange
     global brokerURL
@@ -297,6 +304,28 @@ def run():
     myport = profile['myPort']     
     app.run(host='0.0.0.0', port=myport)
 
+def handleEvent(event):
+    print event
+    
+    eventType = event['type']
+        
+    if cmdType == 'BUTTON_PRESS': 
+        print("STOP")
+        mxA.brake()  
+        mxB.brake()        
+      
+    elif cmdType == 'BUTTON_RELEASE': 
+        print("FORWARD")
+        mxA.run(100)
+        mxB.run(100)        
+        time.sleep(2)
+        mxA.brake()
+        mxB.brake()
+    elif cmdType == 'BACKWARD': 
+        print("BACKWARD")
+        #mx.run(-100)
+        #time.sleep(2)
+        #mx.brake()  
 
 def handleCommand(cmd):
     print cmd
