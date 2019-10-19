@@ -232,7 +232,7 @@ def subscribeCmd():
     subscribeCtxReq['entities'] = []
     
     # subscribe push button on behalf of TPU
-    myID = 'Device.Pushbutton.001'
+    myID = 'Device.Pushbutton.0001'
     
     subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
     #subscribeCtxReq['attributes'] = ['command']      
