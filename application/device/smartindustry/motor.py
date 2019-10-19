@@ -114,7 +114,7 @@ def publishMySelf():
     # for motor2
     deviceCtxObj = {}
     deviceCtxObj['entityId'] = {}
-    deviceCtxObj['entityId']['id'] = 'Device.' + profile['type'] + '.' + '002']
+    deviceCtxObj['entityId']['id'] = 'Device.' + profile['type'] + '.' + '002'
     deviceCtxObj['entityId']['type'] = profile['type']        
     deviceCtxObj['entityId']['isPattern'] = False
     
@@ -218,7 +218,8 @@ def subscribeCmd():
     subscribeCtxReq = {}
     subscribeCtxReq['entities'] = []
     
-    myID = 'Device.' + profile['type'] + '.' + profile['homeID']    
+    # subscribe to motor1
+    myID = 'Device.' + profile['type'] + '.' + '001'   
     
     subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
     subscribeCtxReq['attributes'] = ['command']      
@@ -229,7 +230,20 @@ def subscribeCmd():
     if response.status_code != 200:
         print 'failed to subscribe context'
         print response.text          
+  
+    # subscribe to motor2
+    myID = 'Device.' + profile['type'] + '.' + '002'   
     
+    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    subscribeCtxReq['attributes'] = ['command']      
+    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':' + str(profile['myPort'])
+    
+    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    if response.status_code != 200:
+        print 'failed to subscribe context'
+        print response.text    
+  
 def run():
 	# find a nearby broker for data exchange
     global brokerURL
