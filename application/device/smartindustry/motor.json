@@ -1,11 +1,10 @@
 {
     "discoveryURL": "http://192.168.1.100/ngsi9",
     "myIP": "192.168.1.100",
-    "myPort": 8002,
+    "myPort": 8006,
     "location": {
         "latitude": 35.742752,
         "longitude": 139.685090
     },
-    "iconURL": "/img/home.png",
-    "homeID": "0002"
+    "iconURL": "/img/motor.png",
 }

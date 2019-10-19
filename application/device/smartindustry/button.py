@@ -146,7 +146,7 @@ def reportEvent(eType):
 
 
 def run():
-	# find a nearby broker for data exchange
+    # find a nearby broker for data exchange
     global brokerURL
     brokerURL = findNearbyBroker()
     if brokerURL == '':
@@ -156,7 +156,7 @@ def run():
     # announce myself to the nearby broker
     publishMySelf()
 
-	# detect the button-push event
+    # detect the button-push event
     ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=1)
     state = "off"    
     while True:

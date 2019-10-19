@@ -1,19 +1,10 @@
-FROM resin/raspberry-pi-python
+FROM lemariva/raspbian-edgetpu
 
-RUN pip install flask
-RUN pip install requests
-RUN pip install opencv-python
+RUN mkdir /task
+ADD tpu.py /task
+ADD requirements.txt  /task
+WORKDIR /task
 
-RUN pip install pyusb
-RUN wget https://github.com/Eelviny/nxt-python/archive/v2.2.2.tar.gz
-RUN tar -xvf v2.2.2.tar.gz
-WORKDIR "nxt-python-2.2.2/"
-RUN python setup.py install
+RUN pip3 install -r requirements.txt
 
-RUN mkdir /lego
-WORKDIR "/lego/"
-ADD *.py /lego/
-ADD *.json /lego/
-ADD *.sh /lego/
-
-CMD ["/bin/bash", "./start.sh"]
+CMD ["python", "./tpu.py"]
