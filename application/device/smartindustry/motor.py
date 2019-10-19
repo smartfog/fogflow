@@ -314,15 +314,15 @@ def handleEvent(event):
         
     if eventType == 'BUTTON_PRESS': 
         print("BACKWARD")
-        mxA.run(10)
-        mxB.run(10)        
+        mxA.run(80)
+        mxB.run(80)        
         time.sleep(2)
         mxA.brake()
         mxB.brake()    
     elif eventType == 'BUTTON_RELEASE': 
         print("FORWARD")
-        mxA.run(10)
-        mxB.run(10)        
+        mxA.run(-80)
+        mxB.run(-80)        
         time.sleep(2)
         mxA.brake()
         mxB.brake()
