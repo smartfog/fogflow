@@ -99,7 +99,7 @@ def publishMySelf():
     # for motor1
     deviceCtxObj = {}
     deviceCtxObj['entityId'] = {}
-    deviceCtxObj['entityId']['id'] = 'Device.' + profile['type'] + '.' + '001']
+    deviceCtxObj['entityId']['id'] = 'Device.' + profile['type'] + '.' + '001'
     deviceCtxObj['entityId']['type'] = profile['type']        
     deviceCtxObj['entityId']['isPattern'] = False
     
