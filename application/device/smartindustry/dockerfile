@@ -8,4 +8,4 @@ RUN pip3 install -r requirements.txt
 
 ADD tpu.py /task
 
-CMD ["python", "./tpu.py"]
+CMD ["python3", "./tpu.py"]
