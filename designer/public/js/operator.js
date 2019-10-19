@@ -332,6 +332,10 @@ function initOperatorList()
         name: "controller",
         description: "",
         parameters:[]
+    },{
+        name: "detector",
+        description: "",
+        parameters:[]
     }
     ];
     
@@ -497,6 +501,13 @@ function initDockerImageList()
         hwType: "X86",
         osType: "Linux",
         operatorName: "controller",
+        prefetched: false
+    },{
+        name: "detector",
+        tag: "latest",
+        hwType: "ARM",
+        osType: "Linux",
+        operatorName: "detector",
         prefetched: false
     }
     ];

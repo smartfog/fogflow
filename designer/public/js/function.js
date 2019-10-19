@@ -55,6 +55,11 @@ var myFogFunctionExamples = [
     topology: {"name":"Controller","description":"test","tasks":[{"name":"Main","operator":"controller","input_streams":[{"selected_type":"SmartAwning","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"ControlAction"}]}]},
     designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"controller","outputs":["ControlAction"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"SmartAwning","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
     intent: {"topology":"Controller","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+},{
+    name: "Detector",
+    topology: {"name":"Detector","description":"test","tasks":[{"name":"Main","operator":"detector","input_streams":[{"selected_type":"Camera","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[]}]},
+    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"detector","outputs":[]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Camera","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
+    intent: {"topology":"Detector","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
 },
 {
     name: "Test",
