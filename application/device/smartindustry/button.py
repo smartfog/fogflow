@@ -167,9 +167,10 @@ def run():
             if number == '55':
                 if state == "off":
                     state = "on"
-                    reportEvent("BUTTON_PUSHED")
+                    reportEvent("BUTTON_PRESS")
                 else:
                     state = "off"
+                    reportEvent("BUTTON_RELEASE")
                             
         except KeyboardInterrupt:
             print('You pressed Ctrl+C!')
