@@ -15,6 +15,7 @@ app = Flask(__name__, static_url_path = "")
 discoveryURL = 'http://192.168.1.80:8070/ngsi9'
 brokerURL = ''
 profile = {}
+subscriptionID = ''
 
 b = nxt.find_one_brick()
 mxA = nxt.Motor(b, nxt.PORT_A)
@@ -45,15 +46,15 @@ def readContextElements(data):
     return ctxObjects
 
 def handleNotify(contextObjs):
-    print("received notification")
-    print(contextObjs)
+    #print("received notification")
+    #print(contextObjs)
     
     for ctxObj in contextObjs:
         processInputStreamData(ctxObj)
 
 def processInputStreamData(obj):
-    print '===============receive context entity===================='
-    print obj
+    #print '===============receive context entity===================='
+    #print obj
     
     if 'attributes' in obj:
         attributes = obj['attributes']
@@ -71,7 +72,9 @@ def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')
     # delete my registration and context entity
     unpublishMySelf()
-    
+   
+    unsubscribeCmd()
+
     mxA.brake()
     mxB.brake()
     
@@ -227,12 +230,21 @@ def deleteContext(broker, ctxObj):
         print 'failed to delete context'
         print response.text
 
+def unsubscribeCmd():
+    global brokerURL
+    global subscriptionID
+
+    print(brokerURL + '/subscription/' + subscriptionID)
+    response = requests.delete(brokerURL + '/subscription/' + subscriptionID)
+    print(response.text)
+
 def subscribeCmd():                    
+    global subscriptionID
     subscribeCtxReq = {}
     subscribeCtxReq['entities'] = []
     
     # subscribe push button on behalf of TPU
-    myID = 'Device.Pushbutton.0001'
+    myID = 'Device.Motor.001'
     
     subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
     #subscribeCtxReq['attributes'] = ['command']      
@@ -243,7 +255,13 @@ def subscribeCmd():
     if response.status_code != 200:
         print 'failed to subscribe context'
         print response.text           
+    else:
+        json_data = json.loads(response.text)
+        subscriptionID = json_data['subscribeResponse']['subscriptionId']
+        print(subscriptionID)
   
+
+
     # # subscribe to motor1
     # myID = 'Device.' + profile['type'] + '.' + '001'   
     
@@ -311,41 +329,27 @@ def handleEvent(event):
     print event
     
     eventType = event['type']
-        
-    if eventType == 'BUTTON_PRESS': 
-        print("BACKWARD")
-        mxA.run(80)
+    print(eventType)   
+
+    if eventType == 'MOVE_FORWARD': 
+        print("MOVE_FORWARD")
+        mxA.run(-80)       
+        time.sleep(2)
+        mxA.brake()   
+    
+    if eventType == 'MOVE_LEFT': 
+        print("MOVE_LEFT")
         mxB.run(80)        
-        time.sleep(2)
-        mxA.brake()
-        mxB.brake()    
-    elif eventType == 'BUTTON_RELEASE': 
-        print("FORWARD")
-        mxA.run(-80)
+        time.sleep(1)
+        mxB.brake()
+    
+    if eventType == 'MOVE_RIGTH': 
+        print("MOVE_RIGHT")
         mxB.run(-80)        
-        time.sleep(2)
-        mxA.brake()
+        time.sleep(1)
         mxB.brake()
 
-def handleCommand(cmd):
-    print cmd
-    
-    cmdType = cmd['type']
-        
-    if cmdType == 'STOP': 
-        print("STOP")
-        #mx.brake()        
-    elif cmdType == 'FORWARD': 
-        print("FORWARD")
-        #mx.run(100)
-        #time.sleep(2)
-        #mx.brake()
-    elif cmdType == 'BACKWARD': 
-        print("BACKWARD")
-        #mx.run(-100)
-        #time.sleep(2)
-        #mx.brake()     
-  
+
 if __name__ == '__main__':
     cfgFileName = 'motor.json' 
     if len(sys.argv) >= 2:

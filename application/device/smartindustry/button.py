@@ -12,12 +12,46 @@ import binascii
 discoveryURL = 'http://192.168.1.100/ngsi9'
 brokerURL = ''
 profile = {}
+subscriptionID = ''
 
 def handle_exit(sig, frame):
     unpublishMySelf()  
+    unsubscribe()
     raise(SystemExit)
 
+signal.signal(signal.SIGINT, handle_exit)
 signal.signal(signal.SIGTERM, handle_exit)
+
+def subscribe():         
+    global brokerURL
+    global subscriptionID
+
+    subscribeCtxReq = {}
+    subscribeCtxReq['entities'] = []
+    
+    # subscribe push button on behalf of TPU
+    myID = 'Device.Pushbutton.0001'
+    
+    subscribeCtxReq['entities'].append({'id': myID, 'isPattern': False})  
+    subscribeCtxReq['reference'] = 'http://' + profile['myIP'] + ':8008'
+    
+    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Require-Reliability' : 'true'}
+    response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
+    if response.status_code != 200:
+        print 'failed to subscribe context'
+        print response.text    
+    else:
+        json_data = json.loads(response.text)
+        subscriptionID = json_data['subscribeResponse']['subscriptionId']
+        print(subscriptionID)
+
+def unsubscribe():
+    print(brokerURL + '/subscription/' + subscriptionID)
+
+    response = requests.delete(brokerURL + '/subscription/' + subscriptionID)
+    
+    print(response.text)
+
 
 def findNearbyBroker():    
     global profile, discoveryURL
@@ -162,9 +196,12 @@ def run():
     # announce myself to the nearby broker
     publishMySelf()
 
+    subscribe()
+
     # detect the button-push event
     ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=1)
-    state = "off"    
+    state = "off"  
+    press_time = datetime.now()
     while True:
         try: 
             data = ser.read()        
@@ -173,10 +210,17 @@ def run():
             if number == '55':
                 if state == "off":
                     state = "on"
-                    reportEvent("BUTTON_PRESS")
+                    press_time = datetime.now()
+                    print("BUTTON_PRESS")
                 else:
+                    print("BUTTON_RELEASE")
                     state = "off"
-                    reportEvent("BUTTON_RELEASE")
+                    release_time = datetime.now()
+                    delta =  release_time - press_time 
+                    if delta.seconds > 5:
+                        reportEvent("RESET")
+                    else: 
+                        reportEvent("CLICK")
                             
         except KeyboardInterrupt:
             print('You pressed Ctrl+C!')

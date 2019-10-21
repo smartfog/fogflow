@@ -1,11 +1,6 @@
 {
     "entities": [
         {
-            "type": "Camera",
-            "isPattern": false,
-            "id": "Device.Camera.01"
-        },
-        {
             "type": "Pushbutton",
             "isPattern": false,
             "id": "Device.Pushbutton.0001"

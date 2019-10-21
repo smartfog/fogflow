@@ -55,14 +55,14 @@ def admin():
 
 @app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
-    print("=============notify=============")
+    #print("=============notify=============")
 
     if not request.json:
         abort(400)
     	
     objs = readContextElements(request.json)
 
-    print(objs)
+    #print(objs)
 
     handleNotify(objs)
     
@@ -106,7 +106,7 @@ def object2Element(ctxObj):
     return ctxElement
 
 def readContextElements(data):
-    print(data)
+    #print(data)
 
     ctxObjects = []
     
@@ -123,23 +123,27 @@ def handleNotify(contextObjs):
 
 def processInputStreamData(obj):
     print('===============receive context entity====================')
-    print(obj)
+    #print(obj)
     
     entityId = obj['entityId']
     if entityId['type'] == 'Camera':
         getCameraURL(obj)
     elif entityId['type'] == 'Pushbutton':
-        doTraining(obj)
+        handlePushButton(obj)
 
 def handleConfig(configurations):  
     global brokerURL
+    global cameraURL
     global num_of_outputs  
-    for config in configurations:        
+    for config in configurations:   
+        print(config)
         if config['command'] == 'CONNECT_BROKER':
             brokerURL = config['brokerURL']
         if config['command'] == 'SET_OUTPUTS':
             outputs.append({'id': config['id'], 'type': config['type']})
-    
+        if config['command'] == 'SET_CAMERA_URL':
+            cameraURL = config['URL']
+
 def handleTimer():
     global timer
 
@@ -198,31 +202,102 @@ def getCameraURL(entityObj):
 
     print("SET camera URL = %s" % (cameraURL))
 
-def doTraining(event):
+
+def reset():
+    print("=========RESET============")
+    global counter    
+    counter = 0
+    engine.clear()
+
+def train(category):
+    print("counter = %d, train for category %s" % (counter, category))
+    print(cameraURL)
+
+    response = requests.get(cameraURL)
+    img = Image.open(BytesIO(response.content))
+    emb = engine.DetectWithImage(img)
+    engine.addEmbedding(emb, category)  
+
+def detect():
+    print("===========detect the product and then make decisions=======")
+
+    sendCommand('MOVE_FORWARD')
+
+    time.sleep(5)
+
+    response = requests.get(cameraURL)
+    img = Image.open(BytesIO(response.content))
+    emb = engine.DetectWithImage(img)
+    result = engine.kNNEmbedding(emb)
+
+    print(result)
+
+    if result == 'DEFECT':
+        print("=======DEFECT!!!!!=======")
+        sendCommand('MOVE_LEFT')
+    else:
+        print("NORMAL---------")
+        sendCommand('MOVE_RIGHT')
+
+
+def sendCommand(eType):
+    print(eType)
+
+    # update my device profile with the latest observation
+    deviceCtxObj = {}
+    deviceCtxObj['entityId'] = {}
+    deviceCtxObj['entityId']['id'] = 'Device.Motor.001'
+    deviceCtxObj['entityId']['type'] = 'Motor'        
+    deviceCtxObj['entityId']['isPattern'] = False
+    
+    
+    detectedEvent = {}
+    detectedEvent['type'] = eType
+    detectedEvent['time'] = str(datetime.datetime.now())
+    
+    deviceCtxObj['attributes'] = {}
+    deviceCtxObj['attributes']['detectedEvent'] = {'type': 'object', 'value': detectedEvent}       
+    
+    updateContext(deviceCtxObj)
+
+def handlePushButton(obj):
     global cameraURL
     
     if cameraURL == '':
         print("the camera URL is not set yet")
         return
     
-    print("camera URL %s" % (cameraURL))
+    #print("camera URL %s" % (cameraURL))
+    #print(obj)
+
+    attributes = obj['attributes']
+
+    if 'detectedEvent' not in attributes:
+        return
+
+    event = attributes['detectedEvent']['value']
+    print(event)
     
     lock.acquire()
     
-    global counter    
-    counter = counter + 1
-            
-    response = requests.get(cameraURL)
-    img = Image.open(BytesIO(response.content))
-    
-    emb = engine.DetectWithImage(img)
-    
-    if counter < 10:
-        engine.addEmbedding(emb, "defect")    
-        print("trained with the captured image")                        
-    else:
-        result = engine.kNNEmbedding(emb)
-        print("detected result %s" %(result))              
+    global counter  
+
+    eventType = event['type']
+    if eventType == 'CLICK':
+        counter = counter + 1
+
+        print("counter = %d" % (counter))
+
+        if counter <= 5:
+            train("DEFECT")
+        
+        if counter > 5 and counter <= 10:
+            train("NORMAL")
+        
+        if counter > 10:
+            detect()
+    elif eventType == 'RESET':
+        reset()
 
     lock.release()
                              

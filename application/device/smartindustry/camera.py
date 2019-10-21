@@ -23,8 +23,8 @@ def signal_handler(signal, frame):
 def saveImage(file):
     camera_port = 0
     camera = cv2.VideoCapture(camera_port)
-    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    camera.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    camera.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     time.sleep(0.1)  # If you don't wait, the image will be dark
     success, image = camera.read()
     cv2.imwrite(file, image)
@@ -157,14 +157,14 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
 
         #send header first
-        self.send_header('Content-type','image/png')
+        self.send_header('Content-type','image/jpg')
         self.end_headers()
 
         #capture a new image
-        saveImage('camera.png')    
+        saveImage('camera.jpg')    
         
         #send the image file content to client
-        self.wfile.write(loadImage('camera.png'))
+        self.wfile.write(loadImage('camera.jpg'))
         
         return
       
