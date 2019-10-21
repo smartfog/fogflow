@@ -173,7 +173,7 @@ class RequestHandler(BaseHTTPRequestHandler):
   
 def run():
     global brokerURL
-    brokerURL = findNearbyBroker()
+    brokerURL = profile['brokerURL']  #findNearbyBroker()
     if brokerURL == '':
         print 'failed to find a nearby broker'
         sys.exit(0)

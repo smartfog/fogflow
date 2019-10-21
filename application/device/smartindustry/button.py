@@ -39,11 +39,13 @@ def subscribe():
     response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
     if response.status_code != 200:
         print 'failed to subscribe context'
-        print response.text    
+        print response.text  
+        return ''  
     else:
         json_data = json.loads(response.text)
         subscriptionID = json_data['subscribeResponse']['subscriptionId']
         print(subscriptionID)
+        return subscriptionID
 
 def unsubscribe():
     print(brokerURL + '/subscription/' + subscriptionID)
@@ -188,7 +190,7 @@ def reportEvent(eType):
 def run():
     # find a nearby broker for data exchange
     global brokerURL
-    brokerURL = findNearbyBroker()
+    brokerURL = profile['brokerURL'] #findNearbyBroker()
     if brokerURL == '':
         print 'failed to find a nearby broker'
         sys.exit(0)
@@ -196,7 +198,10 @@ def run():
     # announce myself to the nearby broker
     publishMySelf()
 
-    subscribe()
+    while True:
+        sid = subscribe()
+        if sid != '':
+            break
 
     # detect the button-push event
     ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=1)

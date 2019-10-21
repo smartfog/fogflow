@@ -254,13 +254,14 @@ def subscribeCmd():
     response = requests.post(brokerURL + '/subscribeContext', data=json.dumps(subscribeCtxReq), headers=headers)
     if response.status_code != 200:
         print 'failed to subscribe context'
-        print response.text           
+        print response.text  
+        return ''          
     else:
         json_data = json.loads(response.text)
         subscriptionID = json_data['subscribeResponse']['subscriptionId']
         print(subscriptionID)
+        return subscriptionID
   
-
 
     # # subscribe to motor1
     # myID = 'Device.' + profile['type'] + '.' + '001'   
@@ -304,7 +305,7 @@ def subscribeCmd():
 def run():
 	# find a nearby broker for data exchange
     global brokerURL
-    brokerURL = findNearbyBroker()
+    brokerURL = profile['brokerURL'] #findNearbyBroker()
     if brokerURL == '':
         print 'failed to find a nearby broker'
         sys.exit(0)        
@@ -316,7 +317,10 @@ def run():
     publishMySelf()
 
     #subscribe to the control commands
-    subscribeCmd()
+    while true:
+        sid = subscribeCmd()
+        if sid != '':
+            break
     
     signal.signal(signal.SIGINT, signal_handler) 
     signal.signal(signal.SIGTERM, signal_handler)

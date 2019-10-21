@@ -1,5 +1,5 @@
 {
-    "discoveryURL": "http://192.168.1.100/ngsi9",
+    "brokerURL": "http://192.168.1.100/ngsi10",
     "myIP": "192.168.1.100",
     "myPort": 8006,
     "location": {
