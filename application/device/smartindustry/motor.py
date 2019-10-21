@@ -140,7 +140,7 @@ def publishMySelf():
     deviceCtxObj['metadata'] = {}
     deviceCtxObj['metadata']['location'] = {'type': 'point', 'value': {'latitude': profile['location']['latitude'], 'longitude': profile['location']['longitude'] }}
         
-    updateContext(brokerURL, deviceCtxObj)
+    return updateContext(brokerURL, deviceCtxObj)
 
 def unpublishMySelf():
     global profile, brokerURL
@@ -214,6 +214,9 @@ def updateContext(broker, ctxObj):
     if response.status_code != 200:
         print 'failed to update context'
         print response.text
+        return False
+    else:
+        return True
 
 
 def deleteContext(broker, ctxObj):        
@@ -313,14 +316,26 @@ def run():
     print "selected broker"
     print brokerURL    
                     
-    #announce myself        
-    publishMySelf()
+    #announce myself    
+    while True:
+        ok = publishMySelf()
+        if ok == True:
+            break
+        else: 
+            time.sleep(1)
+
+    print("publish myself")        
 
     #subscribe to the control commands
-    while true:
+    while True:
         sid = subscribeCmd()
         if sid != '':
             break
+        else:
+            time.sleep(1)
+    
+    print("subscribe command for myself")        
+    
     
     signal.signal(signal.SIGINT, signal_handler) 
     signal.signal(signal.SIGTERM, signal_handler)
