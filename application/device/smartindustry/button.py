@@ -101,7 +101,7 @@ def publishMySelf():
     deviceCtxObj['metadata']['location'] = {'type': 'point', 'value': {'latitude': profile['location']['latitude'], 'longitude': profile['location']['longitude'] }}
     deviceCtxObj['metadata']['homeID'] = {'type': 'string', 'value': profile['homeID']}        
     
-    updateContext(brokerURL, deviceCtxObj)
+    return updateContext(brokerURL, deviceCtxObj)
 
 def unpublishMySelf():
     global profile, brokerURL
@@ -198,6 +198,8 @@ def run():
         print 'failed to find a nearby broker'
         sys.exit(0)
         
+    print(brokerURL)
+
     # announce myself to the nearby broker
     while True:
         ok = publishMySelf()
@@ -205,6 +207,8 @@ def run():
             break
         else: 
             time.sleep(1)
+
+    print("publish myself")
 
     while True:
         sid = subscribe()
