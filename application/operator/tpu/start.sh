@@ -1,5 +1,5 @@
 #start a container for test
-docker run --name legotpu -d --privileged -p 8008:8008 -v /dev/bus/usb:/dev/bus/usb --env-file env.list fogflow/tpu
+docker run --name legotpu -d --privileged -p 8008:8008 -v /dev/bus/usb:/dev/bus/usb --env-file env.list --restart unless-stopped fogflow/tpu
 
 #sleep 5
 

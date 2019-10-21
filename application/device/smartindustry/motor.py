@@ -333,21 +333,27 @@ def handleEvent(event):
 
     if eventType == 'MOVE_FORWARD': 
         print("MOVE_FORWARD")
-        mxA.run(-80)       
-        time.sleep(2)
+        mxA.run(-100)       
+        time.sleep(1)
         mxA.brake()   
     
     if eventType == 'MOVE_LEFT': 
         print("MOVE_LEFT")
-        mxB.run(80)        
+        mxB.run(100)        
         time.sleep(1)
         mxB.brake()
     
-    if eventType == 'MOVE_RIGTH': 
+    if eventType == 'MOVE_RIGHT': 
         print("MOVE_RIGHT")
-        mxB.run(-80)        
+        mxB.run(-100)        
         time.sleep(1)
         mxB.brake()
+    
+    if eventType == 'MOVE_BACKWARD':
+        print("MOVE_BACKWARD")
+        mxA.run(100)
+        time.sleep(1)
+        mxA.brake()
 
 
 if __name__ == '__main__':

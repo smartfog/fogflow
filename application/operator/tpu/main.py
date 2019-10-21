@@ -290,14 +290,19 @@ def handlePushButton(obj):
 
         if counter <= 5:
             train("DEFECT")
-        
+            if counter == 5:
+                sendCommand('MOVE_LEFT')
+
         if counter > 5 and counter <= 10:
             train("NORMAL")
-        
+            if counter == 10:
+                sendCommand('MOVE_RIGHT')
+
         if counter > 10:
             detect()
     elif eventType == 'RESET':
         reset()
+        sendCommand('MOVE_BACKWARD')
 
     lock.release()
                              

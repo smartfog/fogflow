@@ -208,20 +208,27 @@ def run():
             number = binascii.hexlify(data)        
         
             if number == '55':
+                print("STATE = %s" % (state))
+
                 if state == "off":
                     state = "on"
                     press_time = datetime.now()
                     print("BUTTON_PRESS")
                 else:
                     print("BUTTON_RELEASE")
-                    state = "off"
                     release_time = datetime.now()
                     delta =  release_time - press_time 
+                   
+                    #print(delta)
+                    print(delta.seconds)
+
                     if delta.seconds > 5:
                         reportEvent("RESET")
                     else: 
                         reportEvent("CLICK")
-                            
+                   
+                    state = "off"
+
         except KeyboardInterrupt:
             print('You pressed Ctrl+C!')
             # delete my registration and context entity
