@@ -203,14 +203,14 @@ def run():
         ok = publishMySelf()
         if ok == True:
             break
-        else 
+        else: 
             time.sleep(1)
 
     while True:
         sid = subscribe()
         if sid != '':
             break
-        else 
+        else: 
             time.sleep(1)
 
     # detect the button-push event
