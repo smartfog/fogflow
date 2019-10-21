@@ -358,13 +358,13 @@ def handleEvent(event):
     
     if eventType == 'MOVE_LEFT': 
         print("MOVE_LEFT")
-        mxB.run(100)        
+        mxB.run(80)        
         time.sleep(1)
         mxB.brake()
     
     if eventType == 'MOVE_RIGHT': 
         print("MOVE_RIGHT")
-        mxB.run(-100)        
+        mxB.run(-80)        
         time.sleep(1)
         mxB.brake()
     

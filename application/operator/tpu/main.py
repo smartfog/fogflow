@@ -213,17 +213,18 @@ def train(category):
     print("counter = %d, train for category %s" % (counter, category))
     print(cameraURL)
 
-    response = requests.get(cameraURL)
-    img = Image.open(BytesIO(response.content))
-    emb = engine.DetectWithImage(img)
-    engine.addEmbedding(emb, category)  
-
+    for i in range(10): 
+        response = requests.get(cameraURL)
+        img = Image.open(BytesIO(response.content))
+        emb = engine.DetectWithImage(img)
+        engine.addEmbedding(emb, category)  
+        
 def detect():
     print("===========detect the product and then make decisions=======")
 
     sendCommand('MOVE_FORWARD')
 
-    time.sleep(5)
+    time.sleep(1)
 
     response = requests.get(cameraURL)
     img = Image.open(BytesIO(response.content))
@@ -289,14 +290,18 @@ def handlePushButton(obj):
         print("counter = %d" % (counter))
 
         if counter <= 5:
+            sendCommand('MOVE_FORWARD')
             train("DEFECT")
-            if counter == 5:
-                sendCommand('MOVE_LEFT')
+            sendCommand('MOVE_LEFT')
+            #if counter == 5:
+            #    sendCommand('MOVE_LEFT')
 
         if counter > 5 and counter <= 10:
+            sendCommand('MOVE_FORWARD')
             train("NORMAL")
-            if counter == 10:
-                sendCommand('MOVE_RIGHT')
+            sendCommand('MOVE_RIGHT')
+            #if counter == 10:
+            #    sendCommand('MOVE_RIGHT')
 
         if counter > 10:
             detect()
