@@ -147,6 +147,9 @@ def updateContext(broker, ctxObj):
     if response.status_code != 200:
         print 'failed to update context'
         print response.text
+        return False
+    else:
+        return True
 
 
 def deleteContext(broker, ctxObj):        
@@ -196,12 +199,19 @@ def run():
         sys.exit(0)
         
     # announce myself to the nearby broker
-    publishMySelf()
+    while True:
+        ok = publishMySelf()
+        if ok == True:
+            break
+        else 
+            time.sleep(1)
 
     while True:
         sid = subscribe()
         if sid != '':
             break
+        else 
+            time.sleep(1)
 
     # detect the button-push event
     ser = serial.Serial('/dev/ttyUSB0', 57600, timeout=1)
