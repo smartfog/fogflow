@@ -1,13 +1,13 @@
 sleep 10
 
 echo "start pushbutton"
-stdbuf -oL  python button.py &  > button.log
+python button.py & 
 
 echo "start camera"
-stdbuf -oL  python camera.py &  > camera.log
+python camera.py & 
 
 echo "start motor"
-stdbuf -oL  sudo python motor.py & > motor.log
+sudo python motor.py &
 
 echo "already set up everything"
 
