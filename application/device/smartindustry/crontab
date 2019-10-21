@@ -1,0 +1,2 @@
+@reboot sleep 60 && /home/pi/go/src/github.com/smartfog/fogflow/application/device/smartindustry/start.sh & 
+
