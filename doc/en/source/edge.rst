@@ -62,6 +62,13 @@ You can use the default setting for a simple test, but you need to change the fo
         "external_hostip": "35.234.116.177", 
         "internal_hostip": "172.17.0.1", 
         …
+	"site_id": "002",
+	…
+	"worker": {
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 4
+	}…
     } 
 
 
