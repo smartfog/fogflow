@@ -61,14 +61,18 @@ You can use the default setting for a simple test, but you need to change the fo
         "coreservice_ip": "155.54.239.141", 
         "external_hostip": "35.234.116.177", 
         "internal_hostip": "172.17.0.1", 
-        …
+        ...
+	
 	"site_id": "002",
-	…
+	...
+	
 	"worker": {
         "container_autoremove": false,
         "start_actual_task": true,
         "capacity": 4
-	}…
+	}
+	...
+	
     } 
 
 
@@ -82,7 +86,7 @@ Start both Edge IoT Broker and FogFlow Worker
       #start both components in the same script
       ./start.sh 
     
-      # if the edge node is ARM-basd, please attach arm as the command parameter
+      #if the edge node is ARM-basd, please attach arm as the command parameter
       #./start.sh  arm
       
 
