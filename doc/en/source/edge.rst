@@ -48,7 +48,11 @@ You can use the default setting for a simple test, but you need to change the fo
         
 - **coreservice_ip**: please refer to the configuration of the cloud part. This is the accessible address of your FogFlow core services running in the cloud node;
 - **external_hostip**: this is the external IP address, accessible for the cloud broker. It is useful when your edge node is behind NAT;
-- **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host. 
+- **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host.
+- **site_id** is the user-defined ID for the edge Node. Broker and Worker IDs on that node will be formed according to this Site ID.
+- **container_autoremove** is used to configure that the container associated with a task will be removed once its processing is complete.
+- **start_actual_task** configures the Fogflow worker to include all those activities that are required to start or terminate a task or maintain a running task along with task configurations instead of performing the minimal effort. It is recommended to keep it true.
+- **capacity** is the maximum number of docker containers that the FogFlow node can invoke. The user can set the limit by considering resource availability on a node.
 
 .. code-block:: json
 
