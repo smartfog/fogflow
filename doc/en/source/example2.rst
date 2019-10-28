@@ -75,17 +75,32 @@ This can be done in one of the following two ways.
 Register it via FogFlow Task Designer
 ==========================================================
 
-The following picture shows the list of all registered operator docker images and the key information of each image. 
+There are two steps to register an operator in Fogflow.
 
-.. figure:: figures/operator-registry-list.png
+**Register an Operator** to define what would the name of Operator be and what input parameters it needs. Here in this context, an operator is nothing but a named element having some parameters.
+The following picture shows the list of all registered operators and their parameter count.
+
+.. figure:: figures/operator-list.png
+   :scale: 100 %
+   :alt: map to buried treasure
+   
+After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
+
+.. figure:: figures/operator-registry.png
    :scale: 100 %
    :alt: map to buried treasure
 
+**Register a Docker Image and choose Operator** to define the docker image and associate an already registered Operator with it. 
+
+The following picture shows the list of all registered docker images and the key information of each image. 
+
+.. figure:: figures/dockerimage-registry-list.png
+   :scale: 100 %
+   :alt: map to buried treasure
 
 After clicking the "register" button, you can see a form as below. 
 Please fill out the required information and click the "register" button to finish the registration. 
 The form is explained as the following. 
-
 
 * Image: the name of your operator docker image
 * Tag: the tag you used to publish your operator docker image; by default it is "latest"
@@ -102,7 +117,7 @@ The form is explained as the following.
 
 .. _`Docker Hub`: https://github.com/smartfog/fogflow/tree/master/application/operator/anomaly
 
-.. figure:: figures/operator-register.png
+.. figure:: figures/dockerimage-registry.png
    :scale: 100 %
    :alt: map to buried treasure
 
@@ -233,7 +248,7 @@ using FogFlow Topology Editor
 
 The first way is to use the FogFlow editor to specify a service topology.  
 
-.. figure:: figures/retail-topology.png
+.. figure:: figures/retail-topology-1.png
    :width: 100 %
 
 As seen in the picture, the following important information must be provided. 
@@ -241,32 +256,35 @@ As seen in the picture, the following important information must be provided.
 #. define topology profile, including
     * topology name: the unique name of your topology
     * service description: some text to describe what this service is about
-    * priority: define the priority level of all tasks in your topology, which will be utilized by edge nodes to decide how resource should be assigned to tasks 
-    * resource usage: define if the tasks in this topology can use the resources on edge nodes in an exclusive way, meaning that not sharing resources with any task from the other topologies
 
 #. draw the graph of data processing flows within the service topology
-    With a right click at some place of the design board, you will see a memu pops up 
-    and then you can start to choose either task or input streams 
+    With a right click at some place of the design board, you will see a menu pops up 
+    and then you can start to choose either task or input streams or shuffle
     to define your data processing flows according to the design you had in mind. 
 
-#. define Task Profile for each task in the data flow, including
-    As shown in the following picture, you can start to specify the profile of each task in the data processing flow
-    by clicking the configuration button. The following information is required to specify a task profile. 
+#. define the profile for each element in the data flow, including
+    As shown in the following picture, you can start to specify the profile of each element in the data processing flow
+    by clicking the configuration button.
+    
+    The following information is required to specify a task profile.
 	
     * name: the name of the task 
     * operator: the name of the operator that implements the data processing logic of this task; please register your operator beforehand so that it can be shown from the list
-    * groupby: to determine how many instances of this task should be created on the fly; currently including the following cases
+    * entity type of output streams: to specify the entity type of the produced output stream
+    
+    The following information is required to specify an EntityStream Profile.
+
+    * SelectedType: is used to define what Entity Type will be chosen by the task as its Input Stream
+    * SelectedAttributes: is used to define what attribute (or attributes) of the Selected Entity Type will be considered for changing the state of a task.
+    * Groupby: to determine how many instances of this task should be created on the fly; currently including the following cases
 	
         *  if ther is only one instance to be created for this task, please use "groupby" = "all"
         *  if you need to create one instance for each entity ID of the input streams, please user "groupby" = "entityID"
-        *  if you need to create one instance for each unique value of some specific context metadata, please use the name of this registered context metadata    
-		
-    * shuffling of input streams: to indicate how the input stream should be assigned to the instance(s) of this task during the runtime, including the following two cases
-	
-        *  "shuffling" = "broadcast": the selected input streams should be repeatedly assigned to every task instance of this operator
-        *  "shuffling" = "unicast": each of the selected input streams should be assigned to a specific task instance only once        
-		
-    * entity type of output streams: to specify the entity type of the produced output stream
+        *  if you need to create one instance for each unique value of some specific context metadata, please use the name of this registered context metadata
+    
+    * Scoped: tells if the Entity data are location-specific or not. True indicates that location-specific data are recorded in the Entity and False is used in case of broadcasted data, for example, some rule or threshold data that holds true for all locations, not for a specific location.
+
+    Shuffling element serves as a connector between two tasks such that output of a task is the input for the shuffle element and same is forwarded by Shuffle to another task (or tasks) as input.
 
 
 using NGSI Update to create it
@@ -555,6 +573,5 @@ Here are the Curl and the Javascript-based code examples to trigger a service to
         	console.log(data);
     	}).catch( function(error) {
         	console.log('failed to send a requirement');
-    	});    
-
-
+    	});
+	
