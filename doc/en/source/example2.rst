@@ -81,6 +81,7 @@ There are two steps to register an operator in Fogflow.
 The following picture shows the list of all registered operators and their parameter count.
 
 .. figure:: figures/operator-list.png
+   :scale: 70 %
    :alt: map to buried treasure
    
 After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
@@ -473,6 +474,10 @@ The intent object is sent using the fogflow dashboard with the following propert
 * Resource Usage: defines how a topology can use resources on edge nodes. Sharing in an exclusive way means the topology will not share the resources with any task from other topologies. The other way is inclusive one.
 * Objective: of maximum throughput, minimum latency and minimum cost can be set for task assignment at workers. However, this feature is not fully supported yet, so it can be set as "None" for now.
 * Geoscope: is a defined geographical area where input streams should be selected. Global as well as custom geoscopes can be set.
+
+.. figure:: figures/intent-registry.png
+   :scale: 60 %
+   :alt: map to buried treasure
 
 Fogflow topology master will now be waiting for input streams for the tasks contained in the service topology. As soon as context data are received, which fall within the scope of the intent object, tasks are launched on the nearest workers.
 
