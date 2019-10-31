@@ -457,7 +457,7 @@ Here are the Curl and the Javascript-based code examples to register an operator
     	});    
 	
 
-Trigger the service topology by sending a customized requirement
+Trigger the service topology by sending an Intent
 ------------------------------------------------------------------------------
 
 Once developers submit a specified service topology and the implemented operators, 
@@ -479,7 +479,7 @@ Fogflow topology master will now be waiting for input streams for the tasks cont
 
 Here are curl examples to send Input streams for Anomaly-Detector use case. It requires PowerPanel as well as Rule data.
 
-.. note:: Users can also use |Simulated Powerpanel Devices|.
+.. note:: Users can also use |Simulated Powerpanel Devices| to send PowerPanel data.
 
 .. |Simulated Powerpanel Devices| raw:: html
 
