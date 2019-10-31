@@ -81,7 +81,6 @@ There are two steps to register an operator in Fogflow.
 The following picture shows the list of all registered operators and their parameter count.
 
 .. figure:: figures/operator-list.png
-   :scale: 100 %
    :alt: map to buried treasure
    
 After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
@@ -263,14 +262,14 @@ As seen in the picture, the following important information must be provided.
     to define your data processing flows according to the design you had in mind. 
 
 #. define the profile for each element in the data flow, including
-    As shown in the following picture, you can start to specify the profile of each element in the data processing flow
+    As shown in the above picture, you can start to specify the profile of each element in the data processing flow
     by clicking the configuration button.
     
     The following information is required to specify a task profile.
 	
     * name: the name of the task 
     * operator: the name of the operator that implements the data processing logic of this task; please register your operator beforehand so that it can be shown from the list
-    * entity type of output streams: to specify the entity type of the produced output stream
+    * entity type of output streams: to specify the entity type of the produced output stream.
     
     The following information is required to specify an EntityStream Profile.
 
@@ -278,7 +277,7 @@ As seen in the picture, the following important information must be provided.
     * SelectedAttributes: is used to define what attribute (or attributes) of the Selected Entity Type will be considered for changing the state of a task.
     * Groupby: to determine how many instances of this task should be created on the fly; currently including the following cases
 	
-        *  if ther is only one instance to be created for this task, please use "groupby" = "all"
+        *  if there is only one instance to be created for this task, please use "groupby" = "all"
         *  if you need to create one instance for each entity ID of the input streams, please user "groupby" = "entityID"
         *  if you need to create one instance for each unique value of some specific context metadata, please use the name of this registered context metadata
     
@@ -462,116 +461,102 @@ Trigger the service topology by sending a customized requirement
 ------------------------------------------------------------------------------
 
 Once developers submit a specified service topology and the implemented operators, 
-the service data processing logic can be triggered on demand by a high level processing requirement. 
-The processing requirement is sent as NGSI10 update, with the following properties: 
+the service data processing logic can be triggered by following two steps:
 
-* topology: which topology to trigger
-* expected output: the output stream type expected by external subscribers
-* scope: a defined geoscope for the area where input streams should be selected
-* scheduler: which type of scheduling method should be chosen by Topology Master for task assignment
+* Sending a high level intent object which breaks the service topology into separate tasks
+* Providing Input Streams to the tasks of that service topology.
 
-.. important::
-    
-    Please notice that the input data for the leaf nodes of your service topology must be already reported by your IoT devices. 
-    It works like this in the current version, but this requirement will be no longer needed in the new version. 
-    
-    Also, the entity ID of your input data must follow a pattern: "Stream.[Type].[xxx]". 
-    For example, for a temperature sensor with "Temperature" as the entity type, 
-    the entity ID of this temperature entity requires to be "Stream.Temperature.[xxx]",
-    for example, "Stream.Temperature.001". Please look at the example in the section |connect_device_to_fogflow|
-    
+The intent object is sent using the fogflow dashboard with the following properties: 
 
-.. |connect_device_to_fogflow| raw:: html
+* Topology: specifies which topology the intent object is meant for.
+* Priority: defines the priority level of all tasks in your topology, which will be utilized by edge nodes to decide how resources should be assigned to the tasks.
+* Resource Usage: defines how a topology can use resources on edge nodes. Sharing in an exclusive way means the topology will not share the resources with any task from other topologies. The other way is inclusive one.
+* Objective: of maximum throughput, minimum latency and minimum cost can be set for task assignment at workers. However, this feature is not fully supported yet, so it can be set as "None" for now.
+* Geoscope: is a defined geographical area where input streams should be selected. Global as well as custom geoscopes can be set.
 
-    <a href="./example3.html" target="_blank">Connect an IoT device to FogFlow</a>
+Fogflow topology master will now be waiting for input streams for the tasks contained in the service topology. As soon as context data are received, which fall within the scope of the intent object, tasks are launched on the nearest workers.
 
 
-Here are the Curl and the Javascript-based code examples to trigger a service topology by sending a customized requirement entity to FogFlow. 
- 
+Here are curl examples to send Input streams for Anomaly-Detector use case. It requires PowerPanel as well as Rule data.
+
+.. note:: Users can also use |Simulated Powerpanel Devices|.
+
+.. |Simulated Powerpanel Devices| raw:: html
+
+    <a href="https://github.com/smartfog/fogflow/tree/544ebe782467dd81d5565e35e2827589b90e9601/application/device/powerpanel" target="_blank">Simulated Powerpanel Devices</a>
+
 .. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
 
-.. tabs::
+.. code-block:: console
 
-   .. group-tab:: curl
-
-        .. code-block:: console 
-	
 		curl -iX POST \
 		  'http://localhost:8070/ngsi10/updateContext' \
 	  	-H 'Content-Type: application/json' \
 	  	-d '		
 	     	{
 			"contextElements": [
-	            	{
-	                	"entityId": {
-	                    		"id": "Requirement.163ed933-828c-4c20-ab2a-59f73e8682cf",
-	                    		"type": "Requirement",
-	                    		"isPattern": false
-	                	},
-	                	"attributes": [
-	                	{
-	                  		"name": "output",
-	                  		"type": "string",
-	                  		"value": "Stat"
-	                	}, {
-	                  		"name": "scheduler",
-	                  		"type": "string",
-	                  		"value": "closest_first"
-				}, {
-	                  		"name": "restriction",
-	                  		"type": "object",
-	                  		"value": { 
-			  			"scopes": [{ 
-				   			"scopeType": "circle", 
-				   			"scopeValue": {
-							   	"centerLatitude": 49.406393,
-								"centerLongitude": 8.684208,
-								"radius": 10.0
-							   }
-			        		}]
-			  		}
-				}
-	                	],
-	                	"domainMetadata": [
-	                	{
-	                    		"name": "topology",
-	                    		"type": "string",
-			                "value": "Topology.anomaly-detection"
-	                	}
-	                	]
-	            	}
-	        	],
+	            	{ 
+			   "entityId":{ 
+			      "id":"Device.PowerPanel.01",
+			      "type":"PowerPanel"
+			   },
+			   "attributes":[ 
+			      { 
+				 "name":"usage",
+				 "type":"integer",
+				 "value":4
+			      },
+			      { 
+				 "name":"shop",
+				 "type":"string",
+				 "value":"01"
+			      },
+			      { 
+				 "name":"iconURL",
+				 "type":"string",
+				 "value":"/img/shop.png"
+			      }
+			   ],
+			   "domainMetadata":[ 
+			      { 
+				 "name":"location",
+				 "type":"point",
+				 "value":{ 
+				    "latitude":35.7,
+				    "longitude":138
+				 }
+			      },
+			      { 
+				 "name":"shop",
+				 "type":"string",
+				 "value":"01"
+			      }
+			   ]
+			} ],
 	        	"updateAction": "UPDATE"
-		     }	
+		}'
+		
+		
+.. code-block:: console
 
-   .. code-tab:: javascript
-
-    	var rid = 'Requirement.' + uuid();    
-   
-   	var requirementCtxObj = {};    
-    	requirementCtxObj.entityId = {
-     		id : rid, 
-        	type: 'Requirement',
-        	isPattern: false
-    	};
-    
-    	var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-               
-    	requirementCtxObj.attributes = {};   
-    	requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
-    	requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
-    	requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
-                       
-    	requirementCtxObj.metadata = {};               
-    	requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
-		    
-    	console.log(requirementCtxObj);
-	            
-    	// assume the config.brokerURL is the IP of cloud IoT Broker
-    	var client = new NGSI10Client(config.brokerURL);                
-    	client.updateContext(requirementCtxObj).then( function(data) {
-        	console.log(data);
-    	}).catch( function(error) {
-        	console.log('failed to send a requirement');
-    	});
-	
+		curl -iX POST \
+		  'http://localhost:8070/ngsi10/updateContext' \
+	  	-H 'Content-Type: application/json' \
+	  	-d '		
+	     	{
+			"contextElements": [
+	            	{ 
+			   "entityId":{ 
+			      "id":"Stream.Rule.01",
+			      "type":"Rule"
+			   },
+			   "attributes":[ 
+			      { 
+				 "name":"threshold",
+				 "type":"integer",
+				 "value":30
+			      }
+			   ]
+			}],
+	        	"updateAction": "UPDATE"
+		}'
