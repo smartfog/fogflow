@@ -9,56 +9,227 @@ the rest will be done by FogFlow automatically, including:
 -  deciding how many instances to be created according to its defined granularity
 -  deciding where to deploy the created instances
 
-The following steps show how to define and test a simple 'hello world' function using the web portal provided by FogFlow Task Designer. 
+The instances in the above text refer to the task instances which run a processing logic within them and this processing logic is given by operators in fogflow. They must be registered beforehand by the users. Implementation of an example operator is given in the next sections.
+
+Register your task operators
+--------------------------------------------------------
+
+Operator code must be in the form of a docker image and must be available on docker hub. 
+Registration of an operator in FogFlow can be done in one of the following two ways. 
 
 
-Define a "hello world" fog function 
+.. note:: Please notice that each operator must have a unique name but the same operator can be associated with multiple docker images, 
+            each of which is for one specific hardware or operating system but for implementing the same data processing logic. 
+            During the runtime, FogFlow will select a proper docker image to run a scheduled task on an edge node, 
+            based on the execution environment of the edge node. 
+
+Register it via FogFlow Task Designer
+==========================================================
+
+There are two steps to register an operator in Fogflow.
+
+**Register an Operator** to define what would be the name of Operator and what input parameters it would need. Here in this context, an operator is nothing but a named element having some parameters.
+The following picture shows the list of all registered operators and their parameter count.
+
+.. figure:: figures/operator-list.png
+   :scale: 70 %
+   :alt: map to buried treasure
+   
+After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
+
+.. figure:: figures/operator-registry.png
+   :scale: 100 %
+   :alt: map to buried treasure
+
+**Register a Docker Image and choose Operator** to define the docker image and associate an already registered Operator with it. 
+
+The following picture shows the list of all registered docker images and the key information of each image. 
+
+.. figure:: figures/dockerimage-registry-list.png
+   :scale: 100 %
+   :alt: map to buried treasure
+
+After clicking the "register" button, you can see a form as below. 
+Please fill out the required information and click the "register" button to finish the registration. 
+The form is explained as the following. 
+
+* Image: the name of your operator docker image
+* Tag: the tag you used to publish your operator docker image; by default it is "latest"
+* Hardware Type: the hardware type that your docker image supports, including X86 or ARM (e.g. Raspberry Pi)
+* OS Type: the operating system type that your docker image supports; currently this is only limited to Linux
+* Operator: the operator name, which must be unique and will be used when defining a service topology
+* Prefetched: if this is checked, that means all edge nodes will start to fetch this docker image in advance; otherwise, the operator docker image is fetched on demand, only when edge nodes need to run a scheduled task associated with this operator. 
+
+.. important::
+    
+    Please notice that the name of your docker image must be consistent with the one you publish to `Docker Hub`_.
+    By default, FogFlow will fetch the required docker images from Docker Hub using the name you register here for your operator. 
+
+
+.. _`Docker Hub`: https://github.com/smartfog/fogflow/tree/master/application/operator/anomaly
+
+.. figure:: figures/dockerimage-registry.png
+   :scale: 100 %
+   :alt: map to buried treasure
+
+
+Register it programmatically by sending a NGSI update 
+==========================================================
+
+You can also register an operator docker image by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
+
+Here are the Curl and the Javascript-based code examples to register an operator docker image. 
+
+.. note:: In the Javascript code example, we use the Javascript-based library to interact with FogFlow IoT Broker. You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
+
+.. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
+
+.. tabs::
+
+   .. group-tab:: curl
+
+        .. code-block:: console 
+
+		curl -iX POST \
+		  'http://localhost:8070/ngsi10/updateContext' \
+	  	-H 'Content-Type: application/json' \
+	  	-d '		
+	     	{
+			"contextElements": [
+	            		{
+	                	"entityId": {
+	                    		"id": "counter:latest",
+	                    		"type": "DockerImage",
+	                    		"isPattern": false
+	                	},
+	                	"attributes": [
+	               		{
+	                  		"name": "image",
+	                  		"type": "string",
+	                  		"value": "counter"
+				},
+	               		{
+	                  		"name": "tag",
+	                  		"type": "string",
+	                  		"value": "latest"
+				},
+	               		{
+	                  		"name": "hwType",
+	                  		"type": "string",
+	                  		"value": "X86"
+				},
+	               		{
+	                  		"name": "osType",
+	                  		"type": "string",
+	                  		"value": "Linux"
+				},
+	               		{
+	                  		"name": "operatorName",
+	                  		"type": "string",
+	                  		"value": "counter"
+				},
+	               		{
+	                  		"name": "prefetched",
+	                  		"type": "string",
+	                  		"value": false
+				}],		
+	                	"domainMetadata": [
+	                	{
+	                    		"name": "operator",
+	                    		"type": "string",
+			                "value": "counter"
+	                	}
+	                	]
+	            	} ],
+	        	"updateAction": "UPDATE"
+		}			
+
+   .. code-tab:: javascript
+
+    	var image = {
+        	name: "counter",
+	        tag: "latest",
+	        hwType: "X86",
+	        osType: "Linux",
+	        operatorName: "counter",
+	        prefetched: false
+    	};
+
+    	//register a new docker image
+    	var newImageObject = {};
+	
+    	newImageObject.entityId = {
+	        id : image.name + ':' + image.tag, 
+	        type: 'DockerImage',
+	        isPattern: false
+    	};
+	
+    	newImageObject.attributes = {};   
+    	newImageObject.attributes.image = {type: 'string', value: image.name};        
+    	newImageObject.attributes.tag = {type: 'string', value: image.tag};    
+    	newImageObject.attributes.hwType = {type: 'string', value: image.hwType};      
+    	newImageObject.attributes.osType = {type: 'string', value: image.osType};          
+    	newImageObject.attributes.operator = {type: 'string', value: image.operatorName};      
+    	newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};                      
+	    
+    	newImageObject.metadata = {};    
+    	newImageObject.metadata.operator = {
+	        type: 'string',
+	        value: image.operatorName
+    	};               
+    
+	    // assume the config.brokerURL is the IP of cloud IoT Broker
+    	var client = new NGSI10Client(config.brokerURL);    
+    	client.updateContext(newImageObject).then( function(data) {
+	        console.log(data);
+    	}).catch( function(error) {
+	        console.log('failed to register the new device object');
+    	});        
+	
+
+
+Define a "Dummy" fog function 
 -----------------------------------------------
 
+The following steps show how to define and test a simple 'dummy' fog function using the web portal provided by FogFlow Task Designer. 
+The "dummy" operator is already registered in Fogflow by default.
 
 
 create a fog function from the FogFlow editor 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================================================
 
-A menu will pop up when you do a right mouse click on the task design board. 
+A menu will pop up when you do a right mouse click on the task design board.
+
+.. figure:: figures/fog-function-1.png
+   :width: 100 %
+   
 The displayed menu includes the following items: 
 
--  **FogFunction**: to place a fog function element on the design board
--  **InputTrigger**: to place a trigger element, which can be linked with a fog function as its input data selector
--  **SelectCondition**: to place a filter element, which can be linked with an input trigger in order to specify your input data
+-  **Task**: is used to define the fog function name and the processing logic (or operator). A task has input and output streams.
+-  **EntityStream**: is the input data element which can be linked with a fog function Task as its input data stream. 
 
-.. figure:: figures/fog-function-menu.png
+Once you click "Task" from the popup menu, a Task element will be placed on the design board, as shown below.
+
+.. figure:: figures/fog-function-2.png
+   :width: 100 %
+  
+You can start to configure a Task once you click the configuration button on the top-right corner, as illustrated in the following figure. 
+Please specify the name of the Task and choose an operator out of a list of some pre-registered operators.
+
+.. figure:: figures/fog-function-3.png
+   :width: 100 %
+   
+Please click "EntityStream" from the popup menu to place an "EntityStream" element on the design board. 
+
+.. figure:: figures/fog-function-4.png
    :width: 100 %
 
-Once you click "FogFunction" from the popup menu, a fog function element will be placed on the design board, as shown below. 
+It contains the following things:
 
-.. figure:: figures/fog-function-selected.png
-   :width: 100 %
-
-You can start to configure a fog function once you click the configuration button on the top-right corner, as illustrated by the following figure. 
-Please specify the name of your fog function.
-
-.. figure:: figures/fog-function-configuration.png
-   :width: 100 %
-
-select its input based on entity type
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Please click "SelectCondition" from the popup menu to place a "SelectCondition" element on the design board. 
-Configure this element to specify the entity type of your input data. 
-In the following example, we choose "Temperature" as the entity type of input data for the "HelloWorld" fog function. 
-
-.. figure:: figures/fog-function-filter.png
-   :width: 100 %
-
-define a granularity for the creation of its function instances
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Please click "InputTrigger" from the popup menu to place a "InputTrigger" element on the design board. 
-Configure it by specifying the following items: 
-
--  **SelectedAttributes**: for the selected entity type, which entity attributes are required by your fog function; "all" means to get all entity attributes. 
--  **Groupby**: this should be one of the selected entity attributes, which defines the granularity of this fog function. 
+	* Selected Type: is used to define the entity type of input stream whose availability will trigger the fog function. 
+	* Selected Attributes: for the selected entity type, which entity attributes are required by your fog function; "all" means to get all entity attributes.
+	* Group By: should be one of the selected entity attributes, which defines the granularity of this fog function.
+	* Scoped: tells if the Entity data are location-specific or not. True indicates that location-specific data are recorded in the Entity and False is used in case of broadcasted data, for example, some rule or threshold data that holds true for all locations, not for a specific location.
  
 .. note:: granularity determines the number of instances for this fog function.
         In principle, the number of task instances for the defined fog function 
@@ -66,20 +237,30 @@ Configure it by specifying the following items:
         for the available input data. It also means, each instance will be assigned to handle all input entities
         with a specific attribute value. 
 
-In the following example, the granularity is defined by "id", meaning that FogFlow will create on task instance
-for each individual entity ID. 
+In this example, the granularity is defined by "id", meaning that FogFlow will create a new task instance
+for each individual entity ID.
 
-.. figure:: figures/fog-function-granularity.png
+Configure the EntityStream by clicking on its configuration button as shown below. In this example, we choose "Temperature" as the entity type of input data for the "dummy" fog function.
+
+.. figure:: figures/fog-function-5.png
    :width: 100 %
 
-.. note:: please link the InputTrigger element to the input of your fog function element; then link your SelectCondition element to the input of your InputTrigger element. 
+There can be multiple EntityStreams for a Task and they must be connected to the Task as shown here.
+
+.. figure:: figures/fog-function-6.png
+   :width: 100 %
+ 
 
 provide the code of your own function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================================================
     
-Currently FogFlow allows developers to specify the function code, either by directly overwritting the following handler function (in Javascript or Python)
-or by selecting a registered operator. 
-    
+Currently FogFlow allows developers to specify their own function code inside a registered operator. For a sample operator, refer the |dummy operator code|.
+
+.. |dummy operator code| raw:: html
+
+    <a href="https://github.com/smartfog/fogflow/tree/master/application/operator/dummy" target="_blank">dummy operator code</a>
+
+   
 .. code-block:: javascript
 
     exports.handler = function(contextEntity, publish, query, subscribe) {
@@ -119,11 +300,8 @@ or by selecting a registered operator.
         publish(updateEntity);        
     };
 
-You can take the example Javascript code above as the implementation of your "HelloWorld" fog function. 
+You can take the example Javascript code above as the implementation of your own fog function. 
 This example fog function simple writes a fixed entity by calling the "publish" callback function. 
-
-.. figure:: figures/fog-function-code.png
-   :width: 100 %
 
 The input parameters of a fog function are predefined and fixed, including: 
 
@@ -134,13 +312,14 @@ The input parameters of a fog function are predefined and fixed, including:
 
 .. important::
 
-    for the callback functions *query* and *subscribe*, "extra" means any entity data that are not defined as the inputs in the annotation of your fog function. 
+    For the callback functions *query* and *subscribe*, "extra" means any entity data that are not defined as the inputs in the annotation of your fog function. 
 
-    a Javascript-based template of the implementation of fog functions is provided in the FogFlow repository as well. Please refer to `Javascript-based template for fog function`_
+    A Javascript-based template of the implementation of fog functions is provided in the FogFlow repository as well. Please refer to `Javascript-based template for fog function`_
 
 
 .. _`Javascript-based template for fog function`: https://github.com/smartfog/fogflow/tree/master/application/template/javascript
 
+Templates for Java and python are also given in the repository.
 
 Here are some examples to show how you can use these three call back functions. 
 
@@ -191,18 +370,18 @@ Here are some examples to show how you can use these three call back functions.
 
 
 submit your fog function
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+==========================================================
     
-Once you create the button "Create a Fog Function", the annotated fog function will be submitted to FogFlow. 
+When you click on the "Submit" button, the annotated fog function will be submitted to FogFlow. 
 
-.. figure:: figures/fog-function-submit.png
+.. figure:: figures/fog-function-7.png
    :width: 100 %
 
 
-Trigger your "hello world" fog function 
+Trigger your "dummy" fog function 
 --------------------------------------------
 
-The defined "hello world" fog function is triggered only when its required input data are available. 
+The defined "dummy" fog function is triggered only when its required input data are available. 
 With the following command, you can create a "Temperature" sensor entity to trigger the function. 
 Please fill out the following required information: 
 
@@ -213,9 +392,12 @@ Please fill out the following required information:
 .. figure:: figures/device-registration.png
    :width: 100 %
 
-Once the device profile is registered, a new "Temperature" sensor entity will be created and it will trigger the "HelloWorld" fog function automatically. 
+Once the device profile is registered, a new "Temperature" sensor entity will be created and it will trigger the "dummy" fog function automatically.
 
-The other way to trigger the "HelloWorld" fog function is to send a NGSI entity update to create the "Temperature" sensor entity. 
+.. figure:: figures/fog-function-triggering-device.png
+   :width: 100 %
+
+The other way to trigger the your fog function is to send a NGSI entity update to create the "Temperature" sensor entity. 
 You can run the following command to issue a POST request to the FogFlow broker. 
 
 .. code-block:: console 
@@ -257,12 +439,15 @@ You can run the following command to issue a POST request to the FogFlow broker.
 You can check whether the fog function is triggered or not in the following way. 
 
 - check the task instance of this fog function, as shown in the following picture
-	.. figure:: figures/fog-function-task-instance.png
+	.. figure:: figures/fog-function-task-running.png
 	   :width: 100 %
 
 - check the result generated by its running task instance, as shown in the following picture 
-	.. figure:: figures/fog-function-result.png
+	.. figure:: figures/fog-function-streams.png
 	   :width: 100 %
+
+
+
 
 
 
