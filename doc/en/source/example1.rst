@@ -32,7 +32,7 @@ There are two steps to register an operator in Fogflow.
 The following picture shows the list of all registered operators and their parameter count.
 
 .. figure:: figures/operator-list.png
-   :scale: 70 %
+   :scale: 60 %
    :alt: map to buried treasure
    
 After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
@@ -78,7 +78,7 @@ Register it programmatically by sending a NGSI update
 
 You can also register an operator docker image by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
 
-Here are the Curl and the Javascript-based code examples to register an operator docker image. 
+Here are the Curl and the Javascript-based code examples to register an operator and a docker image for that operator. 
 
 .. note:: In the Javascript code example, we use the Javascript-based library to interact with FogFlow IoT Broker. You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
 
@@ -86,7 +86,7 @@ Here are the Curl and the Javascript-based code examples to register an operator
 
 .. tabs::
 
-   .. group-tab:: curl
+   .. group-tab:: Curl
 
         .. code-block:: console 
 
@@ -96,97 +96,259 @@ Here are the Curl and the Javascript-based code examples to register an operator
 	  	-d '		
 	     	{
 			"contextElements": [
-	            		{
-	                	"entityId": {
-	                    		"id": "counter:latest",
-	                    		"type": "DockerImage",
-	                    		"isPattern": false
-	                	},
-	                	"attributes": [
-	               		{
-	                  		"name": "image",
-	                  		"type": "string",
-	                  		"value": "counter"
+			{ 
+				"entityId":{ 
+					"id":"counter",
+					"type":"Operator"
 				},
-	               		{
-	                  		"name": "tag",
-	                  		"type": "string",
-	                  		"value": "latest"
+				"attributes":[ 
+				{
+					"name":"designboard",
+					"type":"object",
+					"value":{ 
+				 	}
 				},
-	               		{
-	                  		"name": "hwType",
-	                  		"type": "string",
-	                  		"value": "X86"
-				},
-	               		{
-	                  		"name": "osType",
-	                  		"type": "string",
-	                  		"value": "Linux"
-				},
-	               		{
-	                  		"name": "operatorName",
-	                  		"type": "string",
-	                  		"value": "counter"
-				},
-	               		{
-	                  		"name": "prefetched",
-	                  		"type": "string",
-	                  		"value": false
-				}],		
-	                	"domainMetadata": [
-	                	{
-	                    		"name": "operator",
-	                    		"type": "string",
-			                "value": "counter"
-	                	}
-	                	]
-	            	} ],
-	        	"updateAction": "UPDATE"
-		}			
+				{ 
+					"name":"operator",
+					"type":"object",
+					"value":{ 
+						"description":"",
+						"name":"counter",
+						"parameters":[ 
+				
+						]
+				 	}
+				}
+				],
+				"domainMetadata":[ 
+				{ 
+					"name":"location",
+					"type":"global",
+					"value":"global"
+				}
+				]
+			},
+			{ 
+				   "entityId":{ 
+					  "id":"fogflow/counter.latest",
+					  "type":"DockerImage"
+				   },
+				   "attributes":[ 
+					  { 
+						 "name":"image",
+						 "type":"string",
+						 "value":"fogflow/counter"
+					  },
+					  { 
+						 "name":"tag",
+						 "type":"string",
+						 "value":"latest"
+					  },
+					  { 
+						 "name":"hwType",
+						 "type":"string",
+						 "value":"X86"
+					  },
+					  { 
+						 "name":"osType",
+						 "type":"string",
+						 "value":"Linux"
+					  },
+					  { 
+						 "name":"operator",
+						 "type":"string",
+						 "value":"counter"
+					  },
+					  { 
+						 "name":"prefetched",
+						 "type":"boolean",
+						 "value":false
+					  }
+				   ],
+				   "domainMetadata":[ 
+					  { 
+						 "name":"operator",
+						 "type":"string",
+						 "value":"counter"
+					  },
+					  { 
+						 "name":"location",
+						 "type":"global",
+						 "value":"global"
+					  }
+				   ]
+				}
+			],
+	        "updateAction": "UPDATE"
+		}'
 
-   .. code-tab:: javascript
+   .. code-tab:: Javascript
 
-    	var image = {
-        	name: "counter",
-	        tag: "latest",
-	        hwType: "X86",
-	        osType: "Linux",
-	        operatorName: "counter",
-	        prefetched: false
-    	};
+		var image = {
+				name: "counter",
+				tag: "latest",
+				hwType: "X86",
+				osType: "Linux",
+				operatorName: "counter",
+				prefetched: false
+		};
 
-    	//register a new docker image
-    	var newImageObject = {};
-	
-    	newImageObject.entityId = {
-	        id : image.name + ':' + image.tag, 
-	        type: 'DockerImage',
-	        isPattern: false
-    	};
-	
-    	newImageObject.attributes = {};   
-    	newImageObject.attributes.image = {type: 'string', value: image.name};        
-    	newImageObject.attributes.tag = {type: 'string', value: image.tag};    
-    	newImageObject.attributes.hwType = {type: 'string', value: image.hwType};      
-    	newImageObject.attributes.osType = {type: 'string', value: image.osType};          
-    	newImageObject.attributes.operator = {type: 'string', value: image.operatorName};      
-    	newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};                      
-	    
-    	newImageObject.metadata = {};    
-    	newImageObject.metadata.operator = {
-	        type: 'string',
-	        value: image.operatorName
-    	};               
-    
-	    // assume the config.brokerURL is the IP of cloud IoT Broker
-    	var client = new NGSI10Client(config.brokerURL);    
-    	client.updateContext(newImageObject).then( function(data) {
-	        console.log(data);
-    	}).catch( function(error) {
-	        console.log('failed to register the new device object');
-    	});        
-	
+		//register a new docker image
+		var newImageObject = {};
 
+		newImageObject.entityId = {
+				id : image.name + ':' + image.tag,
+				type: 'DockerImage',
+				isPattern: false
+		};
+
+		newImageObject.attributes = {};
+		newImageObject.attributes.image = {type: 'string', value: image.name};
+		newImageObject.attributes.tag = {type: 'string', value: image.tag};
+		newImageObject.attributes.hwType = {type: 'string', value: image.hwType};
+		newImageObject.attributes.osType = {type: 'string', value: image.osType};
+		newImageObject.attributes.operator = {type: 'string', value: image.operatorName};
+		newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};
+
+		newImageObject.metadata = {};
+		newImageObject.metadata.operator = {
+				type: 'string',
+				value: image.operatorName
+		};
+
+			// assume the config.brokerURL is the IP of cloud IoT Broker
+		var client = new NGSI10Client(config.brokerURL);
+		client.updateContext(newImageObject).then( function(data) {
+				console.log(data);
+		}).catch( function(error) {
+				console.log('failed to register the new device object');
+		});
+
+It is recommended to use fogflow dashboard to create an operator with parameters. However, if the users wish to use curl, then they can refer the following for the example operator registration with parameters shown in the above image. Afterwards, users can register a docker image that uses this operator. 
+
+The x and y variables here are simply the coordinates of designer board. If they are not given by user, by default, all the element blocks will be placed at origin of the plane.
+
+.. code-block:: curl
+
+	curl -iX POST \
+		  'http://localhost:8070/ngsi10/updateContext' \
+	  	-H 'Content-Type: application/json' \
+	  	-d '		
+	     	{
+			"contextElements": [
+				{ 
+				   "entityId":{ 
+				      "id":"iota",
+				      "type":"Operator"
+				   },
+				   "attributes":[ 
+				      { 
+				         "name":"designboard",
+				         "type":"object",
+				         "value":{ 
+				            "blocks":[ 
+				               { 
+				                  "id":1,
+				                  "module":null,
+				                  "type":"Parameter",
+				                  "values":{ 
+				                     "name":"service_port",
+				                     "values":[ 
+				                        "4041"
+				                     ]
+				                  },
+				                  "x":-425,
+				                  "y":-158
+				               },
+				               { 
+				                  "id":2,
+				                  "module":null,
+				                  "type":"Parameter",
+				                  "values":{ 
+				                    "name":"service_port",
+ 				                    "values":[ 
+				                        "7896"
+				                     ]
+				                  },
+				                  "x":-393,
+				                  "y":-51
+				               },
+				               { 
+				                  "id":3,
+				                  "module":null,
+				                  "type":"Operator",
+				                  "values":{ 
+				                     "description":"",
+				                     "name":"iota"
+				                  },
+				                  "x":-186,
+				                  "y":-69
+				               }
+				            ],
+				            "edges":[ 
+				               { 
+				                  "block1":2,
+				                  "block2":3,
+				                  "connector1":[ 
+				                     "parameter",
+				                     "output"
+				                  ],
+				                  "connector2":[ 
+				                     "parameters",
+				                     "input"
+				                  ],
+				                  "id":1
+				               },
+				               { 
+				                  "block1":1,
+				                  "block2":3,
+				                  "connector1":[ 
+				                     "parameter",
+				                     "output"
+				                  ],
+				                  "connector2":[ 
+				                     "parameters",
+				                     "input"
+				                  ],
+				                  "id":2
+				               }
+				            ]
+				         }
+				      },
+				      { 
+				         "name":"operator",
+				         "type":"object",
+				         "value":{ 
+				            "description":"",
+				            "name":"iota",
+				            "parameters":[ 
+				               { 
+				                  "name":"service_port",
+				                  "values":[ 
+				                     "7896"
+				                  ]
+				               },
+				               { 
+				                  "name":"service_port",
+				                  "values":[ 
+				                     "4041"
+ 				                 ]
+				               }
+				            ]
+				         }
+				      }
+				   ],
+				   "domainMetadata":[ 
+				      { 
+				         "name":"location",
+				         "type":"global",
+				         "value":"global"
+				      }
+				   ]
+				}
+			],
+	        "updateAction": "UPDATE"
+		}'
 
 Define a "Dummy" fog function 
 -----------------------------------------------
