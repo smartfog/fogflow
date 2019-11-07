@@ -184,44 +184,71 @@ Here are the Curl and the Javascript-based code examples to register an operator
 
    .. code-tab:: Javascript
 
-		var image = {
-				name: "counter",
-				tag: "latest",
-				hwType: "X86",
-				osType: "Linux",
-				operatorName: "counter",
-				prefetched: false
+		name = "counter"
+
+		//register a new operator
+		var newOperatorObject = {};
+
+		newOperatorObject.entityId = {
+			id : name,
+			type: 'Operator',
+			isPattern: false
 		};
 
-		//register a new docker image
-		var newImageObject = {};
+		newOperatorObject.attributes = [];
+
+		newOperatorObject.attributes.designboard = {type: 'object', value: {}};
+
+		var operatorValue = {}
+		operatorValue = {description: "Description here...", name: name, parameters: []};
+		newOperatorObject.attributes.operator = {type: 'object', value: operatorValue};
+
+		newOperatorObject.metadata = [];
+		newOperatorObject.metadata.location = {type: 'global', value: 'global'};
+
+		// assume the config.brokerURL is the IP of cloud IoT Broker
+		var client = new NGSI10Client(config.brokerURL);
+		client.updateContext(newOperatorObject).then( function(data) {
+			console.log(data);
+		}).catch( function(error) {
+			console.log('failed to register the new Operator object');
+		});
+
+		image = {}
+
+		image = {
+			name: "fogflow/counter",
+			tag: "latest",
+			hwType: "X86",
+			osType: "Linux",
+			operator: "counter",
+			prefetched: false
+		};
+
+		newImageObject = {};
 
 		newImageObject.entityId = {
-				id : image.name + ':' + image.tag,
-				type: 'DockerImage',
-				isPattern: false
+			id : image.name + '.' + image.tag,
+			type: 'DockerImage',
+			isPattern: false
 		};
 
-		newImageObject.attributes = {};
+		newImageObject.attributes = [];
 		newImageObject.attributes.image = {type: 'string', value: image.name};
 		newImageObject.attributes.tag = {type: 'string', value: image.tag};
 		newImageObject.attributes.hwType = {type: 'string', value: image.hwType};
 		newImageObject.attributes.osType = {type: 'string', value: image.osType};
-		newImageObject.attributes.operator = {type: 'string', value: image.operatorName};
+		newImageObject.attributes.operator = {type: 'string', value: image.operator};
 		newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};
 
-		newImageObject.metadata = {};
-		newImageObject.metadata.operator = {
-				type: 'string',
-				value: image.operatorName
-		};
+		newImageObject.metadata = [];
+		newImageObject.metadata.operator = {type: 'string', value: image.operator};
+		newImageObject.metadata.location = {type: 'global', value: 'global'};
 
-			// assume the config.brokerURL is the IP of cloud IoT Broker
-		var client = new NGSI10Client(config.brokerURL);
 		client.updateContext(newImageObject).then( function(data) {
-				console.log(data);
+			console.log(data);
 		}).catch( function(error) {
-				console.log('failed to register the new device object');
+			console.log('failed to register the new Docker Image object');
 		});
 
 It is recommended to use fogflow dashboard to create an operator with parameters. However, if the users wish to use curl, then they can refer the following for the example operator registration with parameters shown in the above image. Afterwards, users can register a docker image that uses this operator. 
