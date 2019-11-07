@@ -77,6 +77,7 @@ services:
         restart: always
 
 # Change the environment variables IOTA_CB_HOST and IOTA_PROVIDER_URL to run IoT Agent on Fogflow Cloud Node.
+# IoT Agent will use embedded mongodb, i.e., mongodb will be running on localhost.
     iot-agent:
         image: fogflow/iotajson-mongo
         hostname: iot-agent
