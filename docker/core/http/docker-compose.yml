@@ -76,3 +76,30 @@ services:
             - designer
         restart: always
 
+# Change the environment variables IOTA_CB_HOST and IOTA_PROVIDER_URL to run IoT Agent on Fogflow Cloud Node.
+    iot-agent:
+        image: fogflow/iotajson-mongo
+        hostname: iot-agent
+        container_name: iot-agent-json
+        networks:
+          - default
+        expose:
+          - "4041"
+          - "7896"
+        ports:
+          - "4041:4041"
+          - "7896:7896"
+        environment:
+          - IOTA_CB_HOST=<Cloud_Broker_Public_IP> # Public IP of Fogflow Cloud Broker
+          - IOTA_CB_PORT=8070 # The port of Fogflow Cloud Broker is listening on
+          - IOTA_NORTH_PORT=4041
+          - IOTA_REGISTRY_TYPE=mongodb #Whether to hold IoT device info in memory or in a database
+          - IOTA_LOG_LEVEL=DEBUG # The log level of the IoT Agent
+          - IOTA_TIMESTAMP=true # Supply timestamp information with each measurement
+          - IOTA_CB_NGSI_VERSION=v1 # use NGSIv2 when sending updates for active attributes
+          - IOTA_MONGO_HOST=localhost # The host name of MongoDB
+          - IOTA_MONGO_PORT=27017 # The port mongoDB is listening on
+          - IOTA_MONGO_DB=iotagentjson # The name of the database used in mongoDB
+          - IOTA_HTTP_PORT=7896 # The port used for device traffic over HTTP
+          - IOTA_PROVIDER_URL=http://<Cloud_Public_IP>:4041 # URL for the IoT Agent to be deployed
+          - IOTA_DEFAULT_RESOURCE=/iot/json
