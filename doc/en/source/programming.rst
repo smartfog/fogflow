@@ -16,12 +16,11 @@ which consists of a set of linked operators and each operator is annotated with 
 The granularity of an operator will be taken into account 
 by FogFlow to decide how many task instances of such an operator should be instantiated based on the available data. 
 
-A service topology must be triggered explicitly by a requirement object issued by a consumer or any application. 
-The requirement object defines which part of processing logic in the defined service topology needs to be triggered 
-and it can also optionally define a specific geo-scope to filter out data sources 
-for applying the triggered processing logic.
+A service topology must be triggered explicitly by an intent object issued by a consumer or any application. 
+The intent object defines when (based on priority) a service topology needs to be triggered 
+and it can also optionally define a specific geo-scope to filter out data sources for applying the triggered processing logic. The Part of service topology that meets the intent conditions and has input data available, will be triggered.
 
-.. figure:: figures/topology-orchestration.png
+.. figure:: figures/service-topology-concept.png
    :width: 100 %
 
 
@@ -38,7 +37,7 @@ As FogFlow can automatically chain different fog functions as well as allow
 more than one fog functions to handle a new data item, 
 a constantly changing execution graph can be automatically triggered and managed 
 by the FogFlow runtime as data arrive and disappear. 
-From the design perspective, fog func-tion is more flexible than service topology, 
+From the design perspective, fog function is more flexible than service topology, 
 because the overall processing logic of an IoT service can be easily changed over time 
 by adding or removing fog functions when the service processing logic needs to modify for new business requirements. 
 With the fog function programming model, FogFlow can support serverless computing for a cloud-edge based environment. 
