@@ -1,6 +1,6 @@
 Follow these steps to run General Purpose Adapter as a FogFunction:
 
-1. Register a new operator with image "fogflow/generalpurposeadapter" in Operator Registry in FogFlow.
+1. Register a new operator with image "fogflow/generalpurposeadapter-1" in Operator Registry in FogFlow.
 
 2. Register a FogFunction and set an Entity Type (say GPA) as SelectedType. Choose the operator registered in Step#1 as Fog Function Operator.
 
