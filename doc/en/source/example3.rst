@@ -201,22 +201,15 @@ Run this example code as follows:
 To connect Non-NGSI IoT Devices, FIWARE provides IoT Agents that work with IoT devices based on various protocols like MQTT, Ultralight, LoRaWAN, etc. IoT Agents can communicate over both, either NGSIv1 or NGSIv2, however, currently Fogflow supports only NGSIv1.
 For IoT Agents, following two scenarios can be there:
 
-* When IoT Agent uses NGSIv1, Fogflow can directly understand IoT Agent requests.
-* When IoT Agent uses NGSIv2, |General Purpose Adapter| is required as an intermediater between IoT Agent and Fogflow.
+- When IoT Agent uses NGSIv1, Fogflow can directly understand IoT Agent requests.
+- When IoT Agent uses NGSIv2, `General Purpose Adapter`_ is required as an intermediater between IoT Agent and Fogflow.
 
-Users can run IoT Agent on cloud node by directly running |docker-compose| file used to start the cloud node. By default, IoT Agent is already allowed. Users can opt out if they do not require it.
+Users can run IoT Agent on cloud node by directly running `docker-compose`_ file used to start the cloud node. By default, IoT Agent is already allowed. Users can opt out if they do not require it.
 
-For running IoT Agent on edge node, users can uncomment the related command in |Start Edge| file.
+For running IoT Agent on edge node, users can uncomment the related command in `Start Edge`_ file.
 
-.. |General Purpose Adapter| raw:: html
+.. _`General Purpose Adapter`: https://github.com/smartfog/fogflow/tree/master/application/operator/GeneralPurposeAdapter
+   
+.. _`docker-compose`: https://github.com/smartfog/fogflow/blob/master/docker/core/http/docker-compose.yml
 
-    <a href="https://github.com/smartfog/fogflow/tree/master/application/operator/GeneralPurposeAdapter" target="_blank">General Purpose Adapter</a>
-
-.. |docker-compose| raw:: html
-
-    <a href="https://github.com/smartfog/fogflow/blob/master/docker/core/http/docker-compose.yml" target="_blank">docker-compose</a>
-
-.. |Start Edge| raw:: html
-
-    <a href="https://github.com/smartfog/fogflow/blob/master/docker/edge/http/start.sh" target="_blank">Start Edge</a>
-
+.. _`Start Edge`: https://github.com/smartfog/fogflow/blob/master/docker/edge/http/start.sh
