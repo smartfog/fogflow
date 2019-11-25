@@ -182,7 +182,9 @@ Here are the Curl and the Javascript-based code examples to register an operator
 	        "updateAction": "UPDATE"
 		}'
 
-   .. code-tab:: Javascript
+   .. group-tab:: Javascript
+
+        .. code-block:: Javascript 
 
 		name = "counter"
 
