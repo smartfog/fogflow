@@ -215,7 +215,7 @@ For running IoT Agent on edge node, users can uncomment the related command in `
 
 An example usage of Fiware IoT-Agent JSON sending location-based temerature data to thin broker is given below. Iot Agent requires following three requests for sending NGSI Data to broker.
 
-**Service Provisioning - ** Service provisioning or group provisioning is used by IoT Agent to set some default commands or attributes like authentication key, optional context broker endpoint, etc. for anonymous devices.
+- **Service Provisioning:** Service provisioning or group provisioning is used by IoT Agent to set some default commands or attributes like authentication key, optional context broker endpoint, etc. for anonymous devices.
 
 Following is the curl request for creating or registring a service on IoT Agent.
 
@@ -236,7 +236,7 @@ Following is the curl request for creating or registring a service on IoT Agent.
     ]
     }'
 
-**Device Provisioning - ** Device provisioning is used to specify what data and data attributes a device will be sending to the IoT Agent.
+- **Device Provisioning:** Device provisioning is used to specify what data and data attributes a device will be sending to the IoT Agent.
 
 The below curl request is used to register a device having Device ID "Device1111" which would be sending the data of entity "Thing1111" to IoT Agent.
 
@@ -268,7 +268,7 @@ The below curl request is used to register a device having Device ID "Device1111
                     ]}]
     }'
 
-**Sensor Data Updation - ** IoT Agent maps the received data with its device registration and creates an NGSI update corresponding to the same. Note that IoT Agent receives data from Device in Non-NGSI format.
+- **Sensor Data Updation:** IoT Agent maps the received data with its device registration and creates an NGSI update corresponding to the same. Note that IoT Agent receives data from Device in Non-NGSI format.
 
 Curl request that actually sends the "Thing1111" entity update to IoT Agent on behalf of "Device1111" is given below.
 
