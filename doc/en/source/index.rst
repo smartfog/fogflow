@@ -29,7 +29,8 @@ Currently, FogFlow has been applied into various business use cases in the areas
     example1.rst
     example2.rst
     example3.rst
-    example4.rst  
+    example4.rst
+    example5.rst
     https.rst      
    
 .. toctree::
