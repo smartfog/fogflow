@@ -36,7 +36,9 @@ NGSI-LD Adapter can be run under Fogflow ecosystem using Fogflow Dashboard as gi
 
 .. _`this`: https://fogflow.readthedocs.io/en/latest/example1.html
    
-**Register a Docker Image:** Go to "DockerImage" in Operator Registry and register an image fogflow/ngsildadapter:latest. Associate it with the above operator by choosing the operator from DropDown.
+**Register a Docker Image:** Go to "DockerImage" in Operator Registry and register an image fogflow/ngsildadapter:latest. Associate it with the above operator by choosing the operator from DropDown. Users can also build their image for NGSI-LD-Adapter by editing and running `build`_ file.
+
+.. _`build`: https://github.com/smartfog/fogflow/blob/document-update/application/operator/NGSI-LD-Adapter/build
 
 **Register a Fog Function** as shown in the figure below. In "SelectedType", provide the Entity Type (say "LD") of the Context Data that will be used to trigger this Fog Function. Choose the operator registered in Step#1 as the operator in Fog Function.
 
