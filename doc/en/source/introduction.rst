@@ -3,15 +3,15 @@ High level introduction
 *******************************
 
 Nowadays IoT infrastructure providers for smart city, smart industry, and connected vehicles 
-are facing huge complexity and cost to manage their geo-distributed infrastructures 
+are facing lots of complexity and high operation cost to manage their geo-distributed infrastructures 
 for supporting various IoT services, especially those that require low latency. 
 FogFlow is a distributed execution framework to dynamically orchestrate IoT services over cloud and edges, 
-in order to reduce internal bandwidth consumption and offer low latency. 
+in order to reduce internal bandwidth consumption and offer low latency and fast response time. 
 
 By providing automated and optimized IoT service orchestration with high scalability and reliability, 
 FogFlow helps infrastructure providers to largely reduce their operation cost. 
-FogFlow also provides a data-centric programming model 
-and a development tool chain for service developers and system integrators to quickly realize IoT services 
+FogFlow also provides an intent-based programming model 
+and the development tools for service developers and system integrators to quickly realize IoT services 
 with low development cost and fast time-to-market. 
 
 

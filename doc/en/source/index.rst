@@ -14,7 +14,8 @@ based on various **context**, including:
 - *data context*: the registered metadata of all available data entities; 
 - *usage context*: the expected QoS defined by users. 
     
-By leveraging these contextual information, FogFlow is able to provide optimized QoS with minimal development effort and nearly zero operation overhead. 
+Thanks to its advanced intent-based programming model and context-driven service orchestration, 
+FogFlow is able to **provide optimized QoS with minimal development effort and nearly zero operation overhead**. 
 Currently, FogFlow has been applied into various business use cases in the areas of retails, smart cities, and smart industry. 
 
 .. toctree::
