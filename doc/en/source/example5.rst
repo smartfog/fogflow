@@ -92,7 +92,7 @@ Below is the request to run an "on" command on the lamp (the NGSI device) to tur
     }'
 
 On sending this command update, users can check the status of lamp device that was started in its logs. It will be "Lamp : on". Another supported command is "off" that the users can send to the device.
-
+Users can have their own customized devices that send the command updates in northbound direction also.
 
 Integration with Non-NGSI supported Devices
 -----------------------------------------------
@@ -212,8 +212,143 @@ The above request shows Fogflow entity update, which is a bit different from the
         "updateAction": "UPDATE"
     }'
 
-Users can check the status of the Lamp again, it will in lit-up state as shown in the figure below.
+Users can check the status of the Lamp again, it will be in lit-up state as shown in the figure below.
 
 .. figure:: figures/device-monitor-2.png
    :width: 100 %
-   
+
+
+Using MQTT devices
+===============================================
+
+MQTT devices run on MQTT protocol which works on subscribe and publish strategy, where the clients publish and subscribe to an MQTT Broker. All the subscribing clients are notified when another client publishes data on MQTT broker.
+
+We will use Mosquitto Broker for MQTT device simulation. Mosquitto broker allows data publishing and subscription on its uniquely identified resources called topics. These topics are defined in the format “/<apikey>/<device_id>/<topicSpecificPart>”. Users can track the updates on these topics by directly subscribing them on the host where Mosquitto is installed.
+
+**Prerequisites for proceding further:**
+
+* Install Mosquitto Broker.
+* Start IoT Agent with MQTT Broker location pre-configured. For simplicity, add the following to the environment variables of IoT Agent JSON in the docker-compose file and then run the docker-compose. 
+
+.. code-block:: console
+
+      - IOTA_MQTT_HOST=<MQTT_Broker_Host_IP>
+      - IOTA_MQTT_PORT=1883   # Mosquitto Broker runs at port 1883 by default.
+
+In order to let IoT-Agent JSON allow both Northbound as well as Southbound data flow, users need to provide api-key as well for their device registration, so that the IoT-Agent can publish and subscribe to the topics using the api-key. For this, an extra Service-Provisioning request will be sent to IoT Agent. Steps to work with MQTT Devices in Fogflow are given below.
+
+
+**Create a Service at IoT-Agent** using the following curl request.
+
+.. code-block:: console
+
+      curl -iX POST \
+        'http://<IoT_Agent_IP>:4041/iot/services' \
+        -H 'Content-Type: application/json' \
+        -H 'fiware-service: iot' \
+        -H 'fiware-servicepath: /' \
+        -d '{
+      "services": [
+         {
+           "apikey":      "FFNN1111",
+           "entity_type": "Lamp",
+           "resource":    "/iot/json"
+         }
+      ]
+      }'
+
+
+**Register a Lamp device** using the following curl request.
+
+.. code-block:: console
+
+      curl -X POST \
+        http://<IoT_Agent_IP>:4041/iot/devices \
+        -H 'content-type: application/json' \
+        -H 'fiware-service: iot' \
+        -H 'fiware-servicepath: /' \
+        -d '{
+        "devices": [
+          {
+            "device_id": "lamp001",
+            "entity_name": "urn:ngsi-ld:Lamp:001",
+            "entity_type": "Lamp",
+            "protocol": "IoTA-JSON",
+            "transport": "MQTT",
+            "commands": [
+              {"name": "on","type": "command"},
+              {"name": "off","type": "command"}
+             ],
+             "attributes": [
+              {"object_id": "s", "name": "state", "type":"Text"},
+              {"object_id": "l", "name": "luminosity", "type":"Integer"}
+             ],
+             "static_attributes": [
+               {"name":"refStore", "type": "Relationship","value": "urn:ngsi-ld:Store:001"}
+             ]
+          }
+        ]
+      }'
+
+
+**Subscribe to Mosquitto topics:** Once service and device are successfully created, subscribe to the following topics of Mosquitto Broker in separate terminals to track what data are published on these topics:
+
+.. code-block:: console
+
+      mosquitto_sub -h <MQTT_Host_IP> -t "/FFNN1111/lamp001/attrs" 
+
+.. code-block:: console
+
+      mosquitto_sub -h <MQTT_Host_IP> -t "/FFNN1111/lamp001/cmd"
+      
+
+**Publish data to Thin Broker:** This section covers the northbound traffic. IoT Agent subscribes to some default topics like ["/+/+/attrs/+","/+/+/attrs","/+/+/configuration/commands","/+/+/cmdexe"]. So, in order to send attribute data to IoT Agent, we need to publish data on a topic of Mosquitto Broker using the below command. 
+
+.. code-block:: console
+
+      mosquitto_pub -h <MQTT_Host_IP> -t "/FFNN1111/lamp001/attrs" -m '{"luminosity":78, "state": "ok"}'
+
+Mosquitto broker will notify IoT-Agent for this Update, and consequently, the data will be updated at Thin Broker also.
+
+The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/attrs" as well , as shown in the figure below.
+
+.. figure:: figures/mqtt-data-update.png
+   :width: 100 %
+
+
+**Run device commands:** This section covers the southbound traffic flow, i.e., how commands are run on the device. For this, send the below command updateContext request to Thin Broker. Thin broker will find the provider for this command update and will forward the UpdateContext request to that provider. In this case, IoT-Agent is the provider. IoT-Agent will publish the command at "/FFNN1111/lamp001/cmd" topic of the Mosquitto broker linked to it.
+
+.. code-block:: console
+
+      curl -iX POST \
+      'http://<Thin_Broker_IP>:8070/ngsi10/updateContext' \
+      -H 'Content-Type: application/json' \
+      -H 'fiware-service: iot' \
+      -H 'fiware-servicepath: /' \
+      -H 'command: true' \
+      -d '{
+          "contextElements": [
+          {
+              "entityId": {
+              "id": "urn:ngsi-ld:Lamp:001",
+              "type": "Lamp",
+              "isPattern": false
+              },
+              "attributes": [
+                   {
+                       "name": "on",
+                       "type": "command",
+                       "value": ""
+                   }
+               ]
+          }
+          ],
+          "updateAction": "UPDATE"
+      }'
+      
+The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/cmd", as shown in the figure below. This means that "on" command has been run successfully on the MQTT device.
+
+.. figure:: figures/mqtt-cmd-update.png
+   :width: 100 %
+
+Users can again have their customized devices to publish the command result on Thin Broker side.

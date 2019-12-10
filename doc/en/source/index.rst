@@ -30,7 +30,9 @@ Currently, FogFlow has been applied into various business use cases in the areas
     example2.rst
     example3.rst
     example4.rst
-    https.rst      
+    https.rst
+    scorpioIntegration.rst
+    example5.rst          
    
 .. toctree::
     :maxdepth: 1
