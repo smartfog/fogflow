@@ -119,7 +119,6 @@ You can open the FogFlow dashboard in your web browser to see the current system
 Once you are able to access the FogFlow dashboard, you can see the following web page
 
 .. figure:: figures/dashboard.png
-    :width: 100 %
 
 
 Try out existing IoT services
@@ -135,7 +134,6 @@ After you first click "Operator Registry", a list of pre-defined operators will 
 With a second click, you can see the refreshed list as shown in the following figure.
 
 .. figure:: figures/operator-list.png
-    :width: 100 %
 
 
 - Click "Service Topology" in the top navigator bar to triger the initialization of pre-defined service topologies. 
@@ -144,7 +142,6 @@ After you first click "Service Topology", a list of pre-defined topologies will 
 With a second click, you can see the refreshed list as shown in the following figure.
 
 .. figure:: figures/topology-list.png
-    :width: 100 %
 
 
 - Click "Fog Function" in the top navigator bar to triger the initialization of pre-defined fog functions. 
@@ -153,7 +150,6 @@ After you first click "Fog Function", a list of pre-defined functions will be re
 With a second click, you can see the refreshed list as shown in the following figure.
 
 .. figure:: figures/function-list.png
-    :width: 100 %
 
 
 - Create an IoT device entity to trigger the Fog Function
@@ -166,7 +162,6 @@ You can register a device entity via the device registration page:
 Then you will see the following device registration page. 
 
 .. figure:: figures/device-registration.png
-    :width: 100 %
 
 - Check if the fog function is triggered
 
@@ -174,13 +169,11 @@ Then you will see the following device registration page.
 Check if a task is created under "Task" in System Management.**
 
 .. figure:: figures/task.png
-    :width: 100 %
 
 
 Check if a Stream is created under "Stream" in System Management.**
 
 .. figure:: figures/result.png
-    :width: 100 %
 
 
 

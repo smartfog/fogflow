@@ -62,8 +62,7 @@ based on three types of contexts, including:
 
 By leveraging these three kinds of context, FogFlow is able to orchestrate IoT services in a more intelligent and automatic manner. 
 
-.. figure:: figures/highlevelview.png
-    :width: 100 %
+.. image:: figures/highlevelview.png
 
 
 Technical benefit
@@ -80,7 +79,6 @@ FogFlow can therefore save development and operation cost, improve productivity,
 provide fast time-to-market, as well as increase scalability and reliability. 
 
 .. figure:: figures/benefit.png
-   :width: 100 %
 
 
 Differentiation
@@ -110,14 +108,12 @@ FogFlow has the following unique features illustrated in the following picture.
     in a distributed fasion. 
 
 .. figure:: figures/comparison1.png
-   :width: 100 %
 
 
 More detailed differentiations are summarized in the following table. 
 
 .. figure:: figures/comparison2.png
-    :width: 60 %
-    :align: center
+
     
 
 
