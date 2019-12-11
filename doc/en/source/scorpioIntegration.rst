@@ -1,15 +1,14 @@
 *****************************************
-Integrate Fogflow with Scorpio Broker
+Integrate FogFlow with Scorpio Broker
 *****************************************
 
-NGSI-LD Adapter is built to enable Fogflow Ecosystem to provide Linked Data to the users. `Scorpio Broker`_ being the first reference implementation of NGSI-LD Specification, is being used here for receiving the Linked-Data from Fogflow.
+NGSI-LD Adapter is built to enable FogFlow Ecosystem to provide Linked Data to the users. `Scorpio Broker`_ being the first reference implementation of NGSI-LD Specification, is being used here for receiving the Linked-Data from Fogflow.
 
 .. _`Scorpio Broker`: https://scorpio.readthedocs.io/en/latest/
 
 The figure below shows how NGSI-LD Adapter works in transforming the NGSIv1 data from Fogflow into NGSI-LD data to Scorpio Broker.
 
 .. figure:: figures/ngsi-ld-adapter.png
-   :width: 100 %
 
 1. User sends a subscription request to the adapter. 
 2. The adapter then forwards this request to the Fogflow broker, to subscribe itself for the Context Data specified in its request.
@@ -43,7 +42,7 @@ NGSI-LD Adapter can be run under Fogflow ecosystem using Fogflow Dashboard as gi
 **Register a Fog Function** as shown in the figure below. In "SelectedType", provide the Entity Type (say "LD") of the Context Data that will be used to trigger this Fog Function. Choose the operator registered in Step#1 as the operator in Fog Function.
 
 .. figure:: figures/fogfunction_ngsi-ld-adapter.png
-   :width: 100 %
+
 
 **Trigger the Fog Function** by sending an update request to Fogflow Broker with the Entity Type as "LD" (or whatever is specified in Step#3 as the SelectedType). It should include fogflowIP and ngbIP in the attributes along with location metadata. Example request is given below:
 

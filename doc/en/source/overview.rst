@@ -8,8 +8,7 @@ System architecture
 The FogFlow framework operates on a geo-distributed, hierarchical, and heterogeneous ICT infrastructure that includes cloud nodes, edge nodes, and IoT devices. The following figure illustrates the system architecture of FogFlow and its major components across three logical layers
 
 .. figure:: figures/architecture.png
-   :scale: 100 %
-   :alt: map to buried treasure
+
 
 Three layers
 ===============================

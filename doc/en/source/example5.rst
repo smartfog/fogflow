@@ -1,5 +1,5 @@
 *****************************************
-Integrate an Actuator Device with Fogflow
+Integrate an actuator device with Fogflow
 *****************************************
 
 The IoT devices can be of two types:
@@ -22,7 +22,6 @@ Integration with NGSI supported Devices
 The figure below shows the how southbound flow is accomplished in Fogflow.
 
 .. figure:: figures/ngsi-device-integration.png
-   :width: 100 %
    
 
 To use an NGSI device, users can start this simple `Lamp`_ device, which prints the status of the lamp when an on/off command is received.
@@ -100,7 +99,7 @@ Integration with Non-NGSI supported Devices
 FIWARE-provided IoT Agent will work as an intermediater between a Non-NGSI Device and Fogflow's thin broker in bidirectional manner. For devices based on a specific protocol, separate IoT Agent is there, for example, IoT Agent JSON for MQTT based devices, IoT Agent UL for Ultralight Devices, and so on. Southbound flow for Non-NGSI devices is shown in the figure below. It makes use of a device-protocol specific IoT Agent.
 
 .. figure:: figures/non-ngsi-device-integration.png
-   :width: 100 %
+
    
 Using Ultralight devices
 ===============================================
@@ -116,7 +115,6 @@ The figure below shows the IoT Device monitor dashboard at http://tutorial_IP:30
 Please note that the "lamp001" is in "off" state. In this integration, we will light the lamp device using Fogflow.
     
 .. figure:: figures/device-monitor-1.png
-   :width: 100 %
    
 
 **Registering a Device:** Device registeration is done at the IoT Agent to indicate what data the device will be providing. Following is the curl request for creating or registring a device on IoT Agent. Here, we are registering a lamp device with id "lamp001" that is supposed to be the context provider for entity "urn:ngsi-ld:Lamp:001". Corresponding to this, the IoT Agent will register the device in thin broker as well as create the entity for that device in thin broker itself.
@@ -215,7 +213,6 @@ The above request shows Fogflow entity update, which is a bit different from the
 Users can check the status of the Lamp again, it will be in lit-up state as shown in the figure below.
 
 .. figure:: figures/device-monitor-2.png
-   :width: 100 %
 
 
 Using MQTT devices
@@ -313,7 +310,6 @@ Mosquitto broker will notify IoT-Agent for this Update, and consequently, the da
 The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/attrs" as well , as shown in the figure below.
 
 .. figure:: figures/mqtt-data-update.png
-   :width: 100 %
 
 
 **Run device commands:** This section covers the southbound traffic flow, i.e., how commands are run on the device. For this, send the below command updateContext request to Thin Broker. Thin broker will find the provider for this command update and will forward the UpdateContext request to that provider. In this case, IoT-Agent is the provider. IoT-Agent will publish the command at "/FFNN1111/lamp001/cmd" topic of the Mosquitto broker linked to it.
@@ -349,6 +345,6 @@ The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/attrs"
 The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/cmd", as shown in the figure below. This means that "on" command has been run successfully on the MQTT device.
 
 .. figure:: figures/mqtt-cmd-update.png
-   :width: 100 %
+
 
 Users can again have their customized devices to publish the command result on Thin Broker side.

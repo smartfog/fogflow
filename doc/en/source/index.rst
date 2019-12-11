@@ -41,10 +41,10 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :numbered:    
 
     overview.rst
+    concept.rst    	
+    programming.rst	
     context.rst
     processing.rst
-    concept.rst    
-    programming.rst
     api.rst
     build.rst
     test.rst

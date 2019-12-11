@@ -16,8 +16,7 @@ As illustrated by the following figure, in FogFlow a large number of distributed
 under the coordination a global and centralized IoT Discovery. 
 
 .. figure:: figures/distributed-brokers.png
-   :scale: 100 %
-   :alt: map to buried treasure
+
 
 
 IoT Discovery
