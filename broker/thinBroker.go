@@ -42,7 +42,7 @@ type ThinBroker struct {
 
         //Southbound feature addition
         providerIoTAgentList    map[string]string
-
+	providerIoTAgentList_lock sync.RWMutex
         //mapping from entityID to subscriptionID
         entityId2Subcriptions map[string][]string
         e2sub_lock            sync.RWMutex
@@ -503,7 +503,9 @@ func (tb *ThinBroker) handleSouthboundCommand (w rest.ResponseWriter, updateCtxR
                 //Check if registration exists on local broker
                 if brokerURL == tb.myProfile.MyURL {
                         //Get Provider IoT Agent for the registered device on local broker
+			tb.providerIoTAgentList_lock.RLock()
                         providerURL := tb.providerIoTAgentList[rid]
+			tb.providerIoTAgentList_lock.RUnlock()
                         if fogflowRequest {
                                 ctxElem = tb.handleFogflowCommandUpdate(ctxElem)
                         }
@@ -1176,7 +1178,9 @@ func (tb *ThinBroker) createProviderIoTAgentList(RegID string, ProvidingApplicat
         if tb.getRegistration(RegID) != nil {
                 errString = "Registration already exists for this Entity ID!"
         } else {
+		tb.providerIoTAgentList_lock.Lock()
                 tb.providerIoTAgentList[RegID] = ProvidingApplication
+		tb.providerIoTAgentList_lock.Unlock()
         }
         return errString
 }
