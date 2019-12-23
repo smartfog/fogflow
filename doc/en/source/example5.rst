@@ -52,6 +52,10 @@ After starting the lamp device, register the lamp device on Fogflow using the fo
                         {
                             "name": "on",
                             "type": "command"
+                        },
+                        {
+                            "name": "off",
+                            "type": "command"
                         }
                     ],
                     "providingApplication": "http://<Lamp_Host_IP>:8888"
@@ -106,9 +110,9 @@ Using Ultralight devices
 
 Integration of an Ultralight actuator device with Fogflow is illustrated in the below example.
 
-To work in Southbound using an Ultralight device, IoT Agent UL and Ultralight devices must be running. `Docker-Compose`_ file for this is given. The "tutorial" service in this file provides the device services. User need to edit this file based on their environment variables to get started.
+To work in Southbound using an Ultralight device, IoT Agent UL and Ultralight devices must be running. Docker-Compose file for this is given `here`_. The "tutorial" service in this file provides the device services. Users need to edit this file based on their environment variables to get started.
 
-.. _`Docker-Compose`: https://github.com/FIWARE/tutorials.IoT-Agent/blob/master/docker-compose.yml
+.. _`here`: https://github.com/FIWARE/tutorials.IoT-Agent/blob/master/docker-compose.yml
 
 The figure below shows the IoT Device monitor dashboard at http://tutorial_IP:3000/device/monitor
 
@@ -348,3 +352,40 @@ The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/cmd", 
 
 
 Users can again have their customized devices to publish the command result on Thin Broker side.
+
+Other APIs for RegisterContext
+-----------------------------------------------
+
+**GET a Registration**
+
+Below is the curl request to get a device registration from a thin broker within Fogflow System, it will tell which broker contains the registration information regarding that device.
+
+.. code-block:: console
+
+      curl -iX GET \
+      'http://<Thin_Broker_IP>:8070/NGSI9/registration/Lamp001' \
+      -H 'fiware-service: openiot' \
+      -H 'fiware-servicepath: /'
+
+The device registration id for the above registration would be "Lamp001.openiot.~" within Fogflow. 
+
+Users can also look for the registration at thin broker in the following way, as the Fiware Headers (i.e., "fiware-service" and "fiware-servicepath") are optional in the request. The result is completely dependent on what is being searched for.
+
+.. code-block:: console
+
+      curl -iX GET \
+      'http://<Thin_Broker_IP>:8070/NGSI9/registration/Lamp001.openiot.~'
+
+
+**DELETE a Registration**
+
+Following curl request would delete a device registration in Fogflow.
+
+.. code-block:: console
+
+      curl -iX DELETE \
+      'http://<Thin_Broker_IP>:8070/NGSI9/registration/Lamp001' \
+      -H 'fiware-service: openiot' \
+      -H 'fiware-servicepath: /'
+
+This request would delete the registration "Lamp001.openiot.~". Fiware Headers (i.e., "fiware-service" and "fiware-servicepath") are mandatory.
