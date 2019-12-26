@@ -109,12 +109,9 @@ type ContextMetadata struct {
 /*
 func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 	fmt.Println("====== test 1========")
-
 	err := json.Unmarshal(b, metadata)
-
 	fmt.Println("====== test ========")
 	fmt.Printf("%+v\n", metadata)
-
 	if err == nil {
 		switch strings.ToLower(metadata.Type) {
 		case "circle":
@@ -122,13 +119,11 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 			if err = mapstructure.Decode(metadata.Value, &temp); err == nil {
 				(*metadata).Value = temp
 			}
-
 		case "point":
 			var temp Point
 			if err = mapstructure.Decode(metadata.Value, &temp); err == nil {
 				(*metadata).Value = temp
 			}
-
 		case "polygon":
 			var temp Polygon
 			if err = mapstructure.Decode(metadata.Value, &temp); err == nil {
@@ -136,7 +131,6 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 			}
 		}
 	}
-
 	return err
 }
 */
@@ -179,25 +173,21 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 					if err = json.Unmarshal(m.Value, &temp); err == nil {
 						(*metadata).Value = temp
 					}
-
 				case "float":
 					var temp float64
 					if err = json.Unmarshal(m.Value, &temp); err == nil {
 						(*metadata).Value = temp
 					}
-
 				case "boolean":
 					var temp bool
 					if err = json.Unmarshal(m.Value, &temp); err == nil {
 						(*metadata).Value = temp
 					}
-
 				case "string":
 					var temp string
 					if err = json.Unmarshal(m.Value, &temp); err == nil {
 						(*metadata).Value = temp
 					}
-
 				case "object":
 					var temp map[string]interface{}
 					if err = json.Unmarshal(m.Value, &temp); err == nil {
@@ -912,4 +902,24 @@ func Distance(p1 *Point, p2 *Point) uint64 {
 	h := hsin(la2-la1) + math.Cos(la1)*math.Cos(la2)*hsin(lo2-lo1)
 
 	return uint64(2 * r * math.Asin(math.Sqrt(h)))
+}
+
+//To handle RegisterContextRequest coming from IoT Agent
+type RegisterContextRequest1 struct {
+        ContextRegistrations []ContextRegistration1    `json:"contextRegistrations,omitempty"`
+        Duration             string                    `json:"duration,omitempty"`
+        RegistrationId       string                    `json:"registrationId,omitempty"`
+}
+
+type ContextRegistration1 struct {
+        EntityIdList                  []EntityId1                    `json:"entities,omitempty"`
+        ContextRegistrationAttributes []ContextRegistrationAttribute `json:"attributes,omitempty"`
+        Metadata                      []ContextMetadata              `json:"contextMetadata,omitempty"`
+        ProvidingApplication          string                         `json:"providingApplication"`
+}
+
+type EntityId1 struct {
+        ID        string   `json:"id"`
+        Type      string   `json:"type,omitempty"`
+        IsPattern string   `json:"isPattern,omitempty"`
 }
