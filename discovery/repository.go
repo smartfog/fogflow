@@ -3,7 +3,6 @@ package main
 import (
 	"sort"
 	"sync"
-
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
@@ -109,7 +108,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 	nearby := restriction.GetNearbyFilter()
 
 	candidates := make([]Candidate, 0)
-
 	for _, registration := range er.ctxRegistrationList {
 		if matchingWithFilters(registration, entities, attributes, restriction) == true {
 			candidate := Candidate{}
@@ -130,7 +128,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 			candidates = append(candidates, candidate)
 		}
 	}
-
 	if nearby != nil {
 		if len(candidates) > nearby.Limit {
 			// for the nearby query, just select the closest n matched entities
@@ -160,40 +157,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 	return entityMap
 }
 
-// func (er *EntityRepository) selectTopN(matchedEntities []string, nearby *NearBy) []string {
-// 	if len(matchedEntities) <= nearby.Limit {
-// 		return matchedEntities
-// 	}
-
-// 	landmark := Point{}
-// 	landmark.Longitude = nearby.Longitude
-// 	landmark.Latitude = nearby.Latitude
-
-// 	candidates := make([]Candidate, 0)
-// 	for _, eid := range matchedEntities {
-// 		candidate := Candidate{}
-// 		candidate.ID = eid
-
-// 		location := er.ctxRegistrationList[eid].GetLocation()
-// 		candidate.Distance = Distance(&location, &landmark)
-
-// 		candidates = append(candidates, candidate)
-// 	}
-
-// 	// sorting in
-// 	sort.Slice(candidates, func(i, j int) bool {
-// 		return candidates[i].Distance > candidates[j].Distance
-// 	})
-
-// 	// take the first n candidates
-// 	closestN := make([]string, nearby.Limit)
-
-// 	for _, candidate := range candidates {
-// 		closestN = append(closestN, candidate.EntityId)
-// 	}
-
-// 	return closestN
-// }
 
 func (er *EntityRepository) deleteEntity(eid string) {
 	er.ctxRegistrationList_lock.Lock()

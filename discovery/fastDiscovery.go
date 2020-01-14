@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-
 	"github.com/ant0ine/go-json-rest/rest"
 	_ "github.com/lib/pq"
 	"github.com/satori/go.uuid"
@@ -209,13 +208,13 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 		return
 	}
 	subID := u1.String()
-
 	subscribeCtxAvailabilityReq.SubscriptionId = subID
 
 	// add the new subscription
 	fd.subscriptions_lock.Lock()
 	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
 	fd.subscriptions_lock.Unlock()
+	
 
 	// send out the response
 	subscribeCtxAvailabilityResp := SubscribeContextAvailabilityResponse{}
@@ -225,7 +224,6 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	subscribeCtxAvailabilityResp.ErrorCode.ReasonPhrase = "OK"
 
 	w.WriteJson(&subscribeCtxAvailabilityResp)
-
 	// trigger the process to send out the matched context availability infomation to the subscriber
 	go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
 }
@@ -233,7 +231,6 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 // handle NGSI9 subscription based on the local database
 func (fd *FastDiscovery) handleSubscribeCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
 	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction)
-
 	if len(entityMap) > 0 {
 		fd.sendNotify(subReq.SubscriptionId, subReq.Reference, entityMap, "CREATE")
 	}
@@ -328,12 +325,6 @@ func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyConte
 		ERROR.Println(err)
 		return false
 	}
-
-	/*
-		if fd.SecurityCfg.Enabled == true {
-			subscriberURL = strings.Replace(subscriberURL, "http://", "https://", 1)
-		}
-	*/
 
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")

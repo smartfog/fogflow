@@ -2,6 +2,7 @@ package ngsi
 
 import (
 	"bytes"
+	"fmt"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -409,6 +410,12 @@ type NGSI9Client struct {
 	SecurityCfg     *HTTPS
 }
 
+//NGSIV2
+type NGSIV2Client struct {
+        IoTDiscoveryURL string
+        SecurityCfg     *HTTPS
+}
+
 func (nc *NGSI9Client) RegisterContext(registerCtxReq *RegisterContextRequest) (string, error) {
 	body, err := json.Marshal(registerCtxReq)
 	if err != nil {
@@ -569,13 +576,14 @@ func (nc *NGSI9Client) DiscoverContextAvailability(discoverCtxAvailabilityReq *D
 
 	return registrationList, nil
 }
-
+/*
+	
+*/
 func (nc *NGSI9Client) SubscribeContextAvailability(sub *SubscribeContextAvailabilityRequest) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
 	}
-
 	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/subscribeContextAvailability", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -606,6 +614,44 @@ func (nc *NGSI9Client) SubscribeContextAvailability(sub *SubscribeContextAvailab
 	}
 }
 
+/*
+	NGSIV2 client for connect with discovery subscribeContextAvailability 
+	This function return subscription id to the broker
+*/
+func (nc *NGSIV2Client) Subscribev2ContextAvailability(sub *SubscribeContextAvailabilityRequest) (string, error) {
+        body, err := json.Marshal(*sub)
+        if err != nil {
+                return "", err
+        }
+	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/subscribeContextAvailability", bytes.NewBuffer(body))
+        req.Header.Add("Content-Type", "application/json")
+        req.Header.Add("Accept", "application/json")
+
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                ERROR.Println(err)
+                return "", err
+        }
+
+        text, _ := ioutil.ReadAll(resp.Body)
+
+        subscribeCtxAvailResp := Subscribev2ContextAvailabilityResponse{}
+        err = json.Unmarshal(text, &subscribeCtxAvailResp)
+        if err != nil {
+                return "", err
+        }
+
+        if subscribeCtxAvailResp.SubscriptionId != "" {
+                return subscribeCtxAvailResp.SubscriptionId, nil
+        } else {
+                err = errors.New(subscribeCtxAvailResp.ErrorCode.ReasonPhrase)
+                return "", err
+        }
+}
 func (nc *NGSI9Client) UnsubscribeContextAvailability(sid string) error {
 	unsubscription := &UnsubscribeContextAvailabilityRequest{
 		SubscriptionId: sid,
@@ -644,6 +690,47 @@ func (nc *NGSI9Client) UnsubscribeContextAvailability(sid string) error {
 		err = errors.New(unsubscribeCtxAvailResp.StatusCode.ReasonPhrase)
 		return err
 	}
+}
+
+//NGSIV2
+func (nc *NGSIV2Client) Unsubscribev2ContextAvailability(sid string) error {
+        unsubscription := &Unsubscribev2ContextAvailabilityRequest{
+                SubscriptionId: sid,
+        }
+
+        body, err := json.Marshal(unsubscription)
+        if err != nil {
+                return err
+        }
+
+        req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/unsubscribeContextAvailability", bytes.NewBuffer(body))
+        req.Header.Add("Content-Type", "application/json")
+        req.Header.Add("Accept", "application/json")
+
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                ERROR.Println(err)
+                return err
+        }
+
+        text, _ := ioutil.ReadAll(resp.Body)
+
+        unsubscribeCtxAvailResp := UnsubscribeContextAvailabilityResponse{}
+        err = json.Unmarshal(text, &unsubscribeCtxAvailResp)
+        if err != nil {
+                return err
+        }
+
+        if unsubscribeCtxAvailResp.StatusCode.Code == 200 {
+                return nil
+        } else {
+                err = errors.New(unsubscribeCtxAvailResp.StatusCode.ReasonPhrase)
+                return err
+        }
 }
 
 func (nc *NGSI9Client) DiscoveryNearbyIoTBroker(nearby NearBy) (string, error) {
