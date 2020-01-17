@@ -12,7 +12,7 @@ based on various **context**, including:
 
 - *system context*: the available system resources from all layers;
 - *data context*: the registered metadata of all available data entities; 
-- *usage context*: the expected QoS defined by users. 
+- *usage context*: the expected usage intention defined by users in terms QoS, latency, and bandwidth cost;
     
 Thanks to its advanced intent-based programming model and context-driven service orchestration, 
 FogFlow is able to **provide optimized QoS with minimal development effort and nearly zero operation overhead**. 
