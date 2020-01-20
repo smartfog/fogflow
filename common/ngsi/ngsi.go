@@ -923,9 +923,3 @@ type EntityId1 struct {
         Type      string   `json:"type,omitempty"`
         IsPattern string   `json:"isPattern,omitempty"`
 }
-
-type FiwareData struct {
-        ProviderIoTAgent        string
-        FiwareService           string
-        FiwareServicePath       string
-}
