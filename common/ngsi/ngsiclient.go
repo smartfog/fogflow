@@ -63,12 +63,8 @@ func (nc *NGSI10Client) InternalUpdateContext(elem *ContextElement) error {
         return nc.sendUpdateContext(elem, true, false)
 }
 
-func (nc *NGSI10Client) SouthboundUpdateContext(elem *ContextElement, fs string, fsp string, command bool) error {
-        if command {
-                return nc.sendUpdateContext(elem, false, true, fs, fsp, "true")
-        } else {
-                return nc.sendUpdateContext(elem, false, true, fs, fsp, "false")
-        }
+func (nc *NGSI10Client) SouthboundUpdateContext(elem *ContextElement, fs string, fsp string) error {
+        return nc.sendUpdateContext(elem, false, true, fs, fsp)
 }
 
 func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool, southbound bool, params ...string) error {
@@ -93,7 +89,6 @@ func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool, s
         if southbound == true {
                 req.Header.Add("fiware-service", params[0])
                 req.Header.Add("fiware-servicepath", params[1])
-                req.Header.Add("command", params[2])
         }
 
 	client := nc.SecurityCfg.GetHTTPClient()
