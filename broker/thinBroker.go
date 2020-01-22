@@ -721,7 +721,7 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, 
 	Send the current status of exiting entity to the new subscriber
 */
 
-func (tb *ThinBroker) notifyOneSubscriberv2WithCurrentStatus(entities []EntityId, sid string, v1V2SubscriptionFlag bool) {
+func (tb *ThinBroker) notifyOneSubscriberv2WithCurrentStatus(entities []EntityId, sid string) {
         elements := make([]ContextElement, 0)
         // check if the subscription still exists; if yes, then find out the selected attribute list
         tb.v2subscriptions_lock.RLock()
@@ -972,7 +972,7 @@ func (tb *ThinBroker) Subscriptionv2Context(w rest.ResponseWriter, r *rest.Reque
                         tb.entityIdv2Subcriptions[entity.ID] = append(tb.entityIdv2Subcriptions[entity.ID], subID)
                         tb.e2sub_lock.Unlock()
                 }
-                tb.notifyOneSubscriberv2WithCurrentStatus(subReqv2.Subject.Entities, subID,false)
+                tb.notifyOneSubscriberv2WithCurrentStatus(subReqv2.Subject.Entities, subID)
         } else {
                 tb.Subscribev2ContextAvailability(subID)
         }
@@ -1304,7 +1304,7 @@ func (tb *ThinBroker) handleNGSIV2Notify(mainSubID string, notifyv2ContextAvaila
                 if registration.ProvidingApplication == tb.MyURL {
                         //for matched entities provided by myself
                         if action == "CREATE" || action == "UPDATE" {
-                                tb.notifyOneSubscriberv2WithCurrentStatus(registration.EntityIdList, mainSubID,true)
+                                tb.notifyOneSubscriberv2WithCurrentStatus(registration.EntityIdList, mainSubID)
                         }
                 } else {
                         //for matched entities provided by other IoT Brokers

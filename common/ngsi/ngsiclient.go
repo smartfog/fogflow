@@ -2,7 +2,6 @@ package ngsi
 
 import (
 	"bytes"
-	"fmt"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -410,7 +409,6 @@ type NGSI9Client struct {
 	SecurityCfg     *HTTPS
 }
 
-//NGSIV2
 type NGSIV2Client struct {
         IoTDiscoveryURL string
         SecurityCfg     *HTTPS
@@ -437,8 +435,6 @@ func (nc *NGSI9Client) RegisterContext(registerCtxReq *RegisterContextRequest) (
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(text))
-
 	registerCtxResp := RegisterContextResponse{}
 	err = json.Unmarshal(text, &registerCtxResp)
 	if err != nil {
@@ -472,9 +468,6 @@ func (nc *NGSI9Client) UnregisterEntity(eid string) error {
 }
 
 func (nc *NGSI9Client) GetProviderURL(id string) string {
-	//resp, err := http.Get(nc.IoTDiscoveryURL + "/registration/" + id)
-	//defer resp.Body.Close()
-
 	req, err := http.NewRequest("GET", nc.IoTDiscoveryURL+"/registration/"+id, nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -576,14 +569,13 @@ func (nc *NGSI9Client) DiscoverContextAvailability(discoverCtxAvailabilityReq *D
 
 	return registrationList, nil
 }
-/*
-	
-*/
+
 func (nc *NGSI9Client) SubscribeContextAvailability(sub *SubscribeContextAvailabilityRequest) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
 	}
+
 	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/subscribeContextAvailability", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -614,16 +606,13 @@ func (nc *NGSI9Client) SubscribeContextAvailability(sub *SubscribeContextAvailab
 	}
 }
 
-/*
-	NGSIV2 client for connect with discovery subscribeContextAvailability 
-	This function return subscription id to the broker
-*/
 func (nc *NGSIV2Client) Subscribev2ContextAvailability(sub *SubscribeContextAvailabilityRequest) (string, error) {
         body, err := json.Marshal(*sub)
         if err != nil {
                 return "", err
         }
-	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/subscribeContextAvailability", bytes.NewBuffer(body))
+
+        req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/subscribeContextAvailability", bytes.NewBuffer(body))
         req.Header.Add("Content-Type", "application/json")
         req.Header.Add("Accept", "application/json")
 
@@ -692,7 +681,7 @@ func (nc *NGSI9Client) UnsubscribeContextAvailability(sid string) error {
 	}
 }
 
-//NGSIV2
+
 func (nc *NGSIV2Client) Unsubscribev2ContextAvailability(sid string) error {
         unsubscription := &Unsubscribev2ContextAvailabilityRequest{
                 SubscriptionId: sid,
