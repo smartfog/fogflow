@@ -452,10 +452,12 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 func (element *ContextElement) SetEntityID() {
 	if element.ID != "" {
 		element.Entity.ID = element.ID
+		element.ID = ""
 	}
 
 	if element.Type != "" {
 		element.Entity.Type = element.Type
+		element.Type = ""
 	}
 
 	if element.IsPattern != "" {
@@ -464,6 +466,7 @@ func (element *ContextElement) SetEntityID() {
 		} else {
 			element.Entity.IsPattern = false
 		}
+		element.IsPattern = ""
 	}
 }
 
