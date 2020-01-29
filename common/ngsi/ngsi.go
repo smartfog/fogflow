@@ -909,26 +909,26 @@ func Distance(p1 *Point, p2 *Point) uint64 {
 
 //To handle RegisterContextRequest coming from IoT Agent
 type RegisterContextRequest1 struct {
-        ContextRegistrations []ContextRegistration1    `json:"contextRegistrations,omitempty"`
-        Duration             string                    `json:"duration,omitempty"`
-        RegistrationId       string                    `json:"registrationId,omitempty"`
+	ContextRegistrations []ContextRegistration1 `json:"contextRegistrations,omitempty"`
+	Duration             string                 `json:"duration,omitempty"`
+	RegistrationId       string                 `json:"registrationId,omitempty"`
 }
 
 type ContextRegistration1 struct {
-        EntityIdList                  []EntityId1                    `json:"entities,omitempty"`
-        ContextRegistrationAttributes []ContextRegistrationAttribute `json:"attributes,omitempty"`
-        Metadata                      []ContextMetadata              `json:"contextMetadata,omitempty"`
-        ProvidingApplication          string                         `json:"providingApplication"`
+	EntityIdList                  []EntityId1                    `json:"entities,omitempty"`
+	ContextRegistrationAttributes []ContextRegistrationAttribute `json:"attributes,omitempty"`
+	Metadata                      []ContextMetadata              `json:"contextMetadata,omitempty"`
+	ProvidingApplication          string                         `json:"providingApplication"`
 }
 
 type EntityId1 struct {
-        ID        string   `json:"id"`
-        Type      string   `json:"type,omitempty"`
-        IsPattern string   `json:"isPattern,omitempty"`
+	ID        string `json:"id"`
+	Type      string `json:"type,omitempty"`
+	IsPattern string `json:"isPattern,omitempty"`
 }
 
 type FiwareData struct {
-        ProviderIoTAgent        string
-        FiwareService           string
-        FiwareServicePath       string
+	ProviderIoTAgent  string
+	FiwareService     string
+	FiwareServicePath string
 }
