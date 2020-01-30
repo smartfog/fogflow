@@ -23,7 +23,6 @@ For example, you can use `freeDNS`_ for this purpose.
 
 
 .. figure:: figures/https-setup.png
-    :width: 100 %
 
 
 .. important:: 
@@ -148,7 +147,7 @@ Generate the key and certificate files
 	./key4edgenode.sh  edgenode1.fogflow.io
 
 
-Start the FogFlow components on the cloud node
+Start the FogFlow components on the edge node
 --------------------------------------------
 
 .. code-block:: console    
@@ -168,3 +167,14 @@ Validate your setup
 	195bb8e44f5b        fogflow/broker      "/broker"           About a minute ago   Up About a minute   0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp   https_edge_broker_1
 	
 
+
+Check system status via FogFlow Dashboard
+===========================================================
+
+You can open the FogFlow dashboard in your web browser to see the current system status via the URL: https://cloudnode.fogflow.io/index.html
+
+.. important:: 
+
+	please make sure that the domain names of the cloud node can be properly resolved. 
+	If you use a self-signed SSL certificate, you will see a browser warning indicating that the certificate should not be trusted.
+	You can proceed past this warning to view the FogFlow dashboard web page via https.

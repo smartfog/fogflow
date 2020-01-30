@@ -12,9 +12,10 @@ based on various **context**, including:
 
 - *system context*: the available system resources from all layers;
 - *data context*: the registered metadata of all available data entities; 
-- *usage context*: the expected QoS defined by users. 
+- *usage context*: the expected usage intention defined by users in terms QoS, latency, and bandwidth cost;
     
-By leveraging these contextual information, FogFlow is able to provide optimized QoS with minimal development effort and nearly zero operation overhead. 
+Thanks to its advanced intent-based programming model and context-driven service orchestration, 
+FogFlow is able to **provide optimized QoS with minimal development effort and nearly zero operation overhead**. 
 Currently, FogFlow has been applied into various business use cases in the areas of retails, smart cities, and smart industry. 
 
 .. toctree::
@@ -29,8 +30,10 @@ Currently, FogFlow has been applied into various business use cases in the areas
     example1.rst
     example2.rst
     example3.rst
-    example4.rst  
-    https.rst      
+    example4.rst
+    https.rst
+    scorpioIntegration.rst
+    example5.rst          
    
 .. toctree::
     :maxdepth: 1
@@ -38,10 +41,10 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :numbered:    
 
     overview.rst
+    concept.rst    	
+    programming.rst	
     context.rst
     processing.rst
-    concept.rst    
-    programming.rst
     api.rst
     build.rst
     test.rst

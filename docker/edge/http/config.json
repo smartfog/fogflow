@@ -14,11 +14,10 @@
         "debug": "stdout"
     },
     "discovery": {
-        "https_port": 443           
+        "http_port": 80           
     },
     "broker": {
-        "http_port": 80,
-        "https_port": 443   
+        "http_port": 8060
     },     
     "worker": {
         "container_autoremove": false,
@@ -31,9 +30,6 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : false,
-        "my_certificate": "edge_node.pem",
-        "my_key": "edge_node.key",
-        "my_ca": "root_ca.pem"
+        "enabled" : false
     }
 }

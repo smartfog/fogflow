@@ -1,7 +1,7 @@
 .. _flow-task:
 
 *****************************************
-Context-driven data flows
+Context-driven service orchestration
 *****************************************
 
 
@@ -28,4 +28,3 @@ For example, each worker takes the following steps to start a task instance.
 
 
 .. figure:: figures/launching-task.png
-   :width: 100 %

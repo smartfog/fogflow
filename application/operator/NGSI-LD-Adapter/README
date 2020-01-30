@@ -1,0 +1,95 @@
+Follow these steps to run LD-Adapter as a FogFunction:
+
+1. Build the image of LD-Adapter by editing and running build file.
+
+2. Register this image in FogFlow.
+
+3. Register a FogFunction in Fogflow and set an Entity Type (say LD) as SelectCondition. Choose the LD-Adapter image as Fog Function Operator.
+
+4. Trigger the Fog Function by sending an update request to Fogflow Broker with an Entity Type "LD". It should include Fogflow IP and Scorpio Broker IP. Example request is given below:
+
+*******************************************************************
+
+curl -iX POST \
+  'http://<Fogflow-Broker-IP>:8080/ngsi10/updateContext' \
+  -H 'Content-Type: application/json' \
+  -d '
+{
+    "contextElements": [
+    {
+        "entityId": {
+        "id": "LD001",
+        "type": "LD",
+        "isPattern": false
+        },
+        "attributes": [
+             {
+                 "name": "fogflowIP",
+                 "type": "string",
+                 "contextValue": "<IP>"
+             },
+             {
+                 "name": "ngbIP",
+                 "type": "string",
+                 "contextValue": "<IP>"
+             }
+         ],
+         "domainMetadata": [
+             {
+                 "name": "location",
+                 "type": "point",
+                 "value": {
+                              "latitude": 52,
+                              "longitude": 67
+                 }
+             }
+         ]
+    }
+    ],
+    "updateAction": "UPDATE"
+}'
+
+*******************************************************************
+
+
+LD-Adapter task will be created and it will be listening on port 8888. To use LD-Adapter, follow these steps:
+
+1. Send subscription on behalf of LD-Adapter to LD-Adapter itself, it will forward the same request to Fogflow Broker. This is because the access to Fogflow broker will not be available directly to the user. Examle Subscription request is given below:
+
+*******************************************************************
+
+curl -iX POST \
+  'http://<LD-Adapter-Host-IP>:8888/subscribeContext' \
+  -H 'Content-Type: application/json' \
+  -d '
+{
+  "entities": [
+    {
+      "id": "Temp.*",
+      "type": "Temp",
+      "isPattern": true
+    }
+  ],
+  "attributes": [
+    "temp"
+  ],
+  "restriction": {
+    "scopes": [
+      {
+        "scopeType": "circle",
+        "scopeValue": {
+          "centerLatitude": 49.406393,
+          "centerLongitude": 8.684208,
+          "radius": 200
+        }
+      }
+    ]
+  },
+  "reference": "http://<LD-Adapter-Host-IP>:8888"
+}'
+
+*******************************************************************
+
+2. Send an update request to Fogflow Broker with an entity of type and attributes defined in the above subscription.
+
+3. Check if the entity has been updated on Scorpio Broker by visiting URL: http://<Scorpio-Broker-IP>/ngsi-ld/v1/entities?type=http://example.org/Temp

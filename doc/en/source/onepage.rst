@@ -22,7 +22,6 @@ This is because a subscription with Orion Context Broker as the reference URL ha
 
 
 .. figure:: figures/systemview.png
-    :width: 100 %
 
 
 Here are the prerequisite commands for running FogFlow:
@@ -89,6 +88,7 @@ You need to change the following IP addresses in config.json according to your o
 	
 	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80 and 5672 for TCP
 
+	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" to replace coreservice_ip, external_hostip, and internal_hostip in the configuration file
 
 
 Start all Fogflow components 
@@ -144,7 +144,6 @@ You can open the FogFlow dashboard in your web browser to see the current system
 Once you are able to access the FogFlow dashboard, you can see the following web page
 
 .. figure:: figures/dashboard.png
-    :width: 100 %
 
 
 Try out an existing IoT service
@@ -163,7 +162,6 @@ After you first click "Operator Registry", a list of pre-defined operators will 
 With a second click, you can see the refreshed list as shown in the following figure.
 
 .. figure:: figures/operator-list.png
-    :width: 100 %
 
 
 - Click "Service Topology" in the top navigator bar to triger the initialization of pre-defined service topologies. 
@@ -172,7 +170,6 @@ After you first click "Service Topology", a list of pre-defined topologies will 
 With a second click, you can see the refreshed list as shown in the following figure.
 
 .. figure:: figures/topology-list.png
-    :width: 100 %
 
 
 - Click "Fog Function" in the top navigator bar to triger the initialization of pre-defined fog functions. 
@@ -181,7 +178,6 @@ After you first click "Fog Function", a list of pre-defined functions will be re
 With a second click, you can see the refreshed list as shown in the following figure.
 
 .. figure:: figures/function-list.png
-    :width: 100 %
 
 
 Simulate an IoT device to trigger the Fog Function
@@ -200,7 +196,6 @@ Then you can create a “Temperature” sensor entity by filling the following e
  
 
 .. figure:: figures/device-registration.png
-    :width: 100 %
 
 **2. Send an NGSI entity update to create the “Temperature” sensor entity**
  
@@ -254,29 +249,10 @@ Check if the fog function is triggered
 Check if a task is created under "Task" in System Management.**
 
 .. figure:: figures/task.png
-    :width: 100 %
 
 Check if a Stream is created under "Stream" in System Management.**
 
 .. figure:: figures/result.png
-    :width: 100 %
-
-
-
-- Create an IoT device entity to trigger the Fog Function
-
-You can register a device entity via the device registration page: 
-1) click "System Status"; 
-2) click "Device";
-3) click "Add";
-
-
-
-Then you will see the following device registration page. 
-
-.. figure:: figures/device-registration.png
-    :width: 100 %
-
 
 
 

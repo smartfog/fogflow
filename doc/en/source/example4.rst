@@ -2,8 +2,8 @@
 Integrate FogFlow with FIWARE
 *****************************************
 
-Since November 2017 FogFlow has been promoted as an incubated open source Generic Enabler (GE) in the FIWARE community. 
-Within this community, FogFlow holds a unique position as Cloud-Edge Orchestrator 
+As an official Generic Enabler (GE) in the FIWARE ecosystem, 
+FogFlow holds a unique position as Cloud-Edge Orchestrator 
 to launch and manage dynamic data processing flows seamlessly over cloud and edges for data ingestion, 
 transformation, and also advanced analytics. 
 
@@ -20,7 +20,6 @@ In this case a NGSI subscription must be issued by an external application or Fo
 to ask FogFlow to forward the requested context updates to a specified Orion Broker. 
 
 .. figure:: figures/orion-integration.png
-   :width: 100 %
 
 
 Two ways are provided to tell FogFlow which entitie should be forwarded to the Orion Broker. 
@@ -91,6 +90,7 @@ The second way is to consider Orion Broker as a data source to provide additiona
 In this case we can implement a simple fog function to fetch any necessary information into the FogFlow system. 
 In either way there is no need to make any change to the existing Orion-based FIWARE system. 
 Therefore, this type of integration can be done fast with nearly zero effort.
+
 At the low layer, for the integration with any Non-NGSI supported devices 
 like MQTT, COAP, OneM2M, OPC-UA, LoRaWAN, 
 FogFlow can reuse the modules of existing IoT agents and transform them into FogFlow adapters 
@@ -98,14 +98,6 @@ based on the fog function programming model.
 With these adapters FogFlow can dynamically launch necessary adapters for device integration directly at edges. 
 This way FogFlow is able to talk with a wide range of IoT devices.
 
-Currently, the MQTT based adapter has been provided and it is also open source in a seperated repository.
-Please refer to https://github.com/smartfog/adapter 
-
-In the future, we consider to provide an adapter to IoT-agents. As illustrated by the following figure, 
-this adapter could be reused to integrate with all types of FIWARE IoT agents. 
-
-.. figure:: figures/adapter-agent.jpg
-   :width: 100 %
 
 
 

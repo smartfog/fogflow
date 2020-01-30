@@ -24,7 +24,7 @@ limit            number of expected brokers
 
 Please check the following examples. 
 
-.. note:: For the Javascript code example, you need the library ngsiclient.js. 
+.. note:: For the Javascript code example, you need the library ngsiclient.js.
     Please refer to the code repository at application/device/powerpanel
 
 .. tabs::
@@ -34,7 +34,7 @@ Please check the following examples.
         .. code-block:: console 
 
             curl -iX POST \
-              'http://localhost:8071/ngsi9/discoverContextAvailability' \
+              'http://localhost:80/ngsi9/discoverContextAvailability' \
               -H 'Content-Type: application/json' \
               -d '
                 {
@@ -63,7 +63,7 @@ Please check the following examples.
 
         const NGSI = require('./ngsi/ngsiclient.js');
         
-        var discoveryURL = "http://localhost:8071/ngsi9";
+        var discoveryURL = "http://localhost:80/ngsi9";
         var myLocation = {
                 "latitude": 35.692221,
                 "longitude": 139.709059
@@ -87,6 +87,8 @@ APIs of FogFlow Broker
 
 .. figure:: https://img.shields.io/swagger/valid/2.0/https/raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-expanded.json.svg
   :target: https://app.swaggerhub.com/apis/fogflow/broker/1.0.0
+
+.. note:: Use port 80 for accessing the cloud broker, whereas for edge broker, the default port is 8070.
 
 
 Create/update context
@@ -115,7 +117,7 @@ Example:
         .. code-block:: console 
 
             curl -iX POST \
-              'http://localhost:8070/ngsi10/updateContext' \
+              'http://localhost:80/ngsi10/updateContext' \
               -H 'Content-Type: application/json' \
               -d '
                 {
@@ -156,7 +158,7 @@ Example:
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"
+        var brokerURL = "http://localhost:80/ngsi10"
     
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
     
@@ -220,7 +222,7 @@ Example:
 
 .. code-block:: console 
 
-   curl http://localhost:8070/ngsi10/entity/Device.temp001
+   curl http://localhost:80/ngsi10/entity/Device.temp001
 
 Fetch a specific attribute of a specific context entity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -238,7 +240,7 @@ Example:
 
 .. code-block:: console 
 
-   curl http://localhost:8070/ngsi10/entity/Device.temp001/temp
+   curl http://localhost:80/ngsi10/entity/Device.temp001/temp
 
 
 Check all context entities on a single Broker
@@ -250,7 +252,7 @@ Example:
 
 .. code-block:: console 
 
-    curl http://localhost:8070/ngsi10/entity
+    curl http://localhost:80/ngsi10/entity
 
 
 
@@ -275,14 +277,14 @@ query context by the pattern of entity ID
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+            curl -X POST 'http://localhost:80/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
               -d '{"entities":[{"id":"Device.*","isPattern":true}]}'          
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var queryReq = {}
@@ -305,14 +307,14 @@ query context by entity type
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+            curl -X POST 'http://localhost:80/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
               -d '{"entities":[{"type":"Temperature","isPattern":true}]}'          
 
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var queryReq = {}
@@ -335,7 +337,7 @@ query context by geo-scope (circle)
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+            curl -X POST 'http://localhost:80/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities": [{
@@ -358,7 +360,7 @@ query context by geo-scope (circle)
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var queryReq = {}
@@ -389,7 +391,7 @@ query context by geo-scope (polygon)
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+            curl -X POST 'http://localhost:80/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
               -d '{
                "entities":[
@@ -434,7 +436,7 @@ query context by geo-scope (polygon)
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var queryReq = {}
@@ -491,7 +493,7 @@ query context with the filter of domain metadata values
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+            curl -X POST 'http://localhost:80/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities": [{
@@ -510,7 +512,7 @@ query context with the filter of domain metadata values
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var queryReq = {}
@@ -537,7 +539,7 @@ query context with multiple filters
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/queryContext' \
+            curl -X POST 'http://localhost:80/ngsi10/queryContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities": [{
@@ -563,7 +565,7 @@ query context with multiple filters
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var queryReq = {}
@@ -606,7 +608,7 @@ Example:
 
 .. code-block:: console 
 
-    curl -iX DELETE http://localhost:8070/ngsi10/entity/Device.temp001
+    curl -iX DELETE http://localhost:80/ngsi10/entity/Device.temp001
 
 
 
@@ -635,7 +637,7 @@ subscribe context by the pattern of entity ID
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+            curl -X POST 'http://localhost:80/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities":[{"id":"Device.*","isPattern":true}],
@@ -645,7 +647,7 @@ subscribe context by the pattern of entity ID
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         var mySubscriptionId;
         
@@ -668,7 +670,7 @@ subscribe context by entity type
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+            curl -X POST 'http://localhost:80/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities":[{"type":"Temperature","isPattern":true}]
@@ -678,7 +680,7 @@ subscribe context by entity type
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var subscribeReq = {}
@@ -701,7 +703,7 @@ subscribe context by geo-scope
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+            curl -X POST 'http://localhost:80/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities": [{
@@ -725,7 +727,7 @@ subscribe context by geo-scope
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var subscribeReq = {}
@@ -758,7 +760,7 @@ subscribe context with the filter of domain metadata values
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+            curl -X POST 'http://localhost:80/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities": [{
@@ -778,7 +780,7 @@ subscribe context with the filter of domain metadata values
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var subscribeReq = {}
@@ -805,7 +807,7 @@ subscribe context with multiple filters
 
         .. code-block:: console 
 
-            curl -X POST 'http://localhost:8070/ngsi10/subscribeContext' \
+            curl -X POST 'http://localhost:80/ngsi10/subscribeContext' \
               -H 'Content-Type: application/json' \
               -d '{
                     "entities": [{
@@ -832,7 +834,7 @@ subscribe context with multiple filters
    .. code-tab:: javascript
 
         const NGSI = require('./ngsi/ngsiclient.js');
-        var brokerURL = "http://localhost:8070/ngsi10"    
+        var brokerURL = "http://localhost:80/ngsi10"    
         var ngsi10client = new NGSI.NGSI10Client(brokerURL);
         
         var subscribeReq = {}
@@ -873,7 +875,7 @@ sid              the subscription ID created when the subscription is issued
 ==============   ===============
 
 
-curl -iX DELETE http://localhost:8070/ngsi10/subscription/#sid
+curl -iX DELETE http://localhost:80/ngsi10/subscription/#sid
 
 
 

@@ -3,7 +3,7 @@ sudo: required
 language: go
 
 go:
-    - 1.11.x
+    - 1.13.x
 
 install: 
     - docker --version
@@ -34,7 +34,7 @@ install:
     - sh build    
 
 before_script:
-    - go get github.com/golang/lint/golint
+    - go get -u golang.org/x/lint/golint
 
 
 script:

@@ -31,23 +31,18 @@ There are two steps to register an operator in Fogflow.
 **Register an Operator** to define what would be the name of Operator and what input parameters it would need. Here in this context, an operator is nothing but a named element having some parameters.
 The following picture shows the list of all registered operators and their parameter count.
 
-.. figure:: figures/operator-list.png
-   :scale: 60 %
-   :alt: map to buried treasure
+.. image:: figures/operator-list.png
    
 After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
 
-.. figure:: figures/operator-registry.png
-   :scale: 100 %
-   :alt: map to buried treasure
+.. image:: figures/operator-registry.png
+
 
 **Register a Docker Image and choose Operator** to define the docker image and associate an already registered Operator with it. 
 
 The following picture shows the list of all registered docker images and the key information of each image. 
 
-.. figure:: figures/dockerimage-registry-list.png
-   :scale: 100 %
-   :alt: map to buried treasure
+.. image:: figures/dockerimage-registry-list.png
 
 After clicking the "register" button, you can see a form as below. 
 Please fill out the required information and click the "register" button to finish the registration. 
@@ -68,9 +63,8 @@ The form is explained as the following.
 
 .. _`Docker Hub`: https://github.com/smartfog/fogflow/tree/master/application/operator/anomaly
 
-.. figure:: figures/dockerimage-registry.png
-   :scale: 100 %
-   :alt: map to buried treasure
+.. image:: figures/dockerimage-registry.png
+
 
 
 Register it programmatically by sending a NGSI update 
@@ -182,7 +176,9 @@ Here are the Curl and the Javascript-based code examples to register an operator
 	        "updateAction": "UPDATE"
 		}'
 
-   .. code-tab:: Javascript
+   .. group-tab:: Javascript
+
+        .. code-block:: Javascript 
 
 		name = "counter"
 
@@ -389,8 +385,7 @@ create a fog function from the FogFlow editor
 
 A menu will pop up when you do a right mouse click on the task design board.
 
-.. figure:: figures/fog-function-1.png
-   :width: 100 %
+.. image:: figures/fog-function-1.png
    
 The displayed menu includes the following items: 
 
@@ -399,19 +394,16 @@ The displayed menu includes the following items:
 
 Once you click "Task" from the popup menu, a Task element will be placed on the design board, as shown below.
 
-.. figure:: figures/fog-function-2.png
-   :width: 100 %
+.. image:: figures/fog-function-2.png
   
 You can start to configure a Task once you click the configuration button on the top-right corner, as illustrated in the following figure. 
 Please specify the name of the Task and choose an operator out of a list of some pre-registered operators.
 
-.. figure:: figures/fog-function-3.png
-   :width: 100 %
+.. image:: figures/fog-function-3.png
    
 Please click "EntityStream" from the popup menu to place an "EntityStream" element on the design board. 
 
-.. figure:: figures/fog-function-4.png
-   :width: 100 %
+.. image:: figures/fog-function-4.png
 
 It contains the following things:
 
@@ -431,13 +423,11 @@ for each individual entity ID.
 
 Configure the EntityStream by clicking on its configuration button as shown below. In this example, we choose "Temperature" as the entity type of input data for the "dummy" fog function.
 
-.. figure:: figures/fog-function-5.png
-   :width: 100 %
+.. image:: figures/fog-function-5.png
 
 There can be multiple EntityStreams for a Task and they must be connected to the Task as shown here.
 
-.. figure:: figures/fog-function-6.png
-   :width: 100 %
+.. image:: figures/fog-function-6.png
  
 
 provide the code of your own function
@@ -563,8 +553,7 @@ submit your fog function
     
 When you click on the "Submit" button, the annotated fog function will be submitted to FogFlow. 
 
-.. figure:: figures/fog-function-7.png
-   :width: 100 %
+.. image:: figures/fog-function-7.png
 
 
 Trigger your "dummy" fog function 
@@ -578,13 +567,11 @@ Please fill out the following required information:
 -  **Device Type**: use "Temperature" as the entity type
 -  **Location**: to place a location on the map
             
-.. figure:: figures/device-registration.png
-   :width: 100 %
+.. image:: figures/device-registration.png
 
 Once the device profile is registered, a new "Temperature" sensor entity will be created and it will trigger the "dummy" fog function automatically.
 
-.. figure:: figures/fog-function-triggering-device.png
-   :width: 100 %
+.. image:: figures/fog-function-triggering-device.png
 
 The other way to trigger the your fog function is to send a NGSI entity update to create the "Temperature" sensor entity. 
 You can run the following command to issue a POST request to the FogFlow broker. 
@@ -628,12 +615,10 @@ You can run the following command to issue a POST request to the FogFlow broker.
 You can check whether the fog function is triggered or not in the following way. 
 
 - check the task instance of this fog function, as shown in the following picture
-	.. figure:: figures/fog-function-task-running.png
-	   :width: 100 %
+	.. image:: figures/fog-function-task-running.png
 
 - check the result generated by its running task instance, as shown in the following picture 
-	.. figure:: figures/fog-function-streams.png
-	   :width: 100 %
+	.. image:: figures/fog-function-streams.png
 
 
 

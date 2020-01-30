@@ -21,7 +21,6 @@ The intent object defines when (based on priority) a service topology needs to b
 and it can also optionally define a specific geo-scope to filter out data sources for applying the triggered processing logic. The Part of service topology that meets the intent conditions and has input data available, will be triggered.
 
 .. figure:: figures/service-topology-concept.png
-   :width: 100 %
 
 
 Fog Function
@@ -44,6 +43,5 @@ With the fog function programming model, FogFlow can support serverless computin
 
 
 .. figure:: figures/function-orchestration.png
-   :width: 100 %
 
 
