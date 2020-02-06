@@ -75,6 +75,8 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	tb.subscriptions = make(map[string]*SubscribeContextRequest)
 	tb.tmpNGSI10NotifyCache = make([]string, 0)
 
+	tb.tmpNGSIV2NotifyCache = make(map[string]*Notifyv2ContextAvailabilityRequest)
+
 	tb.v2subscriptions = make(map[string]*SubscriptionRequest)
         tb.tmpNGSIv2NotifyCache = make([]string, 0)
 
