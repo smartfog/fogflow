@@ -35,7 +35,7 @@ The following list of features are planned to be addressed in the medium term, t
 3. Firewall Support
    - Currently, the FogFlow edge node requires to have a public IP address to be accessible by the FogFlow cloud node. In the actual deployment environment, the FogFlow edge node is very often deployed behind the company firewall via NAT, we need to find a way to support this scenario. One way to address this is to find a proxy for such kind of edge nodes. For example, assign the FogFlow cloud broker to be the proxy for the FogFlow brokers at this type of edge nodes.
  4. Edge AI
-   - Support the edge node with Edge TPU
+   - Support the edge node with Edge TPU.
 
 ### Long term
 The following list of features are proposals regarding the longer-term evolution of the product even though the development of these features has not yet been scheduled for a release in the near future. Please feel free to contact us if you wish to get involved in the implementation or influence the roadmap:
