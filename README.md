@@ -32,7 +32,7 @@ check the FIWARE Catalogue entry for
 -   [API](#api)
 -   [Testing](#testing)
 -   [Quality Assurance](#quality-assurance)
--   [Roadmap](./roadmap.md)
+-   [Roadmap](./doc/roadmap.md)
 -   [More Information](#more-information)
 -   [License](#license)
 
