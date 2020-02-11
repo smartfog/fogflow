@@ -26,7 +26,7 @@ The following list of features are planned to be addressed in the short term, an
    - User manual updation for integration with other Fiware GE components.
    - FogFlow user manual support for new feature and bugs. 
 
-### Long Term
+### Medium Term
 The following list of features are planned to be addressed in the medium term, typically within the subsequent release(s) generated in the next 6 months after the next planned release.
 1. Fogflow Persistent storage  
    - Fogflow Persistent storage of all defined operators, service topologies, and fog functions.
@@ -34,16 +34,16 @@ The following list of features are planned to be addressed in the medium term, t
    - NGSI-LD support in Fogflow and integration with Scorpio Broker.
 3. Firewall Support
    - Currently, the FogFlow edge node requires to have a public IP address to be accessible by the FogFlow cloud node. In the actual deployment environment, the FogFlow edge node is very often deployed behind the company firewall via NAT, we need to find a way to support this scenario. One way to address this is to find a proxy for such kind of edge nodes. For example, assign the FogFlow cloud broker to be the proxy for the FogFlow brokers at this type of edge nodes.
+ 4. Edge AI
+   - Support the edge node with Edge TPU
 
 ### Long term
 The following list of features are proposals regarding the longer-term evolution of the product even though the development of these features has not yet been scheduled for a release in the near future. Please feel free to contact us if you wish to get involved in the implementation or influence the roadmap:
-1. Edge AI
-   - Support the edge node with Edge TPU
-2. Multi-tenancy support.
+1. Multi-tenancy support.
    - Support multiple users over the same cloud-edge infrastructure.
-3. Digital twin support
+2. Digital twin support
    - make the current programming model to support the creation of digital twins and also the interaction between digital twins. 
-4. Semantics-based data integration
+3. Semantics-based data integration
    - creating dynamic data processing pipelines to convert arbitrary raw data into standard-based entities. 
-5. semantics-based service composition
+4. semantics-based service composition
    - linking serverless functions based on their semantically-annotated inputs and outputs.  
