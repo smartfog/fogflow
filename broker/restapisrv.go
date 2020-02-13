@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -34,7 +34,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
 		rest.Post("/ngsi10/notifyContextAvailabilityv2", broker.Notifyv2ContextAvailability),
 		// ngsiv2 API
-                rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
+		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
 		// api for iot-agent
 		rest.Post("/v1/updateContext", broker.UpdateContext),
 
@@ -50,7 +50,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		//NGSIV2
 		rest.Get("/v2/subscriptions", apisrv.getv2Subscriptions),
-                rest.Get("/v2/subscription/#sid", apisrv.getv2Subscription),
+		rest.Get("/v2/subscription/#sid", apisrv.getv2Subscription),
 		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
 	)
 	if err != nil {
@@ -167,9 +167,9 @@ func (apisrv *RestApiSrv) getSubscriptions(w rest.ResponseWriter, r *rest.Reques
 */
 
 func (apisrv *RestApiSrv) getv2Subscriptions(w rest.ResponseWriter, r *rest.Request) {
-        v2subscriptions := apisrv.broker.getv2Subscriptions()
-        w.WriteHeader(200)
-        w.WriteJson(v2subscriptions)
+	v2subscriptions := apisrv.broker.getv2Subscriptions()
+	w.WriteHeader(200)
+	w.WriteJson(v2subscriptions)
 }
 
 func (apisrv *RestApiSrv) getSubscription(w rest.ResponseWriter, r *rest.Request) {
@@ -187,17 +187,18 @@ func (apisrv *RestApiSrv) getSubscription(w rest.ResponseWriter, r *rest.Request
 /*
 	Handler to get NGSIV2 subscription by SubscriptionId
 */
-	
-func (apisrv *RestApiSrv) getv2Subscription(w rest.ResponseWriter, r *rest.Request) {
-        var sid = r.PathParam("sid")
 
-        v2subscription := apisrv.broker.getv2Subscription(sid)
-        if v2subscription == nil {
-                w.WriteHeader(404)
-        } else {
-                w.WriteHeader(200)
-                w.WriteJson(v2subscription)
-        }
+func (apisrv *RestApiSrv) getv2Subscription(w rest.ResponseWriter, r *rest.Request) {
+	var sid = r.PathParam("sid")
+
+	v2subscription := apisrv.broker.getv2Subscription(sid)
+
+	if v2subscription == nil {
+		w.WriteHeader(404)
+	} else {
+		w.WriteHeader(200)
+		w.WriteJson(v2subscription)
+	}
 }
 
 func (apisrv *RestApiSrv) deleteSubscription(w rest.ResponseWriter, r *rest.Request) {
@@ -216,12 +217,12 @@ func (apisrv *RestApiSrv) deleteSubscription(w rest.ResponseWriter, r *rest.Requ
 */
 
 func (apisrv *RestApiSrv) deletev2Subscription(w rest.ResponseWriter, r *rest.Request) {
-        var sid = r.PathParam("sid")
+	var sid = r.PathParam("sid")
 
-        err := apisrv.broker.deletev2Subscription(sid)
-        if err == nil {
-                w.WriteHeader(200)
-        } else {
-                w.WriteHeader(404)
-        }
+	err := apisrv.broker.deletev2Subscription(sid)
+	if err == nil {
+		w.WriteHeader(200)
+	} else {
+		w.WriteHeader(404)
+	}
 }

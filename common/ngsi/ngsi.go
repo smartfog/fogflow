@@ -303,38 +303,33 @@ type EntityId struct {
 	IdPattern string `json:"idPattern,omitempty"`
 }
 
-
 type Condition struct {
-        Attrs        []string       `json:"attrs"`
-        Expression   Expression   `json:"expression,omitempty"`
+	Attrs      []string   `json:"attrs"`
+	Expression Expression `json:"expression,omitempty"`
 }
-
 
 type Subject struct {
-        Entities         []EntityId        `json:"entities"`
-	Condition        Condition         `json:"condition,omitempty"`
+	Entities  []EntityId `json:"entities"`
+	Condition Condition  `json:"condition,omitempty"`
 }
-
 
 type Expression struct {
-        Georel       map[string]ValueObject   `json:"georel,omitempty"`
-        Geometry     map[string]ValueObject   `json:"geometry,omitempty"`
-        Coords       map[string]ValueObject   `json:"coords,omitempty"`
+	Georel   map[string]ValueObject `json:"georel,omitempty"`
+	Geometry map[string]ValueObject `json:"geometry,omitempty"`
+	Coords   map[string]ValueObject `json:"coords,omitempty"`
 }
-
 
 type Notification struct {
-        Http         Http        `json:"http"`
+	Http Http `json:"http"`
 
-        Attrs       []string     `json:"attrs,omitempty"`
-        Metadata    string       `json:"metadata,omitempty"`
-        ExcetAttrs  []string     `json:"exceptAttrs,omitempty"`
-        AttrsFormat string       `json:"attrsFormat,omitempty"`
+	Attrs       []string `json:"attrs,omitempty"`
+	Metadata    string   `json:"metadata,omitempty"`
+	ExcetAttrs  []string `json:"exceptAttrs,omitempty"`
+	AttrsFormat string   `json:"attrsFormat,omitempty"`
 }
 
-
 type Http struct {
-        Url        string        `json:"url"`
+	Url string `json:"url"`
 }
 
 type ValueObject struct {
@@ -358,10 +353,10 @@ func (ctxObj *ContextObject) IsEmpty() bool {
 }
 
 type ContextElement struct {
-	Entity    EntityId `json:"entityId"`
-	ID        string   `json:"id"`
-	Type      string   `json:"type,omitempty"`
-	IsPattern string   `json:"isPattern"`
+	Entity     EntityId           `json:"entityId"`
+	ID         string             `json:"id"`
+	Type       string             `json:"type,omitempty"`
+	IsPattern  string             `json:"isPattern"`
 	Attributes []ContextAttribute `json:"attributes,omitempty"`
 	Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
 }
@@ -458,7 +453,6 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 		convertedElement.Type = element.Type
 		convertedElement.IsPattern = element.IsPattern
 
-
 		convertedElement.Attributes = make([]OrionContextAttribute, 0)
 
 		for _, attr := range element.Attributes {
@@ -481,7 +475,7 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 			Attributes []ContextAttribute `json:"attributes,omitempty"`
 			Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
 		}{
-			Entity: element.Entity,
+			Entity:     element.Entity,
 			Attributes: element.Attributes,
 			Metadata:   element.Metadata,
 		})
@@ -521,8 +515,8 @@ type SubscribeError struct {
 }
 
 type SubscriptionError struct {
-        SubscriptionId string     `json:"subscriptionId,omitempty"`
-        ErrorCode      StatusCode `json:"errorCode"`
+	SubscriptionId string     `json:"subscriptionId,omitempty"`
+	ErrorCode      StatusCode `json:"errorCode"`
 }
 
 type NotifyCondition struct {
@@ -635,11 +629,10 @@ type SubscribeResponse struct {
 	Throttling     string `json:"throttling,omitempty"`
 }
 
-
 type SubscriptionResponse struct {
-        SubscriptionId string `json:"subscriptionId"`
-        Duration       string `json:"duration,omitempty"`
-        Throttling     string `json:"throttling,omitempty"`
+	SubscriptionId string `json:"subscriptionId"`
+	Duration       string `json:"duration,omitempty"`
+	Throttling     string `json:"throttling,omitempty"`
 }
 
 type ContextRegistrationAttribute struct {
@@ -765,26 +758,23 @@ type SubscribeContextRequest struct {
 	NotifyConditions []NotifyCondition `json:"notifyConditions,omitempty"`
 	Throttling       string            `json:"throttling,omitempty"`
 	Subscriber       Subscriber
-
 }
-
 
 type SubscriptionRequest struct {
-        Attributes       []string          `json:"attributes,omitempty"`
-        Subscriber       Subscriber
-	Condition        Condition         `json:"condition,omitempty"`
-	Description      string            `json:"description,omitempty"`
-        Subject          Subject          `json:"subject"`
-        Notification     Notification      `json:"notification"`
-        Throttling       int               `json:"throttling,omitempty"`
-        Expires          string            `json:"expires,omitempty"`
-        Status           string            `json:"status,omitempty"`
+	Attributes   []string `json:"attributes,omitempty"`
+	Subscriber   Subscriber
+	Condition    Condition    `json:"condition,omitempty"`
+	Description  string       `json:"description,omitempty"`
+	Subject      Subject      `json:"subject"`
+	Notification Notification `json:"notification"`
+	Throttling   int          `json:"throttling,omitempty"`
+	Expires      string       `json:"expires,omitempty"`
+	Status       string       `json:"status,omitempty"`
 }
 
-
 type Subscribev2Response struct {
-        SubscriptionResponse SubscriptionResponse `json:"subscribeResponse,omitempty"`
-        SubscriptionError    SubscriptionError    `json:"subscribeError,omitempty"`
+	SubscriptionResponse SubscriptionResponse `json:"subscribeResponse,omitempty"`
+	SubscriptionError    SubscriptionError    `json:"subscribeError,omitempty"`
 }
 type SubscribeContextResponse struct {
 	SubscribeResponse SubscribeResponse `json:"subscribeResponse,omitempty"`
@@ -866,20 +856,19 @@ type SubscribeContextAvailabilityRequest struct {
 }
 
 type Subscribev2ContextAvailabilityRequest struct {
-        Entities       []EntityId  `json:"entities"`
-        Attributes     []string    `json:"attributes,omitempty"`
-        Reference      string      `json:"reference"`
-        Duration       string      `json:"duration,omitempty"`
-        Restriction    Restriction `json:"restriction,omitempty"`
-	Subject        Subject     `json:"subject"`
-	SubscriptionId string      `json:"subscriptionId,omitempty"`
-	Notification  Notification `json:"notification"`
-	Condition     Condition    `json:"condition,omitempty"`
-        Throttling       int       `json:"throttling,omitempty"`
-        Expires          string    `json:"expires,omitempty"`
-        Status           string    `json:"status,omitempty"`
+	Entities       []EntityId   `json:"entities"`
+	Attributes     []string     `json:"attributes,omitempty"`
+	Reference      string       `json:"reference"`
+	Duration       string       `json:"duration,omitempty"`
+	Restriction    Restriction  `json:"restriction,omitempty"`
+	Subject        Subject      `json:"subject"`
+	SubscriptionId string       `json:"subscriptionId,omitempty"`
+	Notification   Notification `json:"notification"`
+	Condition      Condition    `json:"condition,omitempty"`
+	Throttling     int          `json:"throttling,omitempty"`
+	Expires        string       `json:"expires,omitempty"`
+	Status         string       `json:"status,omitempty"`
 }
-
 
 type SubscribeContextAvailabilityResponse struct {
 	SubscriptionId string     `json:"subscribeId"`
@@ -887,11 +876,10 @@ type SubscribeContextAvailabilityResponse struct {
 	ErrorCode      StatusCode `json:"errorCode,omitempty"`
 }
 
-
 type Subscribev2ContextAvailabilityResponse struct {
-        SubscriptionId string     `json:"subscribeId"`
-//        Duration       string     `json:"duration,omitempty"`
-        ErrorCode      StatusCode `json:"errorCode,omitempty"`
+	SubscriptionId string `json:"subscribeId"`
+	//        Duration       string     `json:"duration,omitempty"`
+	ErrorCode StatusCode `json:"errorCode,omitempty"`
 }
 
 type UpdateContextAvailabilitySubscriptionRequest struct {
@@ -913,7 +901,7 @@ type UnsubscribeContextAvailabilityRequest struct {
 }
 
 type Unsubscribev2ContextAvailabilityRequest struct {
-        SubscriptionId string `json:"subscriptionId"`
+	SubscriptionId string `json:"subscriptionId"`
 }
 
 type UnsubscribeContextAvailabilityResponse struct {
@@ -922,8 +910,8 @@ type UnsubscribeContextAvailabilityResponse struct {
 }
 
 type Unsubscribev2ContextAvailabilityResponse struct {
-        SubscriptionId string     `json:"subscriptionId"`
-        StatusCode     StatusCode `json:"statusCode"`
+	SubscriptionId string     `json:"subscriptionId"`
+	StatusCode     StatusCode `json:"statusCode"`
 }
 
 type NotifyContextAvailabilityRequest struct {
@@ -932,20 +920,18 @@ type NotifyContextAvailabilityRequest struct {
 	ErrorCode                       StatusCode                    `json:"errorCode,omitempty"`
 }
 
-
 type Notifyv2ContextAvailabilityRequest struct {
-        SubscriptionId                  string                        `json:"subscribeId"`
-         ContextRegistrationResponseList []ContextRegistrationResponse `json:"contextRegistrationResponses,omitempty"`
-        ErrorCode                       StatusCode                    `json:"errorCode,omitempty"`
+	SubscriptionId                  string                        `json:"subscribeId"`
+	ContextRegistrationResponseList []ContextRegistrationResponse `json:"contextRegistrationResponses,omitempty"`
+	ErrorCode                       StatusCode                    `json:"errorCode,omitempty"`
 }
 
 type NotifyContextAvailabilityResponse struct {
 	ResponseCode StatusCode `json:"responseCode"`
 }
 
-
 type Notifyv2ContextAvailabilityResponse struct {
-        ResponseCode StatusCode `json:"responseCode"`
+	ResponseCode StatusCode `json:"responseCode"`
 }
 
 type HTTPS struct {

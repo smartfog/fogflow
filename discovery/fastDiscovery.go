@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"github.com/ant0ine/go-json-rest/rest"
+	_ "github.com/lib/pq"
+	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
-	"github.com/ant0ine/go-json-rest/rest"
-	_ "github.com/lib/pq"
-	"github.com/satori/go.uuid"
 
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
@@ -214,7 +215,6 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	fd.subscriptions_lock.Lock()
 	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
 	fd.subscriptions_lock.Unlock()
-	
 
 	// send out the response
 	subscribeCtxAvailabilityResp := SubscribeContextAvailabilityResponse{}
