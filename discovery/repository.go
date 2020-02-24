@@ -1,9 +1,9 @@
 package main
 
 import (
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"sort"
 	"sync"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type Candidate struct {
@@ -156,7 +156,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 
 	return entityMap
 }
-
 
 func (er *EntityRepository) deleteEntity(eid string) {
 	er.ctxRegistrationList_lock.Lock()

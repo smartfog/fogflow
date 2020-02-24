@@ -3,14 +3,13 @@ package main
 import (
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/satori/go.uuid"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/datamodel"
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
-
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type ThinBroker struct {
@@ -457,7 +456,6 @@ func (tb *ThinBroker) fetchEntities(ids []EntityId, providerURL string) []Contex
 
 func (tb *ThinBroker) UpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	updateCtxReq := UpdateContextRequest{}
-
 	err := r.DecodeJsonPayload(&updateCtxReq)
 	if err != nil {
 		DEBUG.Println("not able to decode the orion updates")
@@ -695,7 +693,6 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, sid string) {
 	elements := make([]ContextElement, 0)
-
 	// check if the subscription still exists; if yes, then find out the selected attribute list
 	tb.subscriptions_lock.RLock()
 
@@ -962,9 +959,13 @@ func (tb *ThinBroker) Subscriptionv2Context(w rest.ResponseWriter, r *rest.Reque
 	INFO.Printf("NEW subscription: %v\n", subReqv2)
 
 	tb.v2subscriptions_lock.Lock()
+	//subReqv2.Subject.SetIDpattern()
+	ctxEle := &subReqv2
+	ctxEle.Subject.SetIDpattern()
 	tb.v2subscriptions[subID] = &subReqv2
+	//ctxEle := &subReqv2
+	//ctxEle.Subject.SetIDpattern()
 	tb.v2subscriptions_lock.Unlock()
-
 	if subReqv2.Subscriber.IsInternal == true {
 		INFO.Println("internal subscription coming from another broker")
 		for _, entity := range subReqv2.Subject.Entities {
@@ -1037,7 +1038,6 @@ func (tb *ThinBroker) Subscribev2ContextAvailability(sid string) error {
 	subscriptionId, err := client.Subscribev2ContextAvailability(&availabilitySubscriptionv2)
 	if subscriptionId != "" {
 		tb.subLinks_lock.Lock()
-		fmt.Println(subscriptionId)
 		tb.main2Other[sid] = append(tb.main2Other[sid], subscriptionId)
 		tb.availabilitySub2MainSub[subscriptionId] = sid
 		notifyMessage, alreadyBack := tb.tmpNGSIV2NotifyCache[subscriptionId]
@@ -1221,9 +1221,9 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
 
 		if registration.ProvidingApplication == tb.MyURL {
-			//for matched entities provided by myselfnnnnn
+			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
-				tb.notifyOneSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID) //Neeraj change
+				tb.notifyOneSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
 			}
 		} else {
 			//for matched entities provided by other IoT Brokers
@@ -1311,7 +1311,7 @@ func (tb *ThinBroker) handleNGSIV2Notify(mainSubID string, notifyv2ContextAvaila
 			//for matched entities provided by other IoT Brokers
 			newv2Subscription := SubscriptionRequest{}
 			newv2Subscription.Subject.Entities = registration.EntityIdList
-			//                        newv2Subscription.Reference = tb.MyURL
+			//  newv2Subscription.Reference = tb.MyURL
 			newv2Subscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {

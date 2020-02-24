@@ -4,16 +4,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/ant0ine/go-json-rest/rest"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-
-	"github.com/ant0ine/go-json-rest/rest"
-
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type RestApiSrv struct {
@@ -40,6 +38,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		// convenient ngsi10 API
 		rest.Get("/ngsi10/entity", apisrv.getEntities),
+		rest.Get("/v2/entities", apisrv.getEntities),
 		rest.Get("/ngsi10/entity/#eid", apisrv.getEntity),
 		rest.Get("/ngsi10/entity/#eid/#attr", apisrv.getAttribute),
 		rest.Delete("/ngsi10/entity/#eid", apisrv.deleteEntity),

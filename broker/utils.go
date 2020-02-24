@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -117,7 +117,7 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 
 	INFO.Println(string(body))
 
-	req, err := http.NewRequest("POST", URL+"/v2/notify", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
@@ -172,40 +172,39 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 
 //NGSIV2
 func subscriptionProvider(sub *SubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
-        body, err := json.Marshal(*sub)
-        if err != nil {
-                return "", err
-        }
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
 
-        req, err := http.NewRequest("POST", ProviderURL+"/subscriptions", bytes.NewBuffer(body))
-        req.Header.Add("Content-Type", "application/json")
-        req.Header.Add("Accept", "application/json")
-//        req.Header.Add("User-Agent", "lightweight-iot-broker")
-//        req.Header.Add("Require-Reliability", "true")
+	req, err := http.NewRequest("POST", ProviderURL+"/subscriptions", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
+	req.Header.Add("Require-Reliability", "true")
+	client := httpsCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
 
-        client := httpsCfg.GetHTTPClient()
-        resp, err := client.Do(req)
-        if resp != nil {
-                defer resp.Body.Close()
-        }
-        if err != nil {
-                return "", err
-        }
+	text, _ := ioutil.ReadAll(resp.Body)
 
-        text, _ := ioutil.ReadAll(resp.Body)
+	subscribeCtxResp := Subscribev2Response{}
+	err = json.Unmarshal(text, &subscribeCtxResp)
+	if err != nil {
+		return "", err
+	}
 
-        subscribeCtxResp := Subscribev2Response{}
-        err = json.Unmarshal(text, &subscribeCtxResp)
-        if err != nil {
-                return "", err
-        }
-
-        if subscribeCtxResp.SubscriptionResponse.SubscriptionId != "" {
-                return subscribeCtxResp.SubscriptionResponse.SubscriptionId, nil
-        } else {
-                err = errors.New(subscribeCtxResp.SubscriptionError.ErrorCode.ReasonPhrase)
-                return "", err
-        }
+	if subscribeCtxResp.SubscriptionResponse.SubscriptionId != "" {
+		return subscribeCtxResp.SubscriptionResponse.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxResp.SubscriptionError.ErrorCode.ReasonPhrase)
+		return "", err
+	}
 }
 
 func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
@@ -250,43 +249,43 @@ func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS)
 
 //NGSIV2
 func unsubscribev2ContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
-        unsubscription := &UnsubscribeContextRequest{
-                SubscriptionId: sid,
-        }
+	unsubscription := &UnsubscribeContextRequest{
+		SubscriptionId: sid,
+	}
 
-        body, err := json.Marshal(unsubscription)
-        if err != nil {
-                return err
-        }
+	body, err := json.Marshal(unsubscription)
+	if err != nil {
+		return err
+	}
 
-        req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeContext", bytes.NewBuffer(body))
-        req.Header.Add("Content-Type", "application/json")
-        req.Header.Add("Accept", "application/json")
-//        req.Header.Add("User-Agent", "lightweight-iot-broker")
+	req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeContext", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	//        req.Header.Add("User-Agent", "lightweight-iot-broker")
 
-        client := httpsCfg.GetHTTPClient()
-        resp, err := client.Do(req)
-        if resp != nil {
-                defer resp.Body.Close()
-        }
-        if err != nil {
-                return err
-        }
+	client := httpsCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
 
-        text, _ := ioutil.ReadAll(resp.Body)
+	text, _ := ioutil.ReadAll(resp.Body)
 
-        unsubscribeCtxResp := UnsubscribeContextResponse{}
-        err = json.Unmarshal(text, &unsubscribeCtxResp)
-        if err != nil {
-                return err
-        }
+	unsubscribeCtxResp := UnsubscribeContextResponse{}
+	err = json.Unmarshal(text, &unsubscribeCtxResp)
+	if err != nil {
+		return err
+	}
 
-        if unsubscribeCtxResp.StatusCode.Code == 200 {
-                return nil
-        } else {
-                err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
-                return err
-        }
+	if unsubscribeCtxResp.StatusCode.Code == 200 {
+		return nil
+	} else {
+		err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
+		return err
+	}
 }
 func isNewAttribute(name string, ctxElement *ContextElement) bool {
 	for _, attr := range (*ctxElement).Attributes {

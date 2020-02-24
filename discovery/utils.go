@@ -1,10 +1,10 @@
 package main
 
 import (
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"math"
 	"regexp"
 	"strings"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) bool {

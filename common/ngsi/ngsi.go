@@ -503,6 +503,18 @@ func (element *ContextElement) SetEntityID() {
 	}
 }
 
+// Integration with wirecloud
+func (element *Subject) SetIDpattern() {
+
+	for index, entities := range element.Entities {
+
+		if entities.IdPattern != "" {
+			entities.ID = entities.IdPattern
+			element.Entities[index] = entities
+		}
+	}
+}
+
 type StatusCode struct {
 	Code         int    `json:"code"`
 	ReasonPhrase string `json:"reasonPhrase,omitempty"`
