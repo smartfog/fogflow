@@ -261,7 +261,7 @@ func unsubscribev2ContextProvider(sid string, ProviderURL string, httpsCfg *HTTP
 	req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	//        req.Header.Add("User-Agent", "lightweight-iot-broker")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
 
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
