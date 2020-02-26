@@ -601,7 +601,7 @@ func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 
 func (tb *ThinBroker) checkMatchedAttr(ctxElemAttrs []string, sid string) bool {
 	tb.v2subscriptions_lock.RLock()
-	conditionList := tb.v2subscriptions[sid].Subject.Condition.Attrs
+	conditionList := tb.v2subscriptions[sid].Subject.Conditions.Attrs
 	tb.v2subscriptions_lock.RUnlock()
 	matchedAtleastOnce := false
 	for _, attrs1 := range ctxElemAttrs {
@@ -1029,7 +1029,7 @@ func (tb *ThinBroker) Subscribev2ContextAvailability(sid string) error {
 
 	tb.v2subscriptions_lock.RLock()
 	availabilitySubscriptionv2.Entities = tb.v2subscriptions[sid].Subject.Entities
-	availabilitySubscriptionv2.Attributes = tb.v2subscriptions[sid].Subject.Condition.Attrs
+	availabilitySubscriptionv2.Attributes = tb.v2subscriptions[sid].Subject.Conditions.Attrs
 	availabilitySubscriptionv2.Attributes = append(availabilitySubscriptionv2.Attributes, tb.v2subscriptions[sid].Notification.Attrs...)
 	availabilitySubscriptionv2.Duration = tb.v2subscriptions[sid].Expires
 	tb.v2subscriptions_lock.RUnlock()

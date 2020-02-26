@@ -303,14 +303,14 @@ type EntityId struct {
 	IdPattern string `json:"idPattern,omitempty"`
 }
 
-type Condition struct {
+type Conditions struct {
 	Attrs      []string   `json:"attrs"`
 	Expression Expression `json:"expression,omitempty"`
 }
 
 type Subject struct {
 	Entities  []EntityId `json:"entities"`
-	Condition Condition  `json:"condition,omitempty"`
+	Conditions Conditions  `json:"conditions,omitempty"`
 }
 
 type Expression struct {
@@ -775,7 +775,7 @@ type SubscribeContextRequest struct {
 type SubscriptionRequest struct {
 	Attributes   []string `json:"attributes,omitempty"`
 	Subscriber   Subscriber
-	Condition    Condition    `json:"condition,omitempty"`
+	Conditions   Conditions    `json:"conditions,omitempty"`
 	Description  string       `json:"description,omitempty"`
 	Subject      Subject      `json:"subject"`
 	Notification Notification `json:"notification"`
@@ -876,7 +876,7 @@ type Subscribev2ContextAvailabilityRequest struct {
 	Subject        Subject      `json:"subject"`
 	SubscriptionId string       `json:"subscriptionId,omitempty"`
 	Notification   Notification `json:"notification"`
-	Condition      Condition    `json:"condition,omitempty"`
+	Conditions      Conditions    `json:"conditions,omitempty"`
 	Throttling     int          `json:"throttling,omitempty"`
 	Expires        string       `json:"expires,omitempty"`
 	Status         string       `json:"status,omitempty"`
