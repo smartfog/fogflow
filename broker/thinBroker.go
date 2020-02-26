@@ -952,7 +952,7 @@ func (tb *ThinBroker) Subscriptionv2Context(w rest.ResponseWriter, r *rest.Reque
 	subRespv2 := Subscribev2Response{}
 	subRespv2.SubscriptionResponse.SubscriptionId = subID
 	subRespv2.SubscriptionError.SubscriptionId = subID
-	w.WriteHeader(http.StatusCreated) 
+	w.WriteHeader(http.StatusCreated)
 	w.WriteJson(&subRespv2)
 
 	subReqv2.Subscriber.BrokerURL = tb.MyURL
