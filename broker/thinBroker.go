@@ -43,6 +43,9 @@ type ThinBroker struct {
 	entities      map[string]*ContextElement //latest view of context entities
 	entities_lock sync.RWMutex
 
+	//Southbound feature addition
+	fiwareData      map[string]*FiwareData
+	fiwareData_lock sync.RWMutex
 	//mapping from entityID to subscriptionID
 	entityId2Subcriptions map[string][]string
 	e2sub_lock            sync.RWMutex
@@ -80,6 +83,8 @@ func (tb *ThinBroker) Start(cfg *Config) {
 
 	tb.entities = make(map[string]*ContextElement)
 	tb.entityId2Subcriptions = make(map[string][]string)
+	//Southbound feature addition
+	tb.fiwareData = make(map[string]*FiwareData)
 
 	tb.entityIdv2Subcriptions = make(map[string][]string)
 
@@ -463,18 +468,17 @@ func (tb *ThinBroker) UpdateContext(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 
-	// send out the response
-	w.WriteHeader(200)
-
-	updateCtxResp := UpdateContextResponse{}
-	// updateCtxResp.ErrorCode.Code = 200
-	// updateCtxResp.ErrorCode.ReasonPhrase = "OK"
-	w.WriteJson(&updateCtxResp)
-
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		tb.handleInternalUpdateContext(&updateCtxReq)
+	}
+
+	//Southbound feature addition
+	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
+		fs := r.Header.Get("fiware-service")
+		fsp := r.Header.Get("fiware-servicepath")
+		tb.handleExternalUpdateContext(w, &updateCtxReq, true, fs, fsp)
 	} else {
-		tb.handleExternalUpdateContext(&updateCtxReq)
+		tb.handleExternalUpdateContext(w, &updateCtxReq, false)
 	}
 }
 
@@ -494,19 +498,22 @@ func (tb *ThinBroker) handleInternalUpdateContext(updateCtxReq *UpdateContextReq
 }
 
 // handle context updates forwarded by IoT Discovery
-
-func (tb *ThinBroker) handleExternalUpdateContext(updateCtxReq *UpdateContextRequest) {
+func (tb *ThinBroker) handleExternalUpdateContext(w rest.ResponseWriter, updateCtxReq *UpdateContextRequest, fiwareHeadersExist bool, params ...string) {
 	// perform the update action accordingly
 	switch strings.ToUpper(updateCtxReq.UpdateAction) {
 	case "UPDATE", "APPEND":
 		for _, ctxElem := range updateCtxReq.ContextElements {
 			// just in case this is orion ngsi v1
 			ctxElem.SetEntityID()
+			// params[0] has FiwareService header and params[1] has FiwareServicePath
+			if fiwareHeadersExist {
+				tb.updateIdWithFiwareHeaders(&ctxElem, params[0], params[1])
+			}
 
 			brokerURL := tb.queryOwnerOfEntity(ctxElem.Entity.ID)
 
 			if brokerURL == tb.myProfile.MyURL {
-				tb.UpdateContext2LocalSite(&ctxElem)
+				tb.UpdateContext2LocalSite(&ctxElem, w)
 			} else {
 				tb.UpdateContext2RemoteSite(&ctxElem, updateCtxReq.UpdateAction, brokerURL)
 			}
@@ -522,6 +529,48 @@ func (tb *ThinBroker) handleExternalUpdateContext(updateCtxReq *UpdateContextReq
 			}
 		}
 	}
+	//Send out the response
+	w.WriteHeader(200)
+	updateCtxResp := UpdateContextResponse{}
+	w.WriteJson(&updateCtxResp)
+}
+
+//Southbound feature addition
+func (tb *ThinBroker) handleSouthboundCommand(w rest.ResponseWriter, ctxElem *ContextElement) {
+	rid := ctxElem.Entity.ID
+	//Get Provider IoT Agent for the registered device on local broker
+	tb.fiwareData_lock.RLock()
+	fiData := tb.fiwareData[rid]
+	tb.fiwareData_lock.RUnlock()
+
+	if fiData != nil {
+		providerURL := fiData.ProviderIoTAgent + "/ngsi10"
+		fs := fiData.FiwareService
+		fsp := fiData.FiwareServicePath
+		//Extract actual Element ID before sending the Context Element to IoT Agent
+		tb.removeFiwareHeadersFromId(ctxElem, fs, fsp)
+		tb.FogflowToFiwareContextElement(ctxElem)
+		DEBUG.Println("Handling command update through local broker.")
+		DEBUG.Println(providerURL)
+		client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
+		client.SouthboundUpdateContext(ctxElem, fs, fsp)
+	} else {
+		rest.Error(w, "The device registration was not found!", 404)
+		return
+	}
+}
+
+//Southbound Feature addition
+func (tb *ThinBroker) FogflowToFiwareContextElement(ctxElem *ContextElement) {
+	ctxElem.ID = ctxElem.Entity.ID
+	ctxElem.Type = ctxElem.Entity.Type
+
+	if ctxElem.Entity.IsPattern == true {
+		ctxElem.IsPattern = "true"
+	} else if ctxElem.Entity.IsPattern == false {
+		ctxElem.IsPattern = "false"
+	}
+	ctxElem.Entity = EntityId{}
 }
 
 func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
@@ -536,7 +585,7 @@ func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
 		return tb.myProfile.MyURL
 	} else {
 		client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
-		brokerURL := client.GetProviderURL(eid)
+		brokerURL, _ := client.GetProviderURL(eid)
 		if brokerURL == "" {
 			return tb.myProfile.MyURL
 		}
@@ -544,23 +593,37 @@ func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
 	}
 }
 
-func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement) {
-	tb.entities_lock.Lock()
-	eid := ctxElem.Entity.ID
-	hasUpdatedMetadata := hasUpdatedMetadata(ctxElem, tb.entities[eid])
-	tb.entities_lock.Unlock()
+func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, params ...rest.ResponseWriter) {
+	command := false
+	//If any of the attributes is of type "command", all the attributes will be considered as commands
+	for _, attr := range ctxElem.Attributes {
+		if attr.Type == "command" {
+			command = true
+			break
+		}
+	}
 
-	// apply the new update to the entity in the entity map
-	tb.updateContextElement(ctxElem)
+	if command == true {
+		tb.handleSouthboundCommand(params[0], ctxElem)
+	} else {
+		tb.entities_lock.Lock()
+		eid := ctxElem.Entity.ID
+		hasUpdatedMetadata := hasUpdatedMetadata(ctxElem, tb.entities[eid])
+		tb.entities_lock.Unlock()
 
-	// propogate this update to its subscribers
-	go tb.notifySubscribers(ctxElem, true)
+		// apply the new update to the entity in the entity map
+		tb.updateContextElement(ctxElem)
 
-	//propagate this update to its ngsiv2 subscribers
-	go tb.notifySubscribersV2(ctxElem, true)
-	// register the entity if there is any changes on attribute list, domain metadata
-	if hasUpdatedMetadata == true {
-		tb.registerContextElement(ctxElem)
+		// propogate this update to its subscribers
+		go tb.notifySubscribers(ctxElem, true)
+
+		//propagate this update to its ngsiv2 subscribers
+		go tb.notifySubscribersV2(ctxElem, true)
+
+		// register the entity if there is any changes on attribute list, domain metadata
+		if hasUpdatedMetadata == true {
+			tb.registerContextElement(ctxElem)
+		}
 	}
 }
 
@@ -1391,4 +1454,153 @@ func (tb *ThinBroker) deregisterContextElements(ContextElements []ContextElement
 	if err != nil {
 		ERROR.Println(err)
 	}
+}
+
+//Southbound feature addition- Device Registration starts here.
+func (tb *ThinBroker) RegisterContext(w rest.ResponseWriter, r *rest.Request) {
+
+	// IoTAgent sends isPattern in RegisterContext Request as a string while Fogflow accepts it as bool
+	RegCtxReq, err := tb.handleIoTRegisterContext(r)
+
+	if err != nil {
+		DEBUG.Println("Not able to decode the registration!")
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	RegisterCtxReq := *RegCtxReq
+
+	FiwareService := r.Header.Get("Fiware-Service")
+	FiwareServicePath := r.Header.Get("Fiware-ServicePath")
+	if FiwareService == "" || FiwareServicePath == "" {
+		rest.Error(w, "Bad Request! Fiware-Service and/or Fiware-ServicePath Headers are Missing!", 400)
+		return
+	} else {
+		for _, registration := range RegisterCtxReq.ContextRegistrations {
+			reg := ContextRegistration{}
+
+			fiData := FiwareData{}
+			fiData.ProviderIoTAgent = registration.ProvidingApplication
+			fiData.FiwareService = FiwareService
+			fiData.FiwareServicePath = FiwareServicePath
+
+			//creating separate registration for each entity
+			for _, entity := range registration.EntityIdList {
+				reg.EntityIdList = nil
+				RegID := tb.createIdWithFiwareHeaders(entity.ID, FiwareService, FiwareServicePath)
+				errString := tb.createFiwareData(RegID, fiData)
+				if errString != "" {
+					rest.Error(w, errString, 409)
+					continue
+				} else {
+					entity.ID = RegID
+					reg.EntityIdList = append(reg.EntityIdList, entity)
+				}
+				//Creating registration request for discovery
+				registration.EntityIdList = reg.EntityIdList
+
+				registration.ProvidingApplication = tb.MyURL
+
+				RegCtxReq := RegisterContextRequest{}
+				RegCtxReq.ContextRegistrations = append(RegCtxReq.ContextRegistrations, registration)
+
+				RegCtxReq.Duration = RegisterCtxReq.Duration
+
+				DEBUG.Println("Sending following registration to Discovery:")
+				DEBUG.Println(RegCtxReq)
+
+				client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+				RegisterCtxResp, err := client.RegisterContext(&RegCtxReq)
+				// send out the response
+				if err != nil {
+					w.WriteJson(err)
+				} else {
+					w.WriteJson(&RegisterCtxResp)
+				}
+			}
+		}
+	}
+}
+
+func (tb *ThinBroker) handleIoTRegisterContext(r *rest.Request) (*RegisterContextRequest, error) {
+	RegisterCtxReq := RegisterContextRequest{}
+	//Decode IoT Agent Payload having isPattern of type string
+	RegisterCtxReq1 := RegisterContextRequest1{}
+	err := r.DecodeJsonPayload(&RegisterCtxReq1)
+	DEBUG.Println("JSON payload decoded....")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, registration := range RegisterCtxReq1.ContextRegistrations {
+		contextRegistration := ContextRegistration{}
+		for _, fiwareEntity := range registration.EntityIdList {
+
+			fogflowEntity := EntityId{}
+
+			fogflowEntity.ID = fiwareEntity.ID
+			fogflowEntity.Type = fiwareEntity.Type
+			if fiwareEntity.IsPattern == "true" || fiwareEntity.IsPattern == "True" {
+				fogflowEntity.IsPattern = true
+			} else if fiwareEntity.IsPattern == "false" || fiwareEntity.IsPattern == "False" {
+				fogflowEntity.IsPattern = false
+			}
+
+			contextRegistration.EntityIdList = append(contextRegistration.EntityIdList, fogflowEntity)
+		}
+		contextRegistration.ContextRegistrationAttributes = registration.ContextRegistrationAttributes
+		contextRegistration.Metadata = registration.Metadata
+		contextRegistration.ProvidingApplication = registration.ProvidingApplication
+		RegisterCtxReq.ContextRegistrations = append(RegisterCtxReq.ContextRegistrations, contextRegistration)
+	}
+
+	RegisterCtxReq.Duration = RegisterCtxReq1.Duration
+	return &RegisterCtxReq, nil
+
+}
+
+func (tb *ThinBroker) createFiwareData(RegID string, fiData FiwareData) string {
+	errString := ""
+	if tb.getRegistration(RegID) != nil {
+		errString = "Registration already exists for this Entity ID!"
+	} else {
+		//Storing FiwareData
+		tb.fiwareData_lock.Lock()
+		tb.fiwareData[RegID] = &fiData
+		tb.fiwareData_lock.Unlock()
+	}
+	return errString
+}
+
+func (tb *ThinBroker) getRegistration(eid string) *EntityRegistration {
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	_, registration := client.GetProviderURL(eid)
+	if registration.ID == "" {
+		DEBUG.Println("Registration not found!")
+		return nil
+	} else {
+		return registration
+	}
+}
+
+func (tb *ThinBroker) deleteRegistration(rid string) error {
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	client.UnregisterEntity(rid)
+	return nil
+}
+
+func (tb *ThinBroker) updateIdWithFiwareHeaders(ctxElem *ContextElement, fiwareService string, fiwareServicePath string) {
+	ctxElem.Entity.ID = tb.createIdWithFiwareHeaders(ctxElem.Entity.ID, fiwareService, fiwareServicePath)
+}
+
+func (tb *ThinBroker) createIdWithFiwareHeaders(eid string, fiwareService string, fiwareServicePath string) string {
+	eid = eid + "." + fiwareService + "." + fiwareServicePath
+	eid = strings.ReplaceAll(eid, "/", "~")
+	return eid
+}
+
+func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareService string, fiwareServicePath string) {
+	cutStr := "." + fiwareService + "." + fiwareServicePath
+	cutStr = strings.ReplaceAll(cutStr, "/", "~")
+	ctxElem.Entity.ID = strings.TrimRight(ctxElem.Entity.ID, cutStr)
 }

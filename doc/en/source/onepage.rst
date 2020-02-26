@@ -88,6 +88,7 @@ You need to change the following IP addresses in config.json according to your o
 	
 	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80 and 5672 for TCP
 
+	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" to replace coreservice_ip, external_hostip, and internal_hostip in the configuration file
 
 
 Start all Fogflow components 
@@ -252,22 +253,6 @@ Check if a task is created under "Task" in System Management.**
 Check if a Stream is created under "Stream" in System Management.**
 
 .. figure:: figures/result.png
-
-
-
-- Create an IoT device entity to trigger the Fog Function
-
-You can register a device entity via the device registration page: 
-1) click "System Status"; 
-2) click "Device";
-3) click "Add";
-
-
-
-Then you will see the following device registration page. 
-
-.. figure:: figures/device-registration.png
-
 
 
 

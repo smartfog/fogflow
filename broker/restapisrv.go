@@ -34,7 +34,13 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		// ngsiv2 API
 		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
 		// api for iot-agent
+		// Fiware Entity Update API
 		rest.Post("/v1/updateContext", broker.UpdateContext),
+
+		//Southbound feature addition- Device Registration API
+		rest.Post("/NGSI9/registerContext", broker.RegisterContext),
+		rest.Delete("/NGSI9/registration/#rid", apisrv.deleteRegistration),
+		rest.Get("/NGSI9/registration/#rid", apisrv.getRegistration),
 
 		// convenient ngsi10 API
 		rest.Get("/ngsi10/entity", apisrv.getEntities),
@@ -214,7 +220,6 @@ func (apisrv *RestApiSrv) deleteSubscription(w rest.ResponseWriter, r *rest.Requ
 /*
 	Handler to delete NGSIV2 subscription by SubscriptionId
 */
-
 func (apisrv *RestApiSrv) deletev2Subscription(w rest.ResponseWriter, r *rest.Request) {
 	var sid = r.PathParam("sid")
 
@@ -223,5 +228,45 @@ func (apisrv *RestApiSrv) deletev2Subscription(w rest.ResponseWriter, r *rest.Re
 		w.WriteHeader(200)
 	} else {
 		w.WriteHeader(404)
+	}
+}
+
+//Southbound feature addition
+func (apisrv *RestApiSrv) getRegistration(w rest.ResponseWriter, r *rest.Request) {
+	var rid = r.PathParam("rid")
+
+	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
+		rid = apisrv.broker.createIdWithFiwareHeaders(rid, r.Header.Get("fiware-service"), r.Header.Get("fiware-servicepath"))
+	} /*else {
+	          rest.Error(w, "Bad Request! Fiware-Service and/or Fiware-ServicePath Headers are Missing!", 400)
+	          return
+	  }
+	  Commented because other registrations also exist, which do not have Fiware headers, like Worker, Broker, etc.*/
+
+	registration := apisrv.broker.getRegistration(rid)
+	if registration == nil {
+		w.WriteHeader(404)
+		w.WriteJson(nil)
+	} else {
+		w.WriteHeader(200)
+		w.WriteJson(registration)
+	}
+}
+
+func (apisrv *RestApiSrv) deleteRegistration(w rest.ResponseWriter, r *rest.Request) {
+	var rid = r.PathParam("rid")
+
+	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
+		rid = apisrv.broker.createIdWithFiwareHeaders(rid, r.Header.Get("fiware-service"), r.Header.Get("fiware-servicepath"))
+	} else {
+		rest.Error(w, "Bad Request! Fiware-Service and/or Fiware-ServicePath Headers are Missing!", 400)
+		return
+	}
+
+	err := apisrv.broker.deleteRegistration(rid)
+	if err == nil {
+		w.WriteHeader(200)
+	} else {
+		w.WriteHeader(400)
 	}
 }

@@ -56,14 +56,18 @@ func (nc *NGSI10Client) UpdateContextObject(ctxObj *ContextObject) error {
 }
 
 func (nc *NGSI10Client) UpdateContext(elem *ContextElement) error {
-	return nc.sendUpdateContext(elem, false)
+	return nc.sendUpdateContext(elem, false, false)
 }
 
 func (nc *NGSI10Client) InternalUpdateContext(elem *ContextElement) error {
-	return nc.sendUpdateContext(elem, true)
+	return nc.sendUpdateContext(elem, true, false)
 }
 
-func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool) error {
+func (nc *NGSI10Client) SouthboundUpdateContext(elem *ContextElement, fs string, fsp string) error {
+	return nc.sendUpdateContext(elem, false, true, fs, fsp)
+}
+
+func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool, southbound bool, params ...string) error {
 	updateCtxReq := &UpdateContextRequest{
 		ContextElements: []ContextElement{*elem},
 		UpdateAction:    "UPDATE",
@@ -80,6 +84,11 @@ func (nc *NGSI10Client) sendUpdateContext(elem *ContextElement, internal bool) e
 
 	if internal == true {
 		req.Header.Add("User-Agent", "lightweight-iot-broker")
+	}
+
+	if southbound == true {
+		req.Header.Add("fiware-service", params[0])
+		req.Header.Add("fiware-servicepath", params[1])
 	}
 
 	client := nc.SecurityCfg.GetHTTPClient()
@@ -467,7 +476,10 @@ func (nc *NGSI9Client) UnregisterEntity(eid string) error {
 	return nil
 }
 
-func (nc *NGSI9Client) GetProviderURL(id string) string {
+func (nc *NGSI9Client) GetProviderURL(id string) (string, *EntityRegistration) {
+	//resp, err := http.Get(nc.IoTDiscoveryURL + "/registration/" + id)
+	//defer resp.Body.Close()
+
 	req, err := http.NewRequest("GET", nc.IoTDiscoveryURL+"/registration/"+id, nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -477,23 +489,24 @@ func (nc *NGSI9Client) GetProviderURL(id string) string {
 	if resp != nil {
 		defer resp.Body.Close()
 	}
+	registeredEntity := EntityRegistration{}
 	if err != nil {
 		ERROR.Println(err)
-		return ""
+		return "", nil
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
 
 	if text == nil {
-		return ""
+		return "", nil
 	}
-
+	err = json.Unmarshal(text, &registeredEntity)
 	registration := ContextRegistration{}
 	err = json.Unmarshal(text, &registration)
 	if err != nil {
-		return ""
+		return "", nil
 	} else {
-		return registration.ProvidingApplication
+		return registration.ProvidingApplication, &registeredEntity
 	}
 }
 
