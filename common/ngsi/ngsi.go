@@ -299,8 +299,8 @@ type Conditions struct {
 }
 
 type Subject struct {
-	Entities  []EntityId `json:"entities"`
-	Conditions Conditions  `json:"conditions,omitempty"`
+	Entities   []EntityId `json:"entities"`
+	Conditions Conditions `json:"condition,omitempty"`
 }
 
 type Expression struct {
@@ -768,7 +768,7 @@ type SubscribeContextRequest struct {
 type SubscriptionRequest struct {
 	Attributes   []string `json:"attributes,omitempty"`
 	Subscriber   Subscriber
-	Conditions   Conditions    `json:"conditions,omitempty"`
+	Conditions   Conditions   `json:"condition,omitempty"`
 	Description  string       `json:"description,omitempty"`
 	Subject      Subject      `json:"subject"`
 	Notification Notification `json:"notification"`
@@ -869,7 +869,7 @@ type Subscribev2ContextAvailabilityRequest struct {
 	Subject        Subject      `json:"subject"`
 	SubscriptionId string       `json:"subscriptionId,omitempty"`
 	Notification   Notification `json:"notification"`
-	Conditions      Conditions    `json:"conditions,omitempty"`
+	Conditions     Conditions   `json:"condition,omitempty"`
 	Throttling     int          `json:"throttling,omitempty"`
 	Expires        string       `json:"expires,omitempty"`
 	Status         string       `json:"status,omitempty"`

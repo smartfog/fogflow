@@ -1026,9 +1026,7 @@ func (tb *ThinBroker) Subscriptionv2Context(w rest.ResponseWriter, r *rest.Reque
 	//subReqv2.Subject.SetIDpattern()
 	ctxEle := &subReqv2
 	ctxEle.Subject.SetIDpattern()
-	tb.v2subscriptions[subID] = &subReqv2
-	//ctxEle := &subReqv2
-	//ctxEle.Subject.SetIDpattern()
+	tb.v2subscriptions[subID] = ctxEle
 	tb.v2subscriptions_lock.Unlock()
 	if subReqv2.Subscriber.IsInternal == true {
 		INFO.Println("internal subscription coming from another broker")

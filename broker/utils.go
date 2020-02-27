@@ -116,7 +116,6 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 	}
 
 	INFO.Println(string(body))
-
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
