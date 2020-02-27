@@ -287,9 +287,39 @@ func (pAttr *ContextAttribute) UnmarshalJSON(b []byte) error {
 }
 
 type EntityId struct {
-	ID        string `json:"id"`
 	Type      string `json:"type,omitempty"`
 	IsPattern bool   `json:"isPattern,omitempty"`
+	ID        string `json:"id"`
+	IdPattern string `json:"idPattern,omitempty"`
+}
+
+type Conditions struct {
+	Attrs      []string   `json:"attrs"`
+	Expression Expression `json:"expression,omitempty"`
+}
+
+type Subject struct {
+	Entities   []EntityId `json:"entities"`
+	Conditions Conditions `json:"condition,omitempty"`
+}
+
+type Expression struct {
+	Georel   map[string]ValueObject `json:"georel,omitempty"`
+	Geometry map[string]ValueObject `json:"geometry,omitempty"`
+	Coords   map[string]ValueObject `json:"coords,omitempty"`
+}
+
+type Notification struct {
+	Http Http `json:"http"`
+
+	Attrs       []string `json:"attrs,omitempty"`
+	Metadata    string   `json:"metadata,omitempty"`
+	ExcetAttrs  []string `json:"exceptAttrs,omitempty"`
+	AttrsFormat string   `json:"attrsFormat,omitempty"`
+}
+
+type Http struct {
+	Url string `json:"url"`
 }
 
 type ValueObject struct {
@@ -313,11 +343,10 @@ func (ctxObj *ContextObject) IsEmpty() bool {
 }
 
 type ContextElement struct {
-	Entity    EntityId `json:"entityId"`
-	ID        string   `json:"id"`
-	Type      string   `json:"type,omitempty"`
-	IsPattern string   `json:"isPattern"`
-	//	AttributeDomainName string             `json:"attributeDomainName,omitempty"`
+	Entity     EntityId           `json:"entityId"`
+	ID         string             `json:"id"`
+	Type       string             `json:"type,omitempty"`
+	IsPattern  string             `json:"isPattern"`
 	Attributes []ContextAttribute `json:"attributes,omitempty"`
 	Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
 }
@@ -414,8 +443,6 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 		convertedElement.Type = element.Type
 		convertedElement.IsPattern = element.IsPattern
 
-		//convertedElement.AttributeDomainName = element.AttributeDomainName
-
 		convertedElement.Attributes = make([]OrionContextAttribute, 0)
 
 		for _, attr := range element.Attributes {
@@ -438,8 +465,7 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 			Attributes []ContextAttribute `json:"attributes,omitempty"`
 			Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
 		}{
-			Entity: element.Entity,
-			//AttributeDomainName: element.AttributeDomainName,
+			Entity:     element.Entity,
 			Attributes: element.Attributes,
 			Metadata:   element.Metadata,
 		})
@@ -470,6 +496,18 @@ func (element *ContextElement) SetEntityID() {
 	}
 }
 
+// Integration with wirecloud
+func (element *Subject) SetIDpattern() {
+
+	for index, entities := range element.Entities {
+
+		if entities.IdPattern != "" {
+			entities.ID = entities.IdPattern
+			element.Entities[index] = entities
+		}
+	}
+}
+
 type StatusCode struct {
 	Code         int    `json:"code"`
 	ReasonPhrase string `json:"reasonPhrase,omitempty"`
@@ -477,6 +515,11 @@ type StatusCode struct {
 }
 
 type SubscribeError struct {
+	SubscriptionId string     `json:"subscriptionId,omitempty"`
+	ErrorCode      StatusCode `json:"errorCode"`
+}
+
+type SubscriptionError struct {
 	SubscriptionId string     `json:"subscriptionId,omitempty"`
 	ErrorCode      StatusCode `json:"errorCode"`
 }
@@ -586,6 +629,12 @@ func (restriction *Restriction) GetNearbyFilter() *NearBy {
 }
 
 type SubscribeResponse struct {
+	SubscriptionId string `json:"subscriptionId"`
+	Duration       string `json:"duration,omitempty"`
+	Throttling     string `json:"throttling,omitempty"`
+}
+
+type SubscriptionResponse struct {
 	SubscriptionId string `json:"subscriptionId"`
 	Duration       string `json:"duration,omitempty"`
 	Throttling     string `json:"throttling,omitempty"`
@@ -716,6 +765,22 @@ type SubscribeContextRequest struct {
 	Subscriber       Subscriber
 }
 
+type SubscriptionRequest struct {
+	Attributes   []string `json:"attributes,omitempty"`
+	Subscriber   Subscriber
+	Conditions   Conditions   `json:"condition,omitempty"`
+	Description  string       `json:"description,omitempty"`
+	Subject      Subject      `json:"subject"`
+	Notification Notification `json:"notification"`
+	Throttling   int          `json:"throttling,omitempty"`
+	Expires      string       `json:"expires,omitempty"`
+	Status       string       `json:"status,omitempty"`
+}
+
+type Subscribev2Response struct {
+	SubscriptionResponse SubscriptionResponse `json:"subscribeResponse,omitempty"`
+	SubscriptionError    SubscriptionError    `json:"subscribeError,omitempty"`
+}
 type SubscribeContextResponse struct {
 	SubscribeResponse SubscribeResponse `json:"subscribeResponse,omitempty"`
 	SubscribeError    SubscribeError    `json:"subscribeError,omitempty"`
@@ -760,7 +825,6 @@ type UpdateContextRequest struct {
 
 type UpdateContextResponse struct {
 	ContextResponses []ContextElementResponse `json:"contextResponses"`
-	//ErrorCode        StatusCode               `json:"errorCode,omitempty"`
 }
 
 // NGSI9
@@ -796,10 +860,31 @@ type SubscribeContextAvailabilityRequest struct {
 	SubscriptionId string      `json:"subscriptionId,omitempty"`
 }
 
+type Subscribev2ContextAvailabilityRequest struct {
+	Entities       []EntityId   `json:"entities"`
+	Attributes     []string     `json:"attributes,omitempty"`
+	Reference      string       `json:"reference"`
+	Duration       string       `json:"duration,omitempty"`
+	Restriction    Restriction  `json:"restriction,omitempty"`
+	Subject        Subject      `json:"subject"`
+	SubscriptionId string       `json:"subscriptionId,omitempty"`
+	Notification   Notification `json:"notification"`
+	Conditions     Conditions   `json:"condition,omitempty"`
+	Throttling     int          `json:"throttling,omitempty"`
+	Expires        string       `json:"expires,omitempty"`
+	Status         string       `json:"status,omitempty"`
+}
+
 type SubscribeContextAvailabilityResponse struct {
 	SubscriptionId string     `json:"subscribeId"`
 	Duration       string     `json:"duration,omitempty"`
 	ErrorCode      StatusCode `json:"errorCode,omitempty"`
+}
+
+type Subscribev2ContextAvailabilityResponse struct {
+	SubscriptionId string `json:"subscribeId"`
+	//        Duration       string     `json:"duration,omitempty"`
+	ErrorCode StatusCode `json:"errorCode,omitempty"`
 }
 
 type UpdateContextAvailabilitySubscriptionRequest struct {
@@ -820,7 +905,16 @@ type UnsubscribeContextAvailabilityRequest struct {
 	SubscriptionId string `json:"subscriptionId"`
 }
 
+type Unsubscribev2ContextAvailabilityRequest struct {
+	SubscriptionId string `json:"subscriptionId"`
+}
+
 type UnsubscribeContextAvailabilityResponse struct {
+	SubscriptionId string     `json:"subscriptionId"`
+	StatusCode     StatusCode `json:"statusCode"`
+}
+
+type Unsubscribev2ContextAvailabilityResponse struct {
 	SubscriptionId string     `json:"subscriptionId"`
 	StatusCode     StatusCode `json:"statusCode"`
 }
@@ -831,7 +925,17 @@ type NotifyContextAvailabilityRequest struct {
 	ErrorCode                       StatusCode                    `json:"errorCode,omitempty"`
 }
 
+type Notifyv2ContextAvailabilityRequest struct {
+	SubscriptionId                  string                        `json:"subscribeId"`
+	ContextRegistrationResponseList []ContextRegistrationResponse `json:"contextRegistrationResponses,omitempty"`
+	ErrorCode                       StatusCode                    `json:"errorCode,omitempty"`
+}
+
 type NotifyContextAvailabilityResponse struct {
+	ResponseCode StatusCode `json:"responseCode"`
+}
+
+type Notifyv2ContextAvailabilityResponse struct {
 	ResponseCode StatusCode `json:"responseCode"`
 }
 

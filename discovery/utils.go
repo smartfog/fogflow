@@ -1,11 +1,10 @@
 package main
 
 import (
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"math"
 	"regexp"
 	"strings"
-
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) bool {
@@ -14,7 +13,6 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	entity.ID = registration.ID
 	entity.Type = registration.Type
 	entity.IsPattern = false
-
 	atLeastOneMatched := false
 	for _, tmp := range idFilter {
 		matched := matchEntityId(entity, tmp)
@@ -31,13 +29,11 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	if matchAttributes(registration.AttributesList, attrFilter) == false {
 		return false
 	}
-
 	// (3) check metadata set
 	if matchMetadatas(registration.MetadataList, metaFilter) == false {
 		return false
 	}
-
-	// if all matched, return true
+	// if all matched, return truei
 	return true
 }
 

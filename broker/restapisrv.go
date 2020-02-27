@@ -4,16 +4,14 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/ant0ine/go-json-rest/rest"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-
-	"github.com/ant0ine/go-json-rest/rest"
-
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type RestApiSrv struct {
@@ -32,7 +30,10 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Post("/ngsi10/subscribeContext", broker.SubscribeContext),
 		rest.Post("/ngsi10/unsubscribeContext", broker.UnsubscribeContext),
 		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
-
+		rest.Post("/ngsi10/notifyContextAvailabilityv2", broker.Notifyv2ContextAvailability),
+		// ngsiv2 API
+		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
+		// api for iot-agent
 		// Fiware Entity Update API
 		rest.Post("/v1/updateContext", broker.UpdateContext),
 
@@ -43,6 +44,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		// convenient ngsi10 API
 		rest.Get("/ngsi10/entity", apisrv.getEntities),
+		rest.Get("/v2/entities", apisrv.getEntities),
 		rest.Get("/ngsi10/entity/#eid", apisrv.getEntity),
 		rest.Get("/ngsi10/entity/#eid/#attr", apisrv.getAttribute),
 		rest.Delete("/ngsi10/entity/#eid", apisrv.deleteEntity),
@@ -50,6 +52,11 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Get("/ngsi10/subscription", apisrv.getSubscriptions),
 		rest.Get("/ngsi10/subscription/#sid", apisrv.getSubscription),
 		rest.Delete("/ngsi10/subscription/#sid", apisrv.deleteSubscription),
+
+		//NGSIV2
+		rest.Get("/v2/subscriptions", apisrv.getv2Subscriptions),
+		rest.Get("/v2/subscription/#sid", apisrv.getv2Subscription),
+		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -160,6 +167,16 @@ func (apisrv *RestApiSrv) getSubscriptions(w rest.ResponseWriter, r *rest.Reques
 	w.WriteJson(subscriptions)
 }
 
+/*
+	Handler to delete NGSIV2 subscription by Id
+*/
+
+func (apisrv *RestApiSrv) getv2Subscriptions(w rest.ResponseWriter, r *rest.Request) {
+	v2subscriptions := apisrv.broker.getv2Subscriptions()
+	w.WriteHeader(200)
+	w.WriteJson(v2subscriptions)
+}
+
 func (apisrv *RestApiSrv) getSubscription(w rest.ResponseWriter, r *rest.Request) {
 	var sid = r.PathParam("sid")
 
@@ -172,10 +189,41 @@ func (apisrv *RestApiSrv) getSubscription(w rest.ResponseWriter, r *rest.Request
 	}
 }
 
+/*
+	Handler to get NGSIV2 subscription by SubscriptionId
+*/
+
+func (apisrv *RestApiSrv) getv2Subscription(w rest.ResponseWriter, r *rest.Request) {
+	var sid = r.PathParam("sid")
+
+	v2subscription := apisrv.broker.getv2Subscription(sid)
+
+	if v2subscription == nil {
+		w.WriteHeader(404)
+	} else {
+		w.WriteHeader(200)
+		w.WriteJson(v2subscription)
+	}
+}
+
 func (apisrv *RestApiSrv) deleteSubscription(w rest.ResponseWriter, r *rest.Request) {
 	var sid = r.PathParam("sid")
 
 	err := apisrv.broker.deleteSubscription(sid)
+	if err == nil {
+		w.WriteHeader(200)
+	} else {
+		w.WriteHeader(404)
+	}
+}
+
+/*
+	Handler to delete NGSIV2 subscription by SubscriptionId
+*/
+func (apisrv *RestApiSrv) deletev2Subscription(w rest.ResponseWriter, r *rest.Request) {
+	var sid = r.PathParam("sid")
+
+	err := apisrv.broker.deletev2Subscription(sid)
 	if err == nil {
 		w.WriteHeader(200)
 	} else {
