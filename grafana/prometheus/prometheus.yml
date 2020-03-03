@@ -1,0 +1,7 @@
+scrape_configs:
+- job_name: prometheus
+  scrape_interval: 4s
+  file_sd_configs:
+  - files: 
+    - 'tgroups/*.json'
+    refresh_interval: 10s
