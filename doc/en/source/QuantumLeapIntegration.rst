@@ -35,7 +35,7 @@ Integration steps
 	"subject": {
 		"entities": [{
 			"id": "Room1",
-			"type": "Room"
+			"type": "Room",
 			"isPattern": true
 		}],
 		"condition": {
@@ -46,9 +46,7 @@ Integration steps
 	},
 	"notification": {
 		"http": {
-			"url": ""
-			reference ": "
-			http: //<Quantum-leap-Host-IP>:"8668""
+			"url": "http://<Quantum-leap-Host-IP>:8668/v2/notify"
 		},
 		"attrs": [
 			"temperature"
@@ -62,8 +60,9 @@ Integration steps
 An example request is given below:
 
 .. code-block:: console
+
 	curl -iX POST \
-  	'http://192.168.100.120:8070/ngsi10/updateContext' \
+  	'http://<Fogflow broker>:8070/ngsi10/updateContext' \
  	 -H 'Content-Type: application/json' \
   	-d '
       {
