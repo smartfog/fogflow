@@ -8,7 +8,7 @@ Integrate FogFlow with Quantum-leap
 
 The figure below shows the integration of fogflow with QUANTUMLEAP
 
-.. figure:: figures/integration_quantumleap.png
+.. figure:: figures/integration_quantumleap1.png
 
 1. User sends a subscription request to the FogFlow-Broker in ngsiv2.
 2. User will send the update request to the FogFlowlow-Broker in ngsiv1.
@@ -89,6 +89,7 @@ An example request is given below:
 	}],
 	"updateAction": "UPDATE"
      }'
+
 **Fogflow Broker** will sends the notification to the Quantum-leap.
 
 
