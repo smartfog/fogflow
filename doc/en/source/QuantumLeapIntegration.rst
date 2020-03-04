@@ -35,8 +35,8 @@ Integration steps
 	"subject": {
 		"entities": [{
 			"id": "Room1",
-			"type": "Room",
-			"isPattern": true
+			"type": "Room1",
+			"isPattern": false
 		}],
 		"condition": {
 			"attrs": [
@@ -70,7 +70,7 @@ An example request is given below:
 		"entityId": {
 			"id": "Room1",
 			"type": "Room1",
-			"isPattern": true
+			"isPattern": false
 		},
 		"attributes": [{
 			"name": "temperature",
@@ -89,6 +89,12 @@ An example request is given below:
 	"updateAction": "UPDATE"
      }'
 
-**Fogflow Broker** will sends the notification to the Quantum-leap.
+**Fogflow Broker** will sends the notification to the Quantum-leap. verify result by below command
 
+.. code-block:: console
 
+	http://<QuantuLeap-Host-Ip>:8668/v2/entities/Room1/attrs/temperature
+
+* result:
+
+.. figure:: figures/QuantuleapOutput.png
