@@ -95,6 +95,6 @@ An example request is given below:
 
 	http://<QuantuLeap-Host-Ip>:8668/v2/entities/Room1/attrs/temperature
 
-* result:
+**result:**
 
 .. figure:: figures/QuantuleapOutput.png
