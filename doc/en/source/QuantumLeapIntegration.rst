@@ -34,7 +34,7 @@ Integration steps
 	"description": "A subscription to get info about Room1",
 	"subject": {
 		"entities": [{
-			"id": "Room1",
+			"id": "Room4",
 			"type": "Room",
 			"isPattern": false
 		}],
@@ -68,7 +68,7 @@ An example request is given below:
       {
 	"contextElements": [{
 		"entityId": {
-			"id": "Room1",
+			"id": "Room4",
 			"type": "Room",
 			"isPattern": false
 		},
@@ -93,8 +93,8 @@ An example request is given below:
 
 .. code-block:: console
 
-	http://<QuantuLeap-Host-Ip>:8668/v2/entities/Room1/attrs/temperature
+	http://<QuantuLeap-Host-Ip>:8668/v2/entities/Room4/attrs/temperature
 
 **result:**
 
-.. figure:: figures/QuantuleapOutput.png
+.. figure:: figures/NewResult.png
