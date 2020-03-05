@@ -1,18 +1,18 @@
 *****************************************
-Integrate FogFlow with Quantum-leap
+Integrate FogFlow with QuantumLeap
 *****************************************
 
-`QuantumLeap`_ is a REST service for storing, querying and retrieving NGSI v2 spatial-temporal data . QuantumLeap converts NGSI semi-structured data into tabular format and stores it in a time-series database.
+`QuantumLeap`_ is a REST service for storing, querying and retrieving NGSIv2 spatial-temporal data . QuantumLeap converts NGSI semi-structured data into tabular format and stores it in a time-series database.
 
 .. _`QuantumLeap`: https://quantumleap.readthedocs.io/en/latest/
 
 The figure below shows the integration of fogflow with QUANTUMLEAP
 
-.. figure:: figures/integration_quantumleap1.png
+.. figure:: figures/NewQuantumleapFogflowIntegration.png
 
-1. User sends a subscription request to the FogFlow-Broker in ngsiv2.
-2. User will send the update request to the FogFlowlow-Broker in ngsiv1.
-3. FogFlow Broker will notify to the Quantum-leap IN ngsiv2 .
+1. User sends a subscription request to the FogFlow-Broker in NGSIv2.
+2. User will send the update request to the FogFlowlow-Broker in NGSIv1.
+3. FogFlow Broker will notify QuantumLeap in NGSIv2 .
 
 Integration steps
 ===============================================
@@ -20,9 +20,9 @@ Integration steps
 **Pre-Requisites:**
 
 * Fogflow should be up and running with atleast one node.
-* Quantumleap should be up and running with atleast one node.
+* QuantumLeap should be up and running with atleast one node.
 
-**Send subscription request** to Fogflow Broker for Quantum-leap 
+**Send subscription request** to Fogflow Broker for QuantumLeap 
 
 .. code-block:: console
 
@@ -35,7 +35,7 @@ Integration steps
 	"subject": {
 		"entities": [{
 			"id": "Room1",
-			"type": "Room1",
+			"type": "Room",
 			"isPattern": false
 		}],
 		"condition": {
@@ -69,7 +69,7 @@ An example request is given below:
 	"contextElements": [{
 		"entityId": {
 			"id": "Room1",
-			"type": "Room1",
+			"type": "Room",
 			"isPattern": false
 		},
 		"attributes": [{
@@ -89,7 +89,7 @@ An example request is given below:
 	"updateAction": "UPDATE"
      }'
 
-**Fogflow Broker** will sends the notification to the Quantum-leap. verify result by below command
+**Fogflow Broker** will send the notification to the Quantum-leap. verify result by below command
 
 .. code-block:: console
 
