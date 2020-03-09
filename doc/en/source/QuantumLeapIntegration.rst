@@ -98,3 +98,4 @@ An example request is given below:
 **result:**
 
 .. figure:: figures/NewResult.png
+
