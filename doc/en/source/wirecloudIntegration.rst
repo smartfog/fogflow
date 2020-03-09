@@ -12,7 +12,7 @@ The figure below shows the integration of FogFlow with WIRECLOUD
 
 1. WireCloud sends a subscription request to the FogFlow-Broker in NGSIv2.
 2. User will send the update request to the FogFlowlow-Broker in NGSIv1.
-3. FogFlow Broker will notify QuantumLeap in NGSIv2.
+3. FogFlow Broker will notify WireCloud in NGSIv2.
 
 Integration steps
 ===============================================
