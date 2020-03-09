@@ -121,5 +121,5 @@ An example request is given below:
 	 
 **result:**
 
-.. figure:: figures/NewResult.PNG
+.. figure:: figures/WCresult.PNG
 
