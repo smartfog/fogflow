@@ -6,6 +6,25 @@ Integrate FogFlow with WireCloud
 
 .. _`WireCloud`: https://wirecloud.readthedocs.io/en/stable/
 
+The figure below shows the integration of FogFlow with WIRECLOUD
+
+.. figure:: figures/NewQuantumleapFogflowIntegration.png
+
+1. WireCloud sends a subscription request to the FogFlow-Broker in NGSIv2.
+2. User will send the update request to the FogFlowlow-Broker in NGSIv1.
+3. FogFlow Broker will notify QuantumLeap in NGSIv2.
+
+Integration steps
+===============================================
+
+**Pre-Requisites:**
+
+* Fogflow should be up and running with atleast one node.
+* WireCloud should be up and running  `installation steps`_ .
+* 
+
+.. _`Docker image for installating  WireCloud` : https://wirecloud.readthedocs.io/en/stable/installation_guide/
+
 **Send update request**  to Fogflow Broker with an entity of type and attributes defined in the above subscription.
 An example request is given below:
 
