@@ -8,7 +8,7 @@ Integrate FogFlow with WireCloud
 
 The figure below shows the integration of FogFlow with WIRECLOUD
 
-.. figure:: figures/NewQuantumleapFogflowIntegration.png
+.. figure:: figures/Wc_FFIntegration.PNG
 
 1. WireCloud sends a subscription request to the FogFlow-Broker in NGSIv2.
 2. User will send the update request to the FogFlowlow-Broker in NGSIv1.
