@@ -73,7 +73,6 @@ Below is the request to run an "on" command on the lamp (the NGSI device) to tur
     -H 'Content-Type: application/json' \
     -H 'fiware-service: openiot' \
     -H 'fiware-servicepath: /' \
-    -H 'command: true' \
     -d '{	
         "contextElements": [
         {
@@ -165,7 +164,6 @@ The below curl request sends an "on" command to the lamp001 device.
     -H 'Content-Type: application/json' \
     -H 'fiware-service: openiot' \
     -H 'fiware-servicepath: /' \
-    -H 'command: true' \
     -d '{
         "contextElements": [
         {
@@ -176,7 +174,7 @@ The below curl request sends an "on" command to the lamp001 device.
             },
             "attributes": [
                  {
-                     "name": "off",
+                     "name": "on",
                      "type": "command",
                      "value": ""
                  }
@@ -195,7 +193,6 @@ The above request shows Fogflow entity update, which is a bit different from the
     -H 'Content-Type: application/json' \
     -H 'fiware-service: openiot' \
     -H 'fiware-servicepath: /' \
-    -H 'command: true' \
     -d '{
         "contextElements": [
             {
@@ -325,7 +322,6 @@ The updated data can be viewed on the subscribed topic "/FFNN1111/lamp001/attrs"
       -H 'Content-Type: application/json' \
       -H 'fiware-service: iot' \
       -H 'fiware-servicepath: /' \
-      -H 'command: true' \
       -d '{
           "contextElements": [
           {
