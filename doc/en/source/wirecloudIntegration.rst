@@ -32,51 +32,51 @@ Integration steps
 
 * Step1 Open Wirecloud Dashboard Home.
 
-.. figure:: figures/WC1.PNG
+.. figure:: figures/WC1.png
 
 * Step2 Add New workspace.
 
-.. figure:: figures/WC2.PNG
+.. figure:: figures/N1WC2.png
 
 * Step3 Provide name to the new workspace.
 
-.. figure:: figures/WC3.PNG
+.. figure:: figures/NWC3.png
 
 * Step4 Created new workspace WC_fog.
 
-.. figure:: figures/WC4.PNG
+.. figure:: figures/WC4.png
 
 * Step5 View all the resources cretaed by users and some default resources.
 
-.. figure:: figures/WC5.PNG
+.. figure:: figures/WC5.png
 
 * Step6 Available resources and wiget in the wirecloud library.
 
-.. figure:: figures/WC6.PNG
+.. figure:: figures/WC6.png
 
 * Step7 create wiring for your own workspace.
 
-.. figure:: figures/WC7.PNG
+.. figure:: figures/WC7.png
 
 * Step8 Click on find Componend in the wiring section.  
 
-.. figure:: figures/WC8.PNG
+.. figure:: figures/WC8.png
 
 * Step8 Add two spy wiring widget for display the data and second to show the entity. user can use their own widget to display the data and see the details of entity according to their requirement.  
 
-.. figure:: figures/WC9.PNG
+.. figure:: figures/WC9.png
 
 * Step9 Add NGSI source Widget to subscribe ContextBroker for specified Data .
 
-.. figure:: figures/WC10.PNG
+.. figure:: figures/WC10.png
 
 * Drag and drop the added components to the working space.
 
-.. figure:: figures/WC11.PNG
+.. figure:: figures/WC11.png
 
 * Add the dropped component as in the below picture. Spy wiring connected to the entity of NGSI source will show data and other one component to NGSI type will show the entity detail.
 
-.. figure:: figures/WC12.PNG
+.. figure:: figures/WC12.png
 
 * Go to the setting of NGSI souce to configure it for subscription request to the context broker.
 
