@@ -137,17 +137,17 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 	docker ps -a
 	
-	CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                                   NAMES
-	90868b310608        nginx:latest        "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                      fogflow_nginx_1
-	d4fd1aee2655        fogflow/worker      "/worker"                6 seconds ago       Up 2 seconds                                                                fogflow_cloud_worker_1
-	428e69bf5998        fogflow/master      "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                                  fogflow_master_1
-	9da1124a43b4        fogflow/designer    "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp          fogflow_designer_1
-	bb8e25e5a75d        fogflow/broker      "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                                  fogflow_cloud_broker_1
-	7f3ce330c204        rabbitmq:3          "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp   fogflow_rabbitmq_1
-	9e95c55a1eb7        fogflow/discovery   "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                                  fogflow_discovery_1
-        399958d8d88a        fogflow/grafana:6.5.0               "/run.sh"                29 seconds ago      Up 27 seconds          0.0.0.0:3003->3000/tcp        fogflow_grafana_1
-        9f99315a1a1d        fogflow/elasticsearch:7.5.1      "/usr/local/bin/dock…"   32 seconds ago      Up 29 seconds    0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp             fogflow_elasticsearch_1
-        57eac616a67e        fogflow/metricbeat:7.6.0         "/usr/local/bin/dock…"   32 seconds ago      Up 29 seconds                                             fogflow_metricbeat_1
+	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                   NAMES
+	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                      fogflow_nginx_1
+	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                fogflow_cloud_worker_1
+	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                            fogflow_master_1
+	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp    fogflow_designer_1
+	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                            fogflow_cloud_broker_1
+	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp    fogflow_rabbitmq_1
+	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                            fogflow_discovery_1
+        399958d8d88a      grafana/grafana:6.5.0   "/run.sh"                29 seconds ago      Up 27 seconds          0.0.0.0:3003->3000/tcp                            fogflow_grafana_1
+        9f99315a1a1d      fogflow/elasticsearch:7.5.1 "/usr/local/bin/dock…"   32 seconds ago      Up 29 seconds    0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp    fogflow_elasticsearch_1
+        57eac616a67e      fogflow/metricbeat:7.6.0 "/usr/local/bin/dock…"   32 seconds ago      Up 29 seconds                                                              fogflow_metricbeat_1
 
 .. important:: 
 
