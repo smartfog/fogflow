@@ -1,0 +1,17 @@
+name: "<EDGE_HOST_IP/edge##>"
+metricbeat.modules:
+- module: docker
+  metricsets: ["cpu","memory","network"]
+  hosts: ["unix:///var/run/docker.sock"]
+  period: 10s
+  enabled: true
+- module: system
+  metricsets: ["cpu","load","memory","network"]
+  period: 10s
+#processors:
+#  - add_cloud_metadata: ~
+
+output.elasticsearch:
+  hosts: '<Cloud_Public_IP>:9200'
+#  username: '${ELASTICSEARCH_USERNAME:}'
+#  password: '${ELASTICSEARCH_PASSWORD:}'
