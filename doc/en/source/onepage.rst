@@ -13,9 +13,15 @@ that join with FogFlow cloud node on the fly.
 
 As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
 
+
+
 .. figure:: figures/Fogflow_System_Monitoring_Architecture.png
 
-The tutorial introduces a typical FogFlow system setup with a simple example to do anomaly detection at edges for temperature sensor data. 
+
+
+
+The tutorial introduces a typical FogFlow system setup with a simple example to do anomaly detection at edges for temperature sensor 
+data.
 It explains an example usecase implementation using FogFlow and FIWARE Orion in integration with each other. 
 
 As shown in the following diagram, in this use case a connected temperature sensor sends an update message to the FogFlow system, 
@@ -28,7 +34,11 @@ it will be forwarded from the FogFlow system to Orion Context Broker.
 This is because a subscription with Orion Context Broker as the reference URL has been issued.  
 
 
+
 .. figure:: figures/systemview.png
+
+
+
 
 
 Here are the prerequisite commands for running FogFlow:
@@ -41,8 +51,10 @@ For ubuntu-16.04, you need to install docker-ce and docker-compose.
 
 To install Docker CE, please refer to `Install Docker CE`_, required version > 18.03.1-ce;
 
+
 .. important:: 
 	**please also allow your user to execute the Docker Command without Sudo**
+
 
 
 To install Docker Compose, please refer to `Install Docker Compose`_, 
@@ -81,6 +93,7 @@ Change the IP configuration accordingly
 -------------------------------------------------------------
 
 
+
 You need to change the following IP addresses in config.json according to your own environment.
 
 - **coreservice_ip**: it is used by all FogFlow edge nodes to access the core services (e.g., nginx on port 80 and rabbitmq on port 5672) on the FogFlow cloud node; usually this will be the public IP of the FogFlow cloud node.
@@ -91,23 +104,32 @@ You need to change the following IP addresses in config.json according to your o
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
+
 Change the IP configuration of elasticsearch and metricbeat accordingly
 ---------------------------------------------------------------------------
 
 You need to change the following IP addresses in docker-compose.yml according to your own environment.
+
 - **output.elasticsearch.hosts**: it is the host location of elasticsearch on which metricbeat shares data in cvs format.
 
 Also need to change the following IP addresses in metricbeat.docker.yml according to your own environment.
+
 - **name**: It is the name given for uniqueness for cloud nodes from egde nodes on grafana metric dashboard. You can mention any name in place of IP address.
+
 - **hosts**: It is the host location of elasticsearh database, where metricbeat is going to share metric data.
+
 
 .. important:: 
 
-	please DO NOT use "127.0.0.1" as the IP address of **coreservice_ip** and **external_hostip**, because they will be used by a running task inside a docker container. 
+	please DO NOT use "127.0.0.1" as the IP address of **coreservice_ip** and **external_hostip**, because they will be used by a 
+	running task inside a docker container. 
 	
-	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80 and 5672 for TCP
+	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 
+	80 and 5672 for TCP
 
-	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" to replace coreservice_ip, external_hostip, and internal_hostip in the configuration file
+	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
+	to replace coreservice_ip, external_hostip, and internal_hostip in the configuration file
+
 
 
 Start all Fogflow components 
@@ -115,6 +137,7 @@ Start all Fogflow components
 
 
 Pull the docker images of all FogFlow components and start the FogFlow system
+
 
 .. code-block:: console    
 
@@ -133,62 +156,79 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 - Check all the containers are Up and Running using "docker ps -a"
 
+
 .. code-block:: console    
 
 	docker ps -a
 	
-	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                   NAMES
-	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                      fogflow_nginx_1
-	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                fogflow_cloud_worker_1
-	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                            fogflow_master_1
-	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp    fogflow_designer_1
-	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                            fogflow_cloud_broker_1
-	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp    fogflow_rabbitmq_1
-	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                            fogflow_discovery_1
-        399958d8d88a      grafana/grafana:6.5.0   "/run.sh"                29 seconds ago      Up 27 seconds          0.0.0.0:3003->3000/tcp                            fogflow_grafana_1
-        9f99315a1a1d      fogflow/elasticsearch:7.5.1 "/usr/local/bin/dock…"   32 seconds ago      Up 29 seconds    0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp    fogflow_elasticsearch_1
-        57eac616a67e      fogflow/metricbeat:7.6.0 "/usr/local/bin/dock…"   32 seconds ago      Up 29 seconds                                                              fogflow_metricbeat_1
+	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                 NAMES
+	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                       fogflow_nginx_1
+	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                 fogflow_cloud_worker_1
+	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                               fogflow_master_1
+	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp       fogflow_designer_1
+	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                               fogflow_cloud_broker_1
+	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp     fogflow_rabbitmq_1
+	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                               fogflow_discovery_1
+        399958d8d88a      grafana/grafana:6.5.0   "/run.sh"                29 seconds ago      Up 27 seconds       0.0.0.0:3003->3000/tcp                               fogflow_grafana_1
+        9f99315a1a1d      fogflow/elasticsearch:7.5.1 "/usr/local/bin/dock…" 32 seconds ago    Up 29 seconds       0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp       fogflow_elasticsearch_1
+        57eac616a67e      fogflow/metricbeat:7.6.0 "/usr/local/bin/dock…"   32 seconds ago     Up 29 seconds                                                                  fogflow_metricbeat_1
+
 
 .. important:: 
 
-	if you see any container is missing, you can run "docker ps -a" to check if any FogFlow component is terminated with some problem. If there is, you can further check its output log by running "docker logs [container ID]"
+	if you see any container is missing, you can run "docker ps -a" to check if any FogFlow component is terminated with some 
+	problem. If there is, you can further check its output log by running "docker logs [container ID]"
 
 
 - Check the system status from the FogFlow DashBoard
 
 You can open the FogFlow dashboard in your web browser to see the current system status via the URL: http://<coreservice_ip>/index.html
 
+
 .. important:: 
 
-	If the FogFlow cloud node is behind a gateway, you need to create a mapping from the gateway IP to the coreservice_ip and then access the FogFlow dashboard via the gateway IP;
-	If the FogFlow cloud node is a VM in a public cloud like Azure Cloud, Google Cloud, or Amazon Cloud, you need to access the FogFlow dashboard via the public IP of your VM;
+	If the FogFlow cloud node is behind a gateway, you need to create a mapping from the gateway IP to the coreservice_ip and then 
+	access the FogFlow dashboard via the gateway IP;
+	If the FogFlow cloud node is a VM in a public cloud like Azure Cloud, Google Cloud, or Amazon Cloud, you need to access the 
+	FogFlow dashboard via the public IP of your VM;
+	
 
 Once you are able to access the FogFlow dashboard, you can see the following web page
 
+
 .. figure:: figures/dashboard.png
+
+
 
 Configure Elasticsearch on Grafana Dashboard
 -------------------------------------------------------------
 
-You can open the Grafana dashboard in your web browser to see the current system status via the URL: http://<output.elasticsearch.hosts>:3003/. The default username and password for grafana login are admin and admin respectively.
+You can open the Grafana dashboard in your web browser to see the current system status via the URL: 
+http://<output.elasticsearch.hosts>:3003/. The default username and password for grafana login are admin and admin respectively.
+
 
 - After successful login to grafana, click on "Create your first data source" on Home Dashboard to setup the source of data.
 - Select Elasticsearch from Add Data Sourch page. Now you are on page Data Sources/Elasticsearch same as below figure.
 
+
 .. figure:: figures/Elastic_config.png
+
 
 1. put a name for the Data Source.
 2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include http. 
 3. In Access select Server(default). URL needs to be accessible from the Grafana backend/server.
-4. In Elasticsearch details, put @timestamp for Time field name. Here you can specify a default for the time field and specify the name of your Elasticsearch index. 
-You can use a time pattern for the index name or a wildcard.
+4. In Elasticsearch details, put @timestamp for Time field name. Here you can specify a default for the time field and specify the name of your Elasticsearch index. You can use a time pattern for the index name or a wildcard.
 5. Select Elasticsearch Version.
-6. Then click on "Save & Test" button.
+
+Then click on "Save & Test" button.
+
 
 Set up the Metricbeat
 ---------------------------------------------
 
+
 - change the details of Elasticsearch in metricbeat.docker.yml file as below:
+
 
 .. code-block:: json
 
@@ -222,6 +262,7 @@ Initialize all defined services with three clicks
 After you first click "Operator Registry", a list of pre-defined operators will be registered in the FogFlow system. 
 With a second click, you can see the refreshed list as shown in the following figure.
 
+
 .. figure:: figures/operator-list.png
 
 
@@ -237,6 +278,7 @@ With a second click, you can see the refreshed list as shown in the following fi
 
 After you first click "Fog Function", a list of pre-defined functions will be registered in the FogFlow system. 
 With a second click, you can see the refreshed list as shown in the following figure.
+
 
 .. figure:: figures/function-list.png
 
