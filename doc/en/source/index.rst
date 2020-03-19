@@ -27,7 +27,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     onepage.rst
     setup.rst
     edge.rst
-    System_Monitoring.rst
+    system_monitoring.rst
     example1.rst
     example2.rst
     example3.rst
@@ -35,7 +35,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     https.rst
     scorpioIntegration.rst
     example5.rst
-    QuantumLeapIntegration.rst          
+    quantumleapIntegration.rst          
     wirecloudIntegration.rst
    
 .. toctree::
