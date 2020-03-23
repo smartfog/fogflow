@@ -80,7 +80,8 @@ Change the Metricbeat configuration file accordingly
 -----------------------------------------------------------
 
 you need to change the following addresses in start.sh according to your own environment:
--**output.elasticsearch.hosts**: It is the elasticsearch host IP adress on which metricbeat will share the metric data.
+
+- **output.elasticsearch.hosts**: It is the elasticsearch host IP address on which metricbeat will share the metric data.
 
 - change the details of Elasticsearch in metricbeat.docker.yml file as below:
 
@@ -89,11 +90,13 @@ you need to change the following addresses in start.sh according to your own env
         name: "<155.54.239.141/edge02>"
         metricbeat.modules:
         - module: docker
+          #Docker module parameters to monitor based on user requirement,example as below
           metricsets: ["cpu","memory","network"]
           hosts: ["unix:///var/run/docker.sock"]
           period: 10s
           enabled: true
         - module: system
+          #System module parameters to monitor based on user requirement, example as below
           metricsets: ["cpu","load","memory","network"]
           period: 10s
 

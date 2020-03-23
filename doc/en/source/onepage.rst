@@ -7,9 +7,9 @@ In the FIWARE-based architecture, FogFlow can be used to dynamically trigger dat
 between IoT devices and Orion Context Broker, 
 for the purpose of transforming and preprocessing raw data at edge nodes (e.g., IoT gateways or Raspberry Pis).
 
-To monitor system resource usage either on cloud node or on edge node can be done with the help of system monitoring tools.
-Here in FogFlow we use Metricbeat, Elasticsearch and Grafana in short EMG. With this set of tools we can monitor the FogFlow edge nodes 
-that join with FogFlow cloud node on the fly.
+Fogflow system health can be monitored by system monitoring tools Metricbeat, Elasticsearch and Grafana in short EMG. 
+With these tools edges and Fogflow Docker service health can be monitored. 
+Metricbeat deployed on Edge node. Elasticsearch and Grafana on Cloud node.
 
 As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
 
@@ -110,7 +110,7 @@ Change the IP configuration of elasticsearch and metricbeat accordingly
 
 You need to change the following IP addresses in docker-compose.yml according to your own environment.
 
-- **output.elasticsearch.hosts**: it is the host location of elasticsearch on which metricbeat shares data in cvs format.
+- **output.elasticsearch.hosts**: it is the host location of elasticsearch on which metricbeat shares data in csv format.
 
 Also need to change the following IP addresses in metricbeat.docker.yml according to your own environment.
 
@@ -203,8 +203,8 @@ Once you are able to access the FogFlow dashboard, you can see the following web
 Configure Elasticsearch on Grafana Dashboard
 -------------------------------------------------------------
 
-You can open the Grafana dashboard in your web browser to see the current system status via the URL: 
-http://<output.elasticsearch.hosts>:3003/. The default username and password for grafana login are admin and admin respectively.
+Grafana dashboard can be accessible on web browser to see the current system status via the URL: 
+http://<output.elasticsearch.hosts>:3003/. The default username and password for Grafana login are admin and admin respectively.
 
 
 - After successful login to grafana, click on "Create your first data source" on Home Dashboard to setup the source of data.
@@ -214,10 +214,10 @@ http://<output.elasticsearch.hosts>:3003/. The default username and password for
 .. figure:: figures/Elastic_config.png
 
 
-1. put a name for the Data Source.
-2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include http. 
+1. Put a name for the Data Source.
+2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include HTTP. 
 3. In Access select Server(default). URL needs to be accessible from the Grafana backend/server.
-4. In Elasticsearch details, put @timestamp for Time field name. Here you can specify a default for the time field and specify the name of your Elasticsearch index. You can use a time pattern for the index name or a wildcard.
+4. In Elasticsearch details, put @timestamp for Time field name. Here a default for the time field can be specified with the name of your Elasticsearch index. Use a time pattern for the index name or a wildcard.
 5. Select Elasticsearch Version.
 
 Then click on "Save & Test" button.
@@ -227,19 +227,21 @@ Set up the Metricbeat
 ---------------------------------------------
 
 
-- change the details of Elasticsearch in metricbeat.docker.yml file as below:
+- Change the details of Elasticsearch in metricbeat.docker.yml file as below:
 
 
 .. code-block:: json
 
-        name: "<155.54.239.141/edge02>"
+        name: "<155.54.239.141_cloud>"
         metricbeat.modules:
         - module: docker
+          #Docker module parameters that has to be monitored based on user requirement, example as below
           metricsets: ["cpu","memory","network"]
           hosts: ["unix:///var/run/docker.sock"]
           period: 10s
           enabled: true
         - module: system
+          #System module parameters that has to be monitored based on user requirement, example as below
           metricsets: ["cpu","load","memory","network"]
           period: 10s
 

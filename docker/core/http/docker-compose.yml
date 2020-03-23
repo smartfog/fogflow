@@ -106,15 +106,15 @@ services:
           - IOTA_DEFAULT_RESOURCE=/iot/json
 
     elasticsearch:
-        image: fogflow/elasticsearch:7.5.1
+        image: fogflow/elasticsearch:latest
         ports:
           - "9200:9200"
           - "9300:9300"
         environment:
           - discovery.type=single-node
-#          - network.host= "0.0.0.0"
+    
     metricbeat:
-        image: fogflow/metricbeat:7.6.0
+        image: fogflow/metricbeat:latest
         user: root
         volumes:
           - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml
@@ -124,6 +124,7 @@ services:
           - /:/hostfs
         environment:
           - output.elasticsearch.hosts= ["<Cloud_Public_IP>:9200"]
+    
     grafana:
         image: grafana/grafana:6.5.0
         links:
