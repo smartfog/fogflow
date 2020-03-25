@@ -4,9 +4,7 @@ else
 	htype='arm'
 fi
 
-docker run -d --name=edgebroker -v $(pwd)/config.json:/config.json -p 8060:8060  fogflow/broker:$htype
+docker run -d   --name=metricbeat   --user=root   --volume="$(pwd)/metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro"   --volume="/var/run/docker.sock:/var/run/docker.sock:ro"   --volume="/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"   --volume="/proc:/hostfs/proc:ro"   --volume="/:/hostfs:ro"   docker.elastic.co/beats/metricbeat:7.6.0 metricbeat -e   -E output.elasticsearch.hosts=["<Cloud_Public_IP>:9200"]
+docker run -d --name=edgebroker -v $(pwd)/config.json:/config.json -p 8170:8170  fogflow/broker:$htype
 docker run -d --name=edgeworker -v $(pwd)/config.json:/config.json -v /tmp:/tmp -v /var/run/docker.sock:/var/run/docker.sock fogflow/worker:$htype
 
-# Edit <Edge_public_IP> in following command and uncomment it to run IoT Agent on Fogflow Edge Node.
-# IoT Agent will use embedded mongodb i.e., mongodb will be running on localhost.
-#docker run -d --name=iot-agent-json --env IOTA_CB_HOST=<Edge_public_IP> --env IOTA_CB_PORT=8070 --env IOTA_CB_NGSI_VERSION=v1 --env IOTA_MONGO_HOST=localhost --env IOTA_PROVIDER_URL=http://<Edge_public_IP>:4041 -p 4041:4041 -p 7896:7896 fogflow/iotajson-mongo:$htype
