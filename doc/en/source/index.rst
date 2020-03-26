@@ -20,7 +20,14 @@ Currently, FogFlow has been applied into various business use cases in the areas
 
 .. toctree::
     :maxdepth: 1
-    :caption: Quick Start
+    :caption: Introduction
+    :numbered:
+
+    index.rst
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Beginner Guide
     :numbered:
    
     introduction.rst
