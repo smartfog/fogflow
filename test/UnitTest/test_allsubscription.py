@@ -14,6 +14,9 @@ import sys
 brokerIp="http://192.168.100.120:8070"
 
 # testCase 1
+'''
+  Testing get all subscription
+'''
 def test_getAllSubscription():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -21,6 +24,11 @@ def test_getAllSubscription():
 	assert r.status_code == 200
 
 #testCase 2
+
+'''
+ Testing get subscription by Id
+'''
+
 def test_getSubscriptionById():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -37,6 +45,10 @@ def test_getSubscriptionById():
 	print("Get subscription by Id testcase passed")
 
 #testCase 2
+'''
+  Testing get subscription by nil id
+'''
+
 def test_getSubscriptionByNilId():	
 	get_url=brokerIp+"/v2/subscription/nil"
 	headers= {'Content-Type': 'application/json'}
@@ -45,6 +57,11 @@ def test_getSubscriptionByNilId():
 
 # Test Delete subscription id subscriptionId is persent in the broker
 #testCase 2
+
+'''
+  Test delete subscription by Id 
+'''
+
 def test_deleteSubscriptionById():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -60,7 +77,10 @@ def test_deleteSubscriptionById():
 	assert r.status_code == 200
 
 #testCase 3
-# Test if subscriptionId is not persent in the broker
+''' 
+Test if subscriptionId is not persent in the broker
+'''
+
 def test_deleteSubscriptionId():	
 	delete_url=brokerIp+"/v2/subscription/nil"
 	headers= {'Content-Type': 'application/json'}
@@ -68,6 +88,10 @@ def test_deleteSubscriptionId():
 	assert r.status_code == 200
 
 #testCase 4
+'''
+  Test with wrong payload
+'''
+
 def test_subscriptionWithWrongPayload():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -75,6 +99,10 @@ def test_subscriptionWithWrongPayload():
 	assert r.status_code == 500
 
 #testCase 5
+'''
+  Testing subscription response with the same entity in ngsiv1 and ngsiv2.
+'''
+
 def test_v1v2SubscriptionForSameEntity():
 	V2url=brokerIp+"/v2/subscriptions"
 	ngsi10url=brokerIp+"/ngsi10/subscribeContext"
@@ -85,6 +113,10 @@ def test_v1v2SubscriptionForSameEntity():
 	assert ngsi10.status_code == 200
 	
 #testCase 6
+'''
+ Test ngsiv2 subscription
+'''
+
 def test_Subscription():	
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -93,13 +125,21 @@ def test_Subscription():
 
 #testCase 7
 #update request wit create action 
-def test_update_request_with_create_action():
+
+'''
+  Testing update request with update action
+'''
+def test_update_request_with_update_action():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
 	subresponse=requests.post(url,data=json.dumps(data.subscription_data),headers=headers)
 	updateresponse=requests.post(url,data=json.dumps(data.updateDataWithupdateaction),headers=headers)	
 	assert updateresponse.status_code == 201
 #testCase 8
+'''
+  Testing update request with Delete request
+'''
+
 def test_upadte_request_with_delete_action():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -108,6 +148,11 @@ def test_upadte_request_with_delete_action():
 	assert updateresponse.status_code==201
 	
 #testCase 9
+
+'''
+  Testing update request with create action
+'''
+
 def test_update_request_with_create_action():	
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
@@ -116,6 +161,10 @@ def test_update_request_with_create_action():
 	assert updateresponse.status_code==201
 
 #testCase 10
+'''
+   Testing notification send by broker 
+'''
+
 def test_notifyOneSubscriberv2WithCurrentStatus():
 	url=brokerIp+"/v2/subscriptions"
 	headers= {'Content-Type': 'application/json'}
