@@ -1,7 +1,7 @@
 Start an edge node
 ==========================
 
-Typically, an FogFlow edge node needs to deploy a Worker and an IoT broker. 
+Typically, an FogFlow edge node needs to deploy a Worker, an IoT broker and a system monitoring agent metricbeat. 
 The Edge IoT Broker at the edge node can establish the data flows between all task instances launched on the same edge node. 
 However, this Edge IoT Broker is optional, 
 especially when the edge node is a very constrained device that can only support a few tasks without any data dependency. 
@@ -104,7 +104,7 @@ you need to change the following addresses in start.sh according to your own env
           hosts: '155.54.239.141:9200'
 	  
 
-Start both Edge IoT Broker and FogFlow Worker
+Start Edge node components
 -------------------------------------------------
 
 .. note:: if the edge node is ARM-basd, please attach arm as the command parameter
@@ -118,7 +118,7 @@ Start both Edge IoT Broker and FogFlow Worker
       #./start.sh  arm
       
 
-Stop both Edge IoT Broker and FogFlow Worker
+Stop Edge node components
 -------------------------------------------------
 
 .. code-block:: console    
