@@ -1,5 +1,5 @@
 *******************************
-High level introduction
+Introduction
 *******************************
 
 Nowadays IoT infrastructure providers for smart city, smart industry, and connected vehicles 
@@ -14,6 +14,13 @@ FogFlow also provides an intent-based programming model
 and the development tools for service developers and system integrators to quickly realize IoT services 
 with low development cost and fast time-to-market. 
 
+The overall architecture view of FogFlow system is illustrated in below Figure. Infrastructure resources are vertically 
+divided as cloud, edge nodes, sensor devices and Actuators. Computationally intensive tasks, such as data analytics 
+can be performed on the cloud servers, while some tasks, such as stream processing can be effectively moved to the 
+edge nodes (e.g., IoT gateways or endpoint devices with computation capabilities). Sensor devices may include both 
+computation and communication capabilities (e.g., tablet computer) and Actuators may includes docker containers to launch any task ordered based on computational activity. 
+
+.. figure:: figures/fogflow-overall-view.png
 
 Motivation
 ===============================
