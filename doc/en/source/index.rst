@@ -32,7 +32,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
    
     onepage.rst
     
- .. toctree::
+.. toctree::
     :maxdepth: 1
     :caption: User Guide
     :numbered:
