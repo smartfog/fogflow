@@ -11,7 +11,7 @@ the rest will be done by FogFlow automatically, including:
 
 The instances in the above text refer to the task instances which run a processing logic within them and this processing logic is given by operators in fogflow. They must be registered beforehand by the users. Implementation of an example operator is given in the next sections.
 
-Register your task operators
+Register task operators
 --------------------------------------------------------
 
 Operator code must be in the form of a docker image and must be available on docker hub. 
@@ -74,7 +74,7 @@ You can also register an operator docker image by sending a constructed NGSI upd
 
 Here are the Curl and the Javascript-based code examples to register an operator and a docker image for that operator. 
 
-.. note:: In the Javascript code example, we use the Javascript-based library to interact with FogFlow IoT Broker. You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
+.. note:: In the Javascript code example, Javascript-based library is used to interact with FogFlow IoT Broker. It can be find out in library from the github code repository (designer/public/lib/ngsi). It shall be included in ngsiclient.js of web page. 
 
 .. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
 
@@ -392,11 +392,11 @@ The displayed menu includes the following items:
 -  **Task**: is used to define the fog function name and the processing logic (or operator). A task has input and output streams.
 -  **EntityStream**: is the input data element which can be linked with a fog function Task as its input data stream. 
 
-Once you click "Task" from the popup menu, a Task element will be placed on the design board, as shown below.
+Click "Task" from the popup menu, a Task element will be placed on the design board, as shown below.
 
 .. image:: figures/fog-function-2.png
   
-You can start to configure a Task once you click the configuration button on the top-right corner, as illustrated in the following figure. 
+Start task configuration by clicking the configuration button on the top-right corner, as illustrated in the following figure. 
 Please specify the name of the Task and choose an operator out of a list of some pre-registered operators.
 
 .. image:: figures/fog-function-3.png
@@ -479,7 +479,7 @@ Currently FogFlow allows developers to specify their own function code inside a 
         publish(updateEntity);        
     };
 
-You can take the example Javascript code above as the implementation of your own fog function. 
+ Above javascript code example can be taken as the implementation of fog function. 
 This example fog function simple writes a fixed entity by calling the "publish" callback function. 
 
 The input parameters of a fog function are predefined and fixed, including: 
@@ -500,7 +500,7 @@ The input parameters of a fog function are predefined and fixed, including:
 
 Templates for Java and python are also given in the repository.
 
-Here are some examples to show how you can use these three call back functions. 
+Here are some examples to show how these three call back functions can be used. 
 
 - example usage of *publish*: 
 	.. code-block:: javascript
@@ -548,15 +548,15 @@ Here are some examples to show how you can use these three call back functions.
     
 
 
-submit your fog function
+submit fog function
 ==========================================================
     
-When you click on the "Submit" button, the annotated fog function will be submitted to FogFlow. 
+After clicking the "Submit" button, the annotated fog function will be submitted to FogFlow. 
 
 .. image:: figures/fog-function-7.png
 
 
-Trigger your "dummy" fog function 
+Trigger "dummy" fog function 
 --------------------------------------------
 
 The defined "dummy" fog function is triggered only when its required input data are available. 
@@ -573,8 +573,8 @@ Once the device profile is registered, a new "Temperature" sensor entity will be
 
 .. image:: figures/fog-function-triggering-device.png
 
-The other way to trigger the your fog function is to send a NGSI entity update to create the "Temperature" sensor entity. 
-You can run the following command to issue a POST request to the FogFlow broker. 
+The other way to trigger the fog function is to send a NGSI entity update to create the "Temperature" sensor entity. 
+Following command can be executed to issue a POST request to the FogFlow broker. 
 
 .. code-block:: console 
 
@@ -612,7 +612,7 @@ You can run the following command to issue a POST request to the FogFlow broker.
         "updateAction": "UPDATE"
     }'
 
-You can check whether the fog function is triggered or not in the following way. 
+ Check whether the fog function is triggered or not in the following way. 
 
 - check the task instance of this fog function, as shown in the following picture
 	.. image:: figures/fog-function-task-running.png
