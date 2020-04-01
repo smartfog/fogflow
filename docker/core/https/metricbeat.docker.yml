@@ -1,4 +1,4 @@
-name: "<Cloud_Public_IP>_cloud"
+name: "Cloud_PUblic_IP_cloud"
 metricbeat.modules:
 - module: docker
   #Docker module parameters that has to be monitored based on user requirement, example as below

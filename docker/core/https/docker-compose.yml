@@ -82,3 +82,35 @@ services:
         - discovery    
         - cloud_broker
         - designer
+
+    elasticsearch:
+        image: fogflow/elasticsearch:latest
+        ports:
+          - "9200:9200"
+          - "9300:9300"
+        environment:
+          - discovery.type=single-node
+
+    metricbeat:
+        image: fogflow/metricbeat:latest
+        user: root
+        volumes:
+          - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /sys/fs/cgroup:/hostfs/sys/fs/cgroup
+          - /proc:/hostfs/proc
+          - /:/hostfs
+        environment:
+          - output.elasticsearch.hosts= ["<Cloud_Public_IP>:9200"]
+
+    grafana:
+        image: grafana/grafana:6.5.0
+        links:
+          - elasticsearch
+        environment:
+          - GF_SECURITY_ADMIN_PASSWORD=admin
+        depends_on:
+          - elasticsearch
+        ports:
+          - "3003:3000"
+        restart: always
