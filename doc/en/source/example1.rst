@@ -1,6 +1,13 @@
-*****************************************
+***************************************
+Intent-Based Programming Model
+***************************************
+Currently the following two programing models are provided by FogFlow to support different types of workload patterns.
+1. Fog Function
+2. Service Topology
+
 Define and trigger a fog function
-*****************************************
+====================================
+
 
 FogFlow enables serverless edge computing, meaning that developers can define and submit a so-called fog function and then 
 the rest will be done by FogFlow automatically, including:
