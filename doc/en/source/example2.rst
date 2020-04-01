@@ -1,6 +1,5 @@
-*****************************************
 Define and trigger a service topology
-*****************************************
+=========================================
 
 In FogFlow a service topology is defined as a graph of several operators. 
 Each operator in the service topology is annotated with its inputs and outputs, 
