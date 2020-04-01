@@ -1,4 +1,4 @@
-Build all components from the source code
+Build FogFlow components from the source code
 =========================================
 
 FogFlow can be build and installed on Linux for both ARM and X86 processors (32bits and 64bits). 
@@ -12,7 +12,7 @@ Install dependencies
 	
 	- install Docker CE: please follow the instruction at https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 	
-		.. note:: all the scripts are prepared under the assumption that you can run docker without sudo.
+		.. note:: all the scripts are prepared under the assumption that docker can be run without sudo.
 	
 
 	- install the latest version of golang(>v1.9): please download and install it according to the information at https://golang.org/doc/install
@@ -33,7 +33,7 @@ Install dependencies
 #. To set the environment variable GOPATH
 
 
-	.. note:: GOPATH defines the workspace for your go-based projects. Please note that the go workspace folder must have a "src" folder and your fogflow code repository must be cloned into this "src" folder. 
+	.. note:: GOPATH defines the workspace for go-based projects. Please note that the go workspace folder must have a "src" folder and the fogflow code repository must be cloned into this "src" folder. 
 		For example, assume that your home folder is "/home/smartfog" and then you create a new folder "go" as your workspace. 
 		In this case, you must create a "src" (must be exactly this name) under "/home/smartfog/go" first 
 		and then check out the FogFlow code repository within the "/home/smartfog/go/src" folder.
@@ -72,14 +72,14 @@ Build IoT Discovery
 
 		.. code-block:: bash			
 		
-			# you can simply run ./build  to perform the following commands
+			# Simply ./build  can be run to perform the following commands
 		
 			# download its third-party library dependencies
 			go get
 			# build the source code and link all libraries statically
 			CGO_ENABLED=0 go build -a
-			# create the docker image; you might have to use sudo to run this command 
-			# if your docker user is not in the sudo group
+			# create the docker image; sudo might have to be used to run this command 
+			# if the docker user is not in the sudo group
 			docker build -t "fogflow/discovery" .										
 		
 			
@@ -101,14 +101,14 @@ Build IoT Broker
 		
 		.. code-block:: bash			
 		
-			# you can simply run ./build  to perform the following commands		
+			# simply ./build can be run to perform the following commands		
 				
 			# download its third-party library dependencies
 			go get
 			# build the source code and link all libraries statically
 			CGO_ENABLED=0 go build -a
-			# create the docker image; you might have to use sudo to run this command 
-			# if your docker user is not in the sudo group
+			# create the docker image; sudo might have to be used to run this command 
+			# if the docker user is not in the sudo group
 			docker build -t "fogflow/broker" .			
 
 
@@ -131,14 +131,14 @@ Build Topology Master
 		
 		.. code-block:: bash							
 		
-			# you can simply run ./build  to perform the following commands		
+			# simply ./build can be run to perform the following commands		
 					
 			# download its third-party library dependencies
 			go get
 			# build the source code and link all libraries statically
 			CGO_ENABLED=0 go build -a
-			# create the docker image; you might have to use sudo to run this command 
-			# if your docker user is not in the sudo group
+			# create the docker image; sudo might have to be used to run this command 
+			# if the docker user is not in the sudo group
 			docker build -t "fogflow/master" .			
 
 
@@ -161,14 +161,14 @@ Build Worker
 		
 		.. code-block:: bash	
 					
-			# you can simply run ./build  to perform the following commands									
+			# simply ./build  can be run to perform the following commands									
 			
 			# download its third-party library dependencies
 			go get
 			# build the source code and link all libraries statically
 			CGO_ENABLED=0 go build -a
-			# create the docker image; you might have to use sudo to run this command 
-			# if your docker user is not in the sudo group
+			# create the docker image; sudo might have to be used to run this command 
+			# if the docker user is not in the sudo group
 			docker build -t "fogflow/worker" .			
 
 
@@ -189,13 +189,13 @@ Build Task Designer
 		
 		.. code-block:: bash	
 		
-			# you can simply run ./build  to perform the following commands					
+			# simply ./build can be run to perform the following commands					
 
 			# install all required libraries
 			npm install
 			
-			# create the docker image; you might have to use sudo to run this command 
-			# if your docker user is not in the sudo group
+			# create the docker image; sudo might have to be used to run this command 
+			# if the docker user is not in the sudo group
 			docker build -t "fogflow/designer"  .
 
 
