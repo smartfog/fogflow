@@ -7,6 +7,9 @@ Currently the following two programing models are provided by FogFlow to support
   
   2. **Service Topology**
 
+Fog Function
+===============
+
 Define and trigger a fog function
 ====================================
 
