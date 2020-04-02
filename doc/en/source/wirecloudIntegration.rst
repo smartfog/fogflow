@@ -8,7 +8,7 @@ Integrate FogFlow with WireCloud
 
 The figure below shows the integration of FogFlow with WIRECLOUD
 
-.. figure:: figures/Wc_FFIntegration.PNG
+.. figure:: figures/Wc_FFIntegration.png
 
 1. WireCloud sends a subscription request to the FogFlow-Broker in NGSIv2.
 2. User will send the update request to the Fogflow-Broker in NGSIv1.
@@ -84,7 +84,7 @@ Integration steps
 
 **step14:** Provide the FogFlow broker url (NGSI serever URL), NGSI proxy URL, NGSI entity type , ID pattern, Attributes, and click accept to hit the subscription request.
 
-.. figure:: figures/WC15.PNG
+.. figure:: figures/WC15.png
 
 **Send update request**  to Fogflow Broker with an entity of type and attributes defined in the above subscription.
 An example request is given below:
@@ -121,5 +121,6 @@ An example request is given below:
 	 
 **result:**
 
-.. figure:: figures/WCresult.PNG
+.. figure:: figures/WCresult.png
+
 
