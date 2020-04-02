@@ -30,7 +30,7 @@ In FogFlow, each input/output stream is represented as a type of NGSI context en
 which are usually generated and updated by either an endpoint device or a data processing task. 
 
 During the runtime, multiple task instances can be created for the same task, 
-according to its granularity defined by the *groupBy" property. 
+according to its granularity defined by the *groupBy* property. 
 In order to determine which input stream goes to which task instances, 
 the following two properties are introduced to specify the input streams of tasks: 
 

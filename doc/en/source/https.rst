@@ -76,7 +76,7 @@ Generate the key and certificate files
 
 
 Start the FogFlow components on the cloud node
---------------------------------------------
+-----------------------------------------------
 
 .. code-block:: console    
 
@@ -148,7 +148,7 @@ Generate the key and certificate files
 
 
 Start the FogFlow components on the edge node
---------------------------------------------
+------------------------------------------------
 
 .. code-block:: console    
 
