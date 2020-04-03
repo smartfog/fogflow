@@ -45,7 +45,7 @@ The following picture shows the list of all registered operators and their param
 
 .. image:: figures/operator-list.png
    
-After clicking the "register" button, you can see a design area shown below and you can create an operator and add parameters to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
+After clicking the "register" button, a design area can be seen below and an operator can be created and parameters can be added to it. To define the port for the operator application, use "service_port" and give a valid port number as its value. The application would be accessible to the outer world through this port.
 
 .. image:: figures/operator-registry.png
 
@@ -56,21 +56,21 @@ The following picture shows the list of all registered docker images and the key
 
 .. image:: figures/dockerimage-registry-list.png
 
-After clicking the "register" button, you can see a form as below. 
+After clicking the "register" button, a form can be seen as below. 
 Please fill out the required information and click the "register" button to finish the registration. 
 The form is explained as the following. 
 
 * Image: the name of your operator docker image
-* Tag: the tag you used to publish your operator docker image; by default it is "latest"
-* Hardware Type: the hardware type that your docker image supports, including X86 or ARM (e.g. Raspberry Pi)
-* OS Type: the operating system type that your docker image supports; currently this is only limited to Linux
+* Tag: the tag is used to publish the operator docker image; by default it is "latest"
+* Hardware Type: the hardware type that the docker image supports, including X86 or ARM (e.g. Raspberry Pi)
+* OS Type: the operating system type that the docker image supports; currently this is only limited to Linux
 * Operator: the operator name, which must be unique and will be used when defining a service topology
 * Prefetched: if this is checked, that means all edge nodes will start to fetch this docker image in advance; otherwise, the operator docker image is fetched on demand, only when edge nodes need to run a scheduled task associated with this operator. 
 
 .. important::
     
-    Please notice that the name of your docker image must be consistent with the one you publish to `Docker Hub`_.
-    By default, FogFlow will fetch the required docker images from Docker Hub using the name you register here for your operator. 
+    Please notice that the name of the docker image must be consistent with the one that is published to `Docker Hub`_.
+    By default, FogFlow will fetch the required docker images from Docker Hub using the name that is registered here for an operator. 
 
 
 .. _`Docker Hub`: https://github.com/smartfog/fogflow/tree/master/application/operator/anomaly
@@ -82,7 +82,7 @@ The form is explained as the following.
 Register it programmatically by sending a NGSI update 
 ==========================================================
 
-You can also register an operator docker image by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
+An operator can also be registered by sending docker image for a constructed NGSI update message to the IoT Broker deployed in the cloud. 
 
 Here are the Curl and the Javascript-based code examples to register an operator and a docker image for that operator. 
 
@@ -395,7 +395,7 @@ The "dummy" operator is already registered in Fogflow by default.
 create a fog function from the FogFlow editor 
 ==========================================================
 
-A menu will pop up when you do a right mouse click on the task design board.
+A menu will pop up whenever click a right mouse on the task design board.
 
 .. image:: figures/fog-function-1.png
    
