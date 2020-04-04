@@ -39,7 +39,7 @@ check the FIWARE Catalogue entry for
 ## Background
 
 FogFlow is a standard-based data processing framework for service providers to
-easily programming and managing IoT services over cloud and edges. Below are the
+easily program and manage IoT services over cloud and edges. Below are the
 motivation, functionalities, and benefits of FogFlow.
 
 -   _Why do we need FogFlow?_
