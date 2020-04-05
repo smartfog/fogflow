@@ -49,6 +49,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     quantumleapIntegration.rst          
     wirecloudIntegration.rst
     https.rst
+    guideline.md
    
 .. toctree::
     :maxdepth: 1
