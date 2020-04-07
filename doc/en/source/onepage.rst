@@ -294,10 +294,10 @@ There are two ways to trigger the fog function:
 
 
 You can register a device entity via the device registration page: "System Status" -> "Device" -> "Add". 
-Then you can create a “Temperature” sensor entity by filling the following element:**
- - **Device ID:** to specify a unique entity ID
- - **Device Type:** use “Temperature” as the entity type
- - **Location:** select a location on the map
+Then you can create a “Temperature” sensor entity by filling the following element:
+- **Device ID:** to specify a unique entity ID
+- **Device Type:** use “Temperature” as the entity type
+- **Location:** select a location on the map
  
 
 .. figure:: figures/device-registration.png

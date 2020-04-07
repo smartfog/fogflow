@@ -78,7 +78,7 @@ Generate the key and certificate files
 
 
 Start the FogFlow components on the cloud node
---------------------------------------------
+-----------------------------------------------
 
 .. code-block:: console    
 
@@ -153,7 +153,7 @@ Generate the key and certificate files
 
 
 Start the FogFlow components on the edge node
---------------------------------------------
+------------------------------------------------
 
 .. code-block:: console    
 
@@ -181,5 +181,6 @@ FogFlow dashboard can be opened in web browser to see the current system status 
 .. important:: 
 
 	please make sure that the domain names of the cloud node can be properly resolved. 
+
 	If self-signed SSL certificate is being used, a browser warning indication can be seen that the crtificate should not be trusted.
 	It can be proceeded past this warning to view the FogFlow dashboard web page via https.

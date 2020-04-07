@@ -10,7 +10,7 @@ Here are some basic Grafana visualization dashboard setting examples to monitor 
 .. figure:: figures/Container_max_memory_usage.png
 
 
-1. To create query for Elasticsearch select Query: *, Metrics: Average(docker.memory.usage.max), Group by: Terms(host.name), Terms(container.image.name), Date Histogram(@timestamp) from drop down list.
+1. To create query for Elasticsearch select Query: Metrics: Average(docker.memory.usage.max), Group by: Terms(host.name), Terms(container.image.name), Date Histogram(@timestamp) from drop down list.
 2. Click on Visualization select Graph from drop down , Draw Modes (Lines), Mode Options(Fill:1,Fill Gradient:0,Line Width:2), Stacking & Null value(Null value:connected)
    Axes- Left Y(Unit:bytes,Scale:linear), Right Y(Unit:short,Scale:linear), X-Axis(Mode:Time)
    Legend- Options(Show,As Table,To the right), Values(Max)
@@ -31,7 +31,7 @@ Here are some basic Grafana visualization dashboard setting examples to monitor 
 
 .. figure:: figures/System_Metric_filter.png
 
-1. To create query for Elasticsearch select Query: *, Metrics: Average(system.memory.actual.used.bytes), Group by: Terms(agent.name), Date Histogram(@timestamp)from drop down list.
+1. To create query for Elasticsearch select Query: Metrics: Average(system.memory.actual.used.bytes), Group by: Terms(agent.name), Date Histogram(@timestamp)from drop down list.
 2. Click on Visualization select Graph from drop down , Draw Modes (Lines), Mode Options(Fill:1,Fill Gradient:0,Line Width:2), Hover tooltip(Mode: All series, Sort order:Increasing), Stacking & Null value(Null value:connected).
    Axes- Left Y(Unit:packets/sec, Scale:linear), Right Y(Unit:packets/sec, Scale:linear), X-Axis(Mode:Time)
    Legend- Options(Show,As Table,To the right), Values(Avg)
@@ -44,7 +44,7 @@ Here are some basic Grafana visualization dashboard setting examples to monitor 
 .. figure:: figures/Fogflow_Cloud_Edge_Nodes.png
 
 
-1. To create query for Elasticsearch select Query: *, Metrics: Count(), Group by: Terms(agent.name), Date Histogram(@timestamp) from drop down list.
+1. To create query for Elasticsearch select Query: Metrics: Count(), Group by: Terms(agent.name), Date Histogram(@timestamp) from drop down list.
 2. Click on Visualization select Graph from drop down , Draw Modes (Lines), Mode Options(Fill:1,Fill Gradient:0,Line Width:2).
    Axes- Left Y(Unit:bytes, Scale:linear), Right Y(Unit:short, Scale:linear), X-Axis(Mode:Time).
    Legend- Options(Show, As Table, To the right), Values(Avg, Max).

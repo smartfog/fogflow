@@ -817,6 +817,7 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiv1Subscriber(elements []ContextEle
 		tb.subscriptions_lock.Unlock()
 	}
 	subscriberURL := subscription.Reference
+	IsOrionBroker := subscription.Subscriber.IsOrion
 	if subscription.Subscriber.RequireReliability == true && len(subscription.Subscriber.NotifyCache) > 0 {
 		DEBUG.Println("resend notify:  ", len(subscription.Subscriber.NotifyCache))
 		for _, pCtxElem := range subscription.Subscriber.NotifyCache {
@@ -825,7 +826,8 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiv1Subscriber(elements []ContextEle
 		subscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
 	}
 	tb.subscriptions_lock.Unlock()
-	err := postNotifyContext(elements, sid, subscriberURL, true, tb.SecurityCfg)
+	err := postNotifyContext(elements, sid, subscriberURL, IsOrionBroker, tb.SecurityCfg)
+	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", IsOrionBroker)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 
@@ -864,6 +866,7 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiv2Subscriber(elements []ContextEle
 	}
 	tb.v2subscriptions_lock.Unlock()
 	err := postNotifyContext(elements, sid, subscriberURL, true, tb.SecurityCfg)
+	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", true)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 
@@ -1022,8 +1025,13 @@ func (tb *ThinBroker) Subscriptionv2Context(w rest.ResponseWriter, r *rest.Reque
 
 	INFO.Printf("NEW subscription: %v\n", subReqv2)
 
+	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
+                subReqv2.Subscriber.IsInternal = true
+        } else {
+                subReqv2.Subscriber.IsInternal = false
+        }
+
 	tb.v2subscriptions_lock.Lock()
-	//subReqv2.Subject.SetIDpattern()
 	ctxEle := &subReqv2
 	ctxEle.Subject.SetIDpattern()
 	tb.v2subscriptions[subID] = ctxEle
