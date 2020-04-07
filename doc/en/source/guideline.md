@@ -1,4 +1,4 @@
-# Coding Guideline
+# Contribution and Coding Guideline
 
 ## FogFlow Contribution Guide
 
@@ -33,6 +33,7 @@ contributions are done using a pull request (PR). The detailed "protocol" used i
     * `Fixed in <commit hash>` in case the discussion involves a fix in the PR branch (which commit hash is
        included as reference).
     * `NTC`, if finally nothing needs to be done (NTC = Nothing To Change).
+    
  * PR can be merged when the following conditions are met:
     * All comment threads are closed.
     * All the participants in the discussion have provided a `LGTM` general comment (LGTM = Looks good to me)
