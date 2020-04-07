@@ -123,7 +123,7 @@ services:
           - /proc:/hostfs/proc
           - /:/hostfs
         environment:
-          - output.elasticsearch.hosts= ["<Cloud_Public_IP>:9200"]
+          - output.elasticsearch.hosts= ["<Elasticsearch_Host_IP>:9200"]
     
     grafana:
         image: grafana/grafana:6.5.0

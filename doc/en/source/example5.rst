@@ -120,7 +120,7 @@ Please note that the "lamp001" is in "off" state. In this integration, we will l
 .. figure:: figures/device-monitor-1.png
    
 
-**Registering a Device:** Device registeration is done at the IoT Agent to indicate what data the device will be providing. Following is the curl request for creating or registring a device on IoT Agent. Here, we are registering a lamp device with id "lamp001" that is supposed to be the context provider for entity "urn:ngsi-ld:Lamp:001". Corresponding to this, the IoT Agent will register the device in thin broker as well as create the entity for that device in thin broker itself.
+**Registering a Device:** Device registeration is done at the IoT Agent to indicate what data the device will be providing. Following is the curl request for creating or registring a device on IoT Agent. Here, a lamp device is registered  with id "lamp001" that is supposed to be the context provider for entity "urn:ngsi-ld:Lamp:001". Corresponding to this, the IoT Agent will register the device in thin broker as well as create the entity for that device in thin broker itself.
 
 .. code-block:: console
 
@@ -221,7 +221,7 @@ Using MQTT devices
 
 MQTT devices run on MQTT protocol which works on subscribe and publish strategy, where the clients publish and subscribe to an MQTT Broker. All the subscribing clients are notified when another client publishes data on MQTT broker.
 
-We will use Mosquitto Broker for MQTT device simulation. Mosquitto broker allows data publishing and subscription on its uniquely identified resources called topics. These topics are defined in the format “/<apikey>/<device_id>/<topicSpecificPart>”. Users can track the updates on these topics by directly subscribing them on the host where Mosquitto is installed.
+Mosquitto Broker is used for MQTT device simulation. Mosquitto broker allows data publishing and subscription on its uniquely identified resources called topics. These topics are defined in the format “/<apikey>/<device_id>/<topicSpecificPart>”. Users can track the updates on these topics by directly subscribing them on the host where Mosquitto is installed.
 
 **Prerequisites for proceding further:**
 
@@ -300,7 +300,7 @@ In order to let IoT-Agent JSON allow both Northbound as well as Southbound data 
       mosquitto_sub -h <MQTT_Host_IP> -t "/FFNN1111/lamp001/cmd"
       
 
-**Publish data to Thin Broker:** This section covers the northbound traffic. IoT Agent subscribes to some default topics like ["/+/+/attrs/+","/+/+/attrs","/+/+/configuration/commands","/+/+/cmdexe"]. So, in order to send attribute data to IoT Agent, we need to publish data on a topic of Mosquitto Broker using the below command. 
+**Publish data to Thin Broker:** This section covers the northbound traffic. IoT Agent subscribes to some default topics like ["/+/+/attrs/+","/+/+/attrs","/+/+/configuration/commands","/+/+/cmdexe"]. So, in order to send attribute data to IoT Agent, data need to be published on a topic of Mosquitto Broker using the below command. 
 
 .. code-block:: console
 

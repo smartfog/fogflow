@@ -1,8 +1,8 @@
 *****************************************
-APIs and examples of their usage 
+API Walkthrough 
 *****************************************
 
-APIs of FogFlow Discovery
+FogFlow Discovery API
 ===================================
 
 Look up nearby brokers
@@ -24,7 +24,7 @@ limit            number of expected brokers
 
 Please check the following examples. 
 
-.. note:: For the Javascript code example, you need the library ngsiclient.js.
+.. note:: For the Javascript code example, library ngsiclient.js is needed.
     Please refer to the code repository at application/device/powerpanel
 
 .. tabs::
@@ -82,7 +82,7 @@ Please check the following examples.
   
        
 
-APIs of FogFlow Broker
+FogFlow Broker API
 ===============================
 
 .. figure:: https://img.shields.io/swagger/valid/2.0/https/raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-expanded.json.svg
@@ -880,7 +880,7 @@ curl -iX DELETE http://localhost:80/ngsi10/subscription/#sid
 
 
 
-APIs of FogFlow Service Orchestrator
+FogFlow Service Orchestrator API
 =========================================
 
 
@@ -897,7 +897,7 @@ is issued by the FogFlow editor when a fog function is submmited.
 Implement an operator
 -----------------------------------------------
 
-Before you can define the designed service topology, 
+Before defining the designed service topology, 
 all operators used in your service topology must be provided by you or the other provider in the FogFlow system. 
 
 
@@ -917,15 +917,15 @@ all operators used in your service topology must be provided by you or the other
 Publish the operator
 -----------------------------------------------
 
-You can publish the image of your operator to the public docker registry or your own private docker registery. 
+The image of operator can be published to the public docker registry or on private docker registery. 
 If you do not want to use any docker registry, you have to make sure that 
-the docker image of your operator is built on all edge nodes. 
+the docker image of an operator is built on all edge nodes. 
 Currently, when the FogFlow worker receives a command to launch a task instance, 
 it will first search the required docker image from the local storage. If it does not find it, 
-it will start to fetch the required docker image for the docker registry (the public one or your own private one, which is up to the 
-configuration of your FogFlow worker). 
+it will start to fetch the required docker image for the docker registry (the public one or any private one, which is up to the 
+configuration of the FogFlow worker). 
 
-If you like to publish your image, you can use the following docker command. 
+If anyone would like to publish the image, then following docker command can be used. 
 
 
 .. code-block:: console   
@@ -936,14 +936,14 @@ If you like to publish your image, you can use the following docker command.
 .. note:: this step is done with only docker commands
 
 
-Define and register your operator
+Define and register operator
 -----------------------------------------------
 
-You can also register an operator docker image by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
+An operator docker image can also be registered by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
 
 Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, we use the Javascript-based library to interact with FogFlow IoT Broker. 
-You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
+Within this code example, the Javascript-based library is being used to interact with FogFlow IoT Broker. 
+The library can be found from the github code repository (designer/public/lib/ngsi), ngsiclient.js shall be included into the web page. 
 
 
 .. code-block:: javascript
@@ -993,14 +993,14 @@ You can find out the library from the github code repository (designer/public/li
 Define and register your service topology
 -----------------------------------------------
 
-Usually,you can define and register your service topology via the FogFlow topology editor. 
-However, you can also define and register with your own code. 
+Usually,service topology can be defined and registered via the FogFlow topology editor. 
+However, it can also be defined and registered with own code. 
 
-To register a service topology, your code needs to send a constructed NGSI update message to the IoT Broker deployed in the cloud. 
+To register a service topology, A constructed NGSI update message is needed to be send by the code to the IoT Broker deployed in the cloud. 
 
 Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, we use the Javascript-based library to interact with FogFlow IoT Broker. 
-You can find out the library from the github code repository (designer/public/lib/ngsi). You must include ngsiclient.js into your web page. 
+Within this code example, the Javascript-based library is used to interact with FogFlow IoT Broker. 
+The library can be found from the github code repository (designer/public/lib/ngsi). An ngsiclient.js must be included into the web page. 
 
 .. code-block:: javascript
 

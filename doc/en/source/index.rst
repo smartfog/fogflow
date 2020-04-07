@@ -20,11 +20,23 @@ Currently, FogFlow has been applied into various business use cases in the areas
 
 .. toctree::
     :maxdepth: 1
-    :caption: Quick Start
+    :caption: Introduction
+    :numbered:
+
+    introduction.rst
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Beginner Guide
     :numbered:
    
-    introduction.rst
     onepage.rst
+    
+.. toctree::
+    :maxdepth: 1
+    :caption: User Guide
+    :numbered:
+    
     setup.rst
     edge.rst
     system_monitoring.rst
@@ -32,15 +44,16 @@ Currently, FogFlow has been applied into various business use cases in the areas
     example2.rst
     example3.rst
     example4.rst
-    https.rst
     scorpioIntegration.rst
     example5.rst
     quantumleapIntegration.rst          
     wirecloudIntegration.rst
+    https.rst
+    guideline.md
    
 .. toctree::
     :maxdepth: 1
-    :caption: Tutorial for Service Developers
+    :caption: Advance User Guide
     :numbered:    
 
     overview.rst
@@ -51,6 +64,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     api.rst
     build.rst
     test.rst
+    roadmap.rst
 
 .. toctree::
     :maxdepth: 1
