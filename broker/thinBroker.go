@@ -826,7 +826,7 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiv1Subscriber(elements []ContextEle
 		subscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
 	}
 	tb.subscriptions_lock.Unlock()
-	err := postNotifyContext(elements, sid, subscriberURL, true, tb.SecurityCfg)
+	err := postNotifyContext(elements, sid, subscriberURL, IsOrionBroker, tb.SecurityCfg)
 	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", IsOrionBroker)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
