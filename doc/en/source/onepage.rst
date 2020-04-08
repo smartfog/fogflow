@@ -422,7 +422,7 @@ Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
 	      "isPattern": true
 	    }
 	  ],
-	  "reference": "http://<Orion IP>:1026/v2"
+	  "reference": "http://<Orion IP>:1026/v2/op/notify"
 	}'
 
 

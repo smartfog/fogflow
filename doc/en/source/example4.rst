@@ -45,7 +45,7 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
               -H 'Content-Type: application/json' \
               -H 'Destination: orion-broker' \			
               -d '{"entities": [{"type": "PowerPanel", "isPattern": true}],
-					"reference": "http://orionBroker:1026/v2"} '           
+					"reference": "http://orionBroker:1026/v2/op/notify"} '           
 
 
    .. code-tab:: javascript
@@ -58,7 +58,7 @@ Notice that the integration is using the NGSI V2 interface of Orion Broker.
 	    {
 	        var subscribeCtxReq = {};    
 	        subscribeCtxReq.entities = [{type: entityType, isPattern: true}];
-	        subscribeCtxReq.reference =  'http://' + orionBroker + '/v2';
+	        subscribeCtxReq.reference =  'http://' + orionBroker + '/v2/op/notify';
 	        
 	        client.subscribeContext4Orion(subscribeCtxReq).then( function(subscriptionId) {
 	            console.log(subscriptionId);   
