@@ -1,6 +1,3 @@
-*****************************************
-One-page tutorial
-*****************************************
 
 This is an one-page introductory tutorial to FogFlow.
 In the FIWARE-based architecture, FogFlow can be used to dynamically trigger data processing functions 
