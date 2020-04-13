@@ -1,11 +1,15 @@
-# Contribution and Coding Guideline
+************************************
+Contribution and Coding Guideline
+************************************
 
-## FogFlow Contribution Guide
+FogFlow Contribution Guide
+===========================
 
 This document describes the guidelines to contribute to FogFlow. If you are
 planning to contribute to the code you should read this document and get familiar with its content.
 
-## General principles
+General principles
+---------------------
 
 * FogFlow uses GO programing language (although other  tools like test tools and other script can be written in python , java, bash ).
 * Efficient code (i.e. the one that achieves better performance) is preferred upon inefficient code. Simple code
@@ -17,7 +21,8 @@ planning to contribute to the code you should read this document and get familia
 Note that contribution workflows themselves (e.g. pull requests, etc.) are described in another document
 ([FIWARE Development Guidelines](https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/Developer_Guidelines)).
 
-## Pull Request protocol
+ Pull Request protocol
+------------------------
 
 As explained in [FIWARE Development Guidelines](https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/Developer_Guidelines)
 contributions are done using a pull request (PR). The detailed "protocol" used in such PR a is described below:
@@ -46,14 +51,15 @@ Some additional remarks to take into account when contributing with new PRs:
 * PR should be of an appropriated size that makes review achievable. Too large PRs could be closed with a "please, redo the work in smaller pieces" without any further discussing.
 
 
-## Code style guidelines
+Code style guidelines
+------------------------
 
 Note that, currently not all FogFlow's existing code base conforms to these rules. There are some parts of the code that were
 written before the guidelines were established. However, all new code contributions MUST follow these rules and, eventually, old code will be modified to conform to the guidelines.
 
-### ‘MUST follow’ rules
+**‘MUST follow’ rules**
 
-#### M1 (Headers Files Inclusion):
+**M1 (Headers Files Inclusion):**
 
 *Rule*: All header or source files MUST include all the header files it needs AND NO OTHER header files. They MUST
 NOT depend on inclusions of other header files. Also, all header and source files MUST NOT include any header files it
@@ -65,7 +71,7 @@ well. This sometimes leads to conflicts and must be avoided. In addition, it inc
 
 *How to check*: manually
 
-#### M2 (Copyright header)
+**M2 (Copyright header)**
 
 *Rule*: Every file, source code or not, MUST have a copyright header:
 
@@ -119,7 +125,7 @@ For Python, bash script etc.:
 
 *How to check*: manually
 
-#### M3 (Function header)
+**M3 (Function header)**
 
 *Rule*: All functions MUST have a header, which SHOULD have a short description of what the function does, a
 descriptive list of its parameters, and its return values.
@@ -155,7 +161,7 @@ Example:
 
 *How to check*: manually
 
-#### M4 (Indent)
+**M4 (Indent)**
 
 *Rule*: Use only spaces (i.e. no tabs), and indent TWO spaces at a time.
 
@@ -163,7 +169,7 @@ Example:
 
 *How to check*: manually
 
-#### M5 (Variable declaration):
+**M5 (Variable declaration):**
 
 *Rule*: Each declared variable MUST go on a separate line:
 
@@ -182,7 +188,7 @@ var  i, j, k int;
 
 *How to check*: manually
 
-#### M6 (Naming conventions):
+**M6 (Naming conventions):**
 
 *Rule*: the following naming conventions apply:
 
@@ -197,7 +203,7 @@ var  i, j, k int;
 
 *How to check*: manually
 
-#### M7 (Use gofmt before commit for indentation and other formatting):
+**M7 (Use gofmt before commit for indentation and other formatting):**
 
 *Rule*: gofmt -r '(a) -> a' -w FileName
 
@@ -242,7 +248,7 @@ func print() {
 *Rationale*: This will reformat the code and updates the file.
 *How to check*: manually
 
-#### M8 (Command & operators separation):
+**M8 (Command & operators separation):**
 
 *Rule*: operators (+, *, =, == etc) are followed and preceded by ONE space. Commas are followed by ONE space.
 
@@ -268,9 +274,9 @@ FogFunction(var1,var2,var3) {
 
 *How to check*: manually
 
-### ‘MUST follow’ rules 
+**‘MUST follow’ rules**
 
-#### S1 (Error management):
+**S1 (Error management):**
 
 *Rule*: Error returned in the second argument should be managed.
 
@@ -287,7 +293,7 @@ if err != nil {
 }
 ```
 
-#### S2 (Error printing message):
+**S2 (Error printing message):**
 
 *Rule*: An error string shall neither be capitalized nor end with a punctuation according to Golang standards.
 
@@ -304,7 +310,7 @@ if len(in) == 0 {
 	return nil, errors.New("input is empty")
 }
 ```
-#### S3 (Avoid nesting):
+**S3 (Avoid nesting):**
 
 *Rule*: avoid nesting while writing the code.
 
@@ -361,7 +367,7 @@ func FogLine(in []byte, ch chan interface{}) {
 }
 ```
 
-#### S4 (Preconditions)
+**S4 (Preconditions)**
 
 *Rule*: we strongly recommend for functions to evaluate the parameters and if necessary return error, before starting to process. 
 
@@ -393,7 +399,7 @@ if err != nil {
 return b, nil
 ```
 
-#### S5 (If condition)
+**S5 (If condition)**
 *Rule*: Go have some improved version in if condition 
 
 * Bad implementation in Golang
@@ -411,7 +417,7 @@ if f, contains := array[index]; contains {
     // Do something
 }
 ```
-#### S5 (Switch)
+**S5 (Switch)**
 *Rule*: always use default with switch condition.
 
 * Bad implementation
@@ -443,7 +449,7 @@ default:
     return Message{}, fmt.Errorf("unexpected token type %v", simpleToken.token)
 }
 ```
-#### S5 (Constants management)
+**S5 (Constants management)**
 
 *Rule*:Constant value should be managed by ADEXP and ICAO message
 
