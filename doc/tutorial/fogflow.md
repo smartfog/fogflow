@@ -179,7 +179,7 @@ curl -iX POST \
 # Check if the fog function is triggered:**
  - Check if a task is created under "Task" in System Management.
 
-![Running task triggered by the device](images/task.png)
+![Running task triggered by the device](images/fog-function-task-running.png)
 
 
 - Check if a Stream is created under "Stream" in System Management.

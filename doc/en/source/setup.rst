@@ -242,7 +242,7 @@ Then you will see the following device registration page.
 
 Check if a task is created under "Task" in System Management.**
 
-.. figure:: figures/task.png
+.. figure:: figures/fog-function-task-running.png
 
 
 Check if a Stream is created under "Stream" in System Management.**
