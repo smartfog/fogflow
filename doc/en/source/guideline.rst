@@ -24,8 +24,9 @@ Note that contribution workflows themselves (e.g. pull requests, etc.) are descr
 .. _`FIWARE Development Guidelines`: https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/Developer_Guidelines
 
 
+
  Pull Request protocol
-------------------------
+===========================
 
 
 As explained in `FIWARE Development Guidelines`_, contributions are done using a pull request (PR). The detailed "protocol" used in such PR a is described below:
@@ -259,7 +260,9 @@ The following usage MUST be avoided:
                      }
 
 *Note use gofmt /path/to/package for package formating.
+
 *Rationale*: This will reformat the code and updates the file.
+
 *How to check*: manually
 
 **M8 (Command & operators separation):**
@@ -428,7 +431,9 @@ not
 
 
 **S5 (If condition)**
+
 *Rule*: Go have some improved version in if condition 
+
 
 * Bad implementation in Golang
 
@@ -449,7 +454,9 @@ not
         }
 
 **S5 (Switch)**
+
 *Rule*: always use default with switch condition.
+
 
 * Bad implementation
 
