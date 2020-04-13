@@ -1,5 +1,5 @@
 if [ $# -eq 0 ]; then
-	htype='latest'
+	htype='3.0'
 else
 	htype='arm'
 fi
