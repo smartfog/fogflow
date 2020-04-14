@@ -6,7 +6,7 @@ Connect an IoT device to FogFlow
 ====================================
 
 With NGSI supported Devices
-===============================================
+--------------------------------
 
 If the device can communicate with FogFlow via NGSI, connecting device to FogFlow
 can be very easy. It requires some small application to be running on the device,
@@ -204,7 +204,8 @@ Run this example code as follows:
     node powerpanel.js profile1.json
 
 With Non-NGSI supported Devices
-===============================================
+----------------------------------
+
 To connect Non-NGSI IoT Devices, FIWARE provides IoT Agents that work with IoT devices based on various protocols like MQTT, Ultralight,
 etc. IoT Agents can communicate over both, either NGSIv1 or NGSIv2, however, currently Fogflow supports only NGSIv1. So, users need to configure IoT Agent to use NGSIv1 format.
 
