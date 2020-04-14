@@ -62,19 +62,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     processing.rst
     api.rst
     build.rst
-    
-.. toctree::
-    :maxdepth: 1
-    :caption: Test
-    :numbered:     
-    
     test.rst
-    
-.. toctree::
-    :maxdepth: 1
-    :caption: Roadmap
-    :numbered:   
-    
     roadmap.rst
 
 .. toctree::
