@@ -53,43 +53,26 @@ Context-driven service orchestration
 =======================================
 
 
-Distributed context management
------------------------------------
+In FogFlow each worker is an agent to perform the following two type of deployment actions assigned by Topology Master. 
 
-The context management system is designed to provide a global view for all system components and running task instances 
-to query, subscribe, and update context entities via the unified data model and the communication protocol *NGSI*. 
-It plays a very important role to support the standard-based edge programming model in FogFlow. 
-As compared to other existing brokers like MQTT-based Mosquitto or Apache Kafka, 
-the distributed context management system in FogFlow has the following features: 
+- start/terminate a task instance
+- add/remove an input stream to an existing running task instance
 
-* separating context availability and context entity
-* providing separated and standardized interfaces to manage both context data (via NGSI10) and context availability (via NGSI9). 
-* supporting not only ID-based and topic-based query and subscription but also geoscope-based query and subscription
+For example, each worker takes the following steps to start a task instance. 
 
-As illustrated by the following figure, in FogFlow a large number of distributed IoT Brokers work in parallel
-under the coordination a global and centralized IoT Discovery. 
+#. the worker asks its local docker engine to create a new container for running the new task instance with a specified listening port number
 
-.. figure:: figures/distributed-brokers.png
+#. the task instance starts to run and listening on the given port number to receive input data streams
 
+#. the worker sends a configuration object to the running task instance via its listening port
 
+#. the worker issues NGSI10 subscriptions on behalf of the running task instance 
 
-IoT Discovery
----------------
-The centralized IoT Discovery provides a global view of context availability of context data and provides NGSI9 interfaces for registration, discovery, and subscription of context availability. 
+#. the required input data streams flow into the running task instance for further processing via its listening port
 
-IoT Broker
-------------
-The IoT Broker in Fogflow is very light-weight, because it keeps only the lastest value of each context entity
-and saves each entity data directly in the system memory. 
-This brings high throughput and low latency for the data transfer from context produers to context consumers. 
+#. the running task instance processes the received input stream data and then generate its result
 
-Each IoT Broker manages a portion of the context data and registers data to the shared IoT Discovery.
-However, all IoT Brokers can equally provide any requested context entity via NGSI10 
-because they can find out which IoT Broker provides the entity through the shared IoT Discovery and then fetch the entity from that remote IoT Broker. 
+#. the running task instance publishes the generated result as its output by sending NGSI10 updates
 
 
-
-
-
-
-
+.. figure:: figures/launching-task.png
