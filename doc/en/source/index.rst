@@ -42,7 +42,6 @@ Currently, FogFlow has been applied into various business use cases in the areas
     edge.rst
     system_monitoring.rst
     example1.rst
-    example2.rst
     example3.rst
     example4.rst
     scorpioIntegration.rst
