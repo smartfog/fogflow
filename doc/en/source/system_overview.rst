@@ -16,6 +16,8 @@ illustrated in below figure. All integrated features that are running in FogFlow
 
 In this page, a brief introduction is given about FogFlow integrations, more detail can be found in `Integration`_, section.
 
+.. `Integration`_: https://fogflow.readthedocs.io/en/latest/example3.html#integration
+
 There are mainly two types of integration Northbound and Southbound, flow of data from a sensor device towards broker is known 
 as Northbound Flow and when flow of data from broker towards actuator devices, then it is known as Southbound Flow.
 more detail about Northbound and Southbound data flow can be checked via `Integrate an actuator device with Fogflow`_, page.
