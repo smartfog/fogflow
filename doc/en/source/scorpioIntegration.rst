@@ -33,7 +33,7 @@ NGSI-LD Adapter can be run under Fogflow ecosystem using Fogflow Dashboard as gi
    
    (Is is assumed that the user has already gone through "REGISTER YOUR TASK OPERATORS" in `this`_ tutorial.)
 
-.. _`this`: https://fogflow.readthedocs.io/en/latest/example1.html
+.. _`this`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
    
 **Register a Docker Image:** Go to "DockerImage" in Operator Registry and register an image fogflow/ngsildadapter:latest. Associate it with the above operator by choosing the operator from DropDown. Users can also build their image for NGSI-LD-Adapter by editing and running `build`_ file.
 
