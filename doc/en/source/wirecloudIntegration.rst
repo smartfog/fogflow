@@ -22,11 +22,11 @@ Integration steps
 * Fogflow should be up and running with atleast one node.
 * WireCloud should be up and running  `WireCloud installation steps`_ .
 
-.. _`WireCloud installation steps` : https://wirecloud.readthedocs.io/en/stable/installation_guide/
+.. _`WireCloud installation steps`: https://wirecloud.readthedocs.io/en/stable/installation_guide/
 
 * Fiware NGSI-Proxy shiuld be up and running  `NGSI-Proxy installation steps`_ .
 
-.. _`NGSI-Proxy installation steps` : https://github.com/conwetlab/ngsi-proxy 
+.. _`NGSI-Proxy installation steps`: https://github.com/conwetlab/ngsi-proxy 
 
 **Steps to subscribe fogflow using wirecloud:**
 
