@@ -14,16 +14,15 @@ illustrated in below figure. All integrated features that are running in FogFlow
 .. figure:: figures/FogFlow_System_Design.png
 
 
-In this page, a brief introduction is given about FogFlow integrations, more detail can be found in `This`_, section.
+In this page, a brief introduction is given about FogFlow integrations, for more detailed information refer links.
 
-.. _`This`: https://fogflow.readthedocs.io/en/latest/integration.html
 
 There are mainly two types of integration Northbound and Southbound, flow of data from a sensor device towards broker is known 
 as Northbound Flow and when flow of data from broker towards actuator devices, then it is known as Southbound Flow.
-more detail about Northbound and Southbound data flow can be checked via `Integrate an actuator device with Fogflow`_, page.
+more detail about Northbound and Southbound data flow can be checked via `this`_, page.
 
 
-.. _`Integrate an actuator device with Fogflow`: https://fogflow.readthedocs.io/en/latest/actuator_fogflow_integration.html
+.. _`this`: https://fogflow.readthedocs.io/en/latest/integration.html
 
 
 FogFlow Integration with Scorpio broker, Scorpio is an NGSI-LD compliant context broker, an NGSI-LD Adapter is built 
