@@ -14,16 +14,16 @@ illustrated in below figure. All integrated features that are running in FogFlow
 .. figure:: figures/FogFlow_System_Design.png
 
 
-In this page, a brief introduction is given about FogFlow integrations, more detail can be found in `Integration`_, section.
+In this page, a brief introduction is given about FogFlow integrations, more detail can be found in `This`_, section.
 
-..`Integration`_: https://fogflow.readthedocs.io/en/latest/integration.html#integration
+.. _`This`: https://fogflow.readthedocs.io/en/latest/integration.html
 
 There are mainly two types of integration Northbound and Southbound, flow of data from a sensor device towards broker is known 
 as Northbound Flow and when flow of data from broker towards actuator devices, then it is known as Southbound Flow.
 more detail about Northbound and Southbound data flow can be checked via `Integrate an actuator device with Fogflow`_, page.
 
 
-..`Integrate an actuator device with Fogflow`_: https://fogflow.readthedocs.io/en/latest/actuator_fogflow_integration.html#integrate-an-actuator-device-with-fogflow
+.. _`Integrate an actuator device with Fogflow`: https://fogflow.readthedocs.io/en/latest/actuator_fogflow_integration.html
 
 
 FogFlow Integration with Scorpio broker, Scorpio is an NGSI-LD compliant context broker, an NGSI-LD Adapter is built 
@@ -31,20 +31,22 @@ to enable FogFlow Ecosystem to talk with Scorpio context broker. The NGSI-LD Ada
 to Scorpio broker, more detail can be checked via `Integrate FogFlow with Scorpio Broker`_, page.
 
 
-..`Integrate FogFlow with Scorpio Broker`_: https://fogflow.readthedocs.io/en/latest/scorpioIntegration.html#integrate-fogflow-with-scorpio-broker
+.. _`Integrate FogFlow with Scorpio Broker`: https://fogflow.readthedocs.io/en/latest/scorpioIntegration.html
 
 
 Integration with Orion broker, FogFlow can be intergrated with Orion context broker using NGSI-V1 as well as NGSI-V2 APIs.
 more detail can be checked via `Integrate FogFlow with FIWARE`_, page.
 
-..`Integrate FogFlow with FIWARE`_: https://fogflow.readthedocs.io/en/latest/fogflow_fiware_integration.html#integrate-fogflow-with-fiware
+
+.. _`Integrate FogFlow with FIWARE`: https://fogflow.readthedocs.io/en/latest/fogflow_fiware_integration.html
+
 
 Similarly, FogFlow Integration with WireCloud is provided to visualize the data with the help of different widgets of wirecloud
 and Integration with QuantumLeap is to store time series based historical data. more detail can be checked via  `Integrate FogFlow with WireCloud`_,
 for wirecloud and `Integrate FogFlow with QuantumLeap`_, page for QuantumLeap.
 
-..`Integrate FogFlow with WireCloud`_: https://fogflow.readthedocs.io/en/latest/wirecloudIntegration.html#integrate-fogflow-with-wirecloud
-..`Integrate FogFlow with QuantumLeap`_: https://fogflow.readthedocs.io/en/latest/quantumleapIntegration.html#integrate-fogflow-with-quantumleap
+.. _`Integrate FogFlow with WireCloud`: https://fogflow.readthedocs.io/en/latest/wirecloudIntegration.html
+.. _`Integrate FogFlow with QuantumLeap`: https://fogflow.readthedocs.io/en/latest/quantumleapIntegration.html
 
 
 
@@ -52,6 +54,6 @@ FogFlow also provides a secure communication between the FogFlow cloud node and 
 To acheive  HTTPs-based communication secure communication in FogFlow, it is necessary for FogFlow cloud node and the FogFlow edge
 node to have their own domain names. Further the detail configuration and setup steps can be checked via `Security`_,.
 
-..`Security`_: https://fogflow.readthedocs.io/en/latest/https.html#security
+.. _`Security`: https://fogflow.readthedocs.io/en/latest/https.html
 
 
