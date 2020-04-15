@@ -23,7 +23,7 @@ as Northbound Flow and when flow of data from broker towards actuator devices, t
 more detail about Northbound and Southbound data flow can be checked via `Integrate an actuator device with Fogflow`_, page.
 
 
-..`Integrate an actuator device with Fogflow`_: https://fogflow.readthedocs.io/en/latest/example5.html#integrate-an-actuator-device-with-fogflow
+..`Integrate an actuator device with Fogflow`_: https://fogflow.readthedocs.io/en/latest/actuator_fogflow_integration.html#integrate-an-actuator-device-with-fogflow
 
 
 FogFlow Integration with Scorpio broker, Scorpio is an NGSI-LD compliant context broker, an NGSI-LD Adapter is built 
@@ -37,7 +37,7 @@ to Scorpio broker, more detail can be checked via `Integrate FogFlow with Scorpi
 Integration with Orion broker, FogFlow can be intergrated with Orion context broker using NGSI-V1 as well as NGSI-V2 APIs.
 more detail can be checked via `Integrate FogFlow with FIWARE`_, page.
 
-..`Integrate FogFlow with FIWARE`_: https://fogflow.readthedocs.io/en/latest/example4.html#integrate-fogflow-with-fiware
+..`Integrate FogFlow with FIWARE`_: https://fogflow.readthedocs.io/en/latest/fogflow_fiware_integration.html#integrate-fogflow-with-fiware
 
 Similarly, FogFlow Integration with WireCloud is provided to visualize the data with the help of different widgets of wirecloud
 and Integration with QuantumLeap is to store time series based historical data. more detail can be checked via  `Integrate FogFlow with WireCloud`_,
