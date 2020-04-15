@@ -1,5 +1,5 @@
 ***************************************
-Intent-Based Programming Model
+Intent-Based Programming
 ***************************************
 Currently the following two programing models are provided by FogFlow to support different types of workload patterns.
 
