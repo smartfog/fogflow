@@ -3,7 +3,7 @@ Monitoring
 *************************
 
 
-Setup Grafana Dashboard for various system metrics
+Grafana-based monitoring
 ===========================================================  
         
 To monitor metrics of FogFlow cloud as well as edge nodes in graphical format we need to setup dashboard.
