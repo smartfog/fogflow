@@ -3,6 +3,7 @@ Integration
 *****************************************
 
 There are two types of integrations
+
 1) Southbound Integration
 2) Northbound Integration
 
