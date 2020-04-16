@@ -119,7 +119,7 @@ Note: Allow port 1026 in firewall for public access.
 - accepts "Temperature" Entity Type as SelectCondition, "id" as granularity and "all" as SelectedAttributes,
 - publishes a context entity of type "result" in Streams.
 
-![Speficy a fog function](fog-function-connect-elements.png)
+![Speficy a fog function](images/fog-function-connect-elements.png)
 
 
 # Simulate an IoT device to trigger the Fog Function
