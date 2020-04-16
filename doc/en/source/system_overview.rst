@@ -32,7 +32,7 @@ to enable FogFlow Ecosystem to interact with Scorpio context broker. The NGSI-LD
 .. _`Integrate FogFlow with Scorpio Broker`: https://fogflow.readthedocs.io/en/latest/scorpioIntegration.html
 
 
-FogFlow can also be Integrated with Orion context broker using NGSI-V1 as well as NGSI-V2 APIs. More detail can be checked via `Integrate FogFlow with FIWARE`_ page.
+FogFlow can also be Integrated with Orion context broker using NGSI APIs. More detail can be checked via `Integrate FogFlow with FIWARE`_ page.
 
 
 .. _`Integrate FogFlow with FIWARE`: https://fogflow.readthedocs.io/en/latest/fogflow_fiware_integration.html
