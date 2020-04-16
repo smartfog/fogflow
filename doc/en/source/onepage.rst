@@ -354,7 +354,7 @@ Check if a task is created under "Task" in System Management.**
 
 Check if a Stream is created under "Stream" in System Management.**
 
-.. figure:: figures/result.png
+.. figure:: figures/fog-function-streams.png
 
 
 

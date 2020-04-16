@@ -397,7 +397,7 @@ create a fog function from the FogFlow editor
 
 A menu will pop up whenever click a right mouse on the task design board.
 
-.. image:: figures/fog-function-1.png
+.. image:: figures/fog-function-create-new.png
    
 The displayed menu includes the following items: 
 
@@ -406,16 +406,16 @@ The displayed menu includes the following items:
 
 Click "Task" from the popup menu, a Task element will be placed on the design board, as shown below.
 
-.. image:: figures/fog-function-2.png
+.. image:: figures/fog-function-add-task-element.png
   
 Start task configuration by clicking the configuration button on the top-right corner, as illustrated in the following figure. 
 Please specify the name of the Task and choose an operator out of a list of some pre-registered operators.
 
-.. image:: figures/fog-function-3.png
+.. image:: figures/fog-function-configure-task-element.png
    
 Please click "EntityStream" from the popup menu to place an "EntityStream" element on the design board. 
 
-.. image:: figures/fog-function-4.png
+.. image:: figures/fog-function-add-entityStream-element.png
 
 It contains the following things:
 
@@ -435,12 +435,11 @@ for each individual entity ID.
 
 Configure the EntityStream by clicking on its configuration button as shown below. In this example, we choose "Temperature" as the entity type of input data for the "dummy" fog function.
 
-.. image:: figures/fog-function-5.png
+.. image:: figures/fog-function-configure-entityStream-element.png
 
 There can be multiple EntityStreams for a Task and they must be connected to the Task as shown here.
 
-.. image:: figures/fog-function-6.png
- 
+.. image:: figures/fog-function-connect-elements.png 
 
 provide the code of your own function
 -----------------------------------------
@@ -565,7 +564,7 @@ submit fog function
     
 After clicking the "Submit" button, the annotated fog function will be submitted to FogFlow. 
 
-.. image:: figures/fog-function-7.png
+.. image:: figures/fog-function-submit.png
 
 
 Trigger "dummy" fog function 
