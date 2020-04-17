@@ -1,24 +1,8 @@
-*****************************************
-One-page tutorial
-*****************************************
 
 This is an one-page introductory tutorial to FogFlow.
 In the FIWARE-based architecture, FogFlow can be used to dynamically trigger data processing functions 
 between IoT devices and Orion Context Broker, 
 for the purpose of transforming and preprocessing raw data at edge nodes (e.g., IoT gateways or Raspberry Pis).
-
-Fogflow system health can be monitored by system monitoring tools Metricbeat, Elasticsearch and Grafana in short EMG. 
-With these tools edges and Fogflow Docker service health can be monitored. 
-Metricbeat deployed on Edge node. Elasticsearch and Grafana on Cloud node.
-
-As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
-
-
-
-.. figure:: figures/Fogflow_System_Monitoring_Architecture.png
-
-
-
 
 The tutorial introduces a typical FogFlow system setup with a simple example to do anomaly detection at edges for temperature sensor 
 data.
@@ -35,10 +19,23 @@ This is because a subscription with Orion Context Broker as the reference URL ha
 
 
 
+
+
 .. figure:: figures/systemview.png
 
 
 
+
+
+Fogflow system health can be monitored by system monitoring tools Metricbeat, Elasticsearch and Grafana in short EMG. 
+With these tools edges and Fogflow Docker service health can be monitored. 
+Metricbeat deployed on Edge node. Elasticsearch and Grafana on Cloud node.
+
+As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
+
+
+
+.. figure:: figures/Fogflow_System_Monitoring_Architecture.png
 
 
 Here are the prerequisite commands for running FogFlow:
@@ -357,7 +354,7 @@ Check if a task is created under "Task" in System Management.**
 
 Check if a Stream is created under "Stream" in System Management.**
 
-.. figure:: figures/result.png
+.. figure:: figures/fog-function-streams.png
 
 
 

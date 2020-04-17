@@ -1,6 +1,3 @@
-*******************************
-Introduction
-*******************************
 
 Nowadays IoT infrastructure providers for smart city, smart industry, and connected vehicles 
 are facing lots of complexity and high operation cost to manage their geo-distributed infrastructures 

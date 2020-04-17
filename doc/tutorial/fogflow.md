@@ -119,7 +119,7 @@ Note: Allow port 1026 in firewall for public access.
 - accepts "Temperature" Entity Type as SelectCondition, "id" as granularity and "all" as SelectedAttributes,
 - publishes a context entity of type "result" in Streams.
 
-![Speficy a fog function](images/fogfunction.png)
+![Speficy a fog function](images/fog-function-connect-elements.png)
 
 
 # Simulate an IoT device to trigger the Fog Function
@@ -131,7 +131,7 @@ There are two ways to trigger the fog function:
  - **Device Type:** use “Temperature” as the entity type
  - **Location:** select a location on the map
  
- ![System View for Fogflow and Fiware Orion Integration](images/createdevice.png)
+ ![System View for Fogflow and Fiware Orion Integration](images/device-registration.png)
 
 
 **2. Send an NGSI entity update to create the “Temperature” sensor entity:**
@@ -184,7 +184,7 @@ curl -iX POST \
 
 - Check if a Stream is created under "Stream" in System Management.
 
-![New "result" entity created by the running task](images/result.png)
+![New "result" entity created by the running task](images/fog-function-streams.png)
 
 
 # Issue a subscription to forward the generated result to Orion Context Broker

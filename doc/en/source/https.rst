@@ -2,8 +2,11 @@
 Security
 *****************************************************************
 
+HTTPs-based communication
+=================================
+
 Secure the cloud-edge communication
-===============================================
+------------------------------------------
 To secure the communication between the FogFlow cloud node and the FogFlow edge nodes, 
 FogFlow can be configured to use HTTPs for the NGSI9 and NGSI10 communication, 
 which is mainly for data exchange between cloud node and edge nodes, or between two edge nodes. 
@@ -13,7 +16,7 @@ The introduction steps to secure the data exchange between one FogFlow cloud nod
 
 
 Configure DNS server
-===========================================================
+-----------------------------
 
 As illustrated by the following picture, in order to set up FogFlow to support the HTTPs-based communication, 
 the FogFlow cloud node and the FogFlow edge node are required to have their own domain names, 
@@ -34,7 +37,7 @@ For example, `freeDNS`_ can be used for this purpose.
 	
 
 Set up the FogFlow cloud node
-===========================================================
+------------------------------------
 
 Fetch all required scripts
 --------------------------------------------
@@ -107,7 +110,7 @@ Validate setup
 
 
 Set up the FogFlow edge node
-===========================================================
+-------------------------------------
 
 
 Fetch all required scripts
@@ -174,7 +177,7 @@ Validate setup
 
 
 Check system status via FogFlow Dashboard
-===========================================================
+-----------------------------------------------
 
 FogFlow dashboard can be opened in web browser to see the current system status via the URL: https://cloudnode.fogflow.io/index.html
 

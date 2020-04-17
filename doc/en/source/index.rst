@@ -37,30 +37,26 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :caption: User Guide
     :numbered:
     
+    system_overview.rst
     setup.rst
-    edge.rst
-    system_monitoring.rst
-    example1.rst
-    example2.rst
-    example3.rst
-    example4.rst
+    intent_based_program.rst
+    integration.rst
+    fogflow_fiware_integration.rst
     scorpioIntegration.rst
-    example5.rst
     quantumleapIntegration.rst          
     wirecloudIntegration.rst
+    system_monitoring.rst
     https.rst
-    guideline.md
+    guideline.rst
    
 .. toctree::
     :maxdepth: 1
     :caption: Advance User Guide
     :numbered:    
 
-    overview.rst
-    concept.rst    	
+    system_design.rst
     programming.rst	
     context.rst
-    processing.rst
     api.rst
     build.rst
     test.rst

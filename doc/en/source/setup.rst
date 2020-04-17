@@ -1,9 +1,11 @@
 .. _cloud-setup:
 
 *****************************************
-Prerequisite
+System Setup
 *****************************************
 
+Prerequisite
+=================
 
 Here are the prerequisite commands for starting FogFlow:
 
@@ -26,12 +28,12 @@ required version 18.03.1-ce, required version > 2.4.2
 .. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
 
 
-*****************************************
-Installation
-*****************************************
+
+Start FogFlow Cloud node
+=============================
 
 Fetch all required scripts
-===========================================================
+---------------------------------
 
 Download the docker-compose file and the configuration files as below.
 
@@ -51,7 +53,7 @@ Download the docker-compose file and the configuration files as below.
 
 
 Change the IP configuration accordingly
-===========================================================
+---------------------------------------------
 
 
 You need to change the following IP addresses in config.json according to your own environment.
@@ -88,7 +90,7 @@ Also need to change the following IP addresses in metricbeat.docker.yml accordin
 
 
 Start all components on the FogFlow Cloud Node
-===========================================================
+------------------------------------------------------
 
 
 Pull the docker images of all FogFlow components and start the FogFlow system
@@ -102,7 +104,7 @@ Pull the docker images of all FogFlow components and start the FogFlow system
 
 
 Validate your setup
-===========================================================
+----------------------------------
 
 
 There are two ways to check if the FogFlow cloud node is started correctly: 
@@ -196,7 +198,7 @@ Set up the Metricbeat
 	  
 	  
 Try out existing IoT services
-===========================================================
+-------------------------------------
 
 
 Once the FogFlow cloud node is set up, you can try out some existing IoT services without running any FogFlow edge node.
@@ -247,9 +249,140 @@ Check if a task is created under "Task" in System Management.**
 
 Check if a Stream is created under "Stream" in System Management.**
 
-.. figure:: figures/result.png
+.. figure:: figures/fog-function-streams.png
 
 
+
+Start FogFlow edge node
+==========================
+
+Typically, an FogFlow edge node needs to deploy a Worker, an IoT broker and a system monitoring agent metricbeat. 
+The Edge IoT Broker at the edge node can establish the data flows between all task instances launched on the same edge node. 
+However, this Edge IoT Broker is optional, 
+especially when the edge node is a very constrained device that can only support a few tasks without any data dependency. 
+
+Here are the steps to start an FogFlow edge node: 
+
+Install Docker Engine 
+------------------------
+
+To install Docker CE and Docker Compose, please refer to `Install Docker CE and Docker Compose on Respberry Pi`_. 
+
+.. _`Install Docker CE and Docker Compose on Respberry Pi`: https://withblue.ink/2019/07/13/yes-you-can-run-docker-on-raspbian.html
+
+
+.. note:: Docker engine must be installed on each edge node, because all task instances in FogFlow will be launched within a docker container.
+
+
+Download the deployment script 
+-------------------------------------------------
+
+.. code-block:: console    
+         
+	#download the deployment scripts
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/metricbeat.docker.yml
+	
+	#make them executable
+	chmod +x start.sh  stop.sh       
+
+
+Download the default configuration file 
+-------------------------------------------------
+
+.. code-block:: console   
+         	
+	#download the configuration file          
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/config.json
+
+
+Change the configuration file accordingly
+-------------------------------------------------
+
+You can use the default setting for a simple test, but you need to change the following addresses according to your own environment: 
+        
+- **coreservice_ip**: please refer to the configuration of the cloud part. This is the accessible address of your FogFlow core services running in the cloud node;
+- **external_hostip**: this is the external IP address, accessible for the cloud broker. It is useful when your edge node is behind NAT;
+- **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host.
+- **site_id** is the user-defined ID for the edge Node. Broker and Worker IDs on that node will be formed according to this Site ID.
+- **container_autoremove** is used to configure that the container associated with a task will be removed once its processing is complete.
+- **start_actual_task** configures the Fogflow worker to include all those activities that are required to start or terminate a task or maintain a running task along with task configurations instead of performing the minimal effort. It is recommended to keep it true.
+- **capacity** is the maximum number of docker containers that the FogFlow node can invoke. The user can set the limit by considering resource availability on a node.
+
+.. code-block:: json
+
+    //you can see the following part in the default configuration file
+    { 
+        "coreservice_ip": "155.54.239.141", 
+        "external_hostip": "35.234.116.177", 
+        "internal_hostip": "172.17.0.1", 
+        
+	
+	"site_id": "002",
+	
+	
+	"worker": {
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 4
+	}
+	
+	
+    } 
+
+Change the Metricbeat configuration file accordingly
+-----------------------------------------------------------
+
+you need to change the following addresses in start.sh according to your own environment:
+
+- **output.elasticsearch.hosts**: It is the elasticsearch host IP address on which metricbeat will share the metric data.
+
+- change the details of Elasticsearch in metricbeat.docker.yml file as below:
+
+.. code-block:: json
+
+        name: "<155.54.239.141/edge02>"
+        metricbeat.modules:
+        - module: docker
+          #Docker module parameters to monitor based on user requirement,example as below
+          metricsets: ["cpu","memory","network"]
+          hosts: ["unix:///var/run/docker.sock"]
+          period: 10s
+          enabled: true
+        - module: system
+          #System module parameters to monitor based on user requirement, example as below
+          metricsets: ["cpu","load","memory","network"]
+          period: 10s
+
+        output.elasticsearch:
+          hosts: '155.54.239.141:9200'
+	  
+
+Start Edge node components
+-------------------------------------------------
+
+.. note:: if the edge node is ARM-basd, please attach arm as the command parameter
+
+.. code-block:: console    
+
+      #start both components in the same script
+      ./start.sh 
+    
+      #if the edge node is ARM-basd, please attach arm as the command parameter
+      #./start.sh  arm
+      
+
+Stop Edge node components
+-------------------------------------------------
+
+.. code-block:: console    
+
+	#stop both components in the same script
+	./stop.sh 
+
+
+     
 
 
 

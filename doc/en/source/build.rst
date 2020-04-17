@@ -1,4 +1,4 @@
-Build FogFlow components from the source code
+Build everything from the source code
 =========================================
 
 FogFlow can be build and installed on Linux for both ARM and X86 processors (32bits and 64bits). 
