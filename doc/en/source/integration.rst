@@ -1,8 +1,8 @@
 *****************************************
-Integration
+Integration with devices
 *****************************************
 
-There are two types of integrations
+There are two types of integrations with IoT devices/Actuators:
 
 1) Southbound Integration
 2) Northbound Integration
