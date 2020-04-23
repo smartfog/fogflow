@@ -100,7 +100,23 @@ The main procedure is illustrated by the following figure, including two major s
 
 
 
+Intent Model
+==================
 
+
+.. figure:: figures/intent_model.png
+
+
+
+
+Three Key Elements
+=====================
+The three key elements to program an IoT service is illustrated via below figure.
+
+
+
+
+.. figure:: figures/key_elements.png
 
 
 
