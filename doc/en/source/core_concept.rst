@@ -9,6 +9,9 @@ based device whereas a consumer is an Actuator device that will recieve command 
 .. _`NGSI`: https://knowage.readthedocs.io/en/6.1.1/user/NGSI/README/index.html
 
 
+To define and trigger FogFlow based instances follow `Intent based programming model`_.
+
+.. _`Intent based programming model`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
 Core concepts
 ======================
