@@ -104,6 +104,16 @@ The main procedure is illustrated by the following figure, including two major s
 Intent Model
 ==================
 
+An intent object basically consists of these properties as illustrated in below figure.
+
+- Serivce topology specifies the computation logic for which the intent object is triggered. 
+
+- Geoscope is defined a geographical location where input streams should be selected. Geoscope cab be setect as global value as well as can be set custom geoscopes. 
+
+- Service Level Object (SLO) is the objective of maximum throughput, minimum latency and minimum cost can be set for task assignment at workers. However, this feature is not fully supported yet, so User can ignore this. It can be set as “None” for now. 
+
+- Resource Usage defines how a topology can use resources on edge nodes. It can either exlusive or inclusive. In an exclusive way means the topology will not share the resources with any task from other topologies. Whereas in an inclusive one topology will share the resources with any task from other topologies.
+
 
 .. figure:: figures/intent_model.png
 
