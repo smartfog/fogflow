@@ -137,4 +137,42 @@ In FogFlow several operators form a graph which is defined as a service topology
 
 
 
+Service topology example of "Hello-World"
+=========================================
+
+Register task operators
+----------------------------------------------
+
+The following picture shows the list of all registered operators and their parameter count.
+
+
+.. figure:: figures/operator_dashboard.png
+
+
+**Register an Operator** to define what would be the name of Operator. Here in this context, an operator is nothing but a named element having some parameters.
+
+
+.. figure:: figures/register_operator1.png
+
+
+
+To define what input parameters an operator would need.
+
+
+
+.. figure:: figures/register_operator2.png
+
+
+
+Then join the stream of parameter to operator and click submit.
+
+
+
+.. figure:: figures/register_operator3.png
+
+
+
+
+
+
 
