@@ -8,6 +8,7 @@ based device whereas a consumer is an Actuator device that will recieve command 
 
 .. _`NGSI`: https://knowage.readthedocs.io/en/6.1.1/user/NGSI/README/index.html
 
+FogFlow can carry out IoT service orchestration decisions in a decentralized and autonomous manner. This means each FogFlow edge node can make its own decisions only based on a local context view. This way the majority of workloads can be directly handled at edges without always relying on the central cloud. With this "cloudless" approach, FogFlow can not only provide fast response time, but also achieve high scalability and reliability.
 
 To define and trigger FogFlow based instances follow `Intent based programming model`_.
 
@@ -121,7 +122,7 @@ The three key elements to program an IoT service is illustrated via below figure
 
 
 
-
+In FogFlow several operators form a graph which is defined as a service topology. Each operator in the service topology is annotated with its inputs and outputs, which indicate their dependency to the other tasks in the same topology. Service topology can easily compose different operators to form their service logic in just a few minutes. After that, during the runtime data processing flows can be automatically triggerred based on the high level data usage intent defined by service users. Service users can be either data producers or result consumers.
 
 
 
