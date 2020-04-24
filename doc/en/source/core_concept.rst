@@ -151,7 +151,7 @@ The following picture shows the list of all registered operators and their param
 
 
 
-After clicking the "register" button, a design area can be seen below and an operator can be created and parameters can be added to it. Add name and value it can be set as default.
+After clicking the "register" button, a design area can be seen below and an operator can be created and parameters can be added to it. Add name of operator "Hello-World" and description for operator is optional, for parameter name can be anything here it is given as hello and value is set as default.
 
 
 
@@ -219,7 +219,7 @@ As seen in the picture, the following important information must be provided.
 The following information is required to specify a task profile.
 	
     * name: the name of the task 
-    * operator: the name of the operator that implements the data processing logic of this task; please register your operator beforehand so that it can be shown from the list
+    * operator: the name of the operator that implements the data processing logic of this task; an operator shall be registered beforehand so that it can be shown from the list
     * entity type of output streams: to specify the entity type of the produced output stream.
     
     The following information is required to specify an EntityStream Profile.
@@ -229,8 +229,8 @@ The following information is required to specify a task profile.
     * Groupby: to determine how many instances of this task should be created on the fly; currently including the following cases
 	
         *  if there is only one instance to be created for this task, please use "groupby" = "all"
-        *  if you need to create one instance for each entity ID of the input streams, please user "groupby" = "entityID"
-        *  if you need to create one instance for each unique value of some specific context metadata, please use the name of this registered context metadata
+        *  if it is needed to create one instance for each entity ID of the input streams, please use "groupby" = "entityID"
+        *  if it is neded to create one instance for each unique value of some specific context metadata, please use the name of this registered context metadata
     
     
 * Scoped: tells if the Entity data are location-specific or not. True indicates that location-specific data are recorded in the Entity and False is used in case of broadcasted data, for example, some rule or threshold data that holds true for all locations, not for a specific location.
