@@ -40,6 +40,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
 
     core_concept.rst
     Intent_based_program.rst
+    intent_model.rst
     guideline.rst
 
 
