@@ -31,15 +31,26 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :numbered:
    
     onepage.rst
-    
+  
+  
 .. toctree::
     :maxdepth: 1
-    :caption: User Guide
+    :caption: Developer Guide
+    :numbered:
+
+    core_concept.rst
+    Intent_based_program.rst
+    intent_model.rst
+    guideline.rst
+
+
+.. toctree::
+    :maxdepth: 1
+    :caption: Operator Guide
     :numbered:
     
     system_overview.rst
     setup.rst
-    intent_based_program.rst
     integration.rst
     fogflow_fiware_integration.rst
     scorpioIntegration.rst
@@ -47,7 +58,6 @@ Currently, FogFlow has been applied into various business use cases in the areas
     wirecloudIntegration.rst
     system_monitoring.rst
     https.rst
-    guideline.rst
    
 .. toctree::
     :maxdepth: 1
