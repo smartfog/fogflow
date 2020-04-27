@@ -36,7 +36,7 @@ In FogFlow several operators form a graph which is defined as a service topology
 
 
 
-"Hello-World" of Service topology example 
+"Hello-World" example of Service topology
 ===================================================
 
 Register task operators
