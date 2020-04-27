@@ -57,6 +57,12 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Get("/v2/subscriptions", apisrv.getv2Subscriptions),
 		rest.Get("/v2/subscription/#sid", apisrv.getv2Subscription),
 		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
+
+		//NGSILD
+		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
+		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
+		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
+		rest.Post("/ngsi-ld/v1/subscriptions/", broker.LDCreateSubscription),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -268,5 +274,19 @@ func (apisrv *RestApiSrv) deleteRegistration(w rest.ResponseWriter, r *rest.Requ
 		w.WriteHeader(200)
 	} else {
 		w.WriteHeader(400)
+	}
+}
+
+// NGSI-LD starts here.
+
+func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
+	var eid = r.PathParam("eid")
+
+	entity := apisrv.broker.ldGetEntity(eid)
+	if entity != nil {
+		w.WriteHeader(200)
+		w.WriteJson(entity)
+	} else {
+		w.WriteHeader(404)
 	}
 }

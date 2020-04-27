@@ -4,6 +4,9 @@ import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"sort"
 	"sync"
+	"fmt"
+	"errors"
+        "encoding/json"
 )
 
 type Candidate struct {
@@ -19,6 +22,13 @@ type EntityRepository struct {
 	ctxRegistrationList      map[string]*EntityRegistration
 	ctxRegistrationList_lock sync.RWMutex
 
+	//NGSI-LD registration list
+	cSourceRegistrationList map[string]*CSourceRegistration
+	cSourceRegistrationList_lock sync.RWMutex
+	//NGSI-LD entityID to registrationID mapping
+	entityID2RegistrationID map[string]string
+	entityID2RegistrationID_lock sync.RWMutex
+
 	// lock to control the update of database
 	dbLock sync.RWMutex
 }
@@ -26,6 +36,10 @@ type EntityRepository struct {
 func (er *EntityRepository) Init() {
 	// initialize the registration list
 	er.ctxRegistrationList = make(map[string]*EntityRegistration)
+
+	// initialize the NGSI-LD registration list
+	er.cSourceRegistrationList = make(map[string]*CSourceRegistration)
+	er.entityID2RegistrationID = make(map[string]string)
 }
 
 //
@@ -178,4 +192,64 @@ func (er *EntityRepository) retrieveRegistration(entityID string) *EntityRegistr
 	defer er.ctxRegistrationList_lock.RUnlock()
 
 	return er.ctxRegistrationList[entityID]
+}
+
+// NGSI-LD starts here...
+
+func (er *EntityRepository) updateCSourceRegistration(regReq *CSourceRegistration, rid string) (*CSourceRegistrationResponse, error) {
+	fmt.Println("Inside Repository updateCSourceRegistration....")
+        //create map {eid : rid} for fast discovery of registered entities.
+
+	er.entityID2RegistrationID_lock.Lock()
+
+        regInfo := regReq.Registration.Information
+
+        for _,entityDetail := range regInfo {
+                entities := entityDetail.Entities
+                for _, entity := range entities{
+			if entity.Id != "" {
+	                        er.entityID2RegistrationID[entity.Id] = rid
+			} else if entity.IdPattern != "" {
+				er.entityID2RegistrationID[entity.IdPattern] = rid
+			} else {
+				err := errors.New("Id or IdPattern field missing for elements!")
+				return nil, err
+			}
+                }
+        }
+
+        enti,_ := json.MarshalIndent(er.entityID2RegistrationID, "", " ")
+        DEBUG.Println("Repository... entityID2RegistrationID map: ")
+        DEBUG.Println(string(enti))
+
+	er.entityID2RegistrationID_lock.Unlock()
+
+	// Update registration in memory
+	er.updateCSourceRegistrationInMemory(regReq, rid)
+
+	fmt.Println("Back Inside Repository updateCSourceRegistration....")
+	//Return registration response and error
+	regResp := CSourceRegistrationResponse{}
+	fmt.Println("regResp := CSourceRegistrationResponse{}")
+	regResp.RegistrationID = rid
+	fmt.Println("regResp.RegistrationID = rid")
+	regResp.ErrorCode.Code = 201
+	fmt.Println("regResp.ErrorCode.Code = 201")
+	fmt.Println("RegResp: \n", regResp)
+	return &regResp, nil
+}
+
+func (er *EntityRepository) updateCSourceRegistrationInMemory(regReq *CSourceRegistration, rid string) {
+	fmt.Println("Inside Repository updateCSourceRegistrationInMemory....")
+	// Update the registrations map.
+	er.cSourceRegistrationList_lock.Lock()
+	er.cSourceRegistrationList[rid] = regReq
+
+        enti,_ := json.MarshalIndent(er.cSourceRegistrationList, "", " ")
+        DEBUG.Println("Repository... cSourceRegistrationList map: ")
+        DEBUG.Println(string(enti))
+
+	er.cSourceRegistrationList_lock.Unlock()
+
+	fmt.Println("Leaving Repository updateCSourceRegistrationInMemory....")
 }
