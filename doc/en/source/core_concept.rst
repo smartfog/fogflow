@@ -1,4 +1,4 @@
-In This part of the document a conceptual overview of FogFlow and how to use FogFlow in developing any instance is being covered.
+In this part of the document a conceptual overview of FogFlow and how to use FogFlow in developing any instance is being covered.
 FogFlow is a cloud and edge environment to orchestrate dynamic `NGSI`_-based (Next Generation Service Interface - based) data processing
 flows on-demand between producers and consumers for providing timely results to make fast actions. A context producer will be a sensor 
 based device whereas a consumer is an Actuator device that will recieve command to perform some action.
