@@ -788,7 +788,8 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 
 // NGSI-LD starts here...
 
-func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration, link string) (string, error) {
+//func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration, link string) (string, error) {
+func (nc *NGSI9Client) RegisterCSource(newReg *[]interface{}, link string) (string, error) {
         body, err := json.Marshal(newReg)
         if err != nil {
                 return "", err
@@ -821,7 +822,7 @@ func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration, link string)
         return regResp.RegistrationID, nil
 }
 
-func (nc *NGSI9Client) LDSubscribeContextAvailability(sub *LDSubscriptionRequest, link string) (string, error) {
+func (nc *NGSI9Client) LDSubscribeContextAvailability(sub *SubscribeContextAvailabilityRequest, link string) (string, error) {
         body, err := json.Marshal(*sub)
         if err != nil {
                 return "", err

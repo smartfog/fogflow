@@ -1040,20 +1040,27 @@ type FiwareData struct {
 // NGSI-LD starts here.
 
 type LDContextElement struct {
-        ID        string `json:"id"`
+        Id        string `json:"id"`
         Type      string `json:"type"`
-        Property        map[string]interface{}
-        Relationship    map[string]interface{}
+        Properties	[]Property `json:"properties"`
+        Relationships	[]Relationship `json:"relationships"`
         CreatedAt       string `json:"createdAt"`
         Location        LDLocation `json:"location"`
 }
 
 type LDLocation struct {
         Type    string `json:"type"`
-        Value   interface{}
+        Value   LDLocationValue `json:"value"`
+}
+
+type LDLocationValue struct {
+	Type	string `json:"type"`
+	Coordinates	interface{} `json:"coordinates"`
 }
 
 type Property struct {
+	Id	string `json:"id"`
+	Name	string `json:"name"`
         Type    string `json:"type"`
         Value   interface{} `json:"value"`      // Can also be a string or a JSON object
         ObservedAt      string          //DateTime value when the relationship became valid, Optional.
@@ -1065,6 +1072,8 @@ type Property struct {
 }
 
 type Relationship struct {
+        Id      string `json:"id"`
+        Name    string `json:"name"`
         Type    string                  //Mandatory
         Object  string                  //<<URI>>, Mandatory
         ObservedAt      string          //DateTime value when the relationship became valid, Optional.
@@ -1141,7 +1150,7 @@ type TemporalQuery struct {
         TimeProperty    string `json:"timeproperty"`
 }
 
-type CSourceRegistrationRequest struct {
+type CSourceRegistration struct {
         Id      string `json:"id"`      //URI
         Type    string `json:"type"`
         Name    string `json:"name"`
@@ -1154,7 +1163,6 @@ type CSourceRegistrationRequest struct {
         OperationSpace          interface{} `json:"operationSpace,omitempty"`   // Type = GeoJSON Geometry
         Expires                 string  `json:expires`
         Endpoint                string `json:"endpoint"`        //URI
-        //<Csource Property Name>
 }
 
 type RegistrationInfo struct {

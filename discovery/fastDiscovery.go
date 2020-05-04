@@ -12,6 +12,7 @@ import (
 	"sync"
 	"fmt"
 	. "github.com/smartfog/fogflow/common/ngsi"
+        "github.com/piprate/json-gold/ld"
 )
 
 type InterSiteSubscription struct {
@@ -483,6 +484,8 @@ func (fd *FastDiscovery) RegisterCSource(w rest.ResponseWriter, r *rest.Request)
 		newReg.Registration.Id = rid
         }
 
+
+
 	// call updateRegistration here and send out the response.
 	if CSourceRegistrationResp, err := fd.repository.updateCSourceRegistration(&newReg, newReg.Registration.Id); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
@@ -496,8 +499,48 @@ func (fd *FastDiscovery) RegisterCSource(w rest.ResponseWriter, r *rest.Request)
 
 }
 
+func (fd *FastDiscovery) ExpandData(v interface{}) ([]interface{}, error) {
+        proc := ld.NewJsonLdProcessor()
+        options := ld.NewJsonLdOptions("")
+        //LD processor expands the data and returns []interface{}
+        expanded, err := proc.Expand(v, options)
+        return expanded, err
+}
+
 func (fd *FastDiscovery) LDSubscribeContextAvailability(w rest.ResponseWriter, r *rest.Request) {
-	//ctx availability code here..
+	subscribeCtxAvailabilityReq := SubscribeContextAvailabilityRequest{}
+
+	if err := r.DecodeJsonPayload(&subscribeCtxAvailabilityReq); err != nil {
+                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+	}
+
+	//Create unique subscription id for context availability
+        u1, err := uuid.NewV4()
+        if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+        sid := u1.String()
+        subscribeCtxAvailabilityReq.SubscriptionId = sid
+
+        // add the new subscription
+        fd.subscriptions_lock.Lock()
+        fd.subscriptions[sid] = &subscribeCtxAvailabilityReq
+        fd.subscriptions_lock.Unlock()
+
+        // send out the response
+        subscribeCtxAvailabilityResp := SubscribeContextAvailabilityResponse{}
+        subscribeCtxAvailabilityResp.SubscriptionId = sid
+        subscribeCtxAvailabilityResp.Duration = subscribeCtxAvailabilityReq.Duration
+        subscribeCtxAvailabilityResp.ErrorCode.Code = 200
+        subscribeCtxAvailabilityResp.ErrorCode.ReasonPhrase = "OK"
+
+        w.WriteJson(&subscribeCtxAvailabilityResp)
+        // trigger the process to send out the matched context availability infomation to the subscriber
+        go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
+
+
 
 }
 
