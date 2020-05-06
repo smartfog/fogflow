@@ -789,10 +789,10 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 // NGSI-LD starts here...
 
 //func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration, link string) (string, error) {
-func (nc *NGSI9Client) RegisterCSource(newReg *[]interface{}, link string) (string, error) {
+func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration) (*CSourceRegistrationResponse, error) {
         body, err := json.Marshal(newReg)
         if err != nil {
-                return "", err
+                return nil, err
         }
 	//nc.IoTDiscoveryURL
         //req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/ngsi-ld/v1/csourceRegistrations/", bytes.NewBuffer(body))
@@ -800,7 +800,7 @@ func (nc *NGSI9Client) RegisterCSource(newReg *[]interface{}, link string) (stri
         req, err := http.NewRequest("POST", "http://192.168.100.142:8090"+"/ngsi-ld/v1/csourceRegistrations/", bytes.NewBuffer(body))
         req.Header.Add("Content-Type", "application/json")
         req.Header.Add("Accept", "application/ld+json")
-	req.Header.Add("Link", link)
+	//req.Header.Add("Link", link)
 
         client := nc.SecurityCfg.GetHTTPClient()
         resp, err := client.Do(req)
@@ -809,20 +809,20 @@ func (nc *NGSI9Client) RegisterCSource(newReg *[]interface{}, link string) (stri
         }
         if err != nil {
                 ERROR.Println(err)
-                return "", err
+                return nil, err
         }
 
         text, _ := ioutil.ReadAll(resp.Body)
         regResp := CSourceRegistrationResponse{}
         err = json.Unmarshal(text, &regResp)
         if err != nil {
-                return "", err
+                return nil, err
         }
 
-        return regResp.RegistrationID, nil
+        return &regResp, nil
 }
 
-func (nc *NGSI9Client) LDSubscribeContextAvailability(sub *SubscribeContextAvailabilityRequest, link string) (string, error) {
+func (nc *NGSI9Client) LDSubscribeContextAvailability(sub *SubscribeContextAvailabilityRequest) (string, error) {
         body, err := json.Marshal(*sub)
         if err != nil {
                 return "", err
@@ -831,7 +831,7 @@ func (nc *NGSI9Client) LDSubscribeContextAvailability(sub *SubscribeContextAvail
         req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/ngsi-ld/v1/subscribeContextAvailability/", bytes.NewBuffer(body))
         req.Header.Add("Content-Type", "application/json")
         req.Header.Add("Accept", "application/json")
-	req.Header.Add("Link", link)
+	//req.Header.Add("Link", link)
 
         client := nc.SecurityCfg.GetHTTPClient()
         resp, err := client.Do(req)

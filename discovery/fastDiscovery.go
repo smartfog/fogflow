@@ -12,7 +12,7 @@ import (
 	"sync"
 	"fmt"
 	. "github.com/smartfog/fogflow/common/ngsi"
-        "github.com/piprate/json-gold/ld"
+        //"github.com/piprate/json-gold/ld"
 )
 
 type InterSiteSubscription struct {
@@ -460,18 +460,14 @@ func (fd *FastDiscovery) RegisterCSource(w rest.ResponseWriter, r *rest.Request)
 	fmt.Println("Inside fd RegisterCSource.....")
 	newReg := CSourceRegistration{}
 
-	//cSourceRegReq := CSourceRegistrationRequest{}
-
 	if err := r.DecodeJsonPayload(&newReg); err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-//	fmt.Println("Csource registration decoded successfully..\n", newReg)
-
-        enti,_ := json.MarshalIndent(newReg, "", " ")
+        reg,_ := json.MarshalIndent(newReg, "", " ")
         DEBUG.Println("NewReg at discovery:")
-        DEBUG.Println(string(enti))
+        DEBUG.Println(string(reg))
 
 	// Create a random registration id string if id in empty/missing in the registration request.
         if newReg.Registration.Id == "" {
@@ -484,27 +480,16 @@ func (fd *FastDiscovery) RegisterCSource(w rest.ResponseWriter, r *rest.Request)
 		newReg.Registration.Id = rid
         }
 
-
-
 	// call updateRegistration here and send out the response.
-	if CSourceRegistrationResp, err := fd.repository.updateCSourceRegistration(&newReg, newReg.Registration.Id); err != nil {
+	if CSourceRegistrationResp, err := fd.repository.updateCSourceRegistration(&newReg); err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 	} else {
-                DEBUG.Println("Back in FD iff...:")
                 w.WriteHeader(201)
-                w.WriteJson(*CSourceRegistrationResp)
+                w.WriteJson(&CSourceRegistrationResp)
 	}
 
 	// Notify the subscribers here.
 
-}
-
-func (fd *FastDiscovery) ExpandData(v interface{}) ([]interface{}, error) {
-        proc := ld.NewJsonLdProcessor()
-        options := ld.NewJsonLdOptions("")
-        //LD processor expands the data and returns []interface{}
-        expanded, err := proc.Expand(v, options)
-        return expanded, err
 }
 
 func (fd *FastDiscovery) LDSubscribeContextAvailability(w rest.ResponseWriter, r *rest.Request) {
@@ -543,6 +528,3 @@ func (fd *FastDiscovery) LDSubscribeContextAvailability(w rest.ResponseWriter, r
 
 
 }
-
-
-

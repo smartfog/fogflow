@@ -1126,7 +1126,7 @@ type NotificationParams struct {
         Format          string `json:"format"`
         Endpoint        Endpoint `json:"endpoint"`
         Status          string `json:"status"`
-        TimesSent       uint `json:"timeSent"`
+        TimeSent       uint `json:"timeSent"`
         LastNotification        string `json:"lastNotification"`
         LastFailure             string `json:"lastFailure"`
         LastSuccess             string `json:"lastSuccess"`
@@ -1150,7 +1150,7 @@ type TemporalQuery struct {
         TimeProperty    string `json:"timeproperty"`
 }
 
-type CSourceRegistration struct {
+type CSourceRegistrationRequest struct {
         Id      string `json:"id"`      //URI
         Type    string `json:"type"`
         Name    string `json:"name"`

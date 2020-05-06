@@ -43,6 +43,12 @@ const PROPERTIES string = "https://uri.etsi.org/ngsi-ld/properties"
 const ENTITIES string = "https://uri.etsi.org/ngsi-ld/entities"
 const RELATIONSHIPS string = "https://uri.etsi.org/ngsi-ld/relationships"
 
+const NOTIFICATION string = "https://uri.etsi.org/ngsi-ld/Relationship"
+const WATCHED_ATTRIBUTES string = "https://uri.etsi.org/ngsi-ld/watchedAttributes"
+const FORMAT string = "https://uri.etsi.org/ngsi-ld/format"
+const URI string = "https://uri.etsi.org/ngsi-ld/uri"
+const ACCEPT string = "https://uri.etsi.org/ngsi-ld/accept"
+const ATTRIBUTES string = "https://uri.etsi.org/ngsi-ld/attributes"
 
 
 

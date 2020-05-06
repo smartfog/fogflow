@@ -196,10 +196,11 @@ func (er *EntityRepository) retrieveRegistration(entityID string) *EntityRegistr
 
 // NGSI-LD starts here...
 
-func (er *EntityRepository) updateCSourceRegistration(regReq *CSourceRegistration, rid string) (*CSourceRegistrationResponse, error) {
+func (er *EntityRepository) updateCSourceRegistration(regReq *CSourceRegistration) (*CSourceRegistrationResponse, error) {
 	fmt.Println("Inside Repository updateCSourceRegistration....")
-        //create map {eid : rid} for fast discovery of registered entities.
+	rid := regReq.Registration.Id
 
+        //create map {eid : rid} for fast discovery of registered entities.
 	er.entityID2RegistrationID_lock.Lock()
 
         regInfo := regReq.Registration.Information
