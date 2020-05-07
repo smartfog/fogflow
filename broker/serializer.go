@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/ngsi"
@@ -8,7 +9,7 @@ import (
 
 type Serializer struct{}
 
-func (sz Serializer) SerializeEntity(expanded []interface{}) LDContextElement {
+func (sz Serializer) SerializeEntity(expanded []interface{}) (LDContextElement, error) {
 	fmt.Println("Inside SerializeEntity.......")
 	entity := LDContextElement{}
 	for _, val := range expanded {
@@ -19,19 +20,33 @@ func (sz Serializer) SerializeEntity(expanded []interface{}) LDContextElement {
 			switch k {
 			case ID:
 				fmt.Println("case @id.......")
-				entity.Id = sz.getId(v.(interface{}))
+				if v != nil {
+					entity.Id = sz.getId(v.(interface{}))
+				} else {
+					err := errors.New("Id can not be nil!")
+					return entity, err
+				}
 				break
 			case TYPE:
 				fmt.Println("case @type.......")
-				entity.Type = sz.getType(v.([]interface{}))
+				if v != nil {
+					entity.Type = sz.getType(v.([]interface{}))
+				} else {
+					err := errors.New("Type can not be nil!")
+					return entity, err
+				}
 				break
 			case CREATED_AT:
 				fmt.Println("case createdAt.......")
-				entity.CreatedAt = sz.getCreatedAt(v.([]interface{}))
+				if v != nil {
+					entity.CreatedAt = sz.getCreatedAt(v.([]interface{}))
+				}
 				break
 			case LOCATION:
 				fmt.Println("case location.......")
-				entity.Location = sz.getLocation(v.([]interface{}))
+				if v != nil {
+					entity.Location = sz.getLocation(v.([]interface{}))
+				}
 				break
 			default: // default cases like property, relationship here.
 				interfaceArray := v.([]interface{})
@@ -41,10 +56,22 @@ func (sz Serializer) SerializeEntity(expanded []interface{}) LDContextElement {
 					if len(typ) > 0 {
 						if typ[0].(string) == PROPERTY {
 							fmt.Println("It is a property....")
-							entity.Properties = append(entity.Properties, sz.getProperty(k, mp))
+							property, err := sz.getProperty(k, mp)
+							if err != nil {
+								fmt.Println("Errored Property!")
+								return entity, err
+							} else {
+								entity.Properties = append(entity.Properties, property)
+							}
 						} else if typ[0].(string) == RELATIONSHIP {
 							fmt.Println("It is a relationship....")
-							entity.Relationships = append(entity.Relationships, sz.getRelationship(k, mp))
+							relationship, err := sz.getRelationship(k, mp)
+							if err != nil {
+								fmt.Println("Errored Relationship!")
+								return entity, err
+							} else {
+								entity.Relationships = append(entity.Relationships, relationship)
+							}
 						}
 					}
 				}
@@ -53,10 +80,10 @@ func (sz Serializer) SerializeEntity(expanded []interface{}) LDContextElement {
 		}
 
 	}
-	return entity
+	return entity, nil
 }
 
-func (sz Serializer) SerializeRegistration(expanded []interface{}) CSourceRegistrationRequest {
+func (sz Serializer) SerializeRegistration(expanded []interface{}) (CSourceRegistrationRequest, error) {
 	fmt.Println("Inside SerializeRegistration.......")
 	registration := CSourceRegistrationRequest{}
 	for _, val := range expanded {
@@ -67,39 +94,67 @@ func (sz Serializer) SerializeRegistration(expanded []interface{}) CSourceRegist
 			switch k {
 			case W3_ID:
 				fmt.Println("case W3_ID.......")
-				registration.Id = sz.getIdFromArray(v.([]interface{}))
+				if v != nil {
+					registration.Id = sz.getIdFromArray(v.([]interface{}))
+				}
 				break
 			case W3_TYPE:
 				fmt.Println("case W3_TYPE.......")
-				registration.Type = sz.getIdFromArray(v.([]interface{}))
+				if v != nil {
+					registration.Type = sz.getIdFromArray(v.([]interface{}))
+				} else {
+					err := errors.New("Type can not be nil!")
+					return registration, err
+				}
 				break
 			case TIMESTAMP:
 				fmt.Println("case TIMESTAMP.......")
-				//---------------------registration.Expires = sz.getDateAndTimeValue(v.([]interface{}))
+				if v != nil {
+					//---------------------registration.Expires =
+					sz.getDateAndTimeValue(v.([]interface{}))
+				}
 				break
 			case DESCRIPTION:
 				fmt.Println("case DESCRIPTION.......")
-				registration.Description = sz.getValue(v.([]interface{})).(string)
+				if v != nil {
+					registration.Description = sz.getStringValue(v.([]interface{}))
+				}
 				break
 			case ENDPOINT:
 				fmt.Println("case ENDPOINT.......")
-				registration.Endpoint = sz.getValue(v.([]interface{})).(string)
+				if v != nil {
+					registration.Endpoint = sz.getStringValue(v.([]interface{}))
+				} else {
+					err := errors.New("Endpoint value can not be nil!")
+					return registration, err
+				}
 				break
 			case EXPIRES:
 				fmt.Println("case EXPIRES.......")
-				registration.Expires = sz.getDateAndTimeValue(v.([]interface{}))
+				if v != nil {
+					registration.Expires = sz.getDateAndTimeValue(v.([]interface{}))
+				}
 				break
 			case INFORMATION:
 				fmt.Println("case INFORMATION.......")
-				registration.Information = sz.getInformation(v.([]interface{}))
+				if v != nil {
+					registration.Information = sz.getInformation(v.([]interface{}))
+				} else {
+					err := errors.New("Information value can not be nil!")
+					return registration, err
+				}
 				break
 			case LOCATION:
 				fmt.Println("case LOCATION.......")
-				registration.Location = sz.getLocation(v.([]interface{}))
+				if v != nil {
+					registration.Location = sz.getLocation(v.([]interface{}))
+				}
 				break
 			case NAME:
 				fmt.Println("case NAME.......")
-				registration.Name = sz.getValue(v.([]interface{})).(string)
+				if v != nil {
+					registration.Name = sz.getStringValue(v.([]interface{}))
+				}
 				break
 			default:
 				fmt.Println("case default.......")
@@ -107,10 +162,10 @@ func (sz Serializer) SerializeRegistration(expanded []interface{}) CSourceRegist
 			}
 		}
 	}
-	return registration
+	return registration, nil
 }
 
-func (sz Serializer) SerializeSubscription(expanded []interface{}) LDSubscriptionRequest {
+func (sz Serializer) SerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	fmt.Println("Inside SerializeSubscription.......")
 	subscription := LDSubscriptionRequest{}
 	for _, val := range expanded {
@@ -121,31 +176,57 @@ func (sz Serializer) SerializeSubscription(expanded []interface{}) LDSubscriptio
 			switch k {
 			case ID:
 				fmt.Println("case ID.......")
-				subscription.Id = sz.getIdFromArray(v.([]interface{}))
+				if v != nil {
+					subscription.Id = sz.getIdFromArray(v.([]interface{}))
+				}
 				break
 			case TYPE:
 				fmt.Println("case TYPE.......")
-				subscription.Type = sz.getType(v.([]interface{}))
+				if v != nil {
+					subscription.Type = sz.getType(v.([]interface{}))
+				} else {
+					err := errors.New("Information value can not be nil!")
+					return subscription, err
+				}
+
 				break
 			case NAME:
 				fmt.Println("case NAME.......")
-				subscription.Name = sz.getValue(v.([]interface{})).(string)
+				if v != nil {
+					subscription.Name = sz.getValue(v.([]interface{})).(string)
+				}
 				break
 			case ENTITIES:
 				fmt.Println("case ENTITIES.......")
-				subscription.Entities = sz.getEntities(v.([]interface{}))
+				if v != nil {
+					subscription.Entities = sz.getEntities(v.([]interface{}))
+				}
 				break
 			case DESCRIPTION:
 				fmt.Println("case DESCRIPTION.......")
-				subscription.Description = sz.getValue(v.([]interface{})).(string)
+				if v != nil {
+					subscription.Description = sz.getValue(v.([]interface{})).(string)
+				}
 				break
 			case NOTIFICATION:
 				fmt.Println("case NOTIFICATION.......")
-				subscription.Notification = sz.getNotification(v.([]interface{}))
+				if v != nil {
+					notification, err := sz.getNotification(v.([]interface{}))
+					if err != nil {
+						return subscription, err
+					} else {
+						subscription.Notification = notification
+					}
+				} else {
+					err := errors.New("Information value can not be nil!")
+					return subscription, err
+				}
 				break
 			case WATCHED_ATTRIBUTES:
 				fmt.Println("case WATCHED_ATTRIBUTES.......")
-				subscription.WatchedAttributes = sz.getArrayOfIds(v.([]interface{}))
+				if v != nil {
+					subscription.WatchedAttributes = sz.getArrayOfIds(v.([]interface{}))
+				}
 				break
 			default:
 				fmt.Println("case default.......")
@@ -153,7 +234,7 @@ func (sz Serializer) SerializeSubscription(expanded []interface{}) LDSubscriptio
 			}
 		}
 	}
-	return subscription
+	return subscription, nil
 }
 
 func (sz Serializer) getId(id interface{}) string {
@@ -180,47 +261,134 @@ func (sz Serializer) getCreatedAt(createdAt []interface{}) string {
 	return CreatedAt
 }
 
-func (sz Serializer) getProperty(propertyName string, propertyMap map[string]interface{}) Property {
+func (sz Serializer) getProperty(propertyName string, propertyMap map[string]interface{}) (Property, error) {
+	fmt.Println("Inside Property:   1")
 	Property := Property{}
-	Property.Id = propertyName
-	Property.Name = propertyName
+
+	fmt.Println("Inside Property:   2")
+	if propertyName != "" {
+		Property.Id = propertyName
+		Property.Name = propertyName
+	}
+	fmt.Println("Inside Property:   3")
 	Property.Type = PROPERTY
-	Property.Value = sz.getValue(propertyMap[HAS_VALUE].([]interface{}))
-	Property.ObservedAt = sz.getDateAndTimeValue(propertyMap[OBSERVED_AT].([]interface{}))
-	Property.DatasetId = sz.getDatasetId(propertyMap[DATASET_ID].([]interface{}))
-	Property.InstanceId = sz.getInstanceId(propertyMap[INSTANCE_ID].([]interface{}))
-	Property.CreatedAt = sz.getCreatedAt(propertyMap[CREATED_AT].([]interface{}))
-	Property.ModifiedAt = sz.getModifiedAt(propertyMap[MODIFIED_AT].([]interface{}))
-	Property.UnitCode = sz.getUnitCode(propertyMap[UNIT_CODE].(interface{}))
-	return Property
+
+	fmt.Println("Inside Property:   4")
+	if propertyMap[HAS_VALUE] != nil {
+		Property.Value = sz.getValue(propertyMap[HAS_VALUE].([]interface{}))
+	} else {
+		err := errors.New("Property Value can not be nil!")
+		return Property, err
+	}
+	fmt.Println("Inside Property:   5")
+	if propertyMap[OBSERVED_AT] != nil {
+		Property.ObservedAt = sz.getDateAndTimeValue(propertyMap[OBSERVED_AT].([]interface{}))
+	}
+
+	fmt.Println("Inside Property:   6")
+	if propertyMap[DATASET_ID] != nil {
+		Property.DatasetId = sz.getDatasetId(propertyMap[DATASET_ID].([]interface{}))
+	}
+
+	fmt.Println("Inside Property:   7")
+	if propertyMap[INSTANCE_ID] != nil {
+		Property.InstanceId = sz.getInstanceId(propertyMap[INSTANCE_ID].([]interface{}))
+	}
+
+	fmt.Println("Inside Property:   8")
+	if propertyMap[CREATED_AT] != nil {
+		Property.CreatedAt = sz.getCreatedAt(propertyMap[CREATED_AT].([]interface{}))
+	}
+
+	fmt.Println("Inside Property:   9")
+	if propertyMap[MODIFIED_AT] != nil {
+		Property.ModifiedAt = sz.getModifiedAt(propertyMap[MODIFIED_AT].([]interface{}))
+	}
+
+	fmt.Println("Inside Property:   10")
+	if propertyMap[UNIT_CODE] != nil {
+		Property.UnitCode = sz.getUnitCode(propertyMap[UNIT_CODE].(interface{}))
+	}
+
+	fmt.Println("Inside Property:   11")
+	return Property, nil
 }
 
-func (sz Serializer) getRelationship(relationshipName string, relationshipMap map[string]interface{}) Relationship {
+func (sz Serializer) getRelationship(relationshipName string, relationshipMap map[string]interface{}) (Relationship, error) {
+	fmt.Println("Inside Relationship:   1")
 	Relationship := Relationship{}
-	Relationship.Id = relationshipName
-	Relationship.Name = relationshipName
+
+	fmt.Println("Inside Relationship:   2")
+	if relationshipName != "" {
+		Relationship.Id = relationshipName
+		Relationship.Name = relationshipName
+	}
+
+	fmt.Println("Inside Relationship:   3")
 	Relationship.Type = RELATIONSHIP
-	Relationship.Object = sz.getIdFromArray(relationshipMap[HAS_OBJECT].([]interface{}))
-	Relationship.ObservedAt = sz.getDateAndTimeValue(relationshipMap[OBSERVED_AT].([]interface{}))
-	Relationship.ProvidedBy = sz.getProvidedBy(relationshipMap[PROVIDED_BY].([]interface{}))
-	Relationship.DatasetId = sz.getDatasetId(relationshipMap[DATASET_ID].([]interface{}))
-	Relationship.InstanceId = sz.getInstanceId(relationshipMap[INSTANCE_ID].([]interface{}))
-	Relationship.CreatedAt = sz.getCreatedAt(relationshipMap[CREATED_AT].([]interface{}))
-	Relationship.ModifiedAt = sz.getModifiedAt(relationshipMap[MODIFIED_AT].([]interface{}))
-	return Relationship
+
+	fmt.Println("Inside Relationship:   4")
+	if relationshipMap[HAS_OBJECT] != nil {
+		Relationship.Object = sz.getIdFromArray(relationshipMap[HAS_OBJECT].([]interface{}))
+	} else {
+		err := errors.New("Relationship Object value can not be nil!")
+		return Relationship, err
+	}
+
+	fmt.Println("Inside Relationship:   5")
+	if relationshipMap[OBSERVED_AT] != nil {
+		Relationship.ObservedAt = sz.getDateAndTimeValue(relationshipMap[OBSERVED_AT].([]interface{}))
+	}
+
+	fmt.Println("Inside Relationship:   6")
+	if relationshipMap[PROVIDED_BY] != nil {
+		Relationship.ProvidedBy = sz.getProvidedBy(relationshipMap[PROVIDED_BY].([]interface{}))
+	}
+
+	fmt.Println("Inside Relationship:   7")
+	if relationshipMap[DATASET_ID] != nil {
+		Relationship.DatasetId = sz.getDatasetId(relationshipMap[DATASET_ID].([]interface{}))
+	}
+
+	fmt.Println("Inside Relationship:   8")
+	if relationshipMap[INSTANCE_ID] != nil {
+		Relationship.InstanceId = sz.getInstanceId(relationshipMap[INSTANCE_ID].([]interface{}))
+	}
+
+	fmt.Println("Inside Relationship:   9")
+	if relationshipMap[CREATED_AT] != nil {
+		Relationship.CreatedAt = sz.getCreatedAt(relationshipMap[CREATED_AT].([]interface{}))
+	}
+
+	fmt.Println("Inside Relationship:   10")
+	if relationshipMap[MODIFIED_AT] != nil {
+		Relationship.ModifiedAt = sz.getModifiedAt(relationshipMap[MODIFIED_AT].([]interface{}))
+	}
+
+	fmt.Println("Inside Relationship:   11")
+	return Relationship, nil
 }
 
 func (sz Serializer) getValue(hasValue []interface{}) interface{} {
+	fmt.Println("Inside getValue:   1")
+
 	Value := make(map[string]interface{})
 	if len(hasValue) > 0 {
+		fmt.Println("Inside getValue:   2")
 		val := hasValue[0].(map[string]interface{})
+		fmt.Println("Inside getValue:   3")
 
-		if Value["Type"] = val[TYPE].(string); Value["Type"] != "" {
+		if val[TYPE] != nil {
+			fmt.Println("Inside getValue:   4")
+			Value["Type"] = val[TYPE].(string)
+			fmt.Println("Inside getValue:   5")
 			Value["Value"] = val[VALUE].(interface{})
 		} else {
+			fmt.Println("Inside getValue:   6")
 			Value["Value"] = hasValue[0]
 		}
 	}
+	fmt.Println("Inside getValue:   7")
 	return Value
 }
 
@@ -245,12 +413,17 @@ func (sz Serializer) getDateAndTimeValue(dateTimeValue []interface{}) string {
 }
 
 func (sz Serializer) getProvidedBy(providedBy []interface{}) ProvidedBy {
+	fmt.Println("Inside getProvidedBy:   1")
 	ProvidedBy := ProvidedBy{}
 	if len(providedBy) > 0 {
-		providedByMap := providedBy[0].(map[string][]interface{})
-		ProvidedBy.Type = sz.getType(providedByMap[TYPE])
-		ProvidedBy.Object = sz.getIdFromArray(providedByMap[HAS_OBJECT])
+		fmt.Println("Inside getProvidedBy:   2")
+		providedByMap := providedBy[0].(map[string]interface{})
+		fmt.Println("Inside getProvidedBy:   3")
+		ProvidedBy.Type = sz.getType(providedByMap[TYPE].([]interface{}))
+		fmt.Println("Inside getProvidedBy:   4")
+		ProvidedBy.Object = sz.getIdFromArray(providedByMap[HAS_OBJECT].([]interface{}))
 	}
+	fmt.Println("Inside getProvidedBy:   5")
 	return ProvidedBy
 }
 
@@ -332,6 +505,7 @@ func (sz Serializer) getPointLocation(coordinates []interface{}) []float64 {
 }
 
 func (sz Serializer) getLineStringLocation(coordinates []interface{}) interface{} {
+	//var coordinates
 
 	var v interface{}
 	return v
@@ -380,13 +554,19 @@ func (sz Serializer) getInformation(information []interface{}) []RegistrationInf
 		for k, v := range infoVal {
 			switch k {
 			case PROPERTIES:
-				regInfo.Properties = sz.getArrayOfIds(v)
+				if v != nil {
+					regInfo.Properties = sz.getArrayOfIds(v)
+				}
 				break
 			case RELATIONSHIPS:
-				regInfo.Relationships = sz.getArrayOfIds(v)
+				if v != nil {
+					regInfo.Relationships = sz.getArrayOfIds(v)
+				}
 				break
 			case ENTITIES:
-				regInfo.Entities = sz.getEntities(v)
+				if v != nil {
+					regInfo.Entities = sz.getEntities(v)
+				}
 				break
 			}
 		}
@@ -437,7 +617,7 @@ func (sz Serializer) getStringValue(value []interface{}) string {
 	return Value
 }
 
-func (sz Serializer) getNotification(notificationArray []interface{}) NotificationParams {
+func (sz Serializer) getNotification(notificationArray []interface{}) (NotificationParams, error) {
 	notification := NotificationParams{}
 	for _, val := range notificationArray {
 		notificationFields := val.(map[string]interface{})
@@ -447,7 +627,12 @@ func (sz Serializer) getNotification(notificationArray []interface{}) Notificati
 				notification.Attributes = sz.getArrayOfIds(v.([]interface{}))
 				break
 			case ENDPOINT:
-				notification.Endpoint = sz.getEndpoint(v.([]interface{}))
+				endpoint, err := sz.getEndpoint(v.([]interface{}))
+				if err != nil {
+					return notification, err
+				} else {
+					notification.Endpoint = endpoint
+				}
 				break
 			case FORMAT:
 				notification.Format = sz.getStringValue(v.([]interface{}))
@@ -458,25 +643,32 @@ func (sz Serializer) getNotification(notificationArray []interface{}) Notificati
 			}
 		}
 	}
-	return notification
+	return notification, nil
 }
 
-func (sz Serializer) getEndpoint(endpointArray []interface{}) Endpoint {
+func (sz Serializer) getEndpoint(endpointArray []interface{}) (Endpoint, error) {
 	endpoint := Endpoint{}
 	for _, val := range endpointArray {
 		endpointFields := val.(map[string]interface{})
 		for k, v := range endpointFields {
 			switch k {
 			case ACCEPT:
-				endpoint.Accept = sz.getStringValue(v.([]interface{}))
+				if v != nil {
+					endpoint.Accept = sz.getStringValue(v.([]interface{}))
+				}
 				break
 			case URI:
-				endpoint.URI = sz.getStringValue(v.([]interface{}))
+				if v != nil {
+					endpoint.URI = sz.getStringValue(v.([]interface{}))
+				} else {
+					err := errors.New("URI can not be nil!")
+					return endpoint, err
+				}
 				break
 			}
 		}
 	}
-	return endpoint
+	return endpoint, nil
 }
 
 // Check the type of values: can be json object or string

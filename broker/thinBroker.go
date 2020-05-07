@@ -1671,14 +1671,18 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		sz := Serializer{}
 
 		// Serialize the payload here.
-		serializedEntity := sz.SerializeEntity(resolved)
+		serializedEntity, err := sz.SerializeEntity(resolved)
 
-		//Pretty print
-		enti, _ := json.MarshalIndent(serializedEntity, "", " ")
-		DEBUG.Println("Serialized Entity: \n", string(enti))
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			//Pretty print
+			enti, _ := json.MarshalIndent(serializedEntity, "", " ")
+			DEBUG.Println("Serialized Entity: \n", string(enti))
 
-		// Add the resolved entity to tb.ldEntities
-		tb.SaveEntity(serializedEntity)
+			// Add the resolved entity to tb.ldEntities
+			tb.SaveEntity(serializedEntity)
+		}
 
 	} else {
 		rest.Error(w, "Bad Request! Missing Headers!", 400)
@@ -1738,23 +1742,27 @@ func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
 
 		sz := Serializer{}
 		// Serialize payload
-		serializedRegistration := sz.SerializeRegistration(resolved)
+		serializedRegistration, err := sz.SerializeRegistration(resolved)
 
-		// Create registration request for discovery
-		newReg := CSourceRegistration{}
-		newReg.Registration = serializedRegistration
-		newReg.ProviderURL = tb.MyURLPrefix
-
-		// Send the resolved registration to discovery
-		client := NGSI9Client{IoTDiscoveryURL: "http://192.168.100.142:8090", SecurityCfg: tb.SecurityCfg}
-		regResp, err := client.RegisterCSource(&newReg)
-
-		// Send out the response
 		if err != nil {
-			w.WriteJson(err)
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
 		} else {
-			w.WriteHeader(201)
-			w.WriteJson(regResp)
+			// Create registration request for discovery
+			newReg := CSourceRegistration{}
+			newReg.Registration = serializedRegistration
+			newReg.ProviderURL = tb.MyURLPrefix
+
+			// Send the resolved registration to discovery
+			client := NGSI9Client{IoTDiscoveryURL: "http://192.168.100.142:8090", SecurityCfg: tb.SecurityCfg}
+			regResp, err := client.RegisterCSource(&newReg)
+
+			// Send out the response
+			if err != nil {
+				w.WriteJson(err)
+			} else {
+				w.WriteHeader(201)
+				w.WriteJson(regResp)
+			}
 		}
 	} else {
 		rest.Error(w, "Bad Request! Missing Headers!", 400)
@@ -1782,6 +1790,17 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		// Pretty print
 		sub, _ := json.MarshalIndent(resolved, "", " ")
 		DEBUG.Println("Subscription:", string(sub))
+
+		sz := Serializer{}
+		serializedSubscription, err := sz.SerializeSubscription(resolved)
+		if err != nil {
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+		} else {
+			// Pretty print
+			sub, _ := json.MarshalIndent(serializedSubscription, "", " ")
+			DEBUG.Println("Serialized Subscription:", string(sub))
+			//subscribe to discovery
+		}
 
 	} else {
 		rest.Error(w, "Bad Request! Missing Header!", 400)
