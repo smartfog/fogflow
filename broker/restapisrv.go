@@ -31,6 +31,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Post("/ngsi10/unsubscribeContext", broker.UnsubscribeContext),
 		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
 		rest.Post("/ngsi10/notifyContextAvailabilityv2", broker.Notifyv2ContextAvailability),
+		rest.Post("/ngsi10/notifyContextAvailabilityLD", broker.NotifyLDContextAvailability),
 		// ngsiv2 API
 		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
 		// api for iot-agent
