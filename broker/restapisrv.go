@@ -31,6 +31,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Post("/ngsi10/unsubscribeContext", broker.UnsubscribeContext),
 		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
 		rest.Post("/ngsi10/notifyContextAvailabilityv2", broker.Notifyv2ContextAvailability),
+		//rest.Post("/ngsi10/notifyContextAvailabilityLD", broker.NotifyLDContextAvailability),
 		// ngsiv2 API
 		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
 		// api for iot-agent
@@ -57,6 +58,12 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Get("/v2/subscriptions", apisrv.getv2Subscriptions),
 		rest.Get("/v2/subscription/#sid", apisrv.getv2Subscription),
 		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
+
+		//NGSILD
+		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
+		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
+		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
+		rest.Post("/ngsi-ld/v1/subscriptions/", broker.LDCreateSubscription),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -268,5 +275,19 @@ func (apisrv *RestApiSrv) deleteRegistration(w rest.ResponseWriter, r *rest.Requ
 		w.WriteHeader(200)
 	} else {
 		w.WriteHeader(400)
+	}
+}
+
+// NGSI-LD starts here.
+
+func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
+	var eid = r.PathParam("eid")
+
+	entity := apisrv.broker.ldGetEntity(eid)
+	if entity != nil {
+		w.WriteHeader(200)
+		w.WriteJson(entity)
+	} else {
+		w.WriteHeader(404)
 	}
 }

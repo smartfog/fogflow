@@ -10,8 +10,9 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-
+	"fmt"
 	. "github.com/smartfog/fogflow/common/ngsi"
+        //"github.com/piprate/json-gold/ld"
 )
 
 type InterSiteSubscription struct {
@@ -451,4 +452,79 @@ func (fd *FastDiscovery) selectBroker() *BrokerProfile {
 	}
 
 	return nil
+}
+
+//NGSI-LD starts here...
+
+func (fd *FastDiscovery) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
+	fmt.Println("Inside fd RegisterCSource.....")
+	newReg := CSourceRegistration{}
+
+	if err := r.DecodeJsonPayload(&newReg); err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+        reg,_ := json.MarshalIndent(newReg, "", " ")
+        DEBUG.Println("NewReg at discovery:")
+        DEBUG.Println(string(reg))
+
+	// Create a random registration id string if id in empty/missing in the registration request.
+        if newReg.Registration.Id == "" {
+                u1, err := uuid.NewV4()
+                if err != nil {
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
+                rid := u1.String()
+		newReg.Registration.Id = rid
+        }
+
+	// call updateRegistration here and send out the response.
+	if CSourceRegistrationResp, err := fd.repository.updateCSourceRegistration(&newReg); err != nil {
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+	} else {
+                w.WriteHeader(201)
+                w.WriteJson(&CSourceRegistrationResp)
+	}
+
+	// Notify the subscribers here.
+
+}
+
+func (fd *FastDiscovery) LDSubscribeContextAvailability(w rest.ResponseWriter, r *rest.Request) {
+	subscribeCtxAvailabilityReq := SubscribeContextAvailabilityRequest{}
+
+	if err := r.DecodeJsonPayload(&subscribeCtxAvailabilityReq); err != nil {
+                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+	}
+
+	//Create unique subscription id for context availability
+        u1, err := uuid.NewV4()
+        if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+                return
+        }
+        sid := u1.String()
+        subscribeCtxAvailabilityReq.SubscriptionId = sid
+
+        // add the new subscription
+        fd.subscriptions_lock.Lock()
+        fd.subscriptions[sid] = &subscribeCtxAvailabilityReq
+        fd.subscriptions_lock.Unlock()
+
+        // send out the response
+        subscribeCtxAvailabilityResp := SubscribeContextAvailabilityResponse{}
+        subscribeCtxAvailabilityResp.SubscriptionId = sid
+        subscribeCtxAvailabilityResp.Duration = subscribeCtxAvailabilityReq.Duration
+        subscribeCtxAvailabilityResp.ErrorCode.Code = 200
+        subscribeCtxAvailabilityResp.ErrorCode.ReasonPhrase = "OK"
+
+        w.WriteJson(&subscribeCtxAvailabilityResp)
+        // trigger the process to send out the matched context availability infomation to the subscriber
+        go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
+
+
+
 }

@@ -785,3 +785,76 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 
 	return err
 }
+
+// NGSI-LD starts here...
+
+//func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration, link string) (string, error) {
+func (nc *NGSI9Client) RegisterCSource(newReg *CSourceRegistration) (*CSourceRegistrationResponse, error) {
+        body, err := json.Marshal(newReg)
+        if err != nil {
+                return nil, err
+        }
+	//nc.IoTDiscoveryURL
+        //req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/ngsi-ld/v1/csourceRegistrations/", bytes.NewBuffer(body))
+	// discovery url to be revised..
+        req, err := http.NewRequest("POST", "http://192.168.100.142:8090"+"/ngsi-ld/v1/csourceRegistrations/", bytes.NewBuffer(body))
+        req.Header.Add("Content-Type", "application/json")
+        req.Header.Add("Accept", "application/ld+json")
+	//req.Header.Add("Link", link)
+
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                ERROR.Println(err)
+                return nil, err
+        }
+
+        text, _ := ioutil.ReadAll(resp.Body)
+        regResp := CSourceRegistrationResponse{}
+        err = json.Unmarshal(text, &regResp)
+        if err != nil {
+                return nil, err
+        }
+
+        return &regResp, nil
+}
+
+func (nc *NGSI9Client) LDSubscribeContextAvailability(sub *SubscribeContextAvailabilityRequest) (string, error) {
+        body, err := json.Marshal(*sub)
+        if err != nil {
+                return "", err
+        }
+
+        req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/ngsi-ld/v1/subscribeContextAvailability/", bytes.NewBuffer(body))
+        req.Header.Add("Content-Type", "application/json")
+        req.Header.Add("Accept", "application/json")
+	//req.Header.Add("Link", link)
+
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                ERROR.Println(err)
+                return "", err
+        }
+
+        text, _ := ioutil.ReadAll(resp.Body)
+
+        subscribeCtxAvailResp := SubscribeContextAvailabilityResponse{}
+        err = json.Unmarshal(text, &subscribeCtxAvailResp)
+        if err != nil {
+                return "", err
+        }
+
+        if subscribeCtxAvailResp.SubscriptionId != "" {
+                return subscribeCtxAvailResp.SubscriptionId, nil
+        } else {
+                err = errors.New(subscribeCtxAvailResp.ErrorCode.ReasonPhrase)
+                return "", err
+        }
+}
