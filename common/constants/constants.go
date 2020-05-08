@@ -28,6 +28,7 @@ const MULTI_POINT string = "https://uri.etsi.org/ngsi-ld/default-context/MultiPo
 const MULTI_LINE_STRING string = "https://uri.etsi.org/ngsi-ld/default-context/MultiLineString"
 const MULTI_POLYGON string = "https://uri.etsi.org/ngsi-ld/default-context/MultiPolygon"
 const GEOMETRY_COLLECTION string = "https://uri.etsi.org/ngsi-ld/default-context/GeometryCollection"
+const GEOMETRIES string = "https://uri.etsi.org/ngsi-ld/default-context/geometries"
 
 const W3_ID string = "http://www.w3.org/ns/json-ld#id"
 const W3_TYPE string = "http://www.w3.org/ns/json-ld#type"

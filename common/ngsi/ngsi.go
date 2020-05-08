@@ -1054,8 +1054,14 @@ type LDLocation struct {
 }
 
 type LDLocationValue struct {
-	Type	string `json:"type"`
+	Type		string `json:"type"`
 	Coordinates	interface{} `json:"coordinates"`
+	Geometries	[]Geometry `json:"geometries"`
+}
+
+type Geometry struct {
+	Type		string `json:"type"`
+	Coordinates     interface{} `json:"coordinates"`
 }
 
 type Property struct {
