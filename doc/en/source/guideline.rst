@@ -71,7 +71,7 @@ Permissions to the branches:
 
 - **Master** - We tend to very strict that only NLE members and privileged members of NECTI can merge on Master branch and accept the pull requests. Pull requests to master can be raised by only NECTI OR NLE members. 
 
-- **Development** - Any community member can raise the pull request to the development branch but it should be reviewed by NLE or NECTI members.Development branches commits will be moved to master branch only when all the test cases written under NGSI-LD test suites, will run successfully.
+- **Development** - Any community member can raise the pull request to the development branch but it should be reviewed by NLE or NECTI members.Development branches commits will be moved to master branch only when all the test cases define in travis.yml, will run successfully.
 
 
 Code style guidelines
