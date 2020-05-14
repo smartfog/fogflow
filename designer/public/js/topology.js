@@ -28,6 +28,9 @@ var blocks = null;
 // client to interact with IoT Broker
 var client = new NGSI10Client(config.brokerURL);
 
+//DGraph
+var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
+
 var myToplogyExamples = [
 {
     topology: {"name":"anomaly-detection","description":"detect anomaly events in shops","tasks":[{"name":"Counting","operator":"counter","input_streams":[{"selected_type":"Anomaly","selected_attributes":[],"groupby":"ALL","scoped":true}],"output_streams":[{"entity_type":"Stat"}]},{"name":"Detector","operator":"anomaly","input_streams":[{"selected_type":"PowerPanel","selected_attributes":[],"groupby":"EntityID","scoped":true},{"selected_type":"Rule","selected_attributes":[],"groupby":"ALL","scoped":false}],"output_streams":[{"entity_type":"Anomaly"}]}]},
@@ -169,7 +172,7 @@ function deleteTopology(topologyEntity)
         isPattern: false
     };	    
     
-    client.deleteContext(entityid).then( function(data) {
+    clientDes.deleteContext(entityid).then( function(data) {
         console.log(data);
 		updateTopologyList();		
     }).catch( function(error) {
@@ -346,7 +349,7 @@ function submitTopology(topology, designboard)
     geoScope.value = "global"
     topologyCtxObj.metadata.location = geoScope;    
      
-    client.updateContext(topologyCtxObj).then( function(data) {
+    clientDes.updateContext(topologyCtxObj).then( function(data) {
         console.log(data);                
         // update the list of submitted topologies
         showTopologies();               
@@ -589,7 +592,7 @@ function removeIntent(entityID)
         isPattern: false
     };	    
     
-    client.deleteContext(entityid).then( function(data) {
+    clientDes.deleteContext(entityid).then( function(data) {
         console.log('remove the service intent');		
         // show the updated intent list
         showIntents();				
@@ -700,7 +703,7 @@ function submitIntent()
     
     console.log(JSON.stringify(intentCtxObj));
         
-    client.updateContext(intentCtxObj).then( function(data) {
+    clientDes.updateContext(intentCtxObj).then( function(data) {
         console.log(data);  
         // update the list of submitted intents
         showIntents();               

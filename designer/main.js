@@ -3,6 +3,8 @@ var express =   require('express');
 var multer  =   require('multer');
 var https = require('https');
 
+//DGraph
+var bodyParser = require('body-parser');
 var config_fs_name = './config.json';
 
 
@@ -28,6 +30,13 @@ config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';    
 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
+
+// discovery ip
+config.brokerIp=globalConfigFile.coreservice_ip
+//broker port
+config.brokerPort=globalConfigFile.broker.http_port
+//designer IP
+config.designerIP=globalConfigFile.coreservice_ip
 
 console.log(config);
 
@@ -79,6 +88,19 @@ app.get('/proxy', function(req, res){
     }
 });
 
+//DGraph
+app.use (bodyParser.json());
+app.post('/ngsi10/updateContext', function (req, res) {
+ console.log(req.body.contextElements);
+  uri='http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
+  request({
+  method:'POST',
+  uri:uri,
+  body:JSON.stringify(req.body)
+  },(err,resp,body)=>{
+  res.send(JSON.stringify(resp.body))
+})
+});
 
 // handle the received results
 function handleNotify(req, ctxObjects, res) {	
