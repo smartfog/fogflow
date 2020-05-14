@@ -181,7 +181,7 @@ var NGSI10Client = (function() {
 
 //Dgraph
 var NGSIDesClient = (function() {
-    // initialized with the broker URL
+    // initialized with the designer URL
     var NGSIDesClient = function(url) {
         console.log('url is',url);
         this.webSrvPort = url;

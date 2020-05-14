@@ -29,6 +29,7 @@ var blocks = null;
 var client = new NGSI10Client(config.brokerURL);
 
 //DGraph
+//to interact with Designer
 var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
 
 var myToplogyExamples = [

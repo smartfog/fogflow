@@ -24,6 +24,7 @@ var blocks = null;
 var client = new NGSI10Client(config.brokerURL);
 
 //DGraph
+// to interact with designer
 var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
 
 var myFogFunctionExamples = [

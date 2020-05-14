@@ -7,6 +7,7 @@ var handlers = {};
 var client = new NGSI10Client(config.brokerURL);
 
 //DGraph
+//connect to the designer
 var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
 
 console.log(config.brokerURL);
