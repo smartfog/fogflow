@@ -10,6 +10,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+        "encoding/json"
+        "fmt"
+        "io/ioutil"
+        "errors"
+        "github.com/piprate/json-gold/ld"
+        . "github.com/smartfog/fogflow/common/constants"
 )
 
 type ThinBroker struct {
@@ -56,6 +62,21 @@ type ThinBroker struct {
 
 	//counter of heartbeat
 	counter int64
+        //NGSI-LD feature addition
+        ldEntities      map[string]*LDContextElement
+        ldEntities_lock sync.RWMutex
+
+        ldContextRegistrations      map[string]*CSourceRegistrationRequest
+        ldContextRegistrations_lock sync.RWMutex
+
+        ldSubscriptions      map[string]*LDSubscriptionRequest
+        ldSubscriptions_lock sync.RWMutex
+
+        ldEntityID2SubscriptionID      map[string][]string //to map the Entity IDs with their subscriptions.
+        ldEntityID2SubscriptionID_lock sync.RWMutex
+
+        tmpNGSIldNotifyCache []string
+        tmpNGSILDNotifyCache map[string]*NotifyContextAvailabilityRequest
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
@@ -94,6 +115,13 @@ func (tb *ThinBroker) Start(cfg *Config) {
 
 	tb.myProfile.BID = tb.myEntityId
 	tb.myProfile.MyURL = tb.MyURL
+
+        // NGSI-LD feature addition
+        tb.ldEntities = make(map[string]*LDContextElement)
+        tb.ldContextRegistrations = make(map[string]*CSourceRegistrationRequest)
+        tb.ldSubscriptions = make(map[string]*LDSubscriptionRequest)
+        tb.ldEntityID2SubscriptionID = make(map[string][]string)
+        tb.tmpNGSILDNotifyCache = make(map[string]*NotifyContextAvailabilityRequest) // to be updated
 
 	// register itself to the IoT discovery
 	tb.registerMyself()
@@ -755,18 +783,38 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 }
 
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, sid string) {
-	elements := make([]ContextElement, 0)
 	// check if the subscription still exists; if yes, then find out the selected attribute list
 	tb.subscriptions_lock.RLock()
 
-	subscription, ok := tb.subscriptions[sid]
+	v1Subscription, ok := tb.subscriptions[sid]
 	if ok == false {
 		tb.subscriptions_lock.RUnlock()
-		return
-	}
-	selectedAttributes := subscription.Attributes
-	tb.subscriptions_lock.RUnlock()
+		tb.ldSubscriptions_lock.RLock()
+                ldSubscription, ldOK := tb.ldSubscriptions[sid]
 
+                // Pretty print the NGSI-LD context element
+                ldsub, _ := json.MarshalIndent(ldSubscription, "", " ")
+                DEBUG.Println("ldSubscription...........:\n", string(ldsub))
+
+                if ldOK == false {
+                        fmt.Println("ldOK == false !!!!!!!!!")
+                        tb.ldSubscriptions_lock.RUnlock()
+                        return
+                }
+                fmt.Println("Getting selected Attributes....")
+                selectedAttributes := ldSubscription.WatchedAttributes
+                fmt.Println("Selected Attributes....: ", selectedAttributes)
+		tb.ldSubscriptions_lock.RUnlock()
+		tb.notifyOneSubscriberWithCurrentStatusOfLD(entities, sid, selectedAttributes)
+	}
+	selectedAttributes := v1Subscription.Attributes
+	tb.subscriptions_lock.RUnlock()
+	tb.notifyOneSubscriberWithCurrentStatusOfV1(entities, sid, selectedAttributes)
+}
+
+func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
+        // Create NGSIv1 Context Element
+        elements := make([]ContextElement, 0)
 	tb.entities_lock.Lock()
 	for _, entity := range entities {
 		if element, exist := tb.entities[entity.ID]; exist {
@@ -1183,6 +1231,7 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 }
 
 func (tb *ThinBroker) NotifyContextAvailability(w rest.ResponseWriter, r *rest.Request) {
+        fmt.Println("Inside NotifyContextAvailability............")
 	notifyContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyContextAvailabilityReq)
 	if err != nil {
@@ -1190,11 +1239,20 @@ func (tb *ThinBroker) NotifyContextAvailability(w rest.ResponseWriter, r *rest.R
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+        // Pretty print the NGSI-LD context element
+        noti, _ := json.MarshalIndent(notifyContextAvailabilityReq, "", " ")
+        DEBUG.Println("notifyContextAvailabilityReq... at broker :\n", string(noti))
+
 	// send out the response
 	notifyContextAvailabilityResp := NotifyContextAvailabilityResponse{}
 	notifyContextAvailabilityResp.ResponseCode.Code = 200
 	notifyContextAvailabilityResp.ResponseCode.ReasonPhrase = "OK"
 	w.WriteJson(&notifyContextAvailabilityResp)
+
+        // Pretty print the NGSI-LD context element
+        resp, _ := json.MarshalIndent(notifyContextAvailabilityResp, "", " ")
+        DEBUG.Println("notifyContextAvailabilityResponse... to discovery :\n", string(resp))
 
 	subID := notifyContextAvailabilityReq.SubscriptionId
 
@@ -1290,12 +1348,17 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		INFO.Println("TO ngsi10 subscription, ", mainSubID)
 		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
 
+                fmt.Println("Going to match registration.ProvidingApplication and tb.MyURL")
+
 		if registration.ProvidingApplication == tb.MyURL {
+			fmt.Println("They are equal..., action = ", action)
 			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
 				tb.notifyOneSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
 			}
 		} else {
+			fmt.Println("They are not equal..., action = ", action)
+                        fmt.Println("Providing app..... : ", registration.ProvidingApplication)
 			//for matched entities provided by other IoT Brokers
 			newSubscription := SubscribeContextRequest{}
 			newSubscription.Entities = registration.EntityIdList
@@ -1609,4 +1672,666 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 	cutStr := "." + fiwareService + "." + fiwareServicePath
 	cutStr = strings.ReplaceAll(cutStr, "/", "~")
 	ctxElem.Entity.ID = strings.TrimRight(ctxElem.Entity.ID, cutStr)
+}
+
+//NGSI-LD feature addition starts here.
+
+// Create an NGSI-LD Entity
+func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
+        var context []interface{}
+
+        //Also allow the header to json+ld for specific cases
+        if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" {
+                //Get Link header if present
+                if link := r.Header.Get("Link"); link != "" {
+                        DEBUG.Println("Link header received...")
+                        linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+                        if linkMap["rel"] != DEFAULT_CONTEXT {
+                                context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
+                        }
+                }
+
+                //Get a resolved object ([]interface object)
+                resolved, err := tb.ExpandPayload(r, context)
+
+                if err != nil {
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                } else {
+                        //Pretty print
+                        entity, _ := json.MarshalIndent(resolved, "", " ")
+                        DEBUG.Println("Registration:")
+                        DEBUG.Println(string(entity))
+
+                        sz := Serializer{}
+
+                        // Serialize the payload here.
+                        serializedEntity, err := sz.SerializeEntity(resolved)
+
+                        //Pretty print
+                        enti, _ := json.MarshalIndent(serializedEntity, "", " ")
+                        DEBUG.Println("Serialized Entity: \n", string(enti))
+
+                        if err != nil {
+                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        } else {
+                                w.WriteHeader(201)
+                                w.WriteJson(&serializedEntity)
+
+                                // Add the resolved entity to tb.ldEntities
+                                tb.saveEntity(&serializedEntity)
+
+                                //Register new context element on discovery
+                                tb.registerLDContextElement(&serializedEntity)
+
+                                tb.LDNotifySubscribers(&serializedEntity, true)
+                        }
+                }
+        } else {
+                rest.Error(w, "Bad Request! Missing Headers!", 400)
+                return
+        }
+}
+
+func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface{}, remoteURL string) {
+        fmt.Println("Inside updateLDContextElement2RemoteSite.......")
+
+        client := NGSI10Client{IoTBrokerURL: remoteURL, SecurityCfg: tb.SecurityCfg}
+        client.CreateLDEntityOnRemote(req)
+
+}
+
+// Register a new context entity on Discovery
+func (tb *ThinBroker) registerLDContextElement(elem *LDContextElement) {
+        registerCtxReq := RegisterContextRequest{}
+
+        entities := make([]EntityId, 0)
+        entityId := EntityId{}
+        entityId.ID = elem.Id
+        entityId.Type = elem.Type
+        entities = append(entities, entityId)
+
+        ctxRegistrations := make([]ContextRegistration, 0)
+
+        ctxReg := ContextRegistration{}
+        ctxReg.EntityIdList = entities
+        ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
+
+        ctxRegAttr := ContextRegistrationAttribute{}
+
+        for _, property := range elem.Properties {
+                ctxRegAttr.Name = property.Name
+                ctxRegAttr.Type = PROPERTY
+                ctxRegAttrs = append(ctxRegAttrs, ctxRegAttr)
+        }
+        for _, relationship := range elem.Relationships {
+                ctxRegAttr.Name = relationship.Name
+                ctxRegAttr.Type = RELATIONSHIP
+                ctxRegAttrs = append(ctxRegAttrs, ctxRegAttr)
+        }
+
+        ctxReg.ContextRegistrationAttributes = ctxRegAttrs
+        //      ctxReg.Metadata is nil
+        //ctxReg.ProvidingApplication = tb.MyURLPrefix
+        ctxReg.ProvidingApplication = tb.MyURL
+
+        ctxRegistrations = append(ctxRegistrations, ctxReg)
+
+        registerCtxReq.ContextRegistrations = ctxRegistrations
+
+        // Send the registration to discovery
+        client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+        _, err := client.RegisterContext(&registerCtxReq)
+        if err != nil {
+                ERROR.Println(err)
+        }
+}
+
+// Store the NGSI-LD Entities  at local broker
+func (tb *ThinBroker) saveEntity(ctxElem *LDContextElement) {
+        DEBUG.Println("Inside saveEntity....")
+        eid := ctxElem.Id
+        DEBUG.Println("Entity ID:", eid)
+
+        // Insert the entity into tb.ldEntities
+        tb.ldEntities_lock.Lock()
+        DEBUG.Println("Locked the entity table............")
+
+        tb.ldEntities[eid] = ctxElem
+        tb.ldEntities_lock.Unlock()
+
+        // Pretty print the NGSI-LD context element
+        entityMap, _ := json.MarshalIndent(tb.ldEntities, "", " ")
+        DEBUG.Println("EntityMap Saved:")
+        DEBUG.Println(string(entityMap))
+}
+
+// GET API method for entity
+func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
+        fmt.Println("Inside LdGetEntity.........")
+        tb.ldEntities_lock.RLock()
+        defer tb.ldEntities_lock.RUnlock()
+        if entity := tb.ldEntities[eid]; entity != nil {
+                return entity
+        } else {
+                return nil
+        }
+}
+
+func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
+        fmt.Println("Inside broker RegisterCSource..........")
+        var context []interface{}
+        //Also allow the header to json+ld for specific cases
+        if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" {
+                //Get Link header if present
+                if link := r.Header.Get("Link"); link != "" {
+                        DEBUG.Println("Link header received...")
+                        linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+                        if linkMap["rel"] != DEFAULT_CONTEXT {
+                                context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
+                        }
+                }
+
+                // Get an []interface object
+                resolved, err := tb.ExpandPayload(r, context)
+
+                if err != nil {
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                } else {
+                        // Pretty print
+                        reg, _ := json.MarshalIndent(resolved, "", " ")
+                        DEBUG.Println("Registration:", string(reg))
+
+                        sz := Serializer{}
+                        // Serialize payload
+                        serializedRegistration, err := sz.SerializeRegistration(resolved)
+
+                        if err != nil {
+                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        } else {
+                                // Pretty print
+                                reg, _ := json.MarshalIndent(serializedRegistration, "", " ")
+                                DEBUG.Println("Serialized Registration:\n", string(reg))
+
+                                tb.saveLDRegistrationInMemory(&serializedRegistration)
+                                rid, err := tb.sendLDRegistrationToDiscovery(&serializedRegistration)
+
+                                // Send out the response
+                                if err != nil {
+                                        w.WriteJson(err)
+                                } else {
+                                        w.WriteHeader(201)
+                                        w.WriteJson(rid)
+                                }
+                        }
+                }
+        } else {
+                rest.Error(w, "Bad Request! Missing Headers!", 400)
+                return
+        }
+}
+
+func (tb *ThinBroker) saveLDRegistrationInMemory(reg *CSourceRegistrationRequest) {
+        //store reg data at broker
+
+        DEBUG.Println("Inside saveLDRegistrationInMemory....")
+        rid := reg.Id
+        DEBUG.Println("RegID: ", rid)
+
+        // Insert the entity into tb.ldContextRegistrations
+        tb.ldContextRegistrations_lock.Lock()
+        DEBUG.Println("Locked the entity table............")
+
+        tb.ldContextRegistrations[rid] = reg
+        tb.ldContextRegistrations_lock.Unlock()
+
+        // Pretty print the NGSI-LD context element
+        regMap, _ := json.MarshalIndent(tb.ldContextRegistrations, "", " ")
+        DEBUG.Println("EntityMap Saved:\n", string(regMap))
+
+}
+
+func (tb *ThinBroker) sendLDRegistrationToDiscovery(reg *CSourceRegistrationRequest) (string, error) {
+        registerCtxReq := RegisterContextRequest{}
+        ctxRegistrations := make([]ContextRegistration, 0)
+
+        for _, regInfo := range reg.Information {
+                ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
+                ctxRegAttr := ContextRegistrationAttribute{}
+                for _, property := range regInfo.Properties {
+                        ctxRegAttr.Name = property
+                        ctxRegAttr.Type = PROPERTY
+                        ctxRegAttrs = append(ctxRegAttrs, ctxRegAttr)
+                }
+                for _, relationship := range regInfo.Relationships {
+                        ctxRegAttr.Name = relationship
+                        ctxRegAttr.Type = RELATIONSHIP
+                        ctxRegAttrs = append(ctxRegAttrs, ctxRegAttr)
+                }
+
+                ctxReg := ContextRegistration{}
+                ctxReg.EntityIdList = regInfo.Entities
+                ctxReg.ContextRegistrationAttributes = ctxRegAttrs
+                //              ctxReg.Metadata is nil
+                ctxReg.ProvidingApplication = tb.MyURL
+                ctxRegistrations = append(ctxRegistrations, ctxReg)
+        }
+        registerCtxReq.ContextRegistrations = ctxRegistrations
+
+        // Send the registration to discovery
+        client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+        rid, err := client.RegisterContext(&registerCtxReq)
+        if err != nil {
+                ERROR.Println(err)
+                return "", err
+        }
+        return rid, nil
+}
+
+func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Request) {
+        fmt.Println("Inside LDCreateSubscription.........")
+
+        var context []interface{}
+        //Also allow the header to json+ld for specific cases
+        if ctype := r.Header.Get("Content-Type"); ctype == "application/ld+json" {
+                //Get Link header if present
+                if link := r.Header.Get("Link"); link != "" {
+                        DEBUG.Println("Link header received...")
+                        linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+                        if linkMap["rel"] != DEFAULT_CONTEXT {
+                                context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
+                        }
+                }
+
+                // Get an []interface object
+                resolved, err := tb.ExpandPayload(r, context)
+
+                if err != nil {
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                } else {
+                        // Pretty print
+                        sub, _ := json.MarshalIndent(resolved, "", " ")
+                        DEBUG.Println("Subscription:", string(sub))
+
+                        sz := Serializer{}
+                        serializedSubscription, err := sz.SerializeSubscription(resolved)
+
+                        if err != nil {
+                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        } else {
+                                // Create Subscription Id, if missing
+                                if serializedSubscription.Id == "" {
+                                        u1, err := uuid.NewV4()
+                                        if err != nil {
+                                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                                return
+                                        }
+                                        sid := u1.String()
+                                        serializedSubscription.Id = sid
+                                }
+                                // Pretty print
+                                sub, _ := json.MarshalIndent(serializedSubscription, "", " ")
+                                DEBUG.Println("Serialized Subscription:", string(sub))
+
+                                w.WriteHeader(201)
+                                w.WriteJson(serializedSubscription.Id)
+
+                                tb.createEntityID2SubscriptionsIDMap(&serializedSubscription)
+                                tb.createSubscription(&serializedSubscription)
+                                tb.SubscribeLDContextAvailability(&serializedSubscription)
+                        }
+                }
+        } else {
+                rest.Error(w, "Bad Request! Missing Header!", 400)
+                return
+        }
+}
+
+// Subscribe to Discovery for context availabiltiy
+func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest) {
+        fmt.Println("Inside SubscribeLDContextAvailability...")
+        ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
+        ctxAvailabilityRequest.Entities = subReq.Entities
+        ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
+        //ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
+        copy(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
+        //ctxAvailabilityRequest.Reference = tb.MyURLPrefix + "/ngsi10/notifyContextAvailabilityLD"
+        ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyContextAvailability"
+        ctxAvailabilityRequest.Duration = subReq.Expires
+
+        // Pretty print
+        car, _ := json.MarshalIndent(ctxAvailabilityRequest, "", " ")
+        DEBUG.Println("CtxAvailabilityReq to Discovery: \n", string(car))
+
+        // Subscribe to discovery
+        client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+        AvailabilitySubID, _ := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
+        fmt.Println("Avail subID received at broker... ", AvailabilitySubID)
+        tb.createSubscriptionIdMappings(subReq.Id, AvailabilitySubID)
+
+                notifyMessage, alreadyBack := tb.tmpNGSILDNotifyCache[AvailabilitySubID]
+                if alreadyBack == true {
+                        INFO.Println("========forward the availability notify that arrived earlier===========")
+                        tb.handleNGSI9Notify(subReq.Id, notifyMessage)
+
+                        tb.subLinks_lock.Lock()
+                        delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)
+                        tb.subLinks_lock.Unlock()
+                }
+
+
+
+
+}
+
+// Store in EntityID - SubID Map
+func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRequest) {
+        fmt.Println("Inside createEntityID2SubscriptionsIDMap...")
+        tb.ldEntityID2SubscriptionID_lock.Lock()
+        for _, entities := range subReq.Entities {
+                var eid string
+                if entities.IdPattern != "" {
+                        eid = entities.IdPattern
+                } else if entities.ID != "" {
+                        eid = entities.ID
+                }
+                tb.ldEntityID2SubscriptionID[eid] = append(tb.ldEntityID2SubscriptionID[eid], subReq.Id)
+        }
+        tb.ldEntityID2SubscriptionID_lock.Unlock()
+}
+
+// Store in SubID - SubscriptionPayload Map
+func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
+        subscription.Subscriber.RequireReliability = true
+        subscription.Subscriber.LDNotifyCache = make([]*LDContextElement, 0)
+
+        fmt.Println("Inside createSubscription...")
+        tb.ldSubscriptions_lock.Lock()
+        tb.ldSubscriptions[subscription.Id] = subscription
+        tb.ldSubscriptions_lock.Unlock()
+
+        mp, _ := json.MarshalIndent(tb.ldSubscriptions, "", "")
+        DEBUG.Println("Subscription map: ")
+        DEBUG.Println(string(mp))
+}
+
+// Store SubID - AvailabilitySubID Mappings
+func (tb *ThinBroker) createSubscriptionIdMappings(subID string, availabilitySubID string) {
+        fmt.Println("Inside createSubscriptionIdMappings...")
+
+        tb.subLinks_lock.Lock()
+        tb.main2Other[subID] = append(tb.main2Other[subID], availabilitySubID)
+        tb.availabilitySub2MainSub[availabilitySubID] = subID
+        tb.subLinks_lock.Unlock()
+
+        mp1, _ := json.MarshalIndent(tb.main2Other, "", "")
+        DEBUG.Println("Subscription - AvailabilitySubscriptionIDs map: ")
+        DEBUG.Println(string(mp1))
+
+        mp2, _ := json.MarshalIndent(tb.availabilitySub2MainSub, "", "")
+        DEBUG.Println("AvailabilitySubscriptionID - SubID map: ")
+        DEBUG.Println(string(mp2))
+}
+
+// Expand the payload
+func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}) ([]interface{}, error) {
+        fmt.Println("Inside ExpandPayload...")
+        context = append(context, DEFAULT_CONTEXT)
+
+        //get map[string]interface{} of reqBody
+        itemsMap, err := tb.getStringInterfaceMap(r)
+        fmt.Println("Created itemsMap...")
+
+        im, _ := json.MarshalIndent(itemsMap, "", "")
+        DEBUG.Println("ItemsMap Created: ")
+        DEBUG.Println(string(im))
+
+        if err != nil {
+                fmt.Println("Created itemsMap..., case error")
+                return nil, err
+        } else {
+                fmt.Println("Created itemsMap..., case else")
+                // Check the type of payload: Entity, registration or Subscription
+                payloadType := itemsMap["type"].(string)
+                if payloadType == "" {
+                        err := errors.New("Type can not be nil!")
+                        return nil, err
+                }
+                if payloadType != "ContextSourceRegistration" && payloadType != "Subscription" {
+                        // Payload is of Entity Type
+                        // Check if some other broker is registered for providing this entity or not
+                        if itemsMap["id"] == nil {
+                                err := errors.New("Id can not be nil!")
+                                return nil, err
+                        }
+                        ownerURL := tb.queryOwnerOfLDEntity(itemsMap["id"].(string))
+                        fmt.Println("ownerURL:  ", ownerURL)
+                        if ownerURL != tb.MyURL {
+                                fmt.Println("ownerURL != MyURL.........................  ")
+                                itemsMap["context"] = context
+                                reqInterface := itemsMap
+                                tb.updateLDContextElement2RemoteSite(reqInterface, ownerURL)
+                        }
+                }
+
+                DEBUG.Println("New Request:")
+                DEBUG.Println(itemsMap)
+
+                // Update Context in itemMap
+                if itemsMap["@context"] != nil {
+                        contextItems := itemsMap["@context"].([]interface{})
+
+                        DEBUG.Println("Context found in Payload: \n")
+                        e1, _ := json.MarshalIndent(contextItems, "", " ")
+                        DEBUG.Println(string(e1))
+
+                        context = append(context, contextItems...)
+
+                        DEBUG.Println("Payload context combined with Default context: \n")
+                        e1, _ = json.MarshalIndent(contextItems, "", " ")
+                        DEBUG.Println(string(e1))
+                }
+
+                itemsMap["@context"] = context
+
+                DEBUG.Println("Final Context Object... \n")
+                e1, _ := json.MarshalIndent(itemsMap["@context"], "", " ")
+                DEBUG.Println(string(e1))
+
+                if expanded, err := tb.ExpandData(itemsMap); err != nil {
+                        return nil, err
+                } else {
+                        return expanded, nil
+                }
+        }
+
+}
+
+// Expand the NGSI-LD Data with context
+func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
+        proc := ld.NewJsonLdProcessor()
+        options := ld.NewJsonLdOptions("")
+        //LD processor expands the data and returns []interface{}
+        expanded, err := proc.Expand(v, options)
+        return expanded, err
+}
+
+// returns map[string]interface{} object of request body
+
+//Get string-interface{} map from request body
+func (tb *ThinBroker) getStringInterfaceMap(r *rest.Request) (map[string]interface{}, error) {
+        // Get bite array of request body
+        reqBytes, err := ioutil.ReadAll(r.Body)
+        reqBody := string(reqBytes)
+        fmt.Println("reqBody inside getStringInterfaceMap....", reqBody)
+
+        if err != nil {
+                return nil, err
+        }
+
+        // Unmarshal using a generic interface
+        var req interface{}
+        err = json.Unmarshal(reqBytes, &req)
+        if err != nil {
+                DEBUG.Println("Invalid Request.")
+                return nil, err
+        }
+        // Parse the JSON object into a map with string keys
+        itemsMap := req.(map[string]interface{})
+        return itemsMap, nil
+}
+
+func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
+        fmt.Println("Link string...........", link)
+        mp := make(map[string]string)
+        linkArray := strings.Split(link, ";")
+        fmt.Println("Link Array...........", linkArray)
+
+        for _, arrValue := range linkArray {
+                fmt.Println("arrValue inside for loop:  ", arrValue)
+
+                if strings.HasPrefix(arrValue, "<{{link}}>") {
+                        fmt.Println("")
+                        continue // TBD, context link
+                } else if strings.HasPrefix(arrValue, "http") {
+                        mp["link"] = arrValue
+                        fmt.Println("mp link: ", mp["link"])
+                } else if strings.HasPrefix(arrValue, " rel=") {
+                        mp["rel"] = arrValue[6 : len(arrValue)-1] // Trimmed `rel="` and `"`
+                        fmt.Println("mp rel: ", mp["rel"])
+                } else if strings.HasPrefix(arrValue, " type=") {
+                        mp["type"] = arrValue[7 : len(arrValue)-1] // Trimmed `type="` and `"`
+                        fmt.Println("mp type: ", mp["type"])
+                }
+        }
+
+        en, _ := json.MarshalIndent(mp, "", " ")
+        DEBUG.Println("Link Header map: ")
+        DEBUG.Println(string(en))
+
+        return mp
+}
+
+func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
+        inLocalBroker := true
+
+        tb.ldEntities_lock.RLock()
+        _, exist := tb.ldEntities[eid]
+        inLocalBroker = exist
+        tb.ldEntities_lock.RUnlock()
+
+        if inLocalBroker == true {
+                return tb.myProfile.MyURL
+        } else {
+                client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+                brokerURL, _ := client.GetProviderURL(eid)
+                if brokerURL == "" {
+                        return tb.myProfile.MyURL
+                }
+                return brokerURL
+        }
+}
+
+func (tb *ThinBroker) LDNotifySubscribers(ctxElem *LDContextElement, checkSelectedAttributes bool) {
+        eid := ctxElem.Id
+        tb.e2sub_lock.RLock()
+        defer tb.e2sub_lock.RUnlock()
+        subscriberList := tb.entityId2Subcriptions[eid]
+        //send this context element to the subscriber
+        for _, sid := range subscriberList {
+                elements := make([]LDContextElement, 0)
+
+                if checkSelectedAttributes == true {
+                        selectedAttributes := make([]string, 0)
+
+                        tb.subscriptions_lock.RLock()
+
+                        if subscription, exist := tb.subscriptions[sid]; exist {
+                                if subscription.Attributes != nil {
+                                        selectedAttributes = append(selectedAttributes, tb.subscriptions[sid].Attributes...)
+                                }
+                        }
+
+                        tb.subscriptions_lock.RUnlock()
+
+                        tb.ldEntities_lock.RLock()
+                        element := tb.ldEntities[eid].CloneWithSelectedAttributes(selectedAttributes)
+                        tb.ldEntities_lock.RUnlock()
+
+                        elements = append(elements, *element)
+                } else {
+                        elements = append(elements, *ctxElem)
+                }
+
+                go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+        }
+}
+
+func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfLD(entities []EntityId, sid string, selectedAttributes []string) {
+        // Create NGSI-LD Context Element
+        elements := make([]LDContextElement, 0)
+
+        fmt.Println("Inside notifyOneSubscriberWithCurrentStatusOfLD...........")
+
+        tb.ldEntities_lock.Lock()
+        for _, entity := range entities {
+                fmt.Println("Inside for loop...........")
+                if element, exist := tb.ldEntities[entity.ID]; exist {
+                        fmt.Println("Inside iffff...........")
+                        returnedElement := element.CloneWithSelectedAttributes(selectedAttributes)
+                        elements = append(elements, *returnedElement)
+                }
+        }
+        fmt.Println("For loop closed....")
+        tb.ldEntities_lock.Unlock()
+        fmt.Println("tb.ldEntities_lock Unlocked......")
+        go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+
+}
+
+func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []LDContextElement, sid string) {
+        fmt.Println("Inside sendReliableNotifyToNgsiLDSubscribe.........")
+
+
+        fmt.Println("elements......\n", elements)
+
+        fmt.Println("subscription body: \n", tb.ldSubscriptions[sid])
+
+        fmt.Println("sid is..... : ", sid)
+
+        tb.ldSubscriptions_lock.Lock()
+        ldSubscription, ok := tb.ldSubscriptions[sid]
+        if ok == false {
+                tb.ldSubscriptions_lock.Unlock()
+        }
+        subscriberURL := ldSubscription.Notification.Endpoint.URI
+        if ldSubscription.Subscriber.RequireReliability == true && len(ldSubscription.Subscriber.NotifyCache) > 0 {
+                DEBUG.Println("resend notify:  ", len(ldSubscription.Subscriber.NotifyCache))
+                for _, pCtxElem := range ldSubscription.Subscriber.LDNotifyCache {
+                        elements = append(elements, *pCtxElem)
+                }
+                ldSubscription.Subscriber.LDNotifyCache = make([]*LDContextElement, 0)
+        }
+        tb.ldSubscriptions_lock.Unlock()
+        err := ldPostNotifyContext(elements, sid, subscriberURL /* true, */, tb.SecurityCfg)
+        if err != nil {
+                INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
+
+                tb.ldSubscriptions_lock.Lock()
+                if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
+                        if ldSubscription.Subscriber.RequireReliability == true {
+                                for _, ctxElem := range elements {
+                                        ldSubscription.Subscriber.LDNotifyCache = append(ldSubscription.Subscriber.LDNotifyCache, &ctxElem)
+                                }
+
+                                tb.tmpNGSIldNotifyCache = append(tb.tmpNGSIldNotifyCache, sid)
+                        }
+                }
+                tb.ldSubscriptions_lock.Unlock()
+        }
 }

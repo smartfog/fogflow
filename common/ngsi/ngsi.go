@@ -752,6 +752,7 @@ type Subscriber struct {
 	RequireReliability bool
 	BrokerURL          string
 	NotifyCache        []*ContextElement
+        LDNotifyCache      []*LDContextElement
 }
 
 type SubscribeContextRequest struct {
@@ -1035,4 +1036,206 @@ type FiwareData struct {
 	ProviderIoTAgent  string
 	FiwareService     string
 	FiwareServicePath string
+}
+
+// NGSI-LD starts here.
+
+type LDContextElementResponse struct {
+        LDContextElement LDContextElement `json:"contextElement"`
+        StatusCode     StatusCode     `json:"statusCode"`
+}
+
+type LDNotifyContextRequest struct {
+        SubscriptionId   string                   `json:"subscriptionId"`
+        Originator       string                   `json:"originator"`
+        LDContextResponses []LDContextElementResponse `json:"contextResponses,omitempty"`
+}
+
+type LDContextElement struct {
+        Id        string `json:"id"`
+        Type      string `json:"type"`
+        Properties      []Property `json:"properties"`
+        Relationships   []Relationship `json:"relationships"`
+        CreatedAt       string `json:"createdAt"`
+        Location        LDLocation `json:"location"`
+}
+
+func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *LDContextElement {
+        preparedCopy := LDContextElement{}
+        preparedCopy.Id = ldce.Id
+        preparedCopy.Type = ldce.Type
+        preparedCopy.CreatedAt = ldce.CreatedAt
+        preparedCopy.Location = ldce.Location
+
+        if len(selectedAttributes) == 0 {
+                preparedCopy.Properties = make([]Property, len(ldce.Properties))
+                copy(preparedCopy.Properties, ldce.Properties)
+
+                preparedCopy.Relationships = make([]Relationship, len(ldce.Relationships))
+                copy(preparedCopy.Relationships, ldce.Relationships)
+        } else {
+                preparedCopy.Properties = make([]Property, 0)
+                preparedCopy.Relationships = make([]Relationship, 0)
+
+                for _, requiredAttrName := range selectedAttributes {
+                        attrFound := false
+                        for _, property := range ldce.Properties {
+                                if property.Name == requiredAttrName {
+                                        attrFound = true
+                                        preparedCopy.Properties = append(preparedCopy.Properties, property)
+                                        break
+                                }
+                        }
+                        if attrFound != true {
+                                for _, relationship := range ldce.Relationships {
+                                        if relationship.Name == requiredAttrName {
+                                                preparedCopy.Relationships = append(preparedCopy.Relationships, relationship)
+                                                break
+                                        }
+                                }
+                        }
+                }
+        }
+
+        return &preparedCopy
+}
+
+
+type LDLocation struct {
+        Type    string `json:"type"`
+        Value   LDLocationValue `json:"value"`
+}
+
+type LDLocationValue struct {
+        Type            string `json:"type"`
+        Coordinates     interface{} `json:"coordinates"`
+        Geometries      []Geometry `json:"geometries"`
+}
+
+type Geometry struct {
+        Type            string `json:"type"`
+        Coordinates     interface{} `json:"coordinates"`
+}
+
+type Property struct {
+        Id      string `json:"id"`
+        Name    string `json:"name"`
+        Type    string `json:"type"`
+        Value   interface{} `json:"value"`      // Can also be a string or a JSON object
+        ObservedAt      string          //DateTime value when the relationship became valid, Optional.
+        DatasetId       string          //<<URI>>, Optional.
+        InstanceId      string          //<<URI>> uniquely identifying a relationship instance (Read note in 4.5.2). System Generated, Optional.
+        CreatedAt       string          //DateTime value when Relationship entered into NGSI-LD system. System Generated.
+        ModifiedAt      string          //DateTime value when Relationship was last modified. System Generated.
+        UnitCode        string          //measurement unit corresponding to the Property value. UN/CEFACT Common Codes for Units of Measurement must be followed.
+}
+
+type Relationship struct {
+        Id      string `json:"id"`
+        Name    string `json:"name"`
+        Type    string                  //Mandatory
+        Object  string                  //<<URI>>, Mandatory
+        ObservedAt      string          //DateTime value when the relationship became valid, Optional.
+        ProvidedBy      ProvidedBy
+        DatasetId       string          //<<URI>>, Optional.
+        InstanceId      string          //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+        CreatedAt       string          //DateTime value when Relationship entered into NGSI-LD system. System Generated.
+        ModifiedAt      string          //DateTime value when Relationship was last modified. System Generated.
+        // 2 additional points...
+}
+
+type ProvidedBy struct {
+        Type    string `json:"type"`
+        Object  string `json:"object"`
+}
+
+type LDSubscriptionRequest struct {
+        Id      string `json:"id"`      //URI, if missing, will be assigned during subscription phase and returned to client
+        Type    string `json:"type"`    //shall be equal to "Subscription"
+        Name    string `json:"name"`
+        Description             string `json:"description"`
+        Entities                []EntityId`json:"entities"`  //empty array not allowed, insert 5.2.8
+        WatchedAttributes       []string `json:"watchedAttributes"`
+        TimeInterval            uint `json:"timeInterval"`
+        Q                       string `json:"q"`
+        GeoQ                    GeoQuery `json:"geoQ"`
+        Csf                     string `json:"csf"`
+        IsActive                bool `json:"isActive"`
+        Notification            NotificationParams `json:"notification"`
+        Expires                 string `json:"expires"`
+        Throttling              uint `json:"throttling"`
+        TemporalQ               TemporalQuery `json:"temporalQ"`
+        Status                  string `json:"status"`
+        Subscriber              Subscriber
+}
+
+//type LDSubscription struct {
+//      LDSubscription  LDSubscriptionRequest
+//      Subscriber      Subscriber
+//}
+
+type GeoQuery struct {
+        Geometry        string `json:"geometry"`
+        Coordinates     string `json:"coordinates"`// string or JSON Array
+        GeoRel          string `json:"georel"`
+        GeoProperty     string `json:"geoproperty"`
+}
+
+type NotificationParams struct {
+        Attributes      []string `json:"attributes"`
+        Format          string `json:"format"`
+        Endpoint        Endpoint `json:"endpoint"`
+        Status          string `json:"status"`
+        TimeSent       uint `json:"timeSent"`
+        LastNotification        string `json:"lastNotification"`
+        LastFailure             string `json:"lastFailure"`
+        LastSuccess             string `json:"lastSuccess"`
+}
+
+type Endpoint struct {
+        URI     string `json:"uri"`     // URI
+        Accept  string `json:"accept"`
+}
+
+type TemporalQuery struct {
+        TimeRel         string `json:"timerel"`
+        Time            string `json:"time"`
+        EndTime         string `json:"endTime"`
+        TimeProperty    string `json:"timeproperty"`
+}
+
+type CSourceRegistrationRequest struct {
+        Id      string `json:"id"`      //URI
+        Type    string `json:"type"`
+        Name    string `json:"name"`
+        Description             string `json:"description"`
+        Information             []RegistrationInfo `json:"information"`         // at least one element in the array mandatory
+        ObservationInterval     TimeInterval `json:"observationInterval"`
+        managementInterval      TimeInterval `json:"managementInterval"`
+        Location                string `json:"location"` //interface{}          // Type = GeoJSON Geometry      TBD
+        ObservationSpace        interface{} `json:"observationSpace,omitempty"` // Type = GeoJSON Geometry
+        OperationSpace          interface{} `json:"operationSpace,omitempty"`   // Type = GeoJSON Geometry
+        Expires                 string  `json:expires`
+        Endpoint                string `json:"endpoint"`        //URI
+}
+
+type RegistrationInfo struct {
+        Entities        []EntityId `json:"entities"`
+        Properties      []string `json:"properties,omitempty"`
+        Relationships   []string `json:"relationships,omitempty"`
+}
+
+type TimeInterval struct {
+        Start   string `json:"start"`   //DateTime value
+        End     string `json:"end"`     //DateTime value
+}
+
+type CSourceRegistration struct {       // Registration with additional information
+        Registration    CSourceRegistrationRequest
+        ProviderURL     string
+}
+
+type CSourceRegistrationResponse struct {
+        RegistrationID  string          `json: "registrationID"`
+        ErrorCode       StatusCode      `json:"errorCode,omitempty"`
 }
