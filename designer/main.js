@@ -2,6 +2,8 @@ var request = require('request');
 var express =   require('express');
 var multer  =   require('multer');
 var https = require('https');
+const bodyParser = require('body-parser');
+var jsonParser = bodyParser.json();
 
 var config_fs_name = './config.json';
 
@@ -19,6 +21,10 @@ var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
 var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 
 var config = globalConfigFile.designer;
+
+// get the URL of the cloud broker
+var cloudBrokerURL = "http://" + globalConfigFile.external_hostip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
+
 
 // set the agent IP address from the environment variable
 config.agentIP = globalConfigFile.external_hostip;
@@ -63,6 +69,23 @@ app.post('/photo',function(req, res){
         res.end("File is uploaded");
     });
 });
+
+
+app.post('/updateContext', jsonParser, function(req, res){
+    console.log(req.body)    
+    ctxObj = req.body    
+    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL); 
+    ngsi10client.updateContext(ctxObj).then( function(data) {
+        console.log('======send update======');
+            console.log(data);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to update context');
+    });      
+    
+    res.end("OK");
+});
+
 
 app.get('/config.js', function(req, res){
 	res.setHeader('Content-Type', 'application/json');		
