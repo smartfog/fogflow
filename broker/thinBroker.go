@@ -806,10 +806,11 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, 
 		fmt.Println("Selected Attributes....: ", selectedAttributes)
 		tb.ldSubscriptions_lock.RUnlock()
 		tb.notifyOneSubscriberWithCurrentStatusOfLD(entities, sid, selectedAttributes)
+	} else {
+		selectedAttributes := v1Subscription.Attributes
+		tb.subscriptions_lock.RUnlock()
+		tb.notifyOneSubscriberWithCurrentStatusOfV1(entities, sid, selectedAttributes)
 	}
-	selectedAttributes := v1Subscription.Attributes
-	tb.subscriptions_lock.RUnlock()
-	tb.notifyOneSubscriberWithCurrentStatusOfV1(entities, sid, selectedAttributes)
 }
 
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
@@ -1697,34 +1698,29 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		} else {
-			//Pretty print
-			entity, _ := json.MarshalIndent(resolved, "", " ")
-			DEBUG.Println("Registration:")
-			DEBUG.Println(string(entity))
-
 			sz := Serializer{}
 
 			// Serialize the payload here.
-			serializedEntity, err := sz.SerializeEntity(resolved)
+			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
 
 			//Pretty print
-			enti, _ := json.MarshalIndent(serializedEntity, "", " ")
-			DEBUG.Println("Serialized Entity: \n", string(enti))
+			enti, _ := json.MarshalIndent(deSerializedEntity, "", " ")
+			DEBUG.Println("DeSerialized Entity: \n", string(enti))
 
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			} else {
 				w.WriteHeader(201)
-				w.WriteJson(&serializedEntity)
+				w.WriteJson(&deSerializedEntity)
 
 				// Add the resolved entity to tb.ldEntities
-				tb.saveEntity(&serializedEntity)
+				tb.saveEntity(&deSerializedEntity)
 
 				//Register new context element on discovery
-				tb.registerLDContextElement(&serializedEntity)
+				tb.registerLDContextElement(&deSerializedEntity)
 
-				tb.LDNotifySubscribers(&serializedEntity, true)
+				tb.LDNotifySubscribers(&deSerializedEntity, true)
 			}
 		}
 	} else {
@@ -1790,7 +1786,6 @@ func (tb *ThinBroker) registerLDContextElement(elem *LDContextElement) {
 // Store the NGSI-LD Entities  at local broker
 func (tb *ThinBroker) saveEntity(ctxElem *LDContextElement) {
 	eid := ctxElem.Id
-	DEBUG.Println("Entity ID:", eid)
 
 	// Insert the entity into tb.ldEntities
 	tb.ldEntities_lock.Lock()
@@ -1800,13 +1795,11 @@ func (tb *ThinBroker) saveEntity(ctxElem *LDContextElement) {
 
 	// Pretty print the NGSI-LD context element
 	entityMap, _ := json.MarshalIndent(tb.ldEntities, "", " ")
-	DEBUG.Println("EntityMap Saved:")
 	DEBUG.Println(string(entityMap))
 }
 
 // GET API method for entity
 func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
-	fmt.Println("Inside LdGetEntity.........")
 	tb.ldEntities_lock.RLock()
 	defer tb.ldEntities_lock.RUnlock()
 	if entity := tb.ldEntities[eid]; entity != nil {
@@ -1836,24 +1829,20 @@ func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		} else {
-			// Pretty print
-			reg, _ := json.MarshalIndent(resolved, "", " ")
-			DEBUG.Println("Registration:", string(reg))
-
 			sz := Serializer{}
 			// Serialize payload
-			serializedRegistration, err := sz.SerializeRegistration(resolved)
+			deSerializedRegistration, err := sz.DeSerializeRegistration(resolved)
 
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			} else {
 				// Pretty print
-				reg, _ := json.MarshalIndent(serializedRegistration, "", " ")
-				DEBUG.Println("Serialized Registration:\n", string(reg))
+				reg, _ := json.MarshalIndent(deSerializedRegistration, "", " ")
+				DEBUG.Println("DeSerialized Registration:\n", string(reg))
 
-				tb.saveLDRegistrationInMemory(&serializedRegistration)
-				rid, err := tb.sendLDRegistrationToDiscovery(&serializedRegistration)
+				tb.saveLDRegistrationInMemory(&deSerializedRegistration)
+				rid, err := tb.sendLDRegistrationToDiscovery(&deSerializedRegistration)
 
 				// Send out the response
 				if err != nil {
@@ -1871,12 +1860,7 @@ func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (tb *ThinBroker) saveLDRegistrationInMemory(reg *CSourceRegistrationRequest) {
-	//store reg data at broker
-
-	DEBUG.Println("Inside saveLDRegistrationInMemory....")
 	rid := reg.Id
-	DEBUG.Println("RegID: ", rid)
-
 	// Insert the entity into tb.ldContextRegistrations
 	tb.ldContextRegistrations_lock.Lock()
 
@@ -1947,37 +1931,33 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		} else {
-			// Pretty print
-			sub, _ := json.MarshalIndent(resolved, "", " ")
-			DEBUG.Println("Subscription:", string(sub))
-
 			sz := Serializer{}
-			serializedSubscription, err := sz.SerializeSubscription(resolved)
+			deSerializedSubscription, err := sz.DeSerializeSubscription(resolved)
 
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			} else {
 				// Create Subscription Id, if missing
-				if serializedSubscription.Id == "" {
+				if deSerializedSubscription.Id == "" {
 					u1, err := uuid.NewV4()
 					if err != nil {
 						rest.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
 					sid := u1.String()
-					serializedSubscription.Id = sid
+					deSerializedSubscription.Id = sid
 				}
 				// Pretty print
-				sub, _ := json.MarshalIndent(serializedSubscription, "", " ")
+				sub, _ := json.MarshalIndent(deSerializedSubscription, "", " ")
 				DEBUG.Println("Serialized Subscription:", string(sub))
 
 				w.WriteHeader(201)
-				w.WriteJson(serializedSubscription.Id)
+				w.WriteJson(deSerializedSubscription.Id)
 
-				tb.createEntityID2SubscriptionsIDMap(&serializedSubscription)
-				tb.createSubscription(&serializedSubscription)
-				if err := tb.SubscribeLDContextAvailability(&serializedSubscription); err != nil {
+				tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
+				tb.createSubscription(&deSerializedSubscription)
+				if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 				}
 			}
@@ -1994,9 +1974,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
 	ctxAvailabilityRequest.Entities = subReq.Entities
 	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
-	//ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
 	copy(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
-	//ctxAvailabilityRequest.Reference = tb.MyURLPrefix + "/ngsi10/notifyContextAvailabilityLD"
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
 
@@ -2049,14 +2027,9 @@ func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
 	subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]*LDContextElement, 0)
 
-	fmt.Println("Inside createSubscription...")
 	tb.ldSubscriptions_lock.Lock()
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
-
-	mp, _ := json.MarshalIndent(tb.ldSubscriptions, "", "")
-	DEBUG.Println("Subscription map: ")
-	DEBUG.Println(string(mp))
 }
 
 // Store SubID - AvailabilitySubID Mappings
@@ -2142,13 +2115,10 @@ func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
 	return expanded, err
 }
 
-// returns map[string]interface{} object of request body
-
 //Get string-interface{} map from request body
 func (tb *ThinBroker) getStringInterfaceMap(r *rest.Request) (map[string]interface{}, error) {
 	// Get bite array of request body
 	reqBytes, err := ioutil.ReadAll(r.Body)
-	//        reqBody := string(reqBytes)
 
 	if err != nil {
 		return nil, err
@@ -2271,12 +2241,6 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfLD(entities []Entity
 func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []LDContextElement, sid string) {
 	fmt.Println("Inside sendReliableNotifyToNgsiLDSubscribe.........")
 
-	fmt.Println("elements......\n", elements)
-
-	fmt.Println("subscription body: \n", tb.ldSubscriptions[sid])
-
-	fmt.Println("sid is..... : ", sid)
-
 	tb.ldSubscriptions_lock.Lock()
 	ldSubscription, ok := tb.ldSubscriptions[sid]
 	if ok == false {
@@ -2307,4 +2271,5 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []LDContextE
 		}
 		tb.ldSubscriptions_lock.Unlock()
 	}
+	INFO.Println("NOTIFY is sent to the subscriber, ", subscriberURL)
 }
