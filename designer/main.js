@@ -38,6 +38,19 @@ config.webSrvPort = globalConfigFile.designer.webSrvPort
 console.log(config);
 
 
+function uuid() {
+    var uuid = "", i, random;
+    for (i = 0; i < 32; i++) {
+        random = Math.random() * 16 | 0;
+        if (i == 8 || i == 12 || i == 16 || i == 20) {
+            uuid += "-"
+        }
+        uuid += (i == 12 ? 4 : (i == 16 ? (random & 3 | 8) : random)).toString(16);
+    }
+    
+    return uuid;
+}   
+
 // all subscriptions that expect data forwarding
 var subscriptions = {};
 
@@ -71,6 +84,25 @@ app.post('/photo',function(req, res){
 });
 
 
+// to handle context update in the format of context object, not in the format of context element
+app.get('/queryContext', jsonParser, function(req, res){
+    console.log(req.body)    
+    ctxObj = req.body    
+    
+    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL); 
+    ngsi10client.updateContext(ctxObj).then( function(data) {
+        console.log('======send update======');
+            console.log(data);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to update context');
+    });      
+    
+    res.end("OK");
+});
+
+
+// to handle context update in the format of context object, not in the format of context element
 app.post('/updateContext', jsonParser, function(req, res){
     console.log(req.body)    
     ctxObj = req.body    
@@ -84,6 +116,49 @@ app.post('/updateContext', jsonParser, function(req, res){
     });      
     
     res.end("OK");
+});
+
+
+// to create an new intent
+app.post('/intent', jsonParser, function(req, res){
+    console.log(req.body)    
+    intent = req.body    
+    
+    var intentCtxObj = {};
+    
+    var uid = uuid();
+    
+    intentCtxObj.entityId = { 
+        id: 'ServiceIntent.' + uid,           
+        type: 'ServiceIntent',
+        isPattern: false
+    };
+    
+    intentCtxObj.attributes = {};   
+    intentCtxObj.attributes.status = {type: 'string', value: 'enabled'};
+    intentCtxObj.attributes.intent = {type: 'object', value: intent};  
+    
+    intentCtxObj.metadata = {};          
+    intentCtxObj.metadata.location = intent.geoscope;      
+    
+    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL); 
+    ngsi10client.updateContext(intentCtxObj).then( function(data) {
+        console.log('======create intent======');
+            console.log(data);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to create intent');
+    });      
+    
+    res.end("OK");
+});
+
+// to remove an existing intent
+app.delete('/intent', jsonParser, function(req, res){
+    console.log(req.body)   
+    id =  req.body.id
+    console.log(id)     
+    res.end("OK");      
 });
 
 

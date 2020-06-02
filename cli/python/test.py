@@ -1,16 +1,21 @@
 import json
 from fogflowclient import FogFlowClient, ContextEntity
 
+
+def onReceiveContextEntity(ctxEntity):
+    print(ctxEntity)
+
+
 def main():
     ffclient = FogFlowClient("http://localhost")
 
     #create the input data
+    deviceID = "Device.Car.0" 
+    
     tempSensor = ContextEntity()                
-    tempSensor.id = "Device.Car." + str(x)
-    tempSensor.type = "Car"      
-        
+    tempSensor.id = deviceID
+    tempSensor.type = "Car"              
     tempSensor.attributes["temperature"] =  {'type': 'integer', 'value': 30}
-        
     tempSensor.metadata["location"] = {
         "type":"point",
         "value":{
@@ -19,14 +24,11 @@ def main():
         }
     }
         
-    deviceID = client.put(tempSensor)
+    ffclient.put(tempSensor)
 
-    intentId = ffclient.sendIntent("mytest")
-
-    result = ffclient.get(deviceID)
+    intentId = ffclient.sendIntent("myTest")
     
     ffclient.get(deviceID)
-
 
     ffclient.removeIntent(intentId)
 
