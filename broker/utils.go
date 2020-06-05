@@ -15,7 +15,7 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL)
+		return postOrionV2NotifyContext(ctxElems, URL,subscriptionId)
 	}
 
 	for _, elem := range ctxElems {
@@ -76,7 +76,7 @@ type OrionV2Metadata struct {
 }
 
 // send an notify to orion broker based on v2, for the compatability reason
-func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
+func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptionId string) error {
 	elementList := make([]map[string]interface{}, 0)
 	for _, elem := range ctxElems {
 		// convert it to NGSI v2
@@ -106,7 +106,7 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 	}
 
 	notifyCtxReq := &OrionV2NotifyContextRequest{
-		SubscriptionId: "",
+		SubscriptionId: subscriptionId,
 		Entities:       elementList,
 	}
 
