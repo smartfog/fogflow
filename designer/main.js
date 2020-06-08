@@ -84,44 +84,8 @@ app.post('/photo',function(req, res){
 });
 
 
-// to handle context update in the format of context object, not in the format of context element
-app.get('/queryContext', jsonParser, function(req, res){
-    console.log(req.body)    
-    ctxObj = req.body    
-    
-    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL); 
-    ngsi10client.updateContext(ctxObj).then( function(data) {
-        console.log('======send update======');
-            console.log(data);
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to update context');
-    });      
-    
-    res.end("OK");
-});
-
-
-// to handle context update in the format of context object, not in the format of context element
-app.post('/updateContext', jsonParser, function(req, res){
-    console.log(req.body)    
-    ctxObj = req.body    
-    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL); 
-    ngsi10client.updateContext(ctxObj).then( function(data) {
-        console.log('======send update======');
-            console.log(data);
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to update context');
-    });      
-    
-    res.end("OK");
-});
-
-
-// to create an new intent
+// create a new intent to trigger the corresponding service topology
 app.post('/intent', jsonParser, function(req, res){
-    console.log(req.body)    
     intent = req.body    
     
     var intentCtxObj = {};
@@ -150,14 +114,29 @@ app.post('/intent', jsonParser, function(req, res){
         console.log('failed to create intent');
     });      
     
-    res.end("OK");
+    // prepare the response
+    reply = {'id': intentCtxObj.entityId.id, 'outputType': 'Result'}    
+    res.json(reply);
 });
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res){
-    console.log(req.body)   
-    id =  req.body.id
-    console.log(id)     
+    eid =  req.body.id
+    
+    var entityid = {
+        id : eid, 
+        isPattern: false
+    };	        
+    
+    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL); 
+    ngsi10client.deleteContext(entityid).then( function(data) {
+        console.log('======delete intent======');
+            console.log(data);
+    }).catch(function(error) {
+        console.log(error);
+        console.log('failed to delete intent');
+    });      
+    
     res.end("OK");      
 });
 
@@ -187,7 +166,7 @@ function handleNotify(req, ctxObjects, res) {
         for(var i = 0; i < ctxObjects.length; i++) {
             console.log(ctxObjects[i]);
             var client = subscriptions[sid];
-            client.emit('notify', ctxObjects[i]);
+            client.emit('notify', {'subscriptionID': sid, 'entities': ctxObjects[i]});
         }
     }
 }
