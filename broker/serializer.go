@@ -205,6 +205,16 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 	return subscription, nil
 }
 
+func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
+        var attr string
+        if len(attrPayload) > 0 {
+                attrMap := attrPayload[0].(map[string]interface{})
+                attrs := attrMap["@type"].([]interface{})
+                attr = attrs[0].(string)
+        }
+        return attr
+}
+
 func (sz Serializer) getId(id interface{}) string {
 	Id := id.(string)
 	return Id
@@ -279,6 +289,8 @@ func (sz Serializer) getRelationship(relationshipName string, relationshipMap ma
 
 	if relationshipMap[HAS_OBJECT] != nil {
 		Relationship.Object = sz.getIdFromArray(relationshipMap[HAS_OBJECT].([]interface{}))
+        } else if relationshipMap[OBJECT] != nil {
+                Relationship.Object = sz.getValueFromArray(relationshipMap[OBJECT].([]interface{})).(string)
 	} else {
 		err := errors.New("Relationship Object value can not be nil!")
 		return Relationship, err

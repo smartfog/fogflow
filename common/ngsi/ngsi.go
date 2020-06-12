@@ -1122,11 +1122,11 @@ type Property struct {
         Name    string `json:"name"`
         Type    string `json:"type"`
         Value   interface{} `json:"value"`      // Can also be a string or a JSON object
-        ObservedAt      string          //DateTime value when the relationship became valid, Optional.
+        ObservedAt      string          //DateTime value when the property became valid, Optional.
         DatasetId       string          //<<URI>>, Optional.
-        InstanceId      string          //<<URI>> uniquely identifying a relationship instance (Read note in 4.5.2). System Generated, Optional.
-        CreatedAt       string          //DateTime value when Relationship entered into NGSI-LD system. System Generated.
-        ModifiedAt      string          //DateTime value when Relationship was last modified. System Generated.
+        InstanceId      string          //<<URI>> uniquely identifying a property instance (Read note in 4.5.2). System Generated, Optional.
+        CreatedAt       string          //DateTime value when property entered into NGSI-LD system. System Generated.
+        ModifiedAt      string          //DateTime value when property was last modified. System Generated.
         UnitCode        string          //measurement unit corresponding to the Property value. UN/CEFACT Common Codes for Units of Measurement must be followed.
 }
 

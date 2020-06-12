@@ -60,8 +60,24 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		//NGSILD API
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
+                rest.Get("/ngsi-ld/v1/entities", apisrv.GetQueryParamsEntities),
+                rest.Post("/ngsi-ld/v1/entities/#eid/attrs", broker.LDAppendEntityAttributes),
+                rest.Patch("/ngsi-ld/v1/entities/#eid/attrs", broker.LDUpdateEntityAttributes),
+                rest.Patch("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDUpdateEntityByAttribute),
+                rest.Delete("/ngsi-ld/v1/entities/#eid", apisrv.DeleteLDEntity),
+                rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", apisrv.DeleteLDAttribute),
+
 		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
+                rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.UpdateCSourceRegistration),
+                rest.Delete("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.DeleteCSourceRegistration),
+                rest.Get("/ngsi-ld/v1/csourceRegistrations", apisrv.GetQueryParamsRegistrations),
+
 		rest.Post("/ngsi-ld/v1/subscriptions/", broker.LDCreateSubscription),
+                rest.Get("/ngsi-ld/v1/subscriptions/", broker.GetLDSubscriptions),
+                rest.Get("/ngsi-ld/v1/subscriptions/#sid", apisrv.GetLDSubscription),
+                rest.Patch("/ngsi-ld/v1/subscriptions/#sid", apisrv.UpdateLDSubscription),
+                rest.Delete("/ngsi-ld/v1/subscriptions/#sid", apisrv.DeleteLDSubscription),
+
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -278,6 +294,29 @@ func (apisrv *RestApiSrv) deleteRegistration(w rest.ResponseWriter, r *rest.Requ
 
 // NGSI-LD starts here.
 
+func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request) {
+        var eid = r.PathParam("eid")
+
+        err := apisrv.broker.ldDeleteEntity(eid)
+        if err == nil {
+                w.WriteHeader(200)
+        } else {
+                w.WriteHeader(404)
+        }
+}
+
+func (apisrv *RestApiSrv) DeleteLDAttribute(w rest.ResponseWriter, r *rest.Request) {
+        var eid = r.PathParam("eid")
+        var attr = r.PathParam("attr")
+
+        err := apisrv.broker.ldDeleteEntityAttribute(eid, attr)
+        if err == nil {
+                w.WriteHeader(200)
+        } else {
+                w.WriteHeader(404)
+        }
+}
+
 func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
 
@@ -288,4 +327,119 @@ func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 	} else {
 		w.WriteHeader(404)
 	}
+}
+
+func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.Request) {
+        queryValues := r.URL.Query()
+        if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" && accept == "application/ld+json" {
+                if attrs, ok := queryValues["attrs"]; ok == true {
+                        entities := apisrv.broker.ldEntityGetByAttribute(attrs)
+                        w.WriteHeader(200)
+                        w.WriteJson(entities)
+                        return
+                } else if typ, ok := queryValues["type"]; ok == true {
+                        if eid, ok := queryValues["id"]; ok == true {
+                                entities := apisrv.broker.ldEntityGetById(eid, typ)
+                                w.WriteHeader(200)
+                                w.WriteJson(entities)
+                                return
+                        }
+                        if idPattern, ok := queryValues["idPattern"]; ok == true {
+                                if typ, ok := queryValues["type"]; ok == true {
+                                        entities := apisrv.broker.ldEntityGetByIdPattern(idPattern, typ)
+                                        w.WriteHeader(200)
+                                        w.WriteJson(entities)
+                                }
+                                return
+                        }
+                        link := r.Header.Get("Link")
+                        entities, err := apisrv.broker.ldEntityGetByType(typ, link)
+                        if err != nil {
+                                w.WriteHeader(500)
+                        } else {
+                                w.WriteHeader(200)
+                                w.WriteJson(entities)
+                                return
+                        }
+                } else {
+                        rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
+                        return
+                }
+        } else {
+                rest.Error(w, "Missing Headers! Content-Type and/or Accept!", http.StatusBadRequest)
+                return
+        }
+}
+
+func (apisrv *RestApiSrv) GetQueryParamsRegistrations(w rest.ResponseWriter, r *rest.Request) {
+        queryValues := r.URL.Query()
+        if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" && accept == "application/ld+json" {
+                if typ, ok := queryValues["type"]; ok == true {
+                        if eid, ok := queryValues["id"]; ok == true {
+                                registrations := apisrv.broker.getCSourceRegByIdAndType(eid, typ)
+                                w.WriteHeader(200)
+                                w.WriteJson(registrations)
+                                return
+                        }
+                        if idPattern, ok := queryValues["idPattern"]; ok == true {
+                                registrations := apisrv.broker.getCSourceRegByIdPatternAndType(idPattern, typ)
+                                w.WriteHeader(200)
+                                w.WriteJson(registrations)
+                                return
+                        }
+                        link := r.Header.Get("Link")
+                        registrations, err := apisrv.broker.getCSourceRegByType(typ, link)
+                        if err != nil {
+                                rest.Error(w, "Internal Server Error!", http.StatusInternalServerError)
+                                return
+                        } else {
+                                w.WriteHeader(200)
+                                w.WriteJson(registrations)
+                                return
+                        }
+                } else {
+                        w.WriteHeader(400)
+                }
+        } else {
+                w.WriteHeader(400)
+        }
+}
+
+func (apisrv *RestApiSrv) UpdateCSourceRegistration(w rest.ResponseWriter, r *rest.Request) {
+        if ctype := r.Header.Get("Content-Type"); ctype == "application/json" {
+                rid := r.PathParam("rid")
+                err := apisrv.broker.updateCSourceRegistration(rid)
+                if err != nil {
+                        w.WriteHeader(400)
+                } else {
+                        w.WriteHeader(200)
+                }
+        } else {
+                rest.Error(w, "Missing Content-Type Header!", http.StatusBadRequest)
+                return
+        }
+}
+
+func (apisrv *RestApiSrv) DeleteCSourceRegistration(w rest.ResponseWriter, r *rest.Request) {
+        rid := r.PathParam("rid")
+        err := apisrv.broker.deleteCSourceRegistration(rid)
+        if err != nil {
+                w.WriteHeader(404)
+        } else {
+                w.WriteHeader(200)
+        }
+}
+
+func (apisrv *RestApiSrv) GetLDSubscription(w rest.ResponseWriter, r *rest.Request) {
+        // broker.getLDSubscription(sid)
+}
+
+func (apisrv *RestApiSrv) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Request) {
+        // broker.updateLDSubscription(sid)
+
+}
+
+func (apisrv *RestApiSrv) DeleteLDSubscription(w rest.ResponseWriter, r *rest.Request) {
+        // broker.deleteLDSubscription(sid)
+
 }

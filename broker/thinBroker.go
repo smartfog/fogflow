@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 )
 
 type ThinBroker struct {
@@ -69,6 +70,9 @@ type ThinBroker struct {
 	ldContextRegistrations      map[string]*CSourceRegistrationRequest
 	ldContextRegistrations_lock sync.RWMutex
 
+        ldEntityID2RegistrationID      map[string]string //to map the Entity IDs with their registration id.
+        ldEntityID2RegistrationID_lock sync.RWMutex
+
 	ldSubscriptions      map[string]*LDSubscriptionRequest
 	ldSubscriptions_lock sync.RWMutex
 
@@ -119,6 +123,7 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	// NGSI-LD feature addition
 	tb.ldEntities = make(map[string]*LDContextElement)
 	tb.ldContextRegistrations = make(map[string]*CSourceRegistrationRequest)
+        tb.ldEntityID2RegistrationID = make(map[string]string)
 	tb.ldSubscriptions = make(map[string]*LDSubscriptionRequest)
 	tb.ldEntityID2SubscriptionID = make(map[string][]string)
 	tb.tmpNGSILDNotifyCache = make(map[string]*NotifyContextAvailabilityRequest) // to be updated
@@ -1799,7 +1804,7 @@ func (tb *ThinBroker) saveEntity(ctxElem *LDContextElement) {
 }
 
 // GET API method for entity
-func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
+func (tb *ThinBroker) ldGetEntity(eid string) *LDContextElement {
 	tb.ldEntities_lock.RLock()
 	defer tb.ldEntities_lock.RUnlock()
 	if entity := tb.ldEntities[eid]; entity != nil {
@@ -1841,7 +1846,11 @@ func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
 				reg, _ := json.MarshalIndent(deSerializedRegistration, "", " ")
 				DEBUG.Println("DeSerialized Registration:\n", string(reg))
 
-				tb.saveLDRegistrationInMemory(&deSerializedRegistration)
+				err := tb.saveLDRegistrationInMemory(&deSerializedRegistration)
+                             if err != nil {
+                                        rest.Error(w, err.Error(), 409)
+                                        return
+                                }
 				rid, err := tb.sendLDRegistrationToDiscovery(&deSerializedRegistration)
 
 				// Send out the response
@@ -1859,18 +1868,55 @@ func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (tb *ThinBroker) saveLDRegistrationInMemory(reg *CSourceRegistrationRequest) {
+func (tb *ThinBroker) saveLDRegistrationInMemory(reg *CSourceRegistrationRequest) error {
 	rid := reg.Id
+	var eid string
 	// Insert the entity into tb.ldContextRegistrations
 	tb.ldContextRegistrations_lock.Lock()
 
 	tb.ldContextRegistrations[rid] = reg
 	tb.ldContextRegistrations_lock.Unlock()
 
+        for _, info := range reg.Information {
+                for _, entity := range info.Entities {
+                        if entity.ID != "" {
+                                eid = entity.ID
+                        } else if entity.IdPattern != "" {
+                                eid = entity.IdPattern
+                        }
+                        if eid != "" {
+                                err := tb.saveEntityId2RegistrationIdMapping(eid, rid)
+                                if err != nil {
+                                        ERROR.Println("Entity is already registered!")
+                                        return err
+                                }
+                        }
+                }
+        }
+
 	// Pretty print the NGSI-LD context element
 	regMap, _ := json.MarshalIndent(tb.ldContextRegistrations, "", " ")
 	DEBUG.Println("EntityMap Saved:\n", string(regMap))
+	return nil
+}
 
+func (tb *ThinBroker) saveEntityId2RegistrationIdMapping(eid string, rid string) error {
+        fmt.Println("Inside saveEntityId2RegistrationIdMapping.......... rid:", rid)
+        tb.ldEntityID2RegistrationID_lock.Lock()
+        if rid, ok := tb.ldEntityID2RegistrationID[eid]; ok == true {
+                tb.ldEntityID2RegistrationID_lock.Unlock()
+                err := errors.New("Entity is already registered!")
+                return err
+        } else {
+                tb.ldEntityID2RegistrationID[eid] = rid
+
+                // Pretty print the NGSI-LD context element
+                regMap, _ := json.MarshalIndent(tb.ldEntityID2RegistrationID, "", " ")
+                DEBUG.Println("tb.ldEntityID2RegistrationID:  ##########\n", string(regMap))
+
+                tb.ldEntityID2RegistrationID_lock.Unlock()
+                return nil
+        }
 }
 
 func (tb *ThinBroker) sendLDRegistrationToDiscovery(reg *CSourceRegistrationRequest) (string, error) {
@@ -2106,6 +2152,130 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}) ([]i
 
 }
 
+func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interface{}, params ...string) ([]interface{}, error) {
+        context = append(context, DEFAULT_CONTEXT)
+        //get map[string]interface{} of reqBody
+        itemsMap, err := tb.getStringInterfaceMap(r)
+        if err != nil {
+                return nil, err
+        } else {
+                DEBUG.Println("New Request:")
+                DEBUG.Println(itemsMap)
+
+                // Update Context in itemMap
+                if itemsMap["@context"] != nil {
+                        contextItem := itemsMap["@context"]
+                        context = append(context, contextItem)
+                }
+
+                itemsMap["@context"] = context
+
+                //Add attribute to payload, if found in params
+                if params != nil {
+                        eid := params[0]
+                        attrName := params[1]
+
+                        tb.ldEntities_lock.Lock()
+                        if entity := tb.ldEntities[eid]; entity != nil {
+                                attrExists := false
+                                for _, property := range entity.Properties {
+                                        if strings.Contains(property.Name, attrName) {
+                                                DEBUG.Println("Property matched................")
+                                                attrExists = true
+                                                mp := make(map[string]interface{})
+                                                for key, val := range itemsMap {
+                                                        switch key {
+                                                        case "@context":
+                                                                continue
+                                                        default:
+                                                                mp[key] = val
+                                                                mp["type"] = "Property"
+                                                                delete(itemsMap, key)
+                                                        }
+                                                }
+                                                itemsMap[attrName] = mp
+                                                break
+                                        }
+                                }
+                                if attrExists != true {
+                                        for _, relationship := range entity.Relationships {
+                                                if strings.Contains(relationship.Name, attrName) {
+                                                        DEBUG.Println("Relationship matched................")
+                                                        attrExists = true
+                                                        mp := make(map[string]interface{})
+                                                        for key, val := range itemsMap {
+                                                                switch key {
+                                                                case "@context":
+                                                                        continue
+                                                                default:
+                                                                        mp[key] = val
+                                                                        mp["type"] = "Relationship"
+                                                                        delete(itemsMap, key)
+                                                                }
+                                                        }
+                                                        itemsMap[attrName] = mp
+                                                        break
+                                                }
+                                        }
+                                }
+                                if attrExists != true {
+                                        tb.ldEntities_lock.Unlock()
+                                        err := errors.New("Attribute not found!")
+                                        return nil, err
+                                }
+                        } else {
+                                tb.ldEntities_lock.Unlock()
+                                err := errors.New("Entity not found!")
+                                return nil, err
+                        }
+                        tb.ldEntities_lock.Unlock()
+                }
+
+                DEBUG.Println("Final itemsMap...")
+                e1, _ := json.MarshalIndent(itemsMap, "", " ")
+                DEBUG.Println(string(e1))
+
+                if expanded, err := tb.ExpandData(itemsMap); err != nil {
+                        return nil, err
+                } else {
+                        e1, _ := json.MarshalIndent(expanded, "", " ")
+                        DEBUG.Println("Expanded itemsMap...", string(e1))
+                        return expanded, nil
+                }
+
+        }
+
+}
+
+func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
+        linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+        var context []interface{}
+        context = append(context, linkMap["rel"])
+
+        itemsMap := make(map[string]interface{})
+        itemsMap["@context"] = context
+        itemsMap["type"] = typ //Error, when entire slice typ is assigned :  invalid type value: @type value must be a string or array of strings
+
+        // Pretty print
+        itmp, _ := json.MarshalIndent(itemsMap, "", " ")
+        DEBUG.Println("itemsMap........:\n", string(itmp))
+
+        resolved, err := tb.ExpandData(itemsMap)
+
+        if err != nil {
+                fmt.Println("Error: ", err)
+                return ""
+        }
+
+        // Pretty print
+        expData, _ := json.MarshalIndent(resolved, "", " ")
+        DEBUG.Println("expanded........:\n", string(expData))
+
+        sz := Serializer{}
+        typ = sz.DeSerializeType(resolved)
+        return typ
+}
+
 // Expand the NGSI-LD Data with context
 func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
 	proc := ld.NewJsonLdProcessor()
@@ -2273,3 +2443,617 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []LDContextE
 	}
 	INFO.Println("NOTIFY is sent to the subscriber, ", subscriberURL)
 }
+
+//PATCH
+func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Request) {
+        var context []interface{}
+        eid := r.PathParam("eid")
+        fmt.Println("Eid:", eid)
+        if ctype := r.Header.Get("Content-Type"); ctype == "application/json" {
+                entity := tb.ldGetEntity(eid)
+                if entity != nil {
+                        //Get a resolved object ([]interface object)
+                        resolved, err := tb.ExpandAttributePayload(r, context)
+
+                        // Pretty print
+                        attr, _ := json.MarshalIndent(resolved, "", " ")
+                        DEBUG.Println("Resolved.........Attr.....: ", string(attr))
+
+                        if err != nil {
+                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        } else {
+                                // Deserialize the resolved payload
+                                sz := Serializer{}
+                                deSerializedAttributePayload, err := sz.DeSerializeEntity(resolved)
+                                if err != nil {
+                                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                        return
+                                } else {
+                                        // Pretty print
+                                        attr, _ := json.MarshalIndent(deSerializedAttributePayload, "", " ")
+                                        DEBUG.Println("Deserialized.........Attr.....: ", string(attr))
+
+                                        err := tb.updateAttributes(deSerializedAttributePayload, eid)
+                                        if err != nil {
+                                                rest.Error(w, "Some of the attributes were not found!", 207)
+                                                return
+                                        }
+
+                                }
+                        }
+                } else {
+                        ERROR.Println("The entity was not found!")
+                        rest.Error(w, "The entity was not found!", 404)
+                        return
+                }
+        } else {
+                rest.Error(w, "Bad Request! Content-Type Header is Missing!", 400)
+                return
+        }
+}
+
+//POST
+func (tb *ThinBroker) LDAppendEntityAttributes(w rest.ResponseWriter, r *rest.Request) {
+        var context []interface{}
+        eid := r.PathParam("eid")
+        fmt.Println("Eid:", eid)
+        if ctype := r.Header.Get("Content-Type"); ctype == "application/json" {
+                entity := tb.ldGetEntity(eid)
+                if entity != nil {
+                        //Get a resolved object ([]interface object)
+                        resolved, err := tb.ExpandAttributePayload(r, context)
+
+                        // Pretty print
+                        attr, _ := json.MarshalIndent(resolved, "", " ")
+                        DEBUG.Println("Resolved.........Attr.....: ", string(attr))
+
+                        if err != nil {
+                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        } else {
+                                // Deserialize the resolved payload
+                                sz := Serializer{}
+                                deSerializedAttributePayload, err := sz.DeSerializeEntity(resolved)
+                                if err != nil {
+                                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                        return
+                                } else {
+                                        // Pretty print
+                                        attr, _ := json.MarshalIndent(deSerializedAttributePayload, "", " ")
+                                        DEBUG.Println("Deserialized.........Attr.....: ", string(attr))
+
+                                        tb.ldEntities_lock.Lock()
+
+                                        if deSerializedAttributePayload.Properties != nil {
+
+                                                tb.ldEntities[eid].Properties = append(tb.ldEntities[eid].Properties, deSerializedAttributePayload.Properties...)
+                                        }
+
+                                        if deSerializedAttributePayload.Relationships != nil {
+                                                tb.ldEntities[eid].Relationships = append(tb.ldEntities[eid].Relationships, deSerializedAttributePayload.Relationships...)
+                                        }
+                                        tb.ldEntities_lock.Unlock()
+                                }
+                        }
+                } else {
+                        rest.Error(w, "Entity was not found!", 404)
+                        return
+                }
+        } else {
+                rest.Error(w, "Bad Request! Content-Type Header is Missing!", 400)
+                return
+        }
+}
+
+//PATCH: Partial update, Attr name in URL, value in payload
+func (tb *ThinBroker) LDUpdateEntityByAttribute(w rest.ResponseWriter, r *rest.Request) {
+        var context []interface{}
+        eid := r.PathParam("eid")
+        attr := r.PathParam("attr")
+        if ctype := r.Header.Get("Content-Type"); ctype == "application/json" {
+                entity := tb.ldGetEntity(eid)
+                if entity != nil {
+                        //Get a resolved object ([]interface object)
+                        resolved, err := tb.ExpandAttributePayload(r, context, eid, attr)
+
+                        // Pretty print
+                        attr, _ := json.MarshalIndent(resolved, "", " ")
+                        DEBUG.Println("Resolved.........Attr.....: ", string(attr))
+
+                        if err != nil {
+                                rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                return
+                        } else {
+                                // Deserialize the resolved payload
+                                sz := Serializer{}
+                                DEBUG.Println("Serializer created.....: ", string(attr))
+                                deSerializedAttributePayload, err := sz.DeSerializeEntity(resolved)
+                                if err != nil {
+                                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                                        return
+                                } else {
+                                        // Pretty print
+                                        attr, _ := json.MarshalIndent(deSerializedAttributePayload, "", " ")
+                                        DEBUG.Println("Deserialized.........Attr.....: ", string(attr))
+
+                                        err := tb.updateAttributes(deSerializedAttributePayload, eid)
+                                        if err != nil {
+                                                rest.Error(w, "Some of the attributes were not found!", 207)
+                                                return
+                                        }
+
+                                }
+                        }
+                } else {
+                        ERROR.Println("The entity was not found!")
+                        rest.Error(w, "The entity was not found!", 404)
+                        return
+                }
+        } else {
+                rest.Error(w, "Bad Request! Content-Type Header is Missing!", 400)
+                return
+        }
+}
+
+func (tb *ThinBroker) updateAttributes(elem LDContextElement, eid string) error {
+        tb.ldEntities_lock.Lock()
+        missing := false
+        if elem.Properties != nil {
+                for _, property := range elem.Properties {
+                        attrExists := false
+                        for i := 0; i < len(tb.ldEntities[eid].Properties); i++ {
+                                if tb.ldEntities[eid].Properties[i].Name == property.Name {
+                                        attrExists = true
+                                        if property.Value != nil {
+                                                tb.ldEntities[eid].Properties[i].Value = property.Value
+                                        }
+                                        if property.ObservedAt != "" {
+                                                tb.ldEntities[eid].Properties[i].ObservedAt = property.ObservedAt
+                                        }
+                                        if property.DatasetId != "" {
+                                                tb.ldEntities[eid].Properties[i].DatasetId = property.DatasetId
+                                        }
+                                        if property.InstanceId != "" {
+                                                tb.ldEntities[eid].Properties[i].InstanceId = property.InstanceId
+                                        }
+                                        if property.CreatedAt != "" {
+                                                tb.ldEntities[eid].Properties[i].CreatedAt = property.CreatedAt
+                                        }
+                                        if property.UnitCode != "" {
+                                                tb.ldEntities[eid].Properties[i].UnitCode = property.UnitCode
+                                        }
+                                        tb.ldEntities[eid].Properties[i].ModifiedAt = time.Now().String()
+                                        break
+                                }
+                        }
+                        if attrExists != true {
+                                ERROR.Println("Property", property.Name, "was not found in the entity!")
+                                missing = true
+                        }
+                }
+        }
+        if elem.Relationships != nil {
+                for _, relationship := range elem.Relationships {
+                        attrExists := false
+                        for i := 0; i < len(tb.ldEntities[eid].Relationships); i++ {
+                                if tb.ldEntities[eid].Relationships[i].Name == relationship.Name {
+                                        attrExists = true
+                                        if relationship.Object != "" {
+                                                tb.ldEntities[eid].Relationships[i].Object = relationship.Object
+                                        }
+                                        if relationship.ProvidedBy.Type != "" {
+                                                tb.ldEntities[eid].Relationships[i].ProvidedBy.Type = relationship.ProvidedBy.Type
+                                        }
+                                        if relationship.ProvidedBy.Object != "" {
+                                                tb.ldEntities[eid].Relationships[i].ProvidedBy.Object = relationship.ProvidedBy.Object
+                                        }
+                                        if relationship.DatasetId != "" {
+                                                tb.ldEntities[eid].Relationships[i].DatasetId = relationship.DatasetId
+                                        }
+                                        if relationship.InstanceId != "" {
+                                                tb.ldEntities[eid].Relationships[i].InstanceId = relationship.InstanceId
+                                        }
+                                        if relationship.CreatedAt != "" {
+                                                tb.ldEntities[eid].Relationships[i].CreatedAt = relationship.CreatedAt
+                                        }
+                                        tb.ldEntities[eid].Relationships[i].ModifiedAt = time.Now().String()
+                                        break
+                                }
+                        }
+                        if attrExists != true {
+                                ERROR.Println("Relationship", relationship.Name, "was not found in the entity!")
+                                missing = true
+                        }
+                }
+        }
+        if missing == true {
+                tb.ldEntities_lock.Unlock()
+                err := errors.New("Some attributes were not found!")
+                return err
+        }
+        tb.ldEntities_lock.Unlock()
+        return nil
+}
+
+func (tb *ThinBroker) ldDeleteEntity(eid string) error {
+        tb.ldEntities_lock.Lock()
+        if tb.ldEntities[eid] != nil {
+                delete(tb.ldEntities, eid)
+        } else {
+                tb.ldEntities_lock.Unlock()
+                ERROR.Println("Entity not found!")
+                err := errors.New("Entity not found!")
+                return err
+        }
+        tb.ldEntities_lock.Unlock()
+        return nil
+}
+
+func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string) error {
+        tb.ldEntities_lock.Lock()
+        if tb.ldEntities[eid] != nil {
+                attrExists := false
+                for i := 0; i < len(tb.ldEntities[eid].Properties); i++ {
+                        if strings.Contains(tb.ldEntities[eid].Properties[i].Name, attr) {
+                                attrExists = true
+                                tb.ldEntities[eid].Properties = append(tb.ldEntities[eid].Properties[:i], tb.ldEntities[eid].Properties[i+1:]...)
+                                break
+                        } else {
+                                continue
+                        }
+                }
+                if attrExists != true {
+                        for i := 0; i < len(tb.ldEntities[eid].Relationships); i++ {
+                                if strings.Contains(tb.ldEntities[eid].Relationships[i].Name, attr) {
+                                        attrExists = true
+                                        tb.ldEntities[eid].Relationships = append(tb.ldEntities[eid].Relationships[:i], tb.ldEntities[eid].Relationships[i+1:]...)
+                                        break
+                                }
+                        }
+                }
+                if attrExists != true {
+                        tb.ldEntities_lock.Unlock()
+                        ERROR.Println("Attribute not found!")
+                        err := errors.New("Attribute not found!")
+                        return err
+                }
+        } else {
+                tb.ldEntities_lock.Unlock()
+                ERROR.Println("Entity not found!")
+                err := errors.New("Entity not found!")
+                return err
+        }
+        //delete(tb.ldEntities[eid].Properties,
+        tb.ldEntities_lock.Unlock()
+        return nil
+
+}
+
+func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []*LDContextElement {
+        entities := []*LDContextElement{}
+        tb.ldEntities_lock.Lock()
+        for _, entity := range tb.ldEntities {
+                allExist := true
+                for _, attr := range attrs {
+                        attrExists := false
+                        for _, property := range entity.Properties {
+                                if property.Name == attr {
+                                        attrExists = true
+                                        fmt.Println("Attr exists: ", attrExists)
+                                        break
+                                }
+                        }
+                        if attrExists != true {
+                                for _, relationship := range entity.Relationships {
+                                        if relationship.Name == attr {
+                                                attrExists = true
+                                                fmt.Println("Attr exists: ", attrExists)
+                                                break
+                                        }
+                                }
+                        }
+                        if attrExists != true {
+                                fmt.Println("attrExists = false")
+                                allExist = false
+                                break
+                        }
+                }
+                fmt.Println("allExist: ", allExist)
+                if allExist == false {
+                        continue
+                } else {
+                        entities = append(entities, entity)
+                }
+        }
+        tb.ldEntities_lock.Unlock()
+        return entities
+}
+
+func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []*LDContextElement {
+        tb.ldEntities_lock.Lock()
+        entities := []*LDContextElement{}
+
+        for index, eid := range eids {
+                if entity, ok := tb.ldEntities[eid]; ok == true {
+                        if entity.Type == typ[index] {
+                                entities = append(entities, entity)
+                        }
+                }
+        }
+        tb.ldEntities_lock.Unlock()
+        return entities
+}
+
+func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]*LDContextElement, error) {
+        entities := []*LDContextElement{}
+        typ := typs[0]
+        if link != "" {
+                typ = tb.getTypeResolved(link, typ)
+                if typ == "" {
+                        err := errors.New("Type not resolved!")
+                        return nil, err
+                }
+        }
+        tb.ldEntities_lock.Lock()
+        for _, entity := range tb.ldEntities {
+                if entity.Type == typ {
+                        entities = append(entities, entity)
+                }
+        }
+        tb.ldEntities_lock.Unlock()
+        return entities, nil
+}
+
+func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []*LDContextElement {
+        entities := []*LDContextElement{}
+
+        for eid, entity := range tb.ldEntities {
+                for index, idPattern := range idPatterns {
+                        if strings.Contains(idPattern, ".*") && strings.Contains(idPattern, "*.") {
+                                idPattern = strings.Trim(idPattern, ".*")
+                                idPattern = strings.Trim(idPattern, "*.")
+                                if strings.Contains(eid, idPattern) {
+                                        if entity.Type == typ[index] {
+                                                entities = append(entities, entity)
+                                                break
+                                        }
+                                }
+                        }
+                        if strings.Contains(idPattern, ".*") {
+                                idPattern = strings.Trim(idPattern, ".*")
+                                if strings.HasPrefix(eid, idPattern) {
+                                        if entity.Type == typ[index] {
+                                                entities = append(entities, entity)
+                                                break
+                                        }
+                                }
+                        }
+                        if strings.Contains(idPattern, "*.") {
+                                idPattern = strings.Trim(idPattern, "*.")
+                                if strings.HasSuffix(eid, idPattern) {
+                                        if entity.Type == typ[index] {
+                                                entities = append(entities, entity)
+                                                break
+                                        }
+                                }
+                        }
+                }
+        }
+        tb.ldEntities_lock.Unlock()
+        return entities
+}
+
+// Registration
+
+func (tb *ThinBroker) updateCSourceRegistration(rid string) error {
+
+        return nil
+}
+
+func (tb *ThinBroker) deleteCSourceRegistration(rid string) error {
+        tb.ldEntityID2RegistrationID_lock.Lock()
+        tb.ldContextRegistrations_lock.Lock()
+
+        // find rid in registrations map
+        if registration, ok := tb.ldContextRegistrations[rid]; ok == true {
+                fmt.Println("Found Registration..........")
+                client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+                for _, info := range registration.Information {
+
+                        // extract eids
+                        fmt.Println("extract eids..........")
+                        for _, entity := range info.Entities {
+
+                                // unregister entity at discovery
+                                fmt.Println("unregister entity at discovery..........")
+                                err := client.UnregisterEntity(entity.ID)
+                                if err != nil {
+                                        tb.ldContextRegistrations_lock.Unlock()
+                                        tb.ldEntityID2RegistrationID_lock.Unlock()
+                                        ERROR.Println(err)
+                                        return err
+                                }
+
+                                // delete eid from entityID2regID map
+                                fmt.Println("delete eid from entityID2regID map........")
+                                delete(tb.ldEntityID2RegistrationID, entity.ID)
+                        }
+                }
+
+                // delete registration from registrations map
+                fmt.Println("delete registration from registrations map.........")
+                delete(tb.ldContextRegistrations, rid)
+
+        } else {
+                fmt.Println("Reg not found!..........")
+                tb.ldContextRegistrations_lock.Unlock()
+                tb.ldEntityID2RegistrationID_lock.Unlock()
+                err := errors.New("Registration not found!")
+                return err
+        }
+        tb.ldContextRegistrations_lock.Unlock()
+        tb.ldEntityID2RegistrationID_lock.Unlock()
+        fmt.Println("Unlocked, returning..........")
+        return nil
+}
+
+func (tb *ThinBroker) getCSourceRegByType(typs []string, link string) ([]*CSourceRegistrationRequest, error) {
+        registrations := []*CSourceRegistrationRequest{}
+        typ := typs[0]
+        if link != "" {
+                typ = tb.getTypeResolved(link, typ)
+                if typ == "" {
+                        err := errors.New("Type not resolved!")
+                        return nil, err
+                }
+        }
+
+        tb.ldContextRegistrations_lock.Lock()
+
+        for _, registration := range tb.ldContextRegistrations {
+                for key, info := range registration.Information {
+                        entityExists := false
+                        for _, entity := range info.Entities {
+                                if entity.Type == typ {
+                                        entityExists = true
+                                        break
+                                }
+                        }
+                        if entityExists == true {
+                                for k, entity := range info.Entities {
+                                        if entity.Type != typ {
+                                                info.Entities = append(info.Entities[:k], info.Entities[k+1:]...)
+                                        }
+                                }
+                        } else {
+                                registration.Information = append(registration.Information[:key], registration.Information[key+1:]...)
+                        }
+                }
+                if registration.Information != nil {
+                        registrations = append(registrations, registration)
+                }
+        }
+        tb.ldContextRegistrations_lock.Unlock()
+        return registrations, nil
+}
+
+func (tb *ThinBroker) getCSourceRegByIdAndType(eids []string, typs []string) []*CSourceRegistrationRequest {
+        registrations := []*CSourceRegistrationRequest{}
+        tb.ldEntityID2RegistrationID_lock.Lock()
+        tb.ldContextRegistrations_lock.Lock()
+        for index, eid := range eids {
+                fmt.Println("ldEntityID2RegistrationID......\n", tb.ldEntityID2RegistrationID)
+                if rid, ok := tb.ldEntityID2RegistrationID[eid]; ok == true {
+                        registration := tb.ldContextRegistrations[rid]
+                        if registration != nil {
+                                for key, info := range registration.Information {
+                                        entityExists := false
+                                        for _, entity := range info.Entities {
+                                                if entity.ID == eid && entity.Type == typs[index] {
+                                                        entityExists = true
+                                                        break
+                                                }
+                                        }
+                                        if entityExists == true {
+                                                for k, entity := range info.Entities {
+                                                        if entity.ID != eid || entity.Type != typs[index] {
+                                                                info.Entities = append(info.Entities[:k], info.Entities[k+1:]...)
+                                                        }
+                                                }
+                                        } else {
+                                                registration.Information = append(registration.Information[:key], registration.Information[key+1:]...)
+                                        }
+                                }
+                                if registration.Information != nil {
+                                        registrations = append(registrations, registration)
+                                }
+                        }
+                }
+        }
+        tb.ldContextRegistrations_lock.Unlock()
+        tb.ldEntityID2RegistrationID_lock.Unlock()
+        return registrations
+}
+
+func (tb *ThinBroker) getCSourceRegByIdPatternAndType(idPatterns []string, typs []string) []*CSourceRegistrationRequest {
+        tb.ldEntityID2RegistrationID_lock.Lock()
+        registrations := []*CSourceRegistrationRequest{}
+        for index, idPattern := range idPatterns {
+                if strings.Contains(idPattern, ".*") && strings.Contains(idPattern, "*.") {
+                        idPattern = strings.Trim(idPattern, ".*")
+                        idPattern = strings.Trim(idPattern, "*.")
+                        for eid, rid := range tb.ldEntityID2RegistrationID {
+                                if strings.Contains(eid, idPattern) {
+                                        registrations = tb.getRebuiltLDRegistration(index, eid, rid, typs)
+                                }
+                        }
+                }
+                if strings.Contains(idPattern, ".*") {
+                        idPattern = strings.Trim(idPattern, ".*")
+                        for eid, rid := range tb.ldEntityID2RegistrationID {
+                                if strings.HasPrefix(eid, idPattern) {
+                                        registrations = tb.getRebuiltLDRegistration(index, eid, rid, typs)
+                                }
+                        }
+                }
+                if strings.Contains(idPattern, "*.") {
+                        idPattern = strings.Trim(idPattern, "*.")
+                        for eid, rid := range tb.ldEntityID2RegistrationID {
+                                if strings.HasSuffix(eid, idPattern) {
+                                        registrations = tb.getRebuiltLDRegistration(index, eid, rid, typs)
+                                }
+                        }
+                }
+        }
+        tb.ldEntityID2RegistrationID_lock.Unlock()
+        return registrations
+}
+
+func (tb *ThinBroker) getRebuiltLDRegistration(patternIndex int, eid string, rid string, typs []string) []*CSourceRegistrationRequest {
+        registrations := []*CSourceRegistrationRequest{}
+        tb.ldContextRegistrations_lock.Lock()
+        registration := tb.ldContextRegistrations[rid]
+        for key, info := range registration.Information {
+                entityExists := false
+                for _, entity := range info.Entities {
+                        if entity.ID == eid && entity.Type == typs[patternIndex] {
+                                entityExists = true
+                                break
+                        }
+                }
+                if entityExists == true {
+                        for k, entity := range info.Entities {
+                                if entity.ID != eid || entity.Type != typs[patternIndex] {
+                                        info.Entities = append(info.Entities[:k], info.Entities[k+1:]...)
+                                }
+                        }
+                } else {
+                        registration.Information = append(registration.Information[:key], registration.Information[key+1:]...)
+                }
+        }
+        if registration.Information != nil {
+                registrations = append(registrations, registration)
+        }
+
+        tb.ldContextRegistrations_lock.Unlock()
+        return registrations
+}
+
+// Subscription
+func (tb *ThinBroker) updateLDSubscription(sid string) {
+
+}
+
+func (tb *ThinBroker) deleteLDSubscription(sid string) {
+
+}
+
+func (tb *ThinBroker) getLDSubscription(sid string) {
+
+}
+
+func (tb *ThinBroker) GetLDSubscriptions(w rest.ResponseWriter, r *rest.Request) {
+
+}
+
