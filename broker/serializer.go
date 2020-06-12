@@ -247,7 +247,7 @@ func (sz Serializer) getProperty(propertyName string, propertyMap map[string]int
 	}
 	Property.Type = PROPERTY
 	if propertyMap[HAS_VALUE] != nil {
-		Property.Value = sz.getValuefromArray(propertyMap[HAS_VALUE].([]interface{}))
+		Property.Value = sz.getValueFromArray(propertyMap[HAS_VALUE].([]interface{}))
 	} else {
 		err := errors.New("Property Value can not be nil!")
 		return Property, err
@@ -337,7 +337,7 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 	return Value
 }
 
-func (sz Serializer) getValuefromArray(hasValue []interface{}) interface{} {
+func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
 	var value interface{}
 	if len(hasValue) > 0 {
