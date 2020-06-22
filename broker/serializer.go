@@ -612,17 +612,17 @@ func (sz Serializer) getEndpoint(endpointArray []interface{}) (Endpoint, error) 
 }
 
 func (sz Serializer) getTimeStamp(timestampArray []interface{}) TimeInterval {
-        timeInterval := TimeInterval{}
-        for _, timestamp := range timestampArray {
-                timestampMap := timestamp.(map[string]interface{})
-                for k, v := range timestampMap {
-                        switch k {
-                        case START:
-                                timeInterval.Start = sz.getDateAndTimeValue(v.([]interface{}))
-                        case END:
-                                timeInterval.End = sz.getDateAndTimeValue(v.([]interface{}))
-                        }
-                }
-        }
-        return timeInterval
+	timeInterval := TimeInterval{}
+	for _, timestamp := range timestampArray {
+		timestampMap := timestamp.(map[string]interface{})
+		for k, v := range timestampMap {
+			switch k {
+			case START:
+				timeInterval.Start = sz.getDateAndTimeValue(v.([]interface{}))
+			case END:
+				timeInterval.End = sz.getDateAndTimeValue(v.([]interface{}))
+			}
+		}
+	}
+	return timeInterval
 }
