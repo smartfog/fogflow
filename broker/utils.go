@@ -15,7 +15,7 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL,subscriptionId)
+		return postOrionV2NotifyContext(ctxElems, URL, subscriptionId)
 	}
 
 	for _, elem := range ctxElems {
@@ -429,76 +429,76 @@ func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, U
 }
 
 func hasUpdatedLDAttributes(recvElement *LDContextElement, curElement *LDContextElement) bool {
-        if recvElement == nil && curElement == nil {
-                return false
-        }
+	if recvElement == nil && curElement == nil {
+		return false
+	}
 
-        if curElement == nil {
-                return true
-        }
+	if curElement == nil {
+		return true
+	}
 
-        for _, property := range recvElement.Properties {
-                if isUpdatedProperty(property, curElement) == true {
-                        return true
-                }
-        }
+	for _, property := range recvElement.Properties {
+		if isUpdatedProperty(property, curElement) == true {
+			return true
+		}
+	}
 
-        for _, relationship := range recvElement.Relationships {
-                if isUpdatedRelationship(relationship, curElement) == true {
-                        return true
-                }
-        }
+	for _, relationship := range recvElement.Relationships {
+		if isUpdatedRelationship(relationship, curElement) == true {
+			return true
+		}
+	}
 
-        return false
+	return false
 }
 
 func isUpdatedProperty(property Property, curElement *LDContextElement) bool {
-        for _, curProperty := range curElement.Properties {
-                if property.Name == curProperty.Name {
-                        if property.Value != curProperty.Value {
-                                return true
-                        }
-                        if property.ObservedAt != curProperty.ObservedAt {
-                                return true
-                        }
-                        if property.DatasetId != curProperty.DatasetId {
-                                return true
-                        }
-                        if property.InstanceId != curProperty.InstanceId {
-                                return true
-                        }
-                        if property.UnitCode != curProperty.UnitCode {
-                                return true
-                        }
-                        // Also consider linked Property or Relationship change
-                }
-        }
-        return false
+	for _, curProperty := range curElement.Properties {
+		if property.Name == curProperty.Name {
+			if property.Value != curProperty.Value {
+				return true
+			}
+			if property.ObservedAt != curProperty.ObservedAt {
+				return true
+			}
+			if property.DatasetId != curProperty.DatasetId {
+				return true
+			}
+			if property.InstanceId != curProperty.InstanceId {
+				return true
+			}
+			if property.UnitCode != curProperty.UnitCode {
+				return true
+			}
+			// Also consider linked Property or Relationship change
+		}
+	}
+	return false
 }
 
 func isUpdatedRelationship(relationship Relationship, curElement *LDContextElement) bool {
-        for _, curRelationship := range curElement.Relationships {
-                if relationship.Name == curRelationship.Name {
-                        if relationship.Object != curRelationship.Object {
-                                return true
-                        }
-                        if relationship.ObservedAt != curRelationship.ObservedAt {
-                                return true
-                        }
-                        if relationship.ProvidedBy.Type != curRelationship.ProvidedBy.Type {
-                                return true
-                        }
-                        if relationship.ProvidedBy.Object != curRelationship.ProvidedBy.Object {
-                                return true
-                        }
-                        if relationship.DatasetId != curRelationship.DatasetId {
-                                return true
-                        }
-                        if relationship.InstanceId != curRelationship.InstanceId {
-                                return true
-                        }
-                        // Also consider linked Property or Relationship change
-                }
-        }
-        return false
+	for _, curRelationship := range curElement.Relationships {
+		if relationship.Name == curRelationship.Name {
+			if relationship.Object != curRelationship.Object {
+				return true
+			}
+			if relationship.ObservedAt != curRelationship.ObservedAt {
+				return true
+			}
+			if relationship.ProvidedBy.Type != curRelationship.ProvidedBy.Type {
+				return true
+			}
+			if relationship.ProvidedBy.Object != curRelationship.ProvidedBy.Object {
+				return true
+			}
+			if relationship.DatasetId != curRelationship.DatasetId {
+				return true
+			}
+			if relationship.InstanceId != curRelationship.InstanceId {
+				return true
+			}
+			// Also consider linked Property or Relationship change
+		}
+	}
+	return false
 }

@@ -3,8 +3,8 @@ package main
 import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"sort"
-	"sync"
 	"strings"
+	"sync"
 )
 
 type Candidate struct {
@@ -47,12 +47,12 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 	er.ctxRegistrationList_lock.Lock()
 	defer er.ctxRegistrationList_lock.Unlock()
 
-        var eid string
-        if entity.ID != "" {
-                eid = entity.ID
-        } else if entity.IdPattern != "" { // NGSI-LD feature update, support for registration based on IdPattern added.
-                eid = entity.IdPattern
-        }
+	var eid string
+	if entity.ID != "" {
+		eid = entity.ID
+	} else if entity.IdPattern != "" { // NGSI-LD feature update, support for registration based on IdPattern added.
+		eid = entity.IdPattern
+	}
 
 	if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
 		// update existing entity type
@@ -184,30 +184,30 @@ func (er *EntityRepository) retrieveRegistration(entityID string) *EntityRegistr
 	er.ctxRegistrationList_lock.RLock()
 	defer er.ctxRegistrationList_lock.RUnlock()
 
-        if _, ok := er.ctxRegistrationList[entityID]; ok == true {
-                return er.ctxRegistrationList[entityID]
-        } else {
-                for id, registration := range er.ctxRegistrationList {
-                        if strings.Contains(id, ".*") && strings.Contains(id, "*.") {
-                                id = strings.Trim(id, ".*")
-                                id = strings.Trim(id, "*.")
-                                if strings.Contains(entityID, id) {
-                                        return registration
-                                }
+	if _, ok := er.ctxRegistrationList[entityID]; ok == true {
+		return er.ctxRegistrationList[entityID]
+	} else {
+		for id, registration := range er.ctxRegistrationList {
+			if strings.Contains(id, ".*") && strings.Contains(id, "*.") {
+				id = strings.Trim(id, ".*")
+				id = strings.Trim(id, "*.")
+				if strings.Contains(entityID, id) {
+					return registration
+				}
 
-                        } else if strings.Contains(id, ".*") {
-                                id = strings.Trim(id, ".*")
-                                if strings.HasPrefix(entityID, id) {
-                                        return registration
-                                }
+			} else if strings.Contains(id, ".*") {
+				id = strings.Trim(id, ".*")
+				if strings.HasPrefix(entityID, id) {
+					return registration
+				}
 
-                        } else if strings.Contains(id, "*.") {
-                                id = strings.Trim(id, "*.")
-                                if strings.HasSuffix(entityID, id) {
-                                        return registration
-                                }
-                        }
-                }
-        }
-        return nil
+			} else if strings.Contains(id, "*.") {
+				id = strings.Trim(id, "*.")
+				if strings.HasSuffix(entityID, id) {
+					return registration
+				}
+			}
+		}
+	}
+	return nil
 }
