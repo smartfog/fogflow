@@ -485,9 +485,6 @@ func (sz Serializer) getGeometryCollectionLocation(geometries []interface{}) []G
 	return Geometries
 }
 
-func (sz Serializer) getTimestamp(timestamp []interface{}) {
-}
-
 func (sz Serializer) getInformation(information []interface{}) []RegistrationInfo {
 	regInfoArray := []RegistrationInfo{}
 	for _, val := range information {
@@ -612,4 +609,20 @@ func (sz Serializer) getEndpoint(endpointArray []interface{}) (Endpoint, error) 
 		}
 	}
 	return endpoint, nil
+}
+
+func (sz Serializer) getTimeStamp(timestampArray []interface{}) TimeInterval {
+        timeInterval := TimeInterval{}
+        for _, timestamp := range timestampArray {
+                timestampMap := timestamp.(map[string]interface{})
+                for k, v := range timestampMap {
+                        switch k {
+                        case START:
+                                timeInterval.Start = sz.getDateAndTimeValue(v.([]interface{}))
+                        case END:
+                                timeInterval.End = sz.getDateAndTimeValue(v.([]interface{}))
+                        }
+                }
+        }
+        return timeInterval
 }

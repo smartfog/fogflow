@@ -404,21 +404,6 @@ func (apisrv *RestApiSrv) GetQueryParamsRegistrations(w rest.ResponseWriter, r *
 	}
 }
 
-func (apisrv *RestApiSrv) UpdateCSourceRegistration(w rest.ResponseWriter, r *rest.Request) {
-	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" {
-		rid := r.PathParam("rid")
-		err := apisrv.broker.updateCSourceRegistration(rid)
-		if err != nil {
-			w.WriteHeader(400)
-		} else {
-			w.WriteHeader(200)
-		}
-	} else {
-		rest.Error(w, "Missing Content-Type Header!", http.StatusBadRequest)
-		return
-	}
-}
-
 func (apisrv *RestApiSrv) DeleteCSourceRegistration(w rest.ResponseWriter, r *rest.Request) {
 	rid := r.PathParam("rid")
 	err := apisrv.broker.deleteCSourceRegistration(rid)

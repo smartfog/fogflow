@@ -1244,9 +1244,6 @@ func (tb *ThinBroker) NotifyContextAvailability(w rest.ResponseWriter, r *rest.R
 	notifyContextAvailabilityResp.ResponseCode.ReasonPhrase = "OK"
 	w.WriteJson(&notifyContextAvailabilityResp)
 
-	// Pretty print the NGSI-LD context element
-	resp, _ := json.MarshalIndent(notifyContextAvailabilityResp, "", " ")
-
 	subID := notifyContextAvailabilityReq.SubscriptionId
 
 	//map it to the main subscription
@@ -2216,9 +2213,6 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 	itemsMap["@context"] = context
 	itemsMap["type"] = typ //Error, when entire slice typ is assigned :  invalid type value: @type value must be a string or array of strings
 
-	// Pretty print
-	itmp, _ := json.MarshalIndent(itemsMap, "", " ")
-
 	resolved, err := tb.ExpandData(itemsMap)
 
 	if err != nil {
@@ -2413,9 +2407,6 @@ func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Re
 			//Get a resolved object ([]interface object)
 			resolved, err := tb.ExpandAttributePayload(r, context)
 
-			// Pretty print
-			attr, _ := json.MarshalIndent(resolved, "", " ")
-
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -2427,9 +2418,6 @@ func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Re
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				} else {
-					// Pretty print
-					attr, _ := json.MarshalIndent(deSerializedAttributePayload, "", " ")
-
 					err := tb.updateAttributes(deSerializedAttributePayload, eid)
 					if err != nil {
 						rest.Error(w, "Some of the attributes were not found!", 207)
@@ -2459,9 +2447,6 @@ func (tb *ThinBroker) LDAppendEntityAttributes(w rest.ResponseWriter, r *rest.Re
 			//Get a resolved object ([]interface object)
 			resolved, err := tb.ExpandAttributePayload(r, context)
 
-			// Pretty print
-			attr, _ := json.MarshalIndent(resolved, "", " ")
-
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -2480,9 +2465,6 @@ func (tb *ThinBroker) LDAppendEntityAttributes(w rest.ResponseWriter, r *rest.Re
 					for key, _ := range deSerializedAttributePayload.Relationships {
 						deSerializedAttributePayload.Relationships[key].CreatedAt = time.Now().String()
 					}
-
-					// Pretty print
-					attr, _ := json.MarshalIndent(deSerializedAttributePayload, "", " ")
 
 					tb.ldEntities_lock.Lock()
 					hasUpdatedAttrs := hasUpdatedLDAttributes(&deSerializedAttributePayload, tb.ldEntities[eid])
@@ -2523,9 +2505,6 @@ func (tb *ThinBroker) LDUpdateEntityByAttribute(w rest.ResponseWriter, r *rest.R
 			//Get a resolved object ([]interface object)
 			resolved, err := tb.ExpandAttributePayload(r, context, eid, attr)
 
-			// Pretty print
-			attr, _ := json.MarshalIndent(resolved, "", " ")
-
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -2537,9 +2516,6 @@ func (tb *ThinBroker) LDUpdateEntityByAttribute(w rest.ResponseWriter, r *rest.R
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				} else {
-					// Pretty print
-					attr, _ := json.MarshalIndent(deSerializedAttributePayload, "", " ")
-
 					err := tb.updateAttributes(deSerializedAttributePayload, eid)
 					if err != nil {
 						rest.Error(w, "Some of the attributes were not found!", 207)
@@ -2927,8 +2903,8 @@ func (tb *ThinBroker) deleteCSourceRegistration(rid string) error {
 	return nil
 }
 
-func (tb *ThinBroker) getCSourceRegByType(typs []string, link string) ([]*CSourceRegistrationRequest, error) {
-	registrations := []*CSourceRegistrationRequest{}
+func (tb *ThinBroker) getCSourceRegByType(typs []string, link string) ([]CSourceRegistrationRequest, error) {
+	registrations := []CSourceRegistrationRequest{}
 	typ := typs[0]
 	if link != "" {
 		typ = tb.getTypeResolved(link, typ)
