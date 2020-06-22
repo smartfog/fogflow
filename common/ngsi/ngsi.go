@@ -1054,10 +1054,21 @@ type LDNotifyContextRequest struct {
 type LDContextElement struct {
         Id        string `json:"id"`
         Type      string `json:"type"`
-        Properties      []Property `json:"properties"`
-        Relationships   []Relationship `json:"relationships"`
+        Properties      []Property `json:"properties",omitempty`
+        Relationships   []Relationship `json:"relationships",omitempty`
         CreatedAt       string `json:"createdAt"`
-        Location        LDLocation `json:"location"`
+        Location        LDLocation `json:"location",omitempty`
+        ObservationSpace GeoProperty `json:"observationSpace",omitempty`
+        OperationSpace GeoProperty `json:"operationSpace",omitempty`
+}
+
+type GeoProperty struct {
+        Type    string `json:"type"`
+        Value   interface{} `json:"value"`
+        ObservedAt string `json:"observedAt", omitemtpy`
+        DatasetId string `json:"datasetId", omitempty` //URI
+        //<PropertyName>
+        //<RelationshipName>
 }
 
 func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *LDContextElement {
@@ -1122,26 +1133,29 @@ type Property struct {
         Name    string `json:"name"`
         Type    string `json:"type"`
         Value   interface{} `json:"value"`      // Can also be a string or a JSON object
-        ObservedAt      string          //DateTime value when the property became valid, Optional.
-        DatasetId       string          //<<URI>>, Optional.
-        InstanceId      string          //<<URI>> uniquely identifying a property instance (Read note in 4.5.2). System Generated, Optional.
-        CreatedAt       string          //DateTime value when property entered into NGSI-LD system. System Generated.
-        ModifiedAt      string          //DateTime value when property was last modified. System Generated.
-        UnitCode        string          //measurement unit corresponding to the Property value. UN/CEFACT Common Codes for Units of Measurement must be followed.
+        ObservedAt      string `json:"observedAt",omitempty`
+        DatasetId       string `json:"DatasetId",omitempty`  //<<URI>>, Optional.
+        InstanceId      string `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+        CreatedAt       string `json:"createdAt"`
+        ModifiedAt      string `json:"modifiedAt"`
+        UnitCode        string `json:"UnitCode",omitempty`
+        //<PropertyName>
+        //<RelationahipName>
 }
 
 type Relationship struct {
         Id      string `json:"id"`
         Name    string `json:"name"`
-        Type    string                  //Mandatory
-        Object  string                  //<<URI>>, Mandatory
-        ObservedAt      string          //DateTime value when the relationship became valid, Optional.
-        ProvidedBy      ProvidedBy
-        DatasetId       string          //<<URI>>, Optional.
-        InstanceId      string          //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
-        CreatedAt       string          //DateTime value when Relationship entered into NGSI-LD system. System Generated.
-        ModifiedAt      string          //DateTime value when Relationship was last modified. System Generated.
-        // 2 additional points...
+        Type    string `json:"type"`
+        Object  string `json:object`                 //<<URI>>, Mandatory
+        ObservedAt      string `json:"observedAt",omitempty`
+        ProvidedBy      ProvidedBy `json:"providedBy",omitempty`
+        DatasetId       string `json:"DatasetId",omitempty` //<<URI>>, Optional.
+        InstanceId      string `json:"InstanceId",omitempty`//<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+        CreatedAt       string `json:"createdAt"`
+        ModifiedAt      string `json:"modifiedAt"`
+        //<PropertyName>
+        //<RelationahipName>
 }
 
 type ProvidedBy struct {
@@ -1150,89 +1164,80 @@ type ProvidedBy struct {
 }
 
 type LDSubscriptionRequest struct {
-        Id      string `json:"id"`      //URI, if missing, will be assigned during subscription phase and returned to client
-        Type    string `json:"type"`    //shall be equal to "Subscription"
-        Name    string `json:"name"`
-        Description             string `json:"description"`
-        Entities                []EntityId`json:"entities"`  //empty array not allowed, insert 5.2.8
-        WatchedAttributes       []string `json:"watchedAttributes"`
-        TimeInterval            uint `json:"timeInterval"`
-        Q                       string `json:"q"`
-        GeoQ                    GeoQuery `json:"geoQ"`
-        Csf                     string `json:"csf"`
-        IsActive                bool `json:"isActive"`
+        Id      string `json:"id",omitempty`      //URI, if missing, will be assigned during subscription phase and returned to client
+        Type    string `json:"type"`    //should be equal to "Subscription"
+        Name    string `json:"name",omitempty`
+        Description             string `json:"description",omitempty`
+        Entities                []EntityId`json:"entities",omitempty`   //empty array not allowed
+        WatchedAttributes       []string `json:"watchedAttributes",omitempty`   //empty array not allowed
+        TimeInterval            uint `json:"timeInterval",omitempty`
+        Q                       string `json:"q",omitempty`
+        GeoQ                    GeoQuery `json:"geoQ",omitempty`
+        Csf                     string `json:"csf",omitempty`
+        IsActive                bool `json:"isActive",omitempty`
         Notification            NotificationParams `json:"notification"`
-        Expires                 string `json:"expires"`
-        Throttling              uint `json:"throttling"`
-        TemporalQ               TemporalQuery `json:"temporalQ"`
-        Status                  string `json:"status"`
-        Subscriber              Subscriber
+        Expires                 string `json:"expires",omitempty`
+        Throttling              uint `json:"throttling",omitempty`
+        TemporalQ               TemporalQuery `json:"temporalQ",omitempty`
+        Status                  string `json:"status",omitempty`
+        Subscriber              Subscriber `json:"subscriber,omitempty",omitempty`
 }
-
-//type LDSubscription struct {
-//      LDSubscription  LDSubscriptionRequest
-//      Subscriber      Subscriber
-//}
 
 type GeoQuery struct {
         Geometry        string `json:"geometry"`
         Coordinates     string `json:"coordinates"`// string or JSON Array
         GeoRel          string `json:"georel"`
-        GeoProperty     string `json:"geoproperty"`
+        GeoProperty     string `json:"geoproperty",omitempty`
 }
 
 type NotificationParams struct {
-        Attributes      []string `json:"attributes"`
-        Format          string `json:"format"`
+        Attributes      []string `json:"attributes",omitempty`
+        Format          string `json:"format",omitempty`
         Endpoint        Endpoint `json:"endpoint"`
-        Status          string `json:"status"`
-        TimeSent       uint `json:"timeSent"`
-        LastNotification        string `json:"lastNotification"`
-        LastFailure             string `json:"lastFailure"`
-        LastSuccess             string `json:"lastSuccess"`
+        Status          string `json:"status",omitempty`
+        TimeSent       uint `json:"timeSent",omitempty`
+        LastNotification        string `json:"lastNotification",omitempty`
+        LastFailure             string `json:"lastFailure",omitempty`
+        LastSuccess             string `json:"lastSuccess",omitempty`
 }
 
 type Endpoint struct {
         URI     string `json:"uri"`     // URI
-        Accept  string `json:"accept"`
+        Accept  string `json:"accept",omitempty`
 }
 
 type TemporalQuery struct {
         TimeRel         string `json:"timerel"`
         Time            string `json:"time"`
-        EndTime         string `json:"endTime"`
-        TimeProperty    string `json:"timeproperty"`
+        EndTime         string `json:"endTime",omitempty`
+        TimeProperty    string `json:"timeproperty",omitempty`
 }
 
 type CSourceRegistrationRequest struct {
-        Id      string `json:"id"`      //URI
+        Id      string `json:"id",omitempty`      //URI
         Type    string `json:"type"`
-        Name    string `json:"name"`
-        Description             string `json:"description"`
+        Name    string `json:"name",omitempty`
+        Description             string `json:"description",omitempty`
         Information             []RegistrationInfo `json:"information"`         // at least one element in the array mandatory
-        ObservationInterval     TimeInterval `json:"observationInterval"`
-        managementInterval      TimeInterval `json:"managementInterval"`
-        Location                string `json:"location"` //interface{}          // Type = GeoJSON Geometry      TBD
+        ObservationInterval     TimeInterval `json:"observationInterval",omitempty`
+        managementInterval      TimeInterval `json:"managementInterval",omitempty`
+        Location                string `json:"location",omitempty` //interface{}          // Type = GeoJSON Geometry      TBD
         ObservationSpace        interface{} `json:"observationSpace,omitempty"` // Type = GeoJSON Geometry
         OperationSpace          interface{} `json:"operationSpace,omitempty"`   // Type = GeoJSON Geometry
-        Expires                 string  `json:expires`
+        Expires                 string  `json:expires,omitempty`
         Endpoint                string `json:"endpoint"`        //URI
+        //<CSourceProperty Name>
 }
 
 type RegistrationInfo struct {
-        Entities        []EntityId `json:"entities"`
+        Entities        []EntityId `json:"entities",omitempty`
         Properties      []string `json:"properties,omitempty"`
         Relationships   []string `json:"relationships,omitempty"`
 }
 
 type TimeInterval struct {
         Start   string `json:"start"`   //DateTime value
-        End     string `json:"end"`     //DateTime value
-}
-
-type CSourceRegistration struct {       // Registration with additional information
-        Registration    CSourceRegistrationRequest
-        ProviderURL     string
+        End     string `json:"end",omitempty`     //DateTime value
 }
 
 type CSourceRegistrationResponse struct {

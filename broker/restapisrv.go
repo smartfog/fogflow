@@ -68,14 +68,14 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
                 rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", apisrv.DeleteLDAttribute),
 
 		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
-                rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.UpdateCSourceRegistration),
+                rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", broker.UpdateCSourceRegistration),
                 rest.Delete("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.DeleteCSourceRegistration),
                 rest.Get("/ngsi-ld/v1/csourceRegistrations", apisrv.GetQueryParamsRegistrations),
 
 		rest.Post("/ngsi-ld/v1/subscriptions/", broker.LDCreateSubscription),
                 rest.Get("/ngsi-ld/v1/subscriptions/", broker.GetLDSubscriptions),
                 rest.Get("/ngsi-ld/v1/subscriptions/#sid", apisrv.GetLDSubscription),
-                rest.Patch("/ngsi-ld/v1/subscriptions/#sid", apisrv.UpdateLDSubscription),
+                rest.Patch("/ngsi-ld/v1/subscriptions/#sid", broker.UpdateLDSubscription),
                 rest.Delete("/ngsi-ld/v1/subscriptions/#sid", apisrv.DeleteLDSubscription),
 
 	)
@@ -299,9 +299,9 @@ func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request)
 
         err := apisrv.broker.ldDeleteEntity(eid)
         if err == nil {
-                w.WriteHeader(200)
+                w.WriteHeader(204)
         } else {
-                w.WriteHeader(404)
+                rest.Error(w, err.Error(), 404)
         }
 }
 
@@ -311,9 +311,9 @@ func (apisrv *RestApiSrv) DeleteLDAttribute(w rest.ResponseWriter, r *rest.Reque
 
         err := apisrv.broker.ldDeleteEntityAttribute(eid, attr)
         if err == nil {
-                w.WriteHeader(200)
+                w.WriteHeader(204)
         } else {
-                w.WriteHeader(404)
+                rest.Error(w, err.Error(), 404)
         }
 }
 
@@ -426,20 +426,27 @@ func (apisrv *RestApiSrv) DeleteCSourceRegistration(w rest.ResponseWriter, r *re
         if err != nil {
                 w.WriteHeader(404)
         } else {
-                w.WriteHeader(200)
+                w.WriteHeader(204)
         }
 }
 
 func (apisrv *RestApiSrv) GetLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-        // broker.getLDSubscription(sid)
-}
-
-func (apisrv *RestApiSrv) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-        // broker.updateLDSubscription(sid)
-
+        sid := r.PathParam("sid")
+        subscription := apisrv.broker.getLDSubscription(sid)
+        if subscription != nil {
+                w.WriteHeader(200)
+                w.WriteJson(subscription)
+        } else {
+                w.WriteHeader(404)
+        }
 }
 
 func (apisrv *RestApiSrv) DeleteLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-        // broker.deleteLDSubscription(sid)
-
+        sid := r.PathParam("sid")
+        err := apisrv.broker.deleteLDSubscription(sid)
+        if err != nil {
+                w.WriteHeader(404)
+        } else {
+                w.WriteHeader(204)
+        }
 }

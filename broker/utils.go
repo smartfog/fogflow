@@ -15,7 +15,7 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL)
+		return postOrionV2NotifyContext(ctxElems, URL,subscriptionId)
 	}
 
 	for _, elem := range ctxElems {
@@ -76,7 +76,7 @@ type OrionV2Metadata struct {
 }
 
 // send an notify to orion broker based on v2, for the compatability reason
-func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
+func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptionId string) error {
 	elementList := make([]map[string]interface{}, 0)
 	for _, elem := range ctxElems {
 		// convert it to NGSI v2
@@ -106,7 +106,7 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 	}
 
 	notifyCtxReq := &OrionV2NotifyContextRequest{
-		SubscriptionId: "",
+		SubscriptionId: subscriptionId,
 		Entities:       elementList,
 	}
 
@@ -378,7 +378,7 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 	(*ctxElement).Metadata = append((*ctxElement).Metadata, *metadata)
 }
 
-// NGSI-LD feature addition
+// NGSI-LD starts here.
 func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
 	//INFO.Println("NOTIFY: ", URL)
 	elementRespList := make([]LDContextElementResponse, 0)
@@ -426,4 +426,79 @@ func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, U
 	ioutil.ReadAll(resp.Body)
 
 	return nil
+}
+
+func hasUpdatedLDAttributes(recvElement *LDContextElement, curElement *LDContextElement) bool {
+        if recvElement == nil && curElement == nil {
+                return false
+        }
+
+        if curElement == nil {
+                return true
+        }
+
+        for _, property := range recvElement.Properties {
+                if isUpdatedProperty(property, curElement) == true {
+                        return true
+                }
+        }
+
+        for _, relationship := range recvElement.Relationships {
+                if isUpdatedRelationship(relationship, curElement) == true {
+                        return true
+                }
+        }
+
+        return false
+}
+
+func isUpdatedProperty(property Property, curElement *LDContextElement) bool {
+        for _, curProperty := range curElement.Properties {
+                if property.Name == curProperty.Name {
+                        if property.Value != curProperty.Value {
+                                return true
+                        }
+                        if property.ObservedAt != curProperty.ObservedAt {
+                                return true
+                        }
+                        if property.DatasetId != curProperty.DatasetId {
+                                return true
+                        }
+                        if property.InstanceId != curProperty.InstanceId {
+                                return true
+                        }
+                        if property.UnitCode != curProperty.UnitCode {
+                                return true
+                        }
+                        // Also consider linked Property or Relationship change
+                }
+        }
+        return false
+}
+
+func isUpdatedRelationship(relationship Relationship, curElement *LDContextElement) bool {
+        for _, curRelationship := range curElement.Relationships {
+                if relationship.Name == curRelationship.Name {
+                        if relationship.Object != curRelationship.Object {
+                                return true
+                        }
+                        if relationship.ObservedAt != curRelationship.ObservedAt {
+                                return true
+                        }
+                        if relationship.ProvidedBy.Type != curRelationship.ProvidedBy.Type {
+                                return true
+                        }
+                        if relationship.ProvidedBy.Object != curRelationship.ProvidedBy.Object {
+                                return true
+                        }
+                        if relationship.DatasetId != curRelationship.DatasetId {
+                                return true
+                        }
+                        if relationship.InstanceId != curRelationship.InstanceId {
+                                return true
+                        }
+                        // Also consider linked Property or Relationship change
+                }
+        }
+        return false
 }

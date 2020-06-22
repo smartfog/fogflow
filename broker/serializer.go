@@ -94,10 +94,10 @@ func (sz Serializer) DeSerializeRegistration(expanded []interface{}) (CSourceReg
 					return registration, err
 				}
 				break
+			// timestamp from payload is taken as observationInterval in given datatypes in spec:
 			case TIMESTAMP:
 				if v != nil {
-					//---------------------registration.Expires =
-					sz.getDateAndTimeValue(v.([]interface{}))
+					registration.ObservationInterval = sz.getTimeStamp(v.([]interface{}))
 				}
 				break
 			case DESCRIPTION:
@@ -152,7 +152,7 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 			switch k {
 			case ID:
 				if v != nil {
-					subscription.Id = sz.getIdFromArray(v.([]interface{}))
+					subscription.Id = sz.getId(v.(interface{}))
 				}
 				break
 			case TYPE:
@@ -202,6 +202,7 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 			}
 		}
 	}
+        subscription.IsActive = true
 	return subscription, nil
 }
 
@@ -248,10 +249,10 @@ func (sz Serializer) getProperty(propertyName string, propertyMap map[string]int
 	Property.Type = PROPERTY
 	if propertyMap[HAS_VALUE] != nil {
 		Property.Value = sz.getValueFromArray(propertyMap[HAS_VALUE].([]interface{}))
-	} else {
+	} /*else {
 		err := errors.New("Property Value can not be nil!")
 		return Property, err
-	}
+	}*/
 	if propertyMap[OBSERVED_AT] != nil {
 		Property.ObservedAt = sz.getDateAndTimeValue(propertyMap[OBSERVED_AT].([]interface{}))
 	}
@@ -264,11 +265,7 @@ func (sz Serializer) getProperty(propertyName string, propertyMap map[string]int
 		Property.InstanceId = sz.getInstanceId(propertyMap[INSTANCE_ID].([]interface{}))
 	}
 
-	Property.CreatedAt = time.Now().String()
-
-	if propertyMap[MODIFIED_AT] != nil {
-		Property.ModifiedAt = sz.getModifiedAt(propertyMap[MODIFIED_AT].([]interface{}))
-	}
+	Property.ModifiedAt = time.Now().String()
 
 	if propertyMap[UNIT_CODE] != nil {
 		Property.UnitCode = sz.getUnitCode(propertyMap[UNIT_CODE].(interface{}))
@@ -312,11 +309,7 @@ func (sz Serializer) getRelationship(relationshipName string, relationshipMap ma
 		Relationship.InstanceId = sz.getInstanceId(relationshipMap[INSTANCE_ID].([]interface{}))
 	}
 
-	Relationship.CreatedAt = time.Now().String()
-
-	if relationshipMap[MODIFIED_AT] != nil {
-		Relationship.ModifiedAt = sz.getModifiedAt(relationshipMap[MODIFIED_AT].([]interface{}))
-	}
+	Relationship.ModifiedAt = time.Now().String()
 
 	return Relationship, nil
 }
@@ -390,12 +383,6 @@ func (sz Serializer) getDatasetId(datasetId []interface{}) string {
 
 //INSTANCE_ID
 func (sz Serializer) getInstanceId(instanceId []interface{}) string {
-
-	return ""
-}
-
-//MODIFIED_AT
-func (sz Serializer) getModifiedAt(modifiedAt []interface{}) string {
 
 	return ""
 }
