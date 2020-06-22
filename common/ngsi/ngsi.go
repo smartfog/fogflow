@@ -1220,7 +1220,7 @@ type CSourceRegistrationRequest struct {
         Description             string `json:"description",omitempty`
         Information             []RegistrationInfo `json:"information"`         // at least one element in the array mandatory
         ObservationInterval     TimeInterval `json:"observationInterval",omitempty`
-        managementInterval      TimeInterval `json:"managementInterval",omitempty`
+        ManagementInterval      TimeInterval `json:"managementInterval",omitempty`
         Location                string `json:"location",omitempty` //interface{}          // Type = GeoJSON Geometry      TBD
         ObservationSpace        interface{} `json:"observationSpace,omitempty"` // Type = GeoJSON Geometry
         OperationSpace          interface{} `json:"operationSpace,omitempty"`   // Type = GeoJSON Geometry
