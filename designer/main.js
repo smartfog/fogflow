@@ -3,8 +3,8 @@ var express =   require('express');
 var multer  =   require('multer');
 var https = require('https');
 const bodyParser = require('body-parser');
+var dgraph=require('./dgraph.js');
 var jsonParser = bodyParser.json();
-
 var config_fs_name = './config.json';
 
 
@@ -24,7 +24,8 @@ var config = globalConfigFile.designer;
 
 // get the URL of the cloud broker
 var cloudBrokerURL = "http://" + globalConfigFile.external_hostip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
-
+config.agentIP = globalConfigFile.external_hostip;
+config.agentPort = globalConfigFile.designer.agentPort;
 
 // set the agent IP address from the environment variable
 config.agentIP = globalConfigFile.external_hostip;
@@ -34,6 +35,14 @@ config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';    
 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
+
+config.brokerIp=globalConfigFile.coreservice_ip
+//broker port
+config.brokerPort=globalConfigFile.broker.http_port
+//designer IP
+config.designerIP=globalConfigFile.coreservice_ip
+config.DGraphPort=globalConfigFile.persistent_storage.port
+
 
 console.log(config);
 
@@ -117,6 +126,27 @@ app.post('/intent', jsonParser, function(req, res){
     // prepare the response
     reply = {'id': intentCtxObj.entityId.id, 'outputType': 'Result'}    
     res.json(reply);
+});
+
+/*
+  api to create fogFlow internal entities
+*/
+app.use (bodyParser.json());
+app.post('/ngsi10/updateContext', async function (req, res) {
+  await dgraph(req.body);
+  /*uri='http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
+  request({
+  method:'POST',
+  uri:uri,
+  body:JSON.stringify(req.body)
+  },(err,resp,body)=>{
+  if(err){
+   res.send(JSON.stringify({message:err.message||"ERROR"}))
+  }else{
+    res.send(JSON.stringify(resp.body))
+  }
+//  res.send(JSON.stringify(resp.body))
+})*/
 });
 
 // to remove an existing intent

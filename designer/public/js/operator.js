@@ -6,6 +6,10 @@ var handlers = {};
 //connect to the broker
 var client = new NGSI10Client(config.brokerURL);
 
+//DGraph
+// to interact with designer
+var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
+
 console.log(config.brokerURL);
 
 addMenuItem('Operator', showOperator);  
@@ -185,7 +189,7 @@ function submitOperator(operator, designboard)
     operatorObj.metadata.location = geoScope;    
         
     
-    client.updateContext(operatorObj).then( function(data) {
+    clientDes.updateContext(operatorObj).then( function(data) {
         showOperator();                       
     }).catch( function(error) {
         console.log('failed to submit the defined operator');
@@ -557,7 +561,7 @@ function addDockerImage(image)
     geoScope.value = "global"
     newImageObject.metadata.location = geoScope;            
 
-    client.updateContext(newImageObject).then( function(data) {
+    clientDes.updateContext(newImageObject).then( function(data) {
         console.log(data);
     }).catch( function(error) {
         console.log('failed to register the new device object');
@@ -674,7 +678,7 @@ function registerDockerImage()
         value: operatorName
     };               
 
-    client.updateContext(newImageObject).then( function(data) {
+    clientDes.updateContext(newImageObject).then( function(data) {
         console.log(data);
         
         // show the updated image list

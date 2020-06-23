@@ -23,6 +23,9 @@ var blocks = null;
 // client to interact with IoT Broker
 var client = new NGSI10Client(config.brokerURL);
 
+//DGraph
+// to interact with designer
+var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
 
 var myFogFunctionExamples = [
 {
@@ -301,7 +304,7 @@ function boardScene2Topology(scene)
     console.log("=============submit a fog function=============");
     console.log(JSON.stringify(functionCtxObj));    
     
-    return client.updateContext(functionCtxObj).then( function(data1) {
+    return clientDes.updateContext(functionCtxObj).then( function(data1) {
         console.log(data1);               
         showFogFunctions();
     }).catch( function(error) {
@@ -320,7 +323,7 @@ function submitFogFunction(functionCtxObj)
     geoScope.value = "global"
     functionCtxObj.metadata.location = geoScope;   
     
-    return client.updateContext(functionCtxObj).then( function(data1) {
+    return clientDes.updateContext(functionCtxObj).then( function(data1) {
         console.log(data1);                 
     }).catch( function(error) {
         console.log('failed to record the created fog function');
@@ -533,7 +536,7 @@ function deleteFogFunction(fogfunction)
     console.log("delete a fog function");
     console.log(functionEntity);
     
-    client.deleteContext(functionEntity).then( function(data) {
+    clientDes.deleteContext(functionEntity).then( function(data) {
         console.log(data);
 		showFogFunctions();		
     }).catch( function(error) {
