@@ -31,7 +31,7 @@ function newClient(clientStub) {
     const op = new dgraph.Operation();
     op.setDropAll(true);
     await dgraphClient.alter(op);
-}*
+}*/
 
 /*
    create scheema for node
@@ -66,7 +66,6 @@ async function resolveDomainMetaData(data) {
      	for(var i=0;i < len; i++) {
 		if('value' in data.domainMetadata[i]) {
 			if(data.domainMetadata[i].type != 'global' && data.domainMetadata[i].type != 'stringQuery'){
-				console.log("This is global type")
                  		data.domainMetadata[i].value=JSON.stringify(data.domainMetadata[i].value)
                         }
 		}
@@ -130,6 +129,7 @@ async function sendData(contextEle) {
                 return null;
             }
         });
+}
 
 /*
    convert string object into structure to register data into cloud broker
@@ -139,28 +139,29 @@ async function changeFromDataToobject(contextElement) {
     contextEle=contextElement['contextElements']
     for (var ctxEle=0; ctxEle < contextEle.length; ctxEle=ctxEle+1) {
 	ctxEleReq=contextEle[ctxEle]
-	for(var ctxAttr=0; ctxAttr<ctxEleReq.attributes.length ;ctxAttr=ctxAttr+1) {
-		if (ctxEleReq.attributes[ctxAttr].type=='object') {
-			const value=ctxEleReq.attributes[ctxAttr].value
-			ctxEleReq.attributes[ctxAttr].value=JSON.parse(value)
-	       	}
-		if (ctxEleReq.attributes[ctxAttr].type=='integer') {
-                        const value=ctxEleReq.attributes[ctxAttr].value
-                        ctxEleReq.attributes[ctxAttr].value=parseInt(value)
-                }
-		if (ctxEleReq.attributes[ctxAttr].type=='float') {
-                        const value=ctxEleReq.attributes[ctxAttr].value
-                        ctxEleReq.attributes[ctxAttr].value=parseFloat(value)
-                }
-		if (ctxEleReq.attributes[ctxAttr].type=='boolean') {
-                        const value=ctxEleReq.attributes[ctxAttr].value
-			if(value=='false')
-                        ctxEleReq.attributes[ctxAttr].value=false
-			else 
-			ctxEleReq.attributes[ctxAttr].value=true
-                }
+        if('attributes' in ctxEleReq) {
+		for(var ctxAttr=0; ctxAttr<ctxEleReq.attributes.length ;ctxAttr=ctxAttr+1) {
+			if (ctxEleReq.attributes[ctxAttr].type=='object') {
+				const value=ctxEleReq.attributes[ctxAttr].value
+				ctxEleReq.attributes[ctxAttr].value=JSON.parse(value)
+	       		}
+			if (ctxEleReq.attributes[ctxAttr].type=='integer') {
+                        	const value=ctxEleReq.attributes[ctxAttr].value
+                        	ctxEleReq.attributes[ctxAttr].value=parseInt(value)
+                	}
+			if (ctxEleReq.attributes[ctxAttr].type=='float') {
+                        	const value=ctxEleReq.attributes[ctxAttr].value
+                        	ctxEleReq.attributes[ctxAttr].value=parseFloat(value)
+                	}
+			if (ctxEleReq.attributes[ctxAttr].type=='boolean') {
+                        	const value=ctxEleReq.attributes[ctxAttr].value
+				if(value=='false')
+                        	ctxEleReq.attributes[ctxAttr].value=false
+				else 
+				ctxEleReq.attributes[ctxAttr].value=true
+                	}
 
-
+        	}
         }
         if ('domainMetadata' in ctxEleReq){
 		for(ctxdomain=0; ctxdomain<ctxEleReq.domainMetadata.length; ctxdomain=ctxdomain+1) {
@@ -242,9 +243,10 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 
-async function queryForEntity(){
+async function queryForEntity() {
 	const dgraphClientStub = newClientStub();
 	const dgraphClient = newClient(dgraphClientStub);
 	await queryData(dgraphClient);
 }
+
 module.exports={db,queryForEntity}
