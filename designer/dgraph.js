@@ -12,6 +12,10 @@ config.HostIp = globalConfigFile.external_hostip;
 config.brokerIp=globalConfigFile.coreservice_ip
 config.brokerPort=globalConfigFile.broker.http_port
 
+/*
+   creating grpc client for making connection with dgraph
+*/
+
 function newClientStub() {
     return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort, grpc.credentials.createInsecure());
 }
