@@ -3,6 +3,7 @@ var express =   require('express');
 var multer  =   require('multer');
 var https = require('https');
 const bodyParser = require('body-parser');
+var axios = require('axios')
 var dgraph=require('./dgraph.js');
 var jsonParser = bodyParser.json();
 var config_fs_name = './config.json';
@@ -46,6 +47,7 @@ config.DGraphPort=globalConfigFile.persistent_storage.port
 
 console.log(config);
 
+dgraph.queryForEntity()
 
 function uuid() {
     var uuid = "", i, random;
@@ -131,22 +133,23 @@ app.post('/intent', jsonParser, function(req, res){
 /*
   api to create fogFlow internal entities
 */
+
 app.use (bodyParser.json());
 app.post('/ngsi10/updateContext', async function (req, res) {
-  await dgraph(req.body);
-  /*uri='http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
-  request({
-  method:'POST',
-  uri:uri,
-  body:JSON.stringify(req.body)
-  },(err,resp,body)=>{
-  if(err){
-   res.send(JSON.stringify({message:err.message||"ERROR"}))
-  }else{
-    res.send(JSON.stringify(resp.body))
-  }
-//  res.send(JSON.stringify(resp.body))
-})*/
+  var payload=await req.body
+  var returnData  = await axios({
+            method: 'post',
+            url: 'http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
+            data: payload
+        }).then( function(response){
+            if (response.status == 200) {
+		dgraph.db(payload)
+                return response.data;
+            } else {
+                return null;
+            }
+        });    
+	await res.send(returnData)
 });
 
 // to remove an existing intent
@@ -232,3 +235,5 @@ io.on('connection', function (client) {
         }
     });
 });
+
+

@@ -2,7 +2,7 @@ const dgraph = require("dgraph-js");
 const grpc = require("grpc");
 var request = require('request');
 var config_fs_name = './config.json';
-//var axios = require('axios')
+var axios = require('axios')
 var fs = require('fs');
 const bodyParser = require('body-parser');
 var globalConfigFile = require(config_fs_name)
@@ -11,28 +11,28 @@ config.grpcPort = globalConfigFile.persistent_storage.port;
 config.HostIp = globalConfigFile.external_hostip;
 config.brokerIp=globalConfigFile.coreservice_ip
 config.brokerPort=globalConfigFile.broker.http_port
-console.log(config.grpcPort)
-console.log(config.HostIp)
 
 function newClientStub() {
     return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort, grpc.credentials.createInsecure());
 }
 
 // Create a client.
+
 function newClient(clientStub) {
     return new dgraph.DgraphClient(clientStub);
 }
 
 // Drop All - discard all data and start from a clean slate.
-async function dropAll(dgraphClient) {
+/*async function dropAll(dgraphClient) {
     const op = new dgraph.Operation();
     op.setDropAll(true);
     await dgraphClient.alter(op);
-}
+}*
 
 /*
    create scheema for node
 */
+
 async function setSchema(dgraphClient) {
     const schema = `
             attributes: [uid] .
@@ -44,7 +44,8 @@ async function setSchema(dgraphClient) {
             latitude: float .
             longitude: float .
             name: string .
-            type: string . 
+            type: string .
+	    value: string . 
     `;
     const op = new dgraph.Operation();
     op.setSchema(schema);
@@ -59,10 +60,12 @@ async function resolveDomainMetaData(data) {
      if ('domainMetadata' in data) {
      	var len=data.domainMetadata.length
      	for(var i=0;i < len; i++) {
-		if('value' in data.domainMetadata[i])
-                 data.domainMetadata[i].value=JSON.stringify(data.domainMetadata[i].value)
-                if('location' in data.domainMetadata[i])
-	        data.domainMetadata[i].location=JSON.stringify(data.domainMetadata[i].location)
+		if('value' in data.domainMetadata[i]) {
+			if(data.domainMetadata[i].type != 'global' && data.domainMetadata[i].type != 'stringQuery'){
+				console.log("This is global type")
+                 		data.domainMetadata[i].value=JSON.stringify(data.domainMetadata[i].value)
+                        }
+		}
 	  }
       }
 }
@@ -74,11 +77,13 @@ async function resolveDomainMetaData(data) {
 async function resolveAttributes(data) {
      if ('attributes' in data){
      	var length=data.attributes.length
-     	console.log(length)
      	for(var i=0;i < length; i++) {
-        	if('value' in data.attributes[i]) {           
+        	if('type' in data.attributes[i]) {           
         		if (data.attributes[i].type=='object')
 			data.attributes[i].value=JSON.stringify(data.attributes[i].value)
+			else {
+                        	data.attributes[i].value=data.attributes[i].value.toString()
+			}
          	}
        	  }
     }
@@ -93,10 +98,7 @@ async function createData(dgraphClient,ctx) {
     try {
         const mu = new dgraph.Mutation();
         mu.setSetJson(ctx);
-	console.log(mu)
         const response = await txn.mutate(mu);
-	console.log(response)
-	console.log(txn)
         await txn.commit();
     }
 	 finally {
@@ -108,19 +110,22 @@ async function createData(dgraphClient,ctx) {
    send data to cloud broker
 */
 
-async function sendData(contextElement) {
+async function sendData(contextEle) {
 	var  updateCtxReq = {};
 	updateCtxReq.contextElements = [];
 	updateCtxReq.updateAction = 'UPDATE'	
-	updateCtxReq.contextElements.push(contextElement)
-	request({
+	updateCtxReq.contextElements.push(contextEle)
+        await axios({
             method: 'post',
-            url:'http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
-            body:JSON.stringify(updateCtxReq)
-        })
-	console.log(updateCtxReq)
-
-}
+            url: 'http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
+            data: updateCtxReq
+            }).then( function(response){
+            if (response.status == 200) {
+                return response.data;
+            } else {
+                return null;
+            }
+        });
 
 /*
    convert string object into structure to register data into cloud broker
@@ -129,23 +134,41 @@ async function sendData(contextElement) {
 async function changeFromDataToobject(contextElement) {
     contextEle=contextElement['contextElements']
     for (var ctxEle=0; ctxEle < contextEle.length; ctxEle=ctxEle+1) {
-	for(var ctxAttr=0; ctxAttr<contextEle[ctxEle].attributes.length ;ctxAttr=ctxAttr+1) {
-		if (contextEle[ctxEle].attributes[ctxAttr].type=='object') {
-			const value=contextEle[ctxEle].attributes[ctxAttr].value
-			contextEle[ctxEle].attributes[ctxAttr].value=JSON. parse(value)
+	ctxEleReq=contextEle[ctxEle]
+	for(var ctxAttr=0; ctxAttr<ctxEleReq.attributes.length ;ctxAttr=ctxAttr+1) {
+		if (ctxEleReq.attributes[ctxAttr].type=='object') {
+			const value=ctxEleReq.attributes[ctxAttr].value
+			ctxEleReq.attributes[ctxAttr].value=JSON.parse(value)
 	       	}
+		if (ctxEleReq.attributes[ctxAttr].type=='integer') {
+                        const value=ctxEleReq.attributes[ctxAttr].value
+                        ctxEleReq.attributes[ctxAttr].value=parseInt(value)
+                }
+		if (ctxEleReq.attributes[ctxAttr].type=='float') {
+                        const value=ctxEleReq.attributes[ctxAttr].value
+                        ctxEleReq.attributes[ctxAttr].value=parseFloat(value)
+                }
+		if (ctxEleReq.attributes[ctxAttr].type=='boolean') {
+                        const value=ctxEleReq.attributes[ctxAttr].value
+			if(value=='false')
+                        ctxEleReq.attributes[ctxAttr].value=false
+			else 
+			ctxEleReq.attributes[ctxAttr].value=true
+                }
+
+
         }
-	for(ctxdomain=0; ctxdomain<contextEle[ctxEle].domainMetadata.length; ctxdomain=ctxdomain+1) {
-		if ('value' in contextEle[ctxEle].domainMetadata[ctxdomain]) {
-			const value=contextEle[ctxEle].domainMetadata[ctxdomain].value
-			contextEle[ctxEle].domainMetadata[ctxdomain].value=JSON.parse(value)
+        if ('domainMetadata' in ctxEleReq){
+		for(ctxdomain=0; ctxdomain<ctxEleReq.domainMetadata.length; ctxdomain=ctxdomain+1) {
+			if ('value' in ctxEleReq.domainMetadata[ctxdomain]) {
+				if(ctxEleReq.domainMetadata[ctxdomain].type!='global'&& ctxEleReq.domainMetadata[ctxdomain].type!='stringQuery'){
+					const value=ctxEleReq.domainMetadata[ctxdomain].value
+					ctxEleReq.domainMetadata[ctxdomain].value=JSON.parse(value)
+				}
+			}
 		}
-		if ('location' in contextEle[ctxEle].domainMetadata[ctxdomain]) {
-			const loc=contextEle[ctxEle].domainMetadata[ctxdomain].location
-			contextEle[ctxEle].domainMetadata[ctxdomain].location=JSON.parse(loc)
-		}
-	}
-     sendData(contextEle[ctxEle])
+          }
+    await sendData(ctxEleReq)
     }
 }
 
@@ -185,7 +208,8 @@ async function queryData(dgraphClient) {
 
     responseBody = await dgraphClient.newTxn().queryWithVars(query);
     const responsData= responseBody.getJson();
-    const responseObject=JSON.stringify(responsData)
+    //const responseObject=JSON.stringify(responsData)
+    const responseObject=responsData
     sendPostRequestToBroker(responsData)
 }
 
@@ -196,23 +220,27 @@ async function queryData(dgraphClient) {
 async function db(contextData) {
     const dgraphClientStub = newClientStub();
     const dgraphClient = newClient(dgraphClientStub);
-    await dropAll(dgraphClient);
+    //await dropAll(dgraphClient);
+    //console.log(contextData)
     if ('contextElements' in contextData) {	
 	contextData=contextData['contextElements']
 	contextData=contextData[0]
-	console.log(contextData)
     }
-    console.log(contextData)
     await resolveAttributes(contextData)
-    console.log(contextData)
     await resolveDomainMetaData(contextData)
     await setSchema(dgraphClient);
     await createData(dgraphClient,contextData);
-    await queryData(dgraphClient);
     dgraphClientStub.close();
 }
+
 process.on('unhandledRejection', (reason, promise) => {
   console.log('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
-module.exports=db;
+
+async function queryForEntity(){
+	const dgraphClientStub = newClientStub();
+	const dgraphClient = newClient(dgraphClientStub);
+	await queryData(dgraphClient);
+}
+module.exports={db,queryForEntity}
