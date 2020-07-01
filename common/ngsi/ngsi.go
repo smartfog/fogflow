@@ -752,6 +752,7 @@ type Subscriber struct {
 	RequireReliability bool
 	BrokerURL          string
 	NotifyCache        []*ContextElement
+	LDNotifyCache      []*LDContextElement
 }
 
 type SubscribeContextRequest struct {
@@ -1035,4 +1036,216 @@ type FiwareData struct {
 	ProviderIoTAgent  string
 	FiwareService     string
 	FiwareServicePath string
+}
+
+// NGSI-LD starts here.
+
+type LDContextElementResponse struct {
+	LDContextElement LDContextElement `json:"contextElement"`
+	StatusCode       StatusCode       `json:"statusCode"`
+}
+
+type LDNotifyContextRequest struct {
+	SubscriptionId     string                     `json:"subscriptionId",omitemtpy`
+	Originator         string                     `json:"originator",omitemtpy`
+	LDContextResponses []LDContextElementResponse `json:"contextResponses,omitempty"`
+}
+
+type LDContextElement struct {
+	Id               string         `json:"id",omitemtpy`
+	Type             string         `json:"type",omitemtpy`
+	Properties       []Property     `json:"properties",omitempty`
+	Relationships    []Relationship `json:"relationships",omitempty`
+	CreatedAt        string         `json:"createdAt",omitemtpy`
+	Location         LDLocation     `json:"location",omitempty`
+	ObservationSpace GeoProperty    `json:"observationSpace",omitempty`
+	OperationSpace   GeoProperty    `json:"operationSpace",omitempty`
+	ModifiedAt       string         `json:"modifiedAt"`
+}
+
+type GeoProperty struct {
+	Type       string      `json:"type",omitemtpy`
+	Value      interface{} `json:"value"omitemtpy`
+	ObservedAt string      `json:"observedAt", omitemtpy`
+	DatasetId  string      `json:"datasetId", omitempty` //URI
+	//<PropertyName>
+	//<RelationshipName>
+}
+
+func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *LDContextElement {
+	preparedCopy := LDContextElement{}
+	preparedCopy.Id = ldce.Id
+	preparedCopy.Type = ldce.Type
+	preparedCopy.CreatedAt = ldce.CreatedAt
+	preparedCopy.Location = ldce.Location
+
+	if len(selectedAttributes) == 0 {
+		preparedCopy.Properties = make([]Property, len(ldce.Properties))
+		copy(preparedCopy.Properties, ldce.Properties)
+
+		preparedCopy.Relationships = make([]Relationship, len(ldce.Relationships))
+		copy(preparedCopy.Relationships, ldce.Relationships)
+	} else {
+		preparedCopy.Properties = make([]Property, 0)
+		preparedCopy.Relationships = make([]Relationship, 0)
+
+		for _, requiredAttrName := range selectedAttributes {
+			attrFound := false
+			for _, property := range ldce.Properties {
+				if property.Name == requiredAttrName {
+					attrFound = true
+					preparedCopy.Properties = append(preparedCopy.Properties, property)
+					break
+				}
+			}
+			if attrFound != true {
+				for _, relationship := range ldce.Relationships {
+					if relationship.Name == requiredAttrName {
+						preparedCopy.Relationships = append(preparedCopy.Relationships, relationship)
+						break
+					}
+				}
+			}
+		}
+	}
+
+	return &preparedCopy
+}
+
+type LDLocation struct {
+	Type        string          `json:"type",omitemtpy`
+	Value       LDLocationValue `json:"value",omitemtpy`
+	StringValue string          `json:"value",omitemtpy`
+}
+
+type LDLocationValue struct {
+	Type        string      `json:"type",omitemtpy`
+	Coordinates interface{} `json:"coordinates",omitemtpy`
+	Geometries  []Geometry  `json:"geometries",omitemtpy`
+}
+
+type Geometry struct {
+	Type        string      `json:"type",omitemtpy`
+	Coordinates interface{} `json:"coordinates",omitemtpy`
+}
+
+type Property struct {
+	Id         string      `json:"id",omitemtpy`
+	Name       string      `json:"name",omitemtpy`
+	Type       string      `json:"type",omitemtpy`
+	Value      interface{} `json:"value",omitemtpy` // Can also be a string or a JSON object
+	ObservedAt string      `json:"observedAt",omitempty`
+	DatasetId  string      `json:"DatasetId",omitempty`  //<<URI>>, Optional.
+	InstanceId string      `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+	CreatedAt  string      `json:"createdAt",omitemtpy`
+	ModifiedAt string      `json:"modifiedAt",omitemtpy`
+	UnitCode   string      `json:"UnitCode",omitempty`
+	//<PropertyName>
+	//<RelationahipName>
+}
+
+type Relationship struct {
+	Id         string     `json:"id",omitemtpy`
+	Name       string     `json:"name",omitemtpy`
+	Type       string     `json:"type",omitemtpy`
+	Object     string     `json:object,omitemtpy` //<<URI>>, Mandatory
+	ObservedAt string     `json:"observedAt",omitempty`
+	ProvidedBy ProvidedBy `json:"providedBy",omitempty`
+	DatasetId  string     `json:"DatasetId",omitempty`  //<<URI>>, Optional.
+	InstanceId string     `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+	CreatedAt  string     `json:"createdAt",omitemtpy`
+	ModifiedAt string     `json:"modifiedAt",omitemtpy`
+	//<PropertyName>
+	//<RelationahipName>
+}
+
+type ProvidedBy struct {
+	Type   string `json:"type",omitemtpy`
+	Object string `json:"object",omitemtpy`
+}
+
+type LDSubscriptionRequest struct {
+	Id                string             `json:"id",omitempty`   //URI, if missing, will be assigned during subscription phase and returned to client
+	Type              string             `json:"type",omitemtpy` //should be equal to "Subscription"
+	Name              string             `json:"name",omitempty`
+	Description       string             `json:"description",omitempty`
+	Entities          []EntityId         `json:"entities",omitempty`
+	WatchedAttributes []string           `json:"watchedAttributes",omitempty`
+	TimeInterval      uint               `json:"timeInterval",omitempty`
+	Q                 string             `json:"q",omitempty`
+	GeoQ              GeoQuery           `json:"geoQ",omitempty`
+	Csf               string             `json:"csf",omitempty`
+	IsActive          bool               `json:"isActive",omitempty`
+	Notification      NotificationParams `json:"notification"`
+	Expires           string             `json:"expires",omitempty`
+	Throttling        uint               `json:"throttling",omitempty`
+	TemporalQ         TemporalQuery      `json:"temporalQ",omitempty`
+	Status            string             `json:"status",omitempty`
+	Subscriber        Subscriber         `json:"subscriber,omitempty",omitempty`
+	CreatedAt         string             `json:"createdAt",omitemtpy`
+	ModifiedAt        string             `json:"modifiedAt",omitemtpy`
+}
+
+type GeoQuery struct {
+	Geometry    string `json:"geometry",omitemtpy`
+	Coordinates string `json:"coordinates",omitemtpy` // string or JSON Array
+	GeoRel      string `json:"georel",omitemtpy`
+	GeoProperty string `json:"geoproperty",omitempty`
+}
+
+type NotificationParams struct {
+	Attributes       []string `json:"attributes",omitempty`
+	Format           string   `json:"format",omitempty`
+	Endpoint         Endpoint `json:"endpoint",omitemtpy`
+	Status           string   `json:"status",omitempty`
+	TimeSent         uint     `json:"timeSent",omitempty`
+	LastNotification string   `json:"lastNotification",omitempty`
+	LastFailure      string   `json:"lastFailure",omitempty`
+	LastSuccess      string   `json:"lastSuccess",omitempty`
+}
+
+type Endpoint struct {
+	URI    string `json:"uri",omitemtpy` // URI
+	Accept string `json:"accept",omitempty`
+}
+
+type TemporalQuery struct {
+	TimeRel      string `json:"timerel",omitemtpy`
+	Time         string `json:"time",omitemtpy`
+	EndTime      string `json:"endTime",omitempty`
+	TimeProperty string `json:"timeproperty",omitempty`
+}
+
+type CSourceRegistrationRequest struct {
+	Id                  string             `json:"id",omitempty` //URI
+	Type                string             `json:"type",omitemtpy`
+	Name                string             `json:"name",omitempty`
+	Description         string             `json:"description",omitempty`
+	Information         []RegistrationInfo `json:"information",omitemtpy`
+	ObservationInterval TimeInterval       `json:"observationInterval",omitempty`
+	ManagementInterval  TimeInterval       `json:"managementInterval",omitempty`
+	Location            string             `json:"location",omitempty`
+	ObservationSpace    interface{}        `json:"observationSpace,omitempty"` // Type = GeoJSON Geometry
+	OperationSpace      interface{}        `json:"operationSpace,omitempty"`   // Type = GeoJSON Geometry
+	Expires             string             `json:expires,omitempty`
+	Endpoint            string             `json:"endpoint",omitemtpy` //URI
+	CreatedAt           string             `json:"createdAt",omitemtpy`
+	ModifiedAt          string             `json:"modifiedAt",omitemtpy`
+	//<CSourceProperty Name>
+}
+
+type RegistrationInfo struct {
+	Entities      []EntityId `json:"entities",omitempty`
+	Properties    []string   `json:"properties,omitempty"`
+	Relationships []string   `json:"relationships,omitempty"`
+}
+
+type TimeInterval struct {
+	Start string `json:"start",omitemtpy` //DateTime value
+	End   string `json:"end",omitempty`   //DateTime value
+}
+
+type CSourceRegistrationResponse struct {
+	RegistrationID string     `json: "registrationID",omitemtpy`
+	ErrorCode      StatusCode `json:"errorCode,omitempty",omitemtpy`
 }
