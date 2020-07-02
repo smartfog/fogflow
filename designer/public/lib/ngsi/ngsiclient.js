@@ -179,6 +179,65 @@ var NGSI10Client = (function() {
     return NGSI10Client;
 })();
 
+//DGraph changes
+
+var NGSIDesClient = (function() {
+    // initialized with the designer URL
+    var NGSIDesClient = function(url) {
+        console.log('url is',url);
+        this.webSrvPort = url;
+    };
+
+    // update context
+    NGSIDesClient.prototype.updateContext = function updateContext(ctxObj) {
+        contextElement = JSONObject2CtxElement(ctxObj);
+
+        var updateCtxReq = {};
+        updateCtxReq.contextElements = [];
+        updateCtxReq.contextElements.push(contextElement)
+        updateCtxReq.updateAction = 'UPDATE'
+
+                console.log(updateCtxReq);
+
+        return axios({
+            method: 'post',
+            url:  'http://'+this.webSrvPort+'/ngsi10/updateContext',
+            data: updateCtxReq
+        }).then( function(response){
+            if (response.status == 200) {
+                 return response.data;
+            } else {
+                return null;
+            }
+        });
+    };
+
+    // delete context
+    NGSIDesClient.prototype.deleteContext = function deleteContext(entityId) {
+        var contextElement = {};
+        contextElement.entityId = entityId
+
+        var updateCtxReq = {};
+        updateCtxReq.contextElements = [];
+        updateCtxReq.contextElements.push(contextElement)
+        updateCtxReq.updateAction = 'DELETE'
+
+        return axios({
+            method: 'post',
+            url: 'http://'+this.webSrvPort + '/ngsi10/updateContext',
+            data: updateCtxReq
+        }).then( function(response){
+            if (response.status == 200) {
+                return response.data;
+            } else {
+                return null;
+            }
+        });
+    };
+    return NGSIDesClient;
+})
+();
+
 var NGSI9Client = (function() {
     // initialized with the address of IoT Discovery
     var NGSI9Client = function(url) {
@@ -240,11 +299,13 @@ var NGSI9Client = (function() {
 // initialize the exported object for this module, both for nodejs and browsers
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
     this.axios = require('axios')    
+    module.exports.NGSIDesClient = NGSIDesClient;
     module.exports.NGSI10Client = NGSI10Client; 
     module.exports.NGSI9Client = NGSI9Client;   
     module.exports.CtxElement2JSONObject = CtxElement2JSONObject;
     module.exports.JSONObject2CtxElement = JSONObject2CtxElement;    
 } else {
+    window.NGSIDesClient = NGSIDesClient;
     window.NGSI10Client = NGSI10Client;  
     window.NGSI9Client = NGSI9Client;
     window.CtxElement2JSONObject = CtxElement2JSONObject;
