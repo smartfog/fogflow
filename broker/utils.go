@@ -15,7 +15,7 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL,subscriptionId)
+		return postOrionV2NotifyContext(ctxElems, URL, subscriptionId)
 	}
 
 	for _, elem := range ctxElems {
@@ -376,4 +376,55 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 	// add it as new metadata
 	(*ctxElement).Metadata = append((*ctxElement).Metadata, *metadata)
+}
+
+// NGSI-LD starts here.
+
+func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
+	INFO.Println("NOTIFY: ", URL)
+	elementRespList := make([]LDContextElementResponse, 0)
+
+	//if IsOrionBroker == true {
+	//        return postOrionV2NotifyContext(ctxElems, URL)
+	//}
+
+	for _, elem := range ldCtxElems {
+		elementResponse := LDContextElementResponse{}
+		elementResponse.LDContextElement = elem
+		elementResponse.StatusCode.Code = 200
+		elementResponse.StatusCode.ReasonPhrase = "OK"
+
+		elementRespList = append(elementRespList, elementResponse)
+	}
+
+	notifyCtxReq := &LDNotifyContextRequest{
+		SubscriptionId:     subscriptionId,
+		LDContextResponses: elementRespList,
+	}
+
+	body, err := json.Marshal(notifyCtxReq)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	if strings.HasPrefix(URL, "https") == true {
+		client = httpsCfg.GetHTTPClient()
+	}
+
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+
+	ioutil.ReadAll(resp.Body)
+
+	return nil
 }
