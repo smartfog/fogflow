@@ -95,4 +95,44 @@ The main procedure is illustrated by the following figure, including two major s
 	The generated deployment plan determines which task instance should be assigned to which worker (in the cloud or at edges),  
 	according to certain optimization objectives. Currently, the task assignment in FogFlow is optimized to reduce across-node data traffic
 	without overloading any edge node. 
+	
+
+FogFlow Storage
+======================
+
+Previously, FogFlow was using its internal data structure to store the FogFlow internal entities
+like operator, Fog-function, docker images and service-topology. FogFlow was not supporting any permanent 
+storage to store FogFlow internal NGSI entities. Hence, it loses all stored entities whenever FogFlow broker went down. 
+So, to resolve this problem FogFlow is using a Persistent Storage named DGraph. 
+
+Persistent storage is a data storage device that retains data after power to that device is shut off. 
+It is also sometimes referred to as non-volatile storage.
+
+The Dgraph data model consists of data sets, records, and attributes. Where Records are the fundamental 
+units of data in the Dgraph and an attribute is the basic unit of a record schema. Assignments from attributes
+(also known as key-value pairs) describe records in the Dgraph. 
+
+
+.. figure:: figures/persistent_data_flow.png
+
+
+1.	User of FogFlow can create the FogFlow internal entities using browser through designer.
+
+2.	User of FogFlow can create the FogFlow internal entities using client(curl) through designer.
+
+3.	Designer can store and get the created entities from the database in case of requirement. 
+
+4.	Designer can get the old registered entities from the persistence database and can registered in the broker.
+
+
+There are many databases available that support Graph Database for example: Neo4j, DGraph are among the top using databases. 
+FogFlow is using DGraph, reason behind selecting DGraph is as below:
+
+1. Dgraph is 160x faster than Neo4j for loading graph data.
+
+2. Dgraph consumes 5x lesser memory compared to Neo4j.
+
+3. Dgraph supports most of the functionality that one needs to get the job done.
+
+
 
