@@ -137,20 +137,19 @@ app.post('/intent', jsonParser, function(req, res){
 app.use (bodyParser.json());
 app.post('/ngsi10/updateContext', async function (req, res) {
   var payload=await req.body
-  var returnData  = await axios({
+  console.log(payload)
+  var response  = await axios({
             method: 'post',
             url: 'http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
             data: payload
-        }).then( function(response){
+        })
+
             if (response.status == 200) {
-		dgraph.db(payload)
-                return response.data;
-            } else {
-                return null;
+                await dgraph.db(payload)
             }
-        });    
-	await res.send(returnData)
+  res.send(response.data)
 });
+
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res){

@@ -16,13 +16,13 @@ config.brokerPort=globalConfigFile.broker.http_port
    creating grpc client for making connection with dgraph
 */
 
-function newClientStub() {
+async function newClientStub() {
     return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort, grpc.credentials.createInsecure());
 }
 
 // Create a client.
 
-function newClient(clientStub) {
+async function newClient(clientStub) {
     return new dgraph.DgraphClient(clientStub);
 }
 
@@ -223,19 +223,21 @@ async function queryData(dgraphClient) {
 */
 
 async function db(contextData) {
-    const dgraphClientStub = newClientStub();
-    const dgraphClient = newClient(dgraphClientStub);
+     try{
+     const dgraphClientStub = await newClientStub();
+     const dgraphClient = await  newClient(dgraphClientStub);
     //await dropAll(dgraphClient);
-    //console.log(contextData)
     if ('contextElements' in contextData) {	
 	contextData=contextData['contextElements']
 	contextData=contextData[0]
     }
     await resolveAttributes(contextData)
     await resolveDomainMetaData(contextData)
-    await setSchema(dgraphClient);
     await createData(dgraphClient,contextData);
-    dgraphClientStub.close();
+    await dgraphClientStub.close();
+     }catch(err){
+	console.log('DB ERROR::',err);
+    }
 }
 
 process.on('unhandledRejection', (reason, promise) => {
@@ -244,9 +246,11 @@ process.on('unhandledRejection', (reason, promise) => {
 
 
 async function queryForEntity() {
-	const dgraphClientStub = newClientStub();
-	const dgraphClient = newClient(dgraphClientStub);
+	const dgraphClientStub = await newClientStub();
+	const dgraphClient = await newClient(dgraphClientStub);
+	await setSchema(dgraphClient);
 	await queryData(dgraphClient);
+	await dgraphClientStub.close();
 }
 
 module.exports={db,queryForEntity}
