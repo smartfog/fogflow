@@ -45,10 +45,10 @@ using this gRPC. Default port of gRPC is 9080, but in FogFlow 9082 port is used.
    
 Whenever any new FogFlow entity creates ( via web browser or via other clients) the request goes to designer, then designer 
 perform two tasks:
+
 1. Send request to cloud broker to register the entity.
-2. Calls DGraph client to store entity data, the DGraph client will create a connection with dgraph server after that
- create schema and then send data to DGraph. Apart from this, one another flow will be triggered from designer when FogFlow system will restart.
-In this flow designer will query all stored entity data from DGraph and forward to cloud broker for registering these entites.
+
+2. Calls DGraph client to store entity data, the DGraph client will create a connection with dgraph server after that create schema and then send data to DGraph. Apart from this, one another flow will be triggered from designer when FogFlow system will restart. In this flow designer will query all stored entity data from DGraph and forward to cloud broker for registering these entites.
 
 Below the glimpse of code to create schema and insert data into DGraph.
 
@@ -92,6 +92,7 @@ Below the glimpse of code to create schema and insert data into DGraph.
        }
    }
    
+For detailed code refer https://github.com/smartfog/fogflow/blob/development/designer/dgraph.js 
    
 In this page, a brief introduction is given about FogFlow integrations, for more detailed information refer links.
 
