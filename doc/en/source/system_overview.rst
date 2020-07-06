@@ -25,8 +25,8 @@ from DGraph then send these entities to cloud broker to register them.
 
 .. note:: FogFlow Designer is dependent on Discovery and Cloud Broker.
 
-The integration of FogFlow Designer and DGraph is done via gRPC, where a Dgraph client is implementated with Designer server 
-using this gRPC. Default port of gRPC is 9080, but in FogFlow 9082 port is used.
+The integration of FogFlow Designer and DGraph is done via gRPC, where a Dgraph client is implemented with Designer server as in below code
+using gRPC. Default port of gRPC is 9080, in FogFlow 9082 port is used.
 
 .. code-block:: console
 
