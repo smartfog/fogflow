@@ -137,13 +137,11 @@ app.post('/intent', jsonParser, function(req, res){
 app.use (bodyParser.json());
 app.post('/ngsi10/updateContext', async function (req, res) {
   var payload=await req.body
-  console.log(payload)
   var response  = await axios({
             method: 'post',
             url: 'http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
             data: payload
         })
-
             if (response.status == 200) {
                 await dgraph.db(payload)
             }
