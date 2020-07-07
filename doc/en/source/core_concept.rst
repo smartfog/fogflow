@@ -110,7 +110,7 @@ It is also sometimes referred to as non-volatile storage.
 
 The Dgraph data model consists of data sets, records, and attributes. Where Records are the fundamental 
 units of data in the Dgraph and an attribute is the basic unit of a record schema. Assignments from attributes
-(also known as key-value pairs) describe records in the Dgraph. 
+(also known as key-value pairs) describe records in the Dgraph. The flow diagram of data with persistent storage is as below:
 
 
 
