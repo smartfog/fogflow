@@ -118,13 +118,13 @@ units of data in the Dgraph and an attribute is the basic unit of a record schem
 
 
 
-1.	User of FogFlow can create the FogFlow internal entities using browser through designer.
+1.	User of FogFlow can create the FogFlow internal entities using Web browser through designer.
 
 2.	User of FogFlow can create the FogFlow internal entities using client(curl) through designer.
 
-3.	Designer can store and get the created entities from the database in case of requirement. 
+3.	Designer can store and get the created entities from the Dgraph database in case of requirement. 
 
-4.	Designer can get the old registered entities from the persistence database and can registered in the broker.
+4.	Designer can get the old registered entities from the Dgraph database and can registered in the cloud broker.
 
 
 There are many databases available that support Graph Database for example: Neo4j, DGraph are among the top using databases. 
