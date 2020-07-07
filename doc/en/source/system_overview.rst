@@ -14,6 +14,86 @@ illustrated in below figure. All integrated features that are running in FogFlow
 .. figure:: figures/FogFlow_System_Design.png
 
 
+
+FogFlow is now supporting graph database to store internal entity data for later use. In FogFlow system, the interaction point of graph database is designer.
+So FogFlow entity that create either by FogFlow web browser or via any other client such as curl or python client,
+the entity creation request directly goes to Designer. Then Designer will send this entity request on cloud broker to 
+register the entity and at the same time Designer will send this data on DGraph to store it into database.
+
+Whenever FogFlow system will restart, Designer will trigger a query request to DGraph and get all the stored entities
+from DGraph then send these entities to cloud broker to register them.
+
+.. note:: FogFlow Designer is dependent on Discovery and Cloud Broker.
+
+The integration of FogFlow Designer and DGraph is done via gRPC, where a Dgraph client is implemented with Designer server as in below code
+using gRPC. Default port of gRPC is 9080, in FogFlow 9082 port is used.
+
+.. code-block:: console
+
+   /*
+   creating grpc client for making connection with dgraph
+   */
+   function newClientStub() {
+       return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort, grpc.credentials.createInsecure());
+   }
+
+   // Create a client.
+   function newClient(clientStub) {
+      return new dgraph.DgraphClient(clientStub);
+   }
+   
+   
+Whenever any new FogFlow entity creates ( via web browser or via other clients) the request goes to designer, then designer 
+perform two tasks:
+
+1. Send request to cloud broker to register the entity.
+
+2. Calls DGraph client to store entity data, the DGraph client will create a connection with dgraph server after that create schema and then send data to DGraph. Apart from this, one another flow will be triggered from designer when FogFlow system will restart. In this flow designer will query all stored entity data from DGraph and forward to cloud broker for registering these entites.
+
+Below the glimpse of code to create schema and insert data into DGraph.
+
+.. code-block:: console
+
+   /*
+   create scheema for node
+   */
+   async function setSchema(dgraphClient) {
+       const schema = `
+            attributes: [uid] .
+            domainMetadata: [uid] .
+            entityId: uid .
+            updateAction: string .
+            id: string .
+            isPattern: bool .
+            latitude: float .
+            longitude: float .
+            name: string .
+            type: string .
+	          value: string . 
+       `;
+       const op = new dgraph.Operation();
+       op.setSchema(schema);
+       await dgraphClient.alter(op);
+   }
+   
+   /*
+   insert data into database
+   */
+   async function createData(dgraphClient,ctx) {
+       const txn = dgraphClient.newTxn();
+       try {
+           const mu = new dgraph.Mutation();
+           mu.setSetJson(ctx);
+           const response = await txn.mutate(mu);
+           await txn.commit();
+       }
+	    finally {
+          await txn.discard();
+       }
+   }
+   
+For detailed code refer https://github.com/smartfog/fogflow/blob/development/designer/dgraph.js 
+
 In this page, a brief introduction is given about FogFlow integrations, for more detailed information refer links.
 
 
