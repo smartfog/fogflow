@@ -102,7 +102,7 @@ FogFlow Storage
 
 Previously, FogFlow was using its internal data structure to store the FogFlow internal entities
 like operator, Fog-function, docker images and service-topology. FogFlow was not supporting any permanent 
-storage to store FogFlow internal NGSI entities. Hence, it loses all stored entities whenever FogFlow broker went down. 
+storage to store FogFlow internal NGSI entities. Hence, it loses all stored internal entities whenever FogFlow broker went down. 
 So, to resolve this problem FogFlow is using a Persistent Storage named DGraph. 
 
 Persistent storage is a data storage device that retains data after power to that device is shut off. 
