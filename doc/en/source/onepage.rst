@@ -8,7 +8,7 @@ The tutorial introduces a typical FogFlow system setup with a simple example to 
 data.
 It explains an example usecase implementation using FogFlow and FIWARE Orion in integration with each other. 
 
-Every time to implement a usecase FogFlow creates some internal ngsi entities such as operators, Docker image, Fog Function and service topology.
+Every time to implement a usecase FogFlow creates some internal NGSI entities such as operators, Docker image, Fog Function and service topology.
 So these entity data are very important for FogFlow system and these are need to be stored somewhere. An entity data can not be stored in FogFlow memory
 because memory is volatile and it will lose content when power is lost. To solve this issue FogFlow introduces `Dgraph`_  a persistent storage.
 The persistent storage will store FogFlow entity data in the form of graph.
