@@ -2,7 +2,7 @@
 NGSI-LD API Walkthrough
 *****************************************
 
-This tutorial is focused mainly on the NGSI-LD APIs supported in FogFlow, which include APIs for entities, context registrations and subscriptions. These are discussed in more detail in the following sections.
+This tutorial is focused mainly on the NGSI-LD APIs supported in FogFlow, which include APIs for entities, context registrations and subscriptions. These are discussed in more detail in the following sections. For using NGSI-LD APIs in FogFlow, checkout the latest docker image "fogflow/broker:3.1" from Docker Hub.
 
 FogFlow follows the NGSI-LD data-model, with continuous improvements. For better understanding of NGSI-LD Data-model, refer `this`_.
 
@@ -78,12 +78,12 @@ Curl requests for creating an entity on FogFlow Broker in different ways are giv
 	-d '
 	{
 		"@context": [{
-			"Vehicle": "http://example.org/vehicle/Vehicle",
-			"brandName": "http://example.org/vehicle/brandName",
+			"Vehicle": "https://uri.etsi.org/ngsi-ld/default-context/Vehicle",
+			"brandName": "https://uri.etsi.org/ngsi-ld/default-context/brandName",
 			"speed": "https://uri.etsi.org/ngsi-ld/default-context/speed",
 			"isParked": {
 				"@type": "@id",
-				"@id": "http://example.org/common/isParked"
+				"@id": "https://uri.etsi.org/ngsi-ld/default-context/isParked"
 			}
 		}],
 		"id": "urn:ngsi-ld:Vehicle:A200",
@@ -125,7 +125,7 @@ Curl requests for creating an entity on FogFlow Broker in different ways are giv
 	-H 'Accept: application/ld+json' \
 	-d '
 	{
-		"https://example.org/vehicle/brandName": [
+		"https://uri.etsi.org/ngsi-ld/default-context/brandName": [
 			{
 				"@type": [
 					"https://uri.etsi.org/ngsi-ld/Property"
@@ -144,7 +144,7 @@ Curl requests for creating an entity on FogFlow Broker in different ways are giv
 			}
 		],
 		"@id": "urn:ngsi-ld:Vehicle:A300",
-		"https://example.org/common/isParked": [
+		"https://uri.etsi.org/ngsi-ld/default-context/isParked": [
 			{
 				"https://uri.etsi.org/ngsi-ld/hasObject": [
 					{
@@ -199,7 +199,7 @@ Curl requests for creating an entity on FogFlow Broker in different ways are giv
 			}
 		],
 		"@type": [
-			"https://example.org/vehicle/Vehicle"
+			"https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
 		]
 	}'
 
@@ -227,7 +227,7 @@ Here are the curl requests for these Updates.
 	-d '
 	{
 		"@context": {
-			"brandName1": "http://example.org/vehicle/brandName1",
+			"brandName1": "https://uri.etsi.org/ngsi-ld/default-context/brandName1",
 			"isParked1": "https://uri.etsi.org/ngsi-ld/default-context/isParked1"
 		},
 		"brandName1": {
@@ -333,7 +333,7 @@ On successful retrieval of at least one entity in the above requests, FogFlow Br
 	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/entities?type=<Unexpanded-Entity-Type>' \
 	-H 'Content-Type: application/ld+json' \
 	-H 'Accept: application/ld+json' \
-	-H '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+	-H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
 
 **Based on Entity IdPattern and Entity Type:**
 
@@ -478,30 +478,30 @@ Curl requests are given in the following sections.
 		},
 		"expires": "2030-11-29T14:53:15",
 		"@context": [
-			"https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
+			"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",    
 			{
-				"Vehicle": "http://example.org/vehicle/Vehicle",
-				"brandName": "http://example.org/vehicle/brandName",
-				"brandName1": "http://example.org/vehicle/brandName1",
-				"speed": "http://example.org/vehicle/speed",
-				"totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-				"reliability": "http://example.org/common/reliability",
-				"OffStreetParking":    "http://example.org/parking/OffStreetParking",    
-				"availableSpotNumber":    "http://example.org/parking/availableSpotNumber",
+				"Vehicle": "https://uri.etsi.org/ngsi-ld/default-context/Vehicle",
+				"brandName": "https://uri.etsi.org/ngsi-ld/default-context/brandName",
+				"brandName1": "https://uri.etsi.org/ngsi-ld/default-context/brandName1",
+				"speed": "https://uri.etsi.org/ngsi-ld/default-context/speed",
+				"totalSpotNumber": "https://uri.etsi.org/ngsi-ld/default-context/parking/totalSpotNumber",
+				"reliability": "https://uri.etsi.org/ngsi-ld/default-context/reliability",
+				"OffStreetParking":    "https://uri.etsi.org/ngsi-ld/default-context/parking/OffStreetParking",    
+				"availableSpotNumber":    "https://uri.etsi.org/ngsi-ld/default-context/parking/availableSpotNumber",
 				 "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
 				"isParked": {
 					"@type": "@id",
-					"@id": "http://example.org/common/isParked"
+					"@id": "https://uri.etsi.org/ngsi-ld/default-context/isParked"
 				},
 				"isNextToBuilding":    {    
 					"@type":    "@id",    
-					"@id":    "http://example.org/common/isNextToBuilding"    
+					"@id":    "https://uri.etsi.org/ngsi-ld/default-context/isNextToBuilding"    
 				},    
 				"providedBy":    {    
 					"@type":    "@id",    
-					"@id":    "http://example.org/common/providedBy"    
+					"@id":    "https://uri.etsi.org/ngsi-ld/default-context/providedBy"    
 				},    
-				"name":    "http://example.org/common/name"    
+				"name":    "https://uri.etsi.org/ngsi-ld/default-context/name"    
 			}
 		]
 	}'
@@ -565,29 +565,30 @@ Curl request for C-Source Registration update is given below.
 		},
 		"expires": "2030-11-29T14:53:15",
 		"@context": [
-            "https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
+            "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",    
 			{
-				"Vehicle": "http://example.org/vehicle/Vehicle",
-				"brandName": "http://example.org/vehicle/brandName",
-				"brandName1": "http://example.org/vehicle/brandName1",
-				"speed": "http://example.org/vehicle/speed",
-				"totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-				"reliability": "http://example.org/common/reliability",
-				"OffStreetParking":    "http://example.org/parking/OffStreetParking",    
-				"availableSpotNumber":    "http://example.org/parking/availableSpotNumber",    
+				"Vehicle": "https://uri.etsi.org/ngsi-ld/default-context/Vehicle",
+				"brandName": "https://uri.etsi.org/ngsi-ld/default-context/brandName",
+				"brandName1": "https://uri.etsi.org/ngsi-ld/default-context/brandName1",
+				"speed": "https://uri.etsi.org/ngsi-ld/default-context/speed",
+				"totalSpotNumber": "https://uri.etsi.org/ngsi-ld/default-context/parking/totalSpotNumber",
+				"reliability": "https://uri.etsi.org/ngsi-ld/default-context/reliability",
+				"OffStreetParking":    "https://uri.etsi.org/ngsi-ld/default-context/parking/OffStreetParking",    
+				"availableSpotNumber":    "https://uri.etsi.org/ngsi-ld/default-context/parking/availableSpotNumber",
+				 "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
 				"isParked": {
 					"@type": "@id",
-					"@id": "http://example.org/common/isParked"
+					"@id": "https://uri.etsi.org/ngsi-ld/default-context/isParked"
 				},
-				"isNextToBuilding":  {    
-					"@type":  "@id",    
-					"@id":  "http://example.org/common/isNextToBuilding"    
+				"isNextToBuilding":    {    
+					"@type":    "@id",    
+					"@id":    "https://uri.etsi.org/ngsi-ld/default-context/isNextToBuilding"    
 				},    
-				"providedBy": {    
-					"@type":  "@id",    
-					"@id":  "http://example.org/common/providedBy"    
+				"providedBy":    {    
+					"@type":    "@id",    
+					"@id":    "https://uri.etsi.org/ngsi-ld/default-context/providedBy"    
 				},    
-				"name": "http://example.org/common/name",
+				"name":    "https://uri.etsi.org/ngsi-ld/default-context/name",
 				"timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
 				"expires":"http://uri.etsi.org/ngsi-ld/expires"
 			}
@@ -624,7 +625,7 @@ Successful retrieval returns "200 OK" response while in case on not-existing reg
 	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/csourceRegistrations?type=<Unexpanded-Entity-Type>' \
 	-H 'Content-Type: application/ld+json' \
 	-H 'Accept: application/ld+json' \
-	-H '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+	-H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
 
 **Based on Entity Id and Entity Type:**
 
@@ -677,7 +678,7 @@ Refer the following curl requests, but before running the subscriptions, make su
 	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/subscriptions/' \
 	-H 'Content-Type: application/ld+json' \
 	-H 'Accept: application/ld+json' \
-	-H '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	-H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 	-d '
 	{
 		"type": "Subscription",
@@ -704,7 +705,7 @@ Refer the following curl requests, but before running the subscriptions, make su
 	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/subscriptions/' \
 	-H 'Content-Type: application/ld+json' \
 	-H 'Accept: application/ld+json' \
-	-H '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	-H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 	-d '
 	{
 		"type": "Subscription",
@@ -735,16 +736,16 @@ An existing subscription on FogFlow Broker can be updated by id using the curl r
 	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/subscriptions/<Subscription-Id>' \
 	-H 'Content-Type: application/ld+json' \
 	-H 'Accept: application/ld+json' \
-	-H '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	-H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 	-d '
 	{
 		"type": "Subscription",
 		"entities": [{
 			"type": "Vehicle1"
 		}],
-		"watchedAttributes": ["http://example.org/vehicle/brandName11"],
+		"watchedAttributes": ["https://uri.etsi.org/ngsi-ld/default-context/brandName11"],
 		"notification": {
-			"attributes": ["http://example.org/vehicle/brandName223"],
+			"attributes": ["https://uri.etsi.org/ngsi-ld/default-context/brandName223"],
 			"format": "keyValues",
 			"endpoint": {
 				"uri": "http://my.endpoint.org/notify",		
