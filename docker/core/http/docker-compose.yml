@@ -4,9 +4,6 @@ services:
         image: fogflow/designer:latest
         volumes:
             - ./config.json:/app/config.json
-            - ./main.js:/app/main.js                    
-            - ./dgraph.js:/app/dgraph.js
-            - ./public:/app/public
         ports:
             - 8080:8080
             - 1030:1030
