@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8"> <!-- HTML5 -->
+        <link rel="shortcut icon" href="/fogflow.ico">
+        <title>Smart HomeGateway</title>
+		
+		<script type="text/javascript" src="/lib/w3.js"></script>		
+        
+        <!-- jquery -->                
+        <script src="/lib/jquery/jquery.min.js"></script>
+
+        <!-- bootstrap -->        
+        <link rel="stylesheet" type="text/css" href="/lib/bootstrap/css/bootstrap.min.css">
+        <script src="/lib/bootstrap/js/bootstrap.min.js"></script>        
+        		        		
+        <!-- leaflet -->                        
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <link rel="stylesheet" href="css/leaflet.draw.css" />
+
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet.draw.js"></script>        
+				
+        <link rel="stylesheet" type="text/css" href="css/dashboard.css"> 
+        
+        <!-- webcam -->                        
+        <script type="text/javascript" src="/js/webcam.js"></script>       		
+
+		<!-- geohash -->                        
+        <link rel="stylesheet" type="text/css" href="css/leaflet-geocoder-mapzen.css"> 		
+		<script type="text/javascript" src="js/leaflet-geocoder-mapzen.js"></script>       				
+
+		<script type="text/javascript" src="js/geohash.js"></script>   
+		
+		<!-- moving objects -->                        		 			
+		<script type="text/javascript" src="js/MovingMarker.js"></script>   		
+        
+        <!-- nvd3 -->      
+   		<link href="/lib/nvd/nv.d3.css" rel="stylesheet" type="text/css">		          
+        <script src="/lib/nvd/d3.min.js"></script>
+        <script src="/lib/nvd/nv.d3.js"></script>    		
+		
+        <!-- NGSI -->                
+        <script src="/lib/axios/axios.min.js"></script>        
+        <script src="/lib/ngsi/ngsiclient.js"></script>
+
+        <!-- NGSI proxy to receive notification via webscoket-->                        
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/lib/ngsi/ngsiproxy.js"></script>
+        <script src="/config.js"></script>
+        <script src="/js/smarthome.js"></script>                                
+    </head>
+
+    <body>
+			
+        <!-- header -->    
+		<div w3-include-html="header.html"></div> 		
+		<script>
+			w3.includeHTML(myCallback);
+			function myCallback() {
+				$("#smartAwning").addClass("active");
+			}
+		</script>
+		
+        <!-- main content -->
+        <div class="container">
+            <div class="row">
+                <!-- function menu bar -->
+                <div class="span3">
+                    <ul class="nav nav-list bs-docs-sidenav affix" id="menu"></ul>
+                </div>
+                
+                <!-- content area for each function -->
+                <div class="span9">
+                    <div class="alert alert-info hidden" id='info'>information</div>
+                    <div class="" id='content'>						
+                    </div>                              
+                </div>
+            </div>
+        </div>    		
+    </body>
+
+</html>
