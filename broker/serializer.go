@@ -5,10 +5,141 @@ import (
 	"errors"
 	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/ngsi"
+	"strings"
 	"time"
 )
 
 type Serializer struct{}
+
+func (sz Serializer) SerializeEntity(ctxElem *LDContextElement) (map[string]interface{}, error) {
+	jobj := make(map[string]interface{})
+	jobj["id"] = ctxElem.Id
+	jobj["type"] = ctxElem.Type
+	jobj["createdAt"] = ctxElem.CreatedAt
+	//      jobj["modifiedAt"] = ctxElem.ModifiedAt
+	jobj["location"] = sz.serializeLocation(ctxElem.Location)
+	for _, property := range ctxElem.Properties {
+		jobj[property.Name] = sz.serializeProperty(property)
+	}
+	for _, relationship := range ctxElem.Relationships {
+		jobj[relationship.Name] = sz.serializeRelationship(relationship)
+	}
+	return jobj, nil
+}
+
+func (sz Serializer) serializeProperty(property Property) map[string]interface{} {
+	serializedProperty := make(map[string]interface{})
+	serializedProperty["type"] = "Property"
+	serializedProperty["value"] = property.Value
+	//      serializedProperty["createdAt"] = property.CreatedAt
+	//      serializedProperty["modifiedAt"] = property.ModifiedAt
+	if property.ObservedAt != "" {
+		serializedProperty["observedAt"] = property.ObservedAt
+	}
+	if property.DatasetId != "" {
+		serializedProperty["datasetId"] = property.DatasetId
+	}
+	if property.InstanceId != "" {
+		serializedProperty["instanceId"] = property.InstanceId
+	}
+	if property.UnitCode != "" {
+		serializedProperty["unitcode"] = property.UnitCode
+	}
+	if property.ProvidedBy.Type != "" && property.ProvidedBy.Object != "" {
+		serializedProperty["providedBy"] = sz.serializeProvidedBy(property.ProvidedBy)
+	}
+	for _, propertyNested := range property.Properties {
+		serializedProperty[propertyNested.Name] = sz.serializeProperty(propertyNested)
+	}
+	for _, relationshipNested := range property.Relationships {
+		serializedProperty[relationshipNested.Name] = sz.serializeRelationship(relationshipNested)
+	}
+	return serializedProperty
+}
+
+func (sz Serializer) serializeRelationship(relationship Relationship) map[string]interface{} {
+	serializedRelationship := make(map[string]interface{})
+	serializedRelationship["type"] = "Relationship"
+	serializedRelationship["object"] = relationship.Object
+	//      serializedRelationship["createdAt"] = relationship.CreatedAt
+	//      serializedRelationship["modifiedAt"] = relationship.ModifiedAt
+	if relationship.ObservedAt != "" {
+		serializedRelationship["observedAt"] = relationship.ObservedAt
+	}
+	if relationship.DatasetId != "" {
+		serializedRelationship["datasetId"] = relationship.DatasetId
+	}
+	if relationship.InstanceId != "" {
+		serializedRelationship["instanceId"] = relationship.InstanceId
+	}
+	if relationship.ProvidedBy.Type != "" && relationship.ProvidedBy.Object != "" {
+		serializedRelationship["providedBy"] = sz.serializeProvidedBy(relationship.ProvidedBy)
+	}
+	for _, propertyNested := range relationship.Properties {
+		serializedRelationship[propertyNested.Name] = sz.serializeProperty(propertyNested)
+	}
+	for _, relationshipNested := range relationship.Relationships {
+		serializedRelationship[relationshipNested.Name] = sz.serializeRelationship(relationshipNested)
+	}
+	return serializedRelationship
+}
+
+func (sz Serializer) serializeProvidedBy(providedBy ProvidedBy) map[string]interface{} {
+	serializedProvidedBy := make(map[string]interface{})
+	if strings.Contains(providedBy.Type, "Property") || strings.Contains(providedBy.Type, "property") {
+		serializedProvidedBy["type"] = "Property"
+	} else if strings.Contains(providedBy.Type, "Relationship") || strings.Contains(providedBy.Type, "relationship") {
+		serializedProvidedBy["type"] = "Relationship"
+	} else if strings.Contains(providedBy.Type, "/") {
+		serializedProvidedBy["type"] = sz.afterString(providedBy.Type, "/")
+	}
+	serializedProvidedBy["object"] = providedBy.Object
+	return serializedProvidedBy
+}
+
+func (sz Serializer) serializeLocation(location LDLocation) map[string]interface{} {
+	serializedLocation := make(map[string]interface{})
+	if location.Type == GEO_PROPERTY {
+		serializedLocation["type"] = "GeoProperty"
+	}
+	if locationValueMap, ok := location.Value.(LDLocationValue); ok == true {
+		// Type is LDLocationValue
+		serializedLocation["value"] = sz.serializeLocationValue(locationValueMap)
+	} else {
+		// Type is string
+		serializedLocation["value"] = location.Value
+	}
+	return serializedLocation
+}
+
+func (sz Serializer) serializeLocationValue(location LDLocationValue) map[string]interface{} {
+	locationValue := make(map[string]interface{})
+	switch location.Type {
+	case POINT:
+		locationValue["type"] = "Point"
+	case LINE_STRING:
+		locationValue["type"] = "LineString"
+	case POLYGON:
+		locationValue["type"] = "Polygon"
+	case MULTI_POINT:
+		locationValue["type"] = "MultiPoint"
+	case MULTI_LINE_STRING:
+		locationValue["type"] = "MultiLineString"
+	case MULTI_POLYGON:
+		locationValue["type"] = "MultiPolygon"
+	case GEOMETRY_COLLECTION:
+		locationValue["type"] = "GeometryCollection"
+	default:
+		break
+	}
+	if location.Type != GEOMETRY_COLLECTION {
+		locationValue["coordinates"] = location.Coordinates
+	} else { // Serialize GeometryCollection.
+	}
+	if len(location.Geometries) > 0 { // Serialize Geometries
+	}
+	return locationValue
+}
 
 func (sz Serializer) DeSerializeEntity(expanded []interface{}) (LDContextElement, error) {
 	entity := LDContextElement{}
@@ -219,31 +350,71 @@ func (sz Serializer) getCreatedAt(createdAt []interface{}) string {
 func (sz Serializer) getProperty(propertyName string, propertyMap map[string]interface{}) (Property, error) {
 	Property := Property{}
 	if propertyName != "" {
-		Property.Id = propertyName
 		Property.Name = propertyName
 	}
 	Property.Type = PROPERTY
-	if propertyMap[HAS_VALUE] != nil {
-		Property.Value = sz.getValueFromArray(propertyMap[HAS_VALUE].([]interface{}))
-	}
-	if propertyMap[OBSERVED_AT] != nil {
-		Property.ObservedAt = sz.getDateAndTimeValue(propertyMap[OBSERVED_AT].([]interface{}))
-	}
 
-	if propertyMap[DATASET_ID] != nil {
-		Property.DatasetId = sz.getDatasetId(propertyMap[DATASET_ID].([]interface{}))
-	}
+	for propertyField, fieldValue := range propertyMap {
+		switch propertyField {
+		case TYPE:
+			break
 
-	if propertyMap[INSTANCE_ID] != nil {
-		Property.InstanceId = sz.getInstanceId(propertyMap[INSTANCE_ID].([]interface{}))
-	}
+		case HAS_VALUE:
+			if fieldValue != nil {
+				Property.Value = sz.getValueFromArray(fieldValue.([]interface{}))
+			}
+		case OBSERVED_AT:
+			if fieldValue != nil {
+				Property.ObservedAt = sz.getDateAndTimeValue(fieldValue.([]interface{}))
+			}
 
+		case DATASET_ID:
+			if fieldValue != nil {
+				Property.DatasetId = sz.getDatasetId(fieldValue.([]interface{}))
+			}
+
+		case INSTANCE_ID:
+			if fieldValue != nil {
+				Property.InstanceId = sz.getInstanceId(fieldValue.([]interface{}))
+			}
+
+		case UNIT_CODE:
+			if fieldValue != nil {
+				Property.UnitCode = sz.getUnitCode(fieldValue.(interface{}))
+			}
+
+		case PROVIDED_BY:
+			if fieldValue != nil {
+				Property.ProvidedBy = sz.getProvidedBy(fieldValue.([]interface{}))
+			}
+
+		default:
+			// Nested property or relationship
+			var typ string
+			nested := fieldValue.([]interface{})
+			for _, val := range nested {
+				mp := val.(map[string]interface{})
+				typInterface := mp["@type"].([]interface{})
+				typ = typInterface[0].(string)
+				if typ == PROPERTY {
+					property, err := sz.getProperty(propertyField, mp)
+					if err != nil {
+						return Property, err
+					} else {
+						Property.Properties = append(Property.Properties, property)
+					}
+				} else if typ == RELATIONSHIP {
+					relationship, err := sz.getRelationship(propertyField, mp)
+					if err != nil {
+						return Property, err
+					} else {
+						Property.Relationships = append(Property.Relationships, relationship)
+					}
+				}
+			}
+		}
+	}
 	Property.ModifiedAt = time.Now().String()
-
-	if propertyMap[UNIT_CODE] != nil {
-		Property.UnitCode = sz.getUnitCode(propertyMap[UNIT_CODE].(interface{}))
-	}
-
 	return Property, nil
 }
 
@@ -251,37 +422,76 @@ func (sz Serializer) getRelationship(relationshipName string, relationshipMap ma
 	Relationship := Relationship{}
 
 	if relationshipName != "" {
-		Relationship.Id = relationshipName
 		Relationship.Name = relationshipName
 	}
 
 	Relationship.Type = RELATIONSHIP
 
-	if relationshipMap[HAS_OBJECT] != nil {
-		Relationship.Object = sz.getIdFromArray(relationshipMap[HAS_OBJECT].([]interface{}))
-	} else if relationshipMap[OBJECT] != nil {
-		Relationship.Object = sz.getValueFromArray(relationshipMap[OBJECT].([]interface{})).(string)
-	} else {
-		err := errors.New("Relationship Object value can not be nil!")
-		return Relationship, err
-	}
+	for relationshipField, fieldValue := range relationshipMap {
+		switch relationshipField {
+		case TYPE:
+			break
 
-	if relationshipMap[OBSERVED_AT] != nil {
-		Relationship.ObservedAt = sz.getDateAndTimeValue(relationshipMap[OBSERVED_AT].([]interface{}))
-	}
+		case HAS_OBJECT:
+			if fieldValue != nil {
+				Relationship.Object = sz.getIdFromArray(fieldValue.([]interface{}))
+			}
 
-	if relationshipMap[PROVIDED_BY] != nil {
-		Relationship.ProvidedBy = sz.getProvidedBy(relationshipMap[PROVIDED_BY].([]interface{}))
-	}
+		case OBJECT:
+			if fieldValue != nil {
+				Relationship.Object = sz.getValueFromArray(fieldValue.([]interface{})).(string)
+			} else {
+				err := errors.New("Relationship Object value can not be nil!")
+				return Relationship, err
+			}
 
-	if relationshipMap[DATASET_ID] != nil {
-		Relationship.DatasetId = sz.getDatasetId(relationshipMap[DATASET_ID].([]interface{}))
-	}
+		case OBSERVED_AT:
+			if fieldValue != nil {
+				Relationship.ObservedAt = sz.getDateAndTimeValue(fieldValue.([]interface{}))
+			}
 
-	if relationshipMap[INSTANCE_ID] != nil {
-		Relationship.InstanceId = sz.getInstanceId(relationshipMap[INSTANCE_ID].([]interface{}))
-	}
+		case PROVIDED_BY:
+			if fieldValue != nil {
+				Relationship.ProvidedBy = sz.getProvidedBy(fieldValue.([]interface{}))
+			}
 
+		case DATASET_ID:
+			if fieldValue != nil {
+				Relationship.DatasetId = sz.getDatasetId(fieldValue.([]interface{}))
+			}
+
+		case INSTANCE_ID:
+			if fieldValue != nil {
+				Relationship.InstanceId = sz.getInstanceId(fieldValue.([]interface{}))
+			}
+
+		default:
+			// Nested property or relationship
+			var typ string
+			nested := fieldValue.([]interface{})
+			for _, val := range nested {
+				mp := val.(map[string]interface{})
+				typInterface := mp["@type"].([]interface{})
+				typ = typInterface[0].(string)
+
+				if typ == PROPERTY {
+					property, err := sz.getProperty(relationshipField, mp)
+					if err != nil {
+						return Relationship, err
+					} else {
+						Relationship.Properties = append(Relationship.Properties, property)
+					}
+				} else if typ == RELATIONSHIP {
+					relationship, err := sz.getRelationship(relationshipField, mp)
+					if err != nil {
+						return Relationship, err
+					} else {
+						Relationship.Relationships = append(Relationship.Relationships, relationship)
+					}
+				}
+			}
+		}
+	}
 	Relationship.ModifiedAt = time.Now().String()
 
 	return Relationship, nil
@@ -373,26 +583,21 @@ func (sz Serializer) getLocation(location []interface{}) LDLocation {
 	if len(location) > 0 {
 		locationMap := location[0].(map[string]interface{})
 		Location.Type = sz.getType(locationMap[TYPE].([]interface{}))
-		scalarValue, value := sz.getLocationValue(locationMap[HAS_VALUE].([]interface{}))
-		if scalarValue != "" {
-			Location.StringValue = scalarValue
-		} else {
-			Location.Value = value
-		}
+		value := sz.getLocationValue(locationMap[HAS_VALUE].([]interface{}))
+		Location.Value = value
 	}
 	return Location
 }
 
-func (sz Serializer) getLocationValue(locationValue []interface{}) (string, LDLocationValue) {
-	LocationValue := LDLocationValue{}
+func (sz Serializer) getLocationValue(locationValue []interface{}) interface{} {
 	if len(locationValue) > 0 {
 		locationValueMap := locationValue[0].(map[string]interface{})
 		if locationValueMap[VALUE] != nil {
 			valueScalar := locationValueMap[VALUE].(interface{})
 			stringValue := valueScalar.(string)
-			return stringValue, LocationValue
-		}
-		if locationValueMap[TYPE] != nil {
+			return stringValue
+		} else if locationValueMap[TYPE] != nil {
+			LocationValue := LDLocationValue{}
 			LocationValue.Type = sz.getType(locationValueMap[TYPE].([]interface{}))
 			if locationValueMap[COORDINATES] != nil {
 				switch LocationValue.Type {
@@ -419,9 +624,10 @@ func (sz Serializer) getLocationValue(locationValue []interface{}) (string, LDLo
 					break
 				}
 			}
+			return LocationValue
 		}
 	}
-	return "", LocationValue
+	return nil
 }
 
 func (sz Serializer) getPointLocation(coordinates []interface{}) []float64 {
@@ -613,4 +819,14 @@ func (sz Serializer) getTimeStamp(timestampArray []interface{}) TimeInterval {
 		}
 	}
 	return timeInterval
+}
+
+func (sz Serializer) afterString(str string, markingStr string) string {
+	// Get sub-string after markingStr string
+	li := strings.LastIndex(str, markingStr)
+	liAdjusted := li + len(markingStr)
+	if liAdjusted >= len(str) {
+		return ""
+	}
+	return str[liAdjusted:len(str)]
 }
