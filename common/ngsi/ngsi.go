@@ -1113,12 +1113,11 @@ func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []s
 }
 
 type LDLocation struct {
-	Type        string          `json:"type",omitemtpy`
-	Value       LDLocationValue `json:"value",omitemtpy`
-	StringValue string          `json:"value",omitemtpy`
+	Type  string      `json:"type",omitemtpy`
+	Value interface{} `json:"value",omitemtpy`
 }
 
-type LDLocationValue struct {
+type ldlocationvalue struct {
 	Type        string      `json:"type",omitemtpy`
 	Coordinates interface{} `json:"coordinates",omitemtpy`
 	Geometries  []Geometry  `json:"geometries",omitemtpy`
@@ -1130,33 +1129,32 @@ type Geometry struct {
 }
 
 type Property struct {
-	Id         string      `json:"id",omitemtpy`
-	Name       string      `json:"name",omitemtpy`
-	Type       string      `json:"type",omitemtpy`
-	Value      interface{} `json:"value",omitemtpy` // Can also be a string or a JSON object
-	ObservedAt string      `json:"observedAt",omitempty`
-	DatasetId  string      `json:"DatasetId",omitempty`  //<<URI>>, Optional.
-	InstanceId string      `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
-	CreatedAt  string      `json:"createdAt",omitemtpy`
-	ModifiedAt string      `json:"modifiedAt",omitemtpy`
-	UnitCode   string      `json:"UnitCode",omitempty`
-	//<PropertyName>
-	//<RelationahipName>
+	Name          string      `json:"name",omitemtpy`
+	Type          string      `json:"type",omitemtpy`
+	Value         interface{} `json:"value",omitemtpy` // Can also be a string or a JSON object
+	ObservedAt    string      `json:"observedAt",omitempty`
+	DatasetId     string      `json:"DatasetId",omitempty`  //<<URI>>, Optional.
+	InstanceId    string      `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+	CreatedAt     string      `json:"createdAt",omitemtpy`
+	ModifiedAt    string      `json:"modifiedAt",omitemtpy`
+	UnitCode      string      `json:"UnitCode",omitempty`
+	ProvidedBy    ProvidedBy  `json:"providedBy",omitempty`
+	Properties    []Property
+	Relationships []Relationship
 }
 
 type Relationship struct {
-	Id         string     `json:"id",omitemtpy`
-	Name       string     `json:"name",omitemtpy`
-	Type       string     `json:"type",omitemtpy`
-	Object     string     `json:object,omitemtpy` //<<URI>>, Mandatory
-	ObservedAt string     `json:"observedAt",omitempty`
-	ProvidedBy ProvidedBy `json:"providedBy",omitempty`
-	DatasetId  string     `json:"DatasetId",omitempty`  //<<URI>>, Optional.
-	InstanceId string     `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
-	CreatedAt  string     `json:"createdAt",omitemtpy`
-	ModifiedAt string     `json:"modifiedAt",omitemtpy`
-	//<PropertyName>
-	//<RelationahipName>
+	Name          string     `json:"name",omitemtpy`
+	Type          string     `json:"type",omitemtpy`
+	Object        string     `json:object,omitemtpy` //<<URI>>, Mandatory
+	ObservedAt    string     `json:"observedAt",omitempty`
+	ProvidedBy    ProvidedBy `json:"providedBy",omitempty`
+	DatasetId     string     `json:"DatasetId",omitempty`  //<<URI>>, Optional.
+	InstanceId    string     `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+	CreatedAt     string     `json:"createdAt",omitemtpy`
+	ModifiedAt    string     `json:"modifiedAt",omitemtpy`
+	Properties    []Property
+	Relationships []Relationship
 }
 
 type ProvidedBy struct {
@@ -1181,7 +1179,7 @@ type LDSubscriptionRequest struct {
 	Throttling        uint               `json:"throttling",omitempty`
 	TemporalQ         TemporalQuery      `json:"temporalQ",omitempty`
 	Status            string             `json:"status",omitempty`
-	Subscriber        Subscriber         `json:"subscriber,omitempty",omitempty`
+	Subscriber        Subscriber         `json:"subscriber,omitempty`
 	CreatedAt         string             `json:"createdAt",omitemtpy`
 	ModifiedAt        string             `json:"modifiedAt",omitemtpy`
 }
