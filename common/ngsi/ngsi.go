@@ -1117,7 +1117,7 @@ type LDLocation struct {
 	Value interface{} `json:"value",omitemtpy`
 }
 
-type ldlocationvalue struct {
+type LDLocationValue struct {
 	Type        string      `json:"type",omitemtpy`
 	Coordinates interface{} `json:"coordinates",omitemtpy`
 	Geometries  []Geometry  `json:"geometries",omitemtpy`
