@@ -1789,14 +1789,50 @@ func (tb *ThinBroker) saveEntity(ctxElem *LDContextElement) {
 }
 
 // GET API method for entity
-func (tb *ThinBroker) ldGetEntity(eid string) *LDContextElement {
+func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
+	var context []interface{}
+	context = append(context, DEFAULT_CONTEXT)
 	tb.ldEntities_lock.RLock()
-	defer tb.ldEntities_lock.RUnlock()
 	if entity := tb.ldEntities[eid]; entity != nil {
-		return entity
+		tb.ldEntities_lock.RUnlock()
+		compactEntity := tb.createOriginalPayload(entity, context)
+		return compactEntity
 	} else {
+		tb.ldEntities_lock.RUnlock()
 		return nil
 	}
+}
+
+// Creating original payload as provided by user from FogFlow Data Structure
+func (tb *ThinBroker) createOriginalPayload(entity *LDContextElement, context []interface{}) interface{} {
+	// Serializing the payload
+	sz := Serializer{}
+	serializedEntity, _ := sz.SerializeEntity(entity)
+	serializedEntity["@context"] = context
+
+	// Expanding the entity to get uniformly expanded entity which was missing in serialization and is required for compaction
+	expandedEntity, err := tb.ExpandData(serializedEntity)
+	if err != nil {
+		DEBUG.Println("Error while expanding:", err)
+		return nil
+	}
+
+	// Compacting the expanded entity.
+	entity1 := expandedEntity[0].(map[string]interface{})
+	compactEntity, err := tb.compactData(entity1, context)
+	if err != nil {
+		DEBUG.Println("Error while compacting:", err)
+		return nil
+	}
+	return compactEntity
+}
+
+// Compacting data to display to user in original form.
+func (tb *ThinBroker) compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
+	proc := ld.NewJsonLdProcessor()
+	options := ld.NewJsonLdOptions("")
+	compacted, err := proc.Compact(entity, context, options)
+	return compacted, err
 }
 
 func (tb *ThinBroker) RegisterCSource(w rest.ResponseWriter, r *rest.Request) {
@@ -2884,8 +2920,10 @@ func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string) error {
 	return nil
 }
 
-func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []*LDContextElement {
-	entities := []*LDContextElement{}
+func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []interface{} {
+	var context []interface{}
+	context = append(context, DEFAULT_CONTEXT)
+	var entities []interface{}
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		allExist := true
@@ -2913,21 +2951,25 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []*LDContextElement
 		if allExist == false {
 			continue
 		} else {
-			entities = append(entities, entity)
+			compactEntity := tb.createOriginalPayload(entity, context)
+			entities = append(entities, compactEntity)
 		}
 	}
 	tb.ldEntities_lock.Unlock()
 	return entities
 }
 
-func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []*LDContextElement {
+func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []interface{} {
+	var context []interface{}
+	context = append(context, DEFAULT_CONTEXT)
 	tb.ldEntities_lock.Lock()
-	entities := []*LDContextElement{}
+	var entities []interface{}
 
 	for index, eid := range eids {
 		if entity, ok := tb.ldEntities[eid]; ok == true {
 			if entity.Type == typ[index] {
-				entities = append(entities, entity)
+				compactEntity := tb.createOriginalPayload(entity, context)
+				entities = append(entities, compactEntity)
 			}
 		}
 	}
@@ -2935,8 +2977,10 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []*LDContextE
 	return entities
 }
 
-func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]*LDContextElement, error) {
-	entities := []*LDContextElement{}
+func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]interface{}, error) {
+	var context []interface{}
+	context = append(context, DEFAULT_CONTEXT)
+	var entities []interface{}
 	typ := typs[0]
 	if link != "" {
 		typ = tb.getTypeResolved(link, typ)
@@ -2948,15 +2992,18 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]*LDContex
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		if entity.Type == typ {
-			entities = append(entities, entity)
+			compactEntity := tb.createOriginalPayload(entity, context)
+			entities = append(entities, compactEntity)
 		}
 	}
 	tb.ldEntities_lock.Unlock()
 	return entities, nil
 }
 
-func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []*LDContextElement {
-	entities := []*LDContextElement{}
+func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
+	var context []interface{}
+	context = append(context, DEFAULT_CONTEXT)
+	var entities []interface{}
 
 	for eid, entity := range tb.ldEntities {
 		for index, idPattern := range idPatterns {
@@ -2965,7 +3012,8 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				idPattern = strings.Trim(idPattern, "*.")
 				if strings.Contains(eid, idPattern) {
 					if entity.Type == typ[index] {
-						entities = append(entities, entity)
+						compactEntity := tb.createOriginalPayload(entity, context)
+						entities = append(entities, compactEntity)
 						break
 					}
 				}
@@ -2974,7 +3022,8 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				idPattern = strings.Trim(idPattern, ".*")
 				if strings.HasPrefix(eid, idPattern) {
 					if entity.Type == typ[index] {
-						entities = append(entities, entity)
+						compactEntity := tb.createOriginalPayload(entity, context)
+						entities = append(entities, compactEntity)
 						break
 					}
 				}
@@ -2983,7 +3032,8 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				idPattern = strings.Trim(idPattern, "*.")
 				if strings.HasSuffix(eid, idPattern) {
 					if entity.Type == typ[index] {
-						entities = append(entities, entity)
+						compactEntity := tb.createOriginalPayload(entity, context)
+						entities = append(entities, compactEntity)
 						break
 					}
 				}
