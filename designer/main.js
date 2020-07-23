@@ -3,8 +3,9 @@ var express =   require('express');
 var multer  =   require('multer');
 var https = require('https');
 const bodyParser = require('body-parser');
+var axios = require('axios')
+var dgraph=require('./dgraph.js');
 var jsonParser = bodyParser.json();
-
 var config_fs_name = './config.json';
 
 
@@ -24,7 +25,8 @@ var config = globalConfigFile.designer;
 
 // get the URL of the cloud broker
 var cloudBrokerURL = "http://" + globalConfigFile.external_hostip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
-
+config.agentIP = globalConfigFile.external_hostip;
+config.agentPort = globalConfigFile.designer.agentPort;
 
 // set the agent IP address from the environment variable
 config.agentIP = globalConfigFile.external_hostip;
@@ -35,8 +37,17 @@ config.brokerURL = './ngsi10';
 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 
+config.brokerIp=globalConfigFile.coreservice_ip
+//broker port
+config.brokerPort=globalConfigFile.broker.http_port
+//designer IP
+config.designerIP=globalConfigFile.coreservice_ip
+config.DGraphPort=globalConfigFile.persistent_storage.port
+
+
 console.log(config);
 
+dgraph.queryForEntity()
 
 function uuid() {
     var uuid = "", i, random;
@@ -118,6 +129,25 @@ app.post('/intent', jsonParser, function(req, res){
     reply = {'id': intentCtxObj.entityId.id, 'outputType': 'Result'}    
     res.json(reply);
 });
+
+/*
+  api to create fogFlow internal entities
+*/
+
+app.use (bodyParser.json());
+app.post('/ngsi10/updateContext', async function (req, res) {
+  var payload=await req.body
+  var response  = await axios({
+            method: 'post',
+            url: 'http://'+config.brokerIp+':'+config.brokerPort+'/ngsi10/updateContext',
+            data: payload
+        })
+            if (response.status == 200) {
+                await dgraph.db(payload)
+            }
+  res.send(response.data)
+});
+
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res){
@@ -202,3 +232,5 @@ io.on('connection', function (client) {
         }
     });
 });
+
+

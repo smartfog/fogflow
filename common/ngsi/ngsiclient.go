@@ -785,3 +785,26 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 
 	return err
 }
+
+// NGSI-LD feature addition
+
+func (nc *NGSI10Client) CreateLDEntityOnRemote(elem map[string]interface{}) error {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/ld+json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err
+	}
+	return nil
+}
