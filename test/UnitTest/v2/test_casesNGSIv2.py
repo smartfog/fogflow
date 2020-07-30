@@ -21,10 +21,11 @@ print(" The Validation test begins ")
   Testing get all subscription
 '''
 def test_getAllSubscription():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	r=requests.get(url,headers=headers)
-	assert r.status_code == 200
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        r=requests.get(url,headers=headers)
+        assert r.status_code == 200
+
 
 #testCase 2
 
@@ -33,62 +34,65 @@ def test_getAllSubscription():
 '''
 
 def test_getSubscriptionById():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	r=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	resp_content=r.content
-	resInJson= resp_content.decode('utf8').replace("'", '"')
-	resp=json.loads(resInJson)
-	resp=resp['subscribeResponse']
-	sid=resp['subscriptionId']
-	get_url=brokerIp+"/v2/subscription/"
-	url=get_url+sid
-	r=requests.get(url,headers=headers)
-	assert r.status_code == 200
-	print("Get subscription by Id testcase passed")
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        r=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        resp=resp['subscribeResponse']
+        sid=resp['subscriptionId']
+        get_url=brokerIp+"/v2/subscription/"
+        url=get_url+sid
+        r=requests.get(url,headers=headers)
+        assert r.status_code == 200
+        print("Get subscription by Id testcase passed")
+
 
 #testCase 3
 '''
   Testing get subscription by nil id
 '''
 
-def test_getSubscriptionByNilId():	
-	get_url=brokerIp+"/v2/subscription/nil"
-	headers= {'Content-Type': 'application/json'}
-	r=requests.get(get_url,headers=headers)
-	assert r.status_code == 404	
+def test_getSubscriptionByNilId():
+        get_url=brokerIp+"/v2/subscription/nil"
+        headers= {'Content-Type': 'application/json'}
+        r=requests.get(get_url,headers=headers)
+        assert r.status_code == 404
 
 # Test Delete subscription id subscriptionId is persent in the broker
 #testCase 4
 
 '''
-  Test delete subscription by Id 
+  Test delete subscription by Id
 '''
 
 def test_deleteSubscriptionById():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	r=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	resp_content=r.content
-	resInJson= resp_content.decode('utf8').replace("'", '"')
-	resp=json.loads(resInJson)
-	resp=resp['subscribeResponse']
-	sid=resp['subscriptionId']
-	get_url=brokerIp+"/v2/subscription/"
-	url=get_url+sid
-	r=requests.delete(url,headers=headers)
-	assert r.status_code == 200
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        r=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        resp=resp['subscribeResponse']
+        sid=resp['subscriptionId']
+        get_url=brokerIp+"/v2/subscription/"
+        url=get_url+sid
+        r=requests.delete(url,headers=headers)
+        assert r.status_code == 200
+
+
 
 #testCase 5
-''' 
+'''
 Test if subscriptionId is not persent in the broker
 '''
 
-def test_deleteSubscriptionId():	
-	delete_url=brokerIp+"/v2/subscription/nil"
-	headers= {'Content-Type': 'application/json'}
-	r=requests.delete(delete_url,headers=headers)
-	assert r.status_code == 200
+def test_deleteSubscriptionId():
+        delete_url=brokerIp+"/v2/subscription/nil"
+        headers= {'Content-Type': 'application/json'}
+        r=requests.delete(delete_url,headers=headers)
+        assert r.status_code == 200
 
 #testCase 6
 '''
@@ -96,10 +100,10 @@ def test_deleteSubscriptionId():
 '''
 
 def test_subscriptionWithWrongPayload():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	r=requests.post(url,data=json.dumps(v2data.subscriptionWrongPaylaod),headers=headers)
-	assert r.status_code == 500
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        r=requests.post(url,data=json.dumps(v2data.subscriptionWrongPaylaod),headers=headers)
+        assert r.status_code == 500
 
 #testCase 7
 '''
@@ -107,75 +111,76 @@ def test_subscriptionWithWrongPayload():
 '''
 
 def test_v1v2SubscriptionForSameEntity():
-	V2url=brokerIp+"/v2/subscriptions"
-	ngsi10url=brokerIp+"/ngsi10/subscribeContext"
-	headers= {'Content-Type': 'application/json'}
-	V2=requests.post(V2url,data=json.dumps(v2data.subscription_data),headers=headers)
-	ngsi10=requests.post(ngsi10url,data=json.dumps(v2data.v1SubData),headers=headers)
-	assert V2.status_code == 201
-	assert ngsi10.status_code == 200
-	
+        V2url=brokerIp+"/v2/subscriptions"
+        ngsi10url=brokerIp+"/ngsi10/subscribeContext"
+        headers= {'Content-Type': 'application/json'}
+        V2=requests.post(V2url,data=json.dumps(v2data.subscription_data),headers=headers)
+        ngsi10=requests.post(ngsi10url,data=json.dumps(v2data.v1SubData),headers=headers)
+        assert V2.status_code == 201
+        assert ngsi10.status_code == 200
+
 #testCase 8
 '''
  Test ngsiv2 subscription
 '''
 
-def test_Subscription():	
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	response=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	assert response.status_code==201
+def test_Subscription():
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        response=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        assert response.status_code==201
 
 #testCase 9
-#update request wit create action 
+#update request wit create action
 
 '''
   Testing update request with update action
 '''
 def test_update_request_with_update_action():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	updateresponse=requests.post(url,data=json.dumps(v2data.updateDataWithupdateaction),headers=headers)	
-	assert updateresponse.status_code == 201
-  
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        updateresponse=requests.post(url,data=json.dumps(v2data.updateDataWithupdateaction),headers=headers)
+        assert updateresponse.status_code == 201
+
 #testCase 10
 '''
   Testing update request with Delete request
 '''
 
 def test_upadte_request_with_delete_action():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	updateresponse=requests.post(url,data=json.dumps(v2data.deleteDataWithupdateaction),headers=headers)
-	assert updateresponse.status_code==201
-	
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        updateresponse=requests.post(url,data=json.dumps(v2data.deleteDataWithupdateaction),headers=headers)
+        assert updateresponse.status_code==201
+
+
 #testCase 11
 
 '''
   Testing update request with create action
 '''
 
-def test_update_request_with_create_action():	
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	updateresponse=requests.post(url,data=json.dumps(v2data.createDataWithupdateaction),headers=headers)
-	assert updateresponse.status_code==201
+def test_update_request_with_create_action():
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        updateresponse=requests.post(url,data=json.dumps(v2data.createDataWithupdateaction),headers=headers)
+        assert updateresponse.status_code==201
 
 #testCase 12
 '''
-   Testing notification send by broker 
+   Testing notification send by broker
 '''
 
 def test_notifyOneSubscriberv2WithCurrentStatus():
-	url=brokerIp+"/v2/subscriptions"
-	headers= {'Content-Type': 'application/json'}
-	updateresponse=requests.post(url,data=json.dumps(v2data.createDataWithupdateaction),headers=headers)
-	subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
-	assert subresponse.status_code==201
-  
+        url=brokerIp+"/v2/subscriptions"
+        headers= {'Content-Type': 'application/json'}
+        updateresponse=requests.post(url,data=json.dumps(v2data.createDataWithupdateaction),headers=headers)
+        subresponse=requests.post(url,data=json.dumps(v2data.subscription_data),headers=headers)
+        assert subresponse.status_code==201
+
 # testCase 13
 '''
   Testing  subscription with attributes and using ID
@@ -207,7 +212,7 @@ def test_getSubscription1():
         #print(r.content)
 
         #validation based on subscriptionId
-        url="http://0.0.0.0:8888/validateNotification"
+        url="http://180.179.214.211:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -244,10 +249,11 @@ def test_getsubscription2():
         #print(r.content)
 
         #vaidation based on subscriptionId
-        url="http://0.0.0.0:8888/validateNotification"
+        url="http://180.179.214.211:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
+
 
 # testCase 15
 '''
@@ -293,3 +299,4 @@ def test_getsubscription3():
         #print(r.content)
         assert r.status_code == 404
         print("The subscriptionId "+sid+" coud not be fetched via get since deleted")
+

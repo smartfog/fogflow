@@ -10,28 +10,29 @@ subscription_data=\
     ],
     "condition": {
       "attrs": [
-	  "p3"
+          "p3"
       ]
     }
   },
   "notification": {
     "http": {
-      "url": "http://192.168.100.162:8888"
+      "url": "http://180.179.214.211:8888/accumulate"
     },
-    "attrs": [	
-	"p1",
-	"p2",
-	"p3"
+    "attrs": [
+        "p1",
+        "p2",
+        "p3"
     ]
   },
   "expires": "2040-01-01T14:00:00.00Z",
   "throttling": 5
 }
-	
+
+
 
 #data to test the following code for broker.thinBroker.go:946
 '''
-	 subReqv2 := SubscriptionRequest{}
+         subReqv2 := SubscriptionRequest{}
         err := r.DecodeJsonPayload(&subReqv2)
         if err != nil {
                 rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -47,23 +48,23 @@ subscriptionWrongPaylaod=\
       {
         "id": "Room1",
         "type": "Room",
-	"ispattern":"false"
+        "ispattern":"false"
       }
     ],
     "condition": {
       "attrs": [
-	  "p3"
+          "p3"
       ]
     }
   },
   "notification": {
     "http": {
-      "url": "http://192.168.100.162:8888"
+      "url": "http://180.179.214.211:8888/accumulate"
     },
-    "attrs": [	
-	"p1",
-	"p2",
-	"p3"
+    "attrs": [
+        "p1",
+        "p2",
+        "p3"
     ]
   },
   "expires": "2040-01-01T14:00:00.00Z",
@@ -78,7 +79,7 @@ v1SubData=\
       "type": "Room",
     }
   ],
-  "reference": "http://192.168.100.162:8668/ngsi10/updateContext"
+  "reference": "http://180.179.214.211:8888/accumulate"
 }
 
 updateDataWithupdateaction=\
@@ -235,7 +236,6 @@ subdata1=\
             "updateAction": "UPDATE"
 }
 
-
 subdata2=\
 {
   "description": "A subscription to get info about RoomTrial10",
@@ -254,7 +254,7 @@ subdata2=\
   },
   "notification": {
     "http": {
-      "url": "http://0.0.0.0:8888/accumulate"
+      "url": "http://180.179.214.211:8888/accumulate"
     },
     "attrs": [
       "temperature"
@@ -263,7 +263,6 @@ subdata2=\
   "expires": "2040-01-01T14:00:00.00Z",
   "throttling": 5
 }
-
 
 subdata3=\
 {
@@ -334,6 +333,7 @@ subdata4=\
 }
 
 
+
 subdata5=\
 {
   "description": "A subscription to get info about RoomTrial20",
@@ -352,7 +352,7 @@ subdata5=\
   },
   "notification": {
     "http": {
-      "url": "http://0.0.0.0:8888/accumulate"
+      "url": "http://180.179.214.211:8888/accumulate"
     },
     "attrs": [
       "temperature"
@@ -361,6 +361,7 @@ subdata5=\
   "expires": "2040-01-01T14:00:00.00Z",
   "throttling": 5
 }
+
 
 
 subdata6=\
@@ -397,6 +398,8 @@ subdata6=\
             "updateAction": "UPDATE"
 }
 
+
+
 subdata7=\
 {
             "contextElements": [
@@ -432,6 +435,7 @@ subdata7=\
 }
 
 
+
 subdata8=\
 {
   "description": "A subscription to get info about RoomTrial30",
@@ -450,7 +454,7 @@ subdata8=\
   },
   "notification": {
     "http": {
-      "url": "http://0.0.0.0:8888/accumulate"
+      "url": "http://180.179.214.211:8888/accumulate"
     },
     "attrs": [
       "temperature"
@@ -459,6 +463,8 @@ subdata8=\
   "expires": "2040-01-01T14:00:00.00Z",
   "throttling": 5
 }
+
+
 
 
 
@@ -495,3 +501,4 @@ subdata9=\
             ],
             "updateAction": "UPDATE"
 }
+

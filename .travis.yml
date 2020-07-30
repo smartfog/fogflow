@@ -5,6 +5,9 @@ language: go
 go:
     - 1.13.x
 
+before install:
+    - sudo docker run --rm -it -d -p 8082:8080 -p 9082:9080 -p 8000:8000 -v ~/dgraph:/dgraph fogflow/dgraph:latest
+
 install: 
     - docker --version
     
@@ -40,6 +43,23 @@ install:
     - pip install Flask
     - pip install requests
     - pip install -U pytest
+    - sudo apt-get install curl
+    - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+    - sudo apt-get install nodejs
+    - node -v 
+    - npm -v
+    - echo 'deb http://www.rabbitmq.com/debian/ testing main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
+    - wget -O- https://www.rabbitmq.com/rabbitmq-release-signing-key.asc | sudo apt-key add -
+    - sudo apt-get update
+    - sudo apt-get install rabbitmq-server
+    - sudo update-rc.d rabbitmq-server defaults
+    - sudo service rabbitmq-server start
+    - sudo systemctl enable rabbitmq-server
+    - sudo systemctl start rabbitmq-server
+    - sudo rabbitmqctl add_user admin mypass
+    - sudo rabbitmqctl set_user_tags admin administrator
+    - sudo rabbitmqctl set_permissions -p / admin ".*" ".*" ".*"
+    - echo "Done"
 
 before_script:
     - go get -u golang.org/x/lint/golint
@@ -57,15 +77,32 @@ script:
     - go build
     - screen -d -m ./broker
     - cd ../
+    - cd master/
+    - go get
+    - go build
+    - screen -d -m ./master
+    - cd ../
+    - cd worker/
+    - go get
+    - go build
+    - screen -d -m ./worker
+    - cd ../
+    - cd designer/
+    - npm install
+    - screen -d -m node main.js
+    - cd ../
     - cd test/UnitTest/
     - screen -d -m python accumulator.py
     - cd ../
-    - cd UnitTest/v1/
+    - cd UnitTest/v2/
     - pytest -s -v 
     - cd ../
-    - cd v2/
+    - cd v1/
     - pytest -s -v
-    - echo "Testing Done"
+    - cd ../
+    - cd persistance/
+    - pytest -s -v 
+    - echo "Testing Done !"
 
 notifications:
     email: false

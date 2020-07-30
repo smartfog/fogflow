@@ -1,3 +1,4 @@
+# Payload to create entity without passing Link Header
 subdata=\
 {
            "id": "urn:ngsi-ld:Vehicle:A020",
@@ -29,7 +30,7 @@ subdata=\
              }
      }
 
-
+# Payload to create entity with context in link header  
 subdata1=\
 {
            "id": "urn:ngsi-ld:Vehicle:A100",
@@ -62,6 +63,7 @@ subdata1=\
      }
 
 
+# Payload to create entity with context inside payload
 subdata2=\
  {
               "@context": [{
@@ -106,7 +108,7 @@ subdata2=\
                 }
        }
 
-
+# create entity with context in Link header and request payload is already expanded
 subdata3=\
  {
              "https://example.org/vehicle/brandName": [
@@ -188,6 +190,8 @@ subdata3=\
 
    }
 
+
+# Payload  to append additional attributes to an existing entity 
 subdata4=\
 {
       "@context": {
@@ -199,6 +203,7 @@ subdata4=\
        }
  }
 
+# Payload  to patch  update specific attributes of an existing entity A100
 subdata5=\
 {
         "@context": {
@@ -210,6 +215,7 @@ subdata5=\
          }
   }
 
+# Payload  to update the value of a specific attribute of an existing entity with wrong payload
 subdata6=\
 {
         "@context": {
@@ -218,6 +224,7 @@ subdata6=\
          "value": "MARUTI"
   }
 
+# Payload to create a new context source registration, with context in link header
 subdata7=\
 {
              "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
@@ -249,7 +256,7 @@ subdata7=\
                    ]
              }
             ],
-             "endpoint": "http://http://my.csource.org:1026",
+             "endpoint": "http://180.179.214.211:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -257,6 +264,7 @@ subdata7=\
              "expires": "2030-11-29T14:53:15"
      }
 
+# Payload to create a new context source registration, with context in request payload
 subdata8=\
 {
          "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4000",
@@ -288,7 +296,7 @@ subdata8=\
                  ]
          }
          ],
-         "endpoint": "http://my.csource.org:1026",
+         "endpoint": "http://180.179.214.211:8888/csource",
          "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
          "timestamp": {
          "start": "2017-11-29T14:53:15"
@@ -324,6 +332,7 @@ subdata8=\
        ]
  }
 
+# Payload to update an existing context source registration, with context in request payload
 subdata9=\
 {
          "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
@@ -348,7 +357,7 @@ subdata9=\
                ]
          }
        ],
-         "endpoint": "http://my.csource.org:1026",
+         "endpoint": "http://180.179.214.211:8888/csource",
          "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
          "timestamp": {
          "start": "2017-11-29T14:53:15"
@@ -385,7 +394,7 @@ subdata9=\
          ]
   }
 
-
+# Payload to create a new Subscription to with context in Link header
 subdata10=\
 {
 	     "id": "urn:ngsi-ld:Subscription:7",
@@ -399,12 +408,13 @@ subdata10=\
                              "attributes": ["brandName"],
                              "format": "keyValues",
                              "endpoint": {
-                                             "uri": "http://my.endpoint.org/notify",
+                                             "uri": "http://180.179.214.211:8888/ld-notify",
                                              "accept": "application/json"
                                }
              }
       }
 
+# Payload to create entity which is to be tested for delete attribute request
 subdata11=\
 {
            "id": "urn:ngsi-ld:Vehicle:A500",
@@ -436,6 +446,7 @@ subdata11=\
              }
      }
 
+# Payload to Update the subscription
 subdata12=\
 {
              "id": "urn:ngsi-ld:Subscription:7",
@@ -449,12 +460,13 @@ subdata12=\
              "attributes": ["http://example.org/vehicle/brandName2"],
              "format": "keyValues",
              "endpoint": {
-                             "uri": "http://my.endpoint.org/notify",
+                             "uri": "http://180.179.214.211:8888/ld-notify",
                              "accept": "application/json"
               }
            }
        }
 
+# Payload to  create entity  without passing Header
 subdata13=\
 {
            "id": "urn:ngsi-ld:Vehicle:A600",
@@ -486,7 +498,7 @@ subdata13=\
              }
      }
 
-
+# Payload to update entity with different header and posting duplicate attribute
 subdata14=\
 {
       "@context": {
@@ -498,6 +510,7 @@ subdata14=\
        }
  }
 
+# Payload to  Update entity with different headers and passing inappropriate payload
 subdata15=\
 {
         "@context": {
@@ -508,6 +521,8 @@ subdata15=\
          }
   }
 
+
+# Payload to create entity without attribute
 subdata16=\
 {
            "id": "urn:ngsi-ld:Vehicle:A700",
@@ -535,7 +550,7 @@ subdata16=\
              }
      }
 
-
+# Payload to create entity without any attributes
 subdata17=\
 {
            "id": "urn:ngsi-ld:Vehicle:A900",
@@ -543,6 +558,7 @@ subdata17=\
             "createdAt": "2017-07-29T12:00:04"
      }
 
+# Payload to create entity without any attribute to be tested for delete attribute request
 subdata18=\
 {
            "id": "urn:ngsi-ld:Vehicle:A501",
@@ -550,6 +566,8 @@ subdata18=\
             "createdAt": "2017-07-29T12:00:04"
      }
 
+
+# Payload to update an existing context source registration which contains idPattern , with context in request payload regarding one entity
 subdata19=\
 {
   "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
@@ -578,7 +596,7 @@ subdata19=\
       ]
     }
   ],
-  "endpoint": "http://my.csource.org:1026",
+  "endpoint": "http://180.179.214.211:8888/csource",
   "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
   "timestamp": {
     "start": "2017-11-29T14:53:15"
@@ -615,6 +633,7 @@ subdata19=\
 ]
 }
 
+# Payload to update a specific subscription based on subscription id, with context in Link header and different payload
 subdata20=\
 {
              "id": "urn:ngsi-ld:Subscription:7",
@@ -626,12 +645,13 @@ subdata20=\
              "notification": {
              "format": "keyValues",
              "endpoint": {
-                             "uri": "http://my.endpoint.org/notify",
+                             "uri": "http://180.179.214.211:8888/ld-notify",
                              "accept": "application/json"
               }
            }
        }
 
+# Payload  to create registration  with change in only 2nd  entity in payload
 subdata21=\
 {
              "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4001",
@@ -663,7 +683,7 @@ subdata21=\
                    ]
              }
             ],
-             "endpoint": "http://http://my.csource.org:1026",
+             "endpoint": "http://180.179.214.211:8888//csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -671,6 +691,7 @@ subdata21=\
              "expires": "2030-11-29T14:53:15"
      }
 
+# Payload to create registration with only 1 entity in payload
 subdata22=\
 {
              "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4001",
@@ -694,7 +715,7 @@ subdata22=\
                      ]
              }
             ],
-             "endpoint": "http://http://my.csource.org:1026",
+             "endpoint": "http://180.179.214.211:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -702,6 +723,7 @@ subdata22=\
              "expires": "2030-11-29T14:53:15"
      }
 
+# Payload  to update the corresponding csource registration using patch method
 subdata23=\
 {
   "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4001",
@@ -726,7 +748,7 @@ subdata23=\
       ]
     }
   ],
-  "endpoint": "http://my.csource.org:1026",
+  "endpoint": "http://180.179.214.211:8888/csource",
   "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
   "timestamp": {
     "start": "2017-11-29T14:53:15"
@@ -763,6 +785,7 @@ subdata23=\
 ]
 }
 
+#Payload to create csource registration with missing attributes
 subdata24=\
 {
              "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4002",
@@ -786,7 +809,7 @@ subdata24=\
                      ]
              }
             ],
-             "endpoint": "http://http://my.csource.org:1026",
+             "endpoint": "http://180.179.214.211:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -794,15 +817,18 @@ subdata24=\
              "expires": "2030-11-29T14:53:15"
      }
 
+# Inappropriate payload to perform patch update 
 subdata25=\
 {
 	"type":"ContextSourceRegistration"
 }
 
+# Empty Payload
 subdata26=\
 {
 }
 
+# Payload to create entity to check for CreatedAt and ModifiedAt
 subdata27=\
 {
            "id": "urn:ngsi-ld:Vehicle:A6000",
@@ -834,7 +860,7 @@ subdata27=\
              }
      }
 
-
+# Payload to create csource registration with idPattern
 subdata28=\
 {
              "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a7000",
@@ -866,7 +892,7 @@ subdata28=\
                    ]
              }
             ],
-             "endpoint": "http://http://my.csource.org:1026",
+             "endpoint": "http://180.179.214.211:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -874,6 +900,7 @@ subdata28=\
              "expires": "2030-11-29T14:53:15"
      }
 
+# Payload to create Subscription to check for Modified At and Created At in susbcription
 subdata29=\
 {
 	     "id": "urn:ngsi-ld:Subscription:8",
@@ -887,12 +914,13 @@ subdata29=\
                              "attributes": ["brandName"],
                              "format": "keyValues",
                              "endpoint": {
-                                             "uri": "http://my.endpoint.org/notify",
+                                             "uri": "http://180.179.214.211:8888/ld-notify",
                                              "accept": "application/json"
                                }
              }
       }
 
+# Payload to create a Subscription with id as urn:ngsi-ld:Subscription:10
 subdata30=\
 {
 	     "id": "urn:ngsi-ld:Subscription:10",
@@ -906,13 +934,13 @@ subdata30=\
                              "attributes": ["brandName"],
                              "format": "keyValues",
                              "endpoint": {
-                                             "uri": "http://my.endpoint.org/notify",
+                                             "uri": "http://180.179.214.211:8888/ld-notify",
                                              "accept": "application/json"
                                }
              }
       }
 
-
+# Payload to update the corresponding subscription
 subdata31=\
 {
              "id": "urn:ngsi-ld:Subscription:10",
@@ -926,12 +954,12 @@ subdata31=\
              "attributes": ["http://example.org/vehicle/brandName2"],
              "format": "keyValues",
              "endpoint": {
-                             "uri": "http://my.endpoint.org/notify",
+                             "uri": "http://180.179.214.211:8888/ld-notify",
                              "accept": "application/json"
               }
            }
        }
-
+# Payload to create an entity which is to be checked for delete request
 subdata32=\
 {
            "id": "urn:ngsi-ld:Vehicle:A999",
@@ -963,4 +991,87 @@ subdata32=\
              }
      }
 
+# Payload for entity creation with nested property with context in payload
+subdata33=\
+{
+                "id": "urn:ngsi-ld:Vehicle:B990",
+                "type": "Vehicle",
+                "brandName": {
+                                "type": "Property",
+                                "value": "Mercedes"
+                },
+                "isParked": {
+                                "type": "Relationship",
+                                "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                                "providedBy": {
+                                                "type": "person",
+                                                "object": "urn:ngsi-ld:Person:Bob"
+                                },
+                                "parkingDate": {
+                                                "type": "Property",
+                                                "value": "2017-07-29T12:00:04"
+                                },
+                                "availableSpotNumber": {
+                                                "type": "Property",
+                                                "value": "121",
+                                                "reliability": {
+                                                                "type": "Property",
+                                                                "value": "0.7"
+                                                },
+                                                "providedBy": {
+                                                                "type": "relationship",
+                                                                "object": "urn:ngsi-ld:camera:c1"
+                                                }
+                                }
+                },
+                "@context": [
+                                {
+                                                "Vehicle": "http://example.org/vehicle/Vehicle",
+                                                "brandName": "http://example.org/vehicle/brandName",
+                                                "speed": "http://example.org/vehicle/speed",
+                                                "isParked": {
+                                                                "@type": "@id",
+                                                                "@id": "http://example.org/common/isParked"
+                                                },
+                                                "providedBy": {
+                                                                "@type": "@id",
+                                                                "@id": "http://example.org/common/providedBy"
+                                                }
+                                }
+                ]
+}
 
+# Payload to create nested entity with context in link header
+subdata34=\
+{
+                "id": "urn:ngsi-ld:Vehicle:C001",
+                "type": "Vehicle",
+                "brandName": {
+                                "type": "Property",
+                                "value": "Mercedes"
+                },
+                "isParked": {
+                                "type": "Relationship",
+                                "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                                "providedBy": {
+                                                "type": "person",
+                                                "object": "urn:ngsi-ld:Person:Bob"
+                                },
+                                "parkingDate": {
+                                                "type": "Property",
+                                                "value": "2017-07-29T12:00:04"
+                                },
+                                "availableSpotNumber": {
+                                                "type": "Property",
+                                                "value": "121",
+                                                "reliability": {
+                                                                "type": "Property",
+                                                                "value": "0.7"
+                                                },
+                                                "providedBy": {
+                                                                "type": "relationship",
+                                                                "object": "urn:ngsi-ld:camera:c1"
+                                                }
+                                }
+                }
+}

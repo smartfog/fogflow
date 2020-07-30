@@ -1,5 +1,5 @@
 import os,sys
-sys.path.append('/root/GO/src/persistance/fogflow/test/UnitTest/Persistance')
+#sys.path.append('/root/GO/src/persistance/fogflow/test/UnitTest/Persistance')
 from datetime import datetime
 import copy
 import json
@@ -10,8 +10,8 @@ import data
 import sys
 
 # change it by broker ip and port
-designerIp="http://180.179.214.208:8080"
-brokerIp="http://180.179.214.208:8070"
+designerIp="http://localhost:8080"
+brokerIp="http://localhost:8070"
 
 '''
   test registration for opearator
@@ -22,6 +22,14 @@ def test_persistOPerator():
 	headers= {'Content-Type': 'application/json'}
 	r=requests.post(designerUrl,data=json.dumps(data.test0),headers=headers)
 	r=requests.get(brokerUrl,headers=headers)
+	#print(r.content)
+	resp_content=r.content 
+	resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+	if resp["entityId"]["type"]=="Operator" and resp["entityId"]["id"]=="test011":
+		print("\nValidated")
+	else:
+		print("\nNot Validated")
 	assert r.status_code == 200
 	
 '''
@@ -33,6 +41,14 @@ def test_persistFogFunction():
         headers= {'Content-Type': 'application/json'}
         r=requests.post(designerUrl,data=json.dumps(data.test1),headers=headers)
         r=requests.get(brokerUrl,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        if resp["entityId"]["type"]=="FogFunction" and resp["entityId"]["id"]=="test2":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
         assert r.status_code == 200
 
 '''
@@ -45,6 +61,14 @@ def test_persistDockerImage():
         headers= {'Content-Type': 'application/json'}
         r=requests.post(designerUrl,data=json.dumps(data.test2),headers=headers)
         r=requests.get(brokerUrl,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        if resp["entityId"]["type"]=="DockerImage" and resp["entityId"]["id"]=="test3":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
         assert r.status_code == 200
 
 '''
@@ -56,6 +80,14 @@ def test_persistopology():
         headers= {'Content-Type': 'application/json'}
         r=requests.post(designerUrl,data=json.dumps(data.test3),headers=headers)
         r=requests.get(brokerUrl,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        if resp["entityId"]["type"]=="Topology" and resp["entityId"]["id"]=="test4":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
         assert r.status_code == 200
 
 
@@ -102,8 +134,8 @@ def test_persistopology():
         r=requests.post(designerUrl,data=json.dumps(data.test7),headers=headers)
         r=requests.get(url,headers=headers)
         assert r.status_code == 200
-
 '''
+
 '''
   test if type of domainMetaData is point
 '''
@@ -114,8 +146,8 @@ def test_persistopology():
         r=requests.post(designerUrl,data=json.dumps(data.test8),headers=headers)
         r=requests.get(url,headers=headers)
         assert r.status_code == 200
-
 '''
+
 '''
    test if data have contextElement(test for curl client)
 '''

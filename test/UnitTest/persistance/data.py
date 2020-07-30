@@ -1,3 +1,4 @@
+# Payload to persist Operator 
 test0=\
 {
 	"contextElements": [{
@@ -26,6 +27,8 @@ test0=\
 	}],
 	"updateAction": "UPDATE"
 }
+
+# Payload to persist FogFunction
 test1=\
 {
   	"contextElements": [{
@@ -122,7 +125,9 @@ test1=\
 
   	],
   	"updateAction": "UPDATE"
-  }     
+  } 
+    
+# Payload to persist DockerImage
 test2=\
 {
 	"contextElements": [{
@@ -167,6 +172,8 @@ test2=\
 	}],
 	"updateAction": "UPDATE"
 }
+
+# payload to persist Topology
 test3=\
  {
   	"contextElements": [{
