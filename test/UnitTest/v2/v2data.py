@@ -16,7 +16,7 @@ subscription_data=\
   },
   "notification": {
     "http": {
-      "url": "http://180.179.214.211:8888/accumulate"
+      "url": "http://0.0.0.0:8888/accumulate"
     },
     "attrs": [
         "p1",
@@ -59,7 +59,7 @@ subscriptionWrongPaylaod=\
   },
   "notification": {
     "http": {
-      "url": "http://180.179.214.211:8888/accumulate"
+      "url": "http://0.0.0.0:8888/accumulate"
     },
     "attrs": [
         "p1",
@@ -79,7 +79,7 @@ v1SubData=\
       "type": "Room",
     }
   ],
-  "reference": "http://180.179.214.211:8888/accumulate"
+  "reference": "http://0.0.0.0:8888/accumulate"
 }
 
 updateDataWithupdateaction=\
@@ -254,7 +254,7 @@ subdata2=\
   },
   "notification": {
     "http": {
-      "url": "http://180.179.214.211:8888/accumulate"
+      "url": "http://0.0.0.0:8888/accumulate"
     },
     "attrs": [
       "temperature"
@@ -352,7 +352,7 @@ subdata5=\
   },
   "notification": {
     "http": {
-      "url": "http://180.179.214.211:8888/accumulate"
+      "url": "http://0.0.0.0:8888/accumulate"
     },
     "attrs": [
       "temperature"
@@ -454,7 +454,7 @@ subdata8=\
   },
   "notification": {
     "http": {
-      "url": "http://180.179.214.211:8888/accumulate"
+      "url": "http://0.0.0.0:8888/accumulate"
     },
     "attrs": [
       "temperature"

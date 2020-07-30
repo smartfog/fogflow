@@ -185,7 +185,7 @@ def test_notifyOneSubscriberv2WithCurrentStatus():
 '''
   Testing  subscription with attributes and using ID
 '''
-def test_getSubscription1():
+def test_getSubscription1validation():
         #update request to create entity at broker
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'application/json'}
@@ -212,7 +212,7 @@ def test_getSubscription1():
         #print(r.content)
 
         #validation based on subscriptionId
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -222,7 +222,7 @@ def test_getSubscription1():
 '''
   Testing subscription with attributes and with Header : User-Agent
 '''
-def test_getsubscription2():
+def test_getsubscription2validate():
         #update request to create entity at broker
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'application/json'}
@@ -249,7 +249,7 @@ def test_getsubscription2():
         #print(r.content)
 
         #vaidation based on subscriptionId
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200

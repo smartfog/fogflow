@@ -25,7 +25,7 @@ def test_getSubscription1():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         assert r.status_code == 200
 
 
@@ -41,7 +41,7 @@ def test_getSubscription2():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -50,10 +50,10 @@ def test_getSubscription2():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -65,9 +65,9 @@ def test_getSubscription2():
 	resp=resp['entities']
         sid2=resp[0]["id"]
 	if "Result1"==sid2:
-		print("Validated")
+		print("\nValidated")
 	else:
-		print("Not Validated")
+		print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 3
@@ -82,7 +82,7 @@ def test_getSubscription3():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -91,10 +91,10 @@ def test_getSubscription3():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -106,10 +106,9 @@ def test_getSubscription3():
         resp=resp['entities']
         sid2=resp[0]["id"]
         if "Result2"==sid2:
-                print("Validated")
+                print("\nValidated")
         else:
-                print("Not Validated")
-
+                print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 4
@@ -124,7 +123,7 @@ def test_getSubscription4():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -133,10 +132,10 @@ def test_getSubscription4():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -148,9 +147,9 @@ def test_getSubscription4():
         resp=resp['entities']
         sid2=resp[0]["id"]
         if "Result3"==sid2:
-                print("Validated")
+                print("\nValidated")
         else:
-                print("Not Validated")
+                print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 5
@@ -165,7 +164,7 @@ def test_getSubscription5():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -174,10 +173,10 @@ def test_getSubscription5():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -189,9 +188,9 @@ def test_getSubscription5():
         resp=resp['entities']
         sid2=resp[0]["id"]
         if "Result4"==sid2:
-                print("Validated")
+                print("\nValidated")
         else:
-                print("Not Validated")
+                print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 6
@@ -206,7 +205,7 @@ def test_getSubscription6():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -215,10 +214,10 @@ def test_getSubscription6():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -230,9 +229,9 @@ def test_getSubscription6():
         resp=resp['entities']
         sid2=resp[0]["id"]
         if "Result5"==sid2:
-                print("Validated")
+                print("\nValidated")
         else:
-                print("Not Validated")
+                print("\nNot Validated")
         assert r.status_code == 200
 
 
@@ -248,8 +247,8 @@ def test_getSubscription7():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
-	print(r.status_code)
+        #print(resp)
+	#print(r.status_code)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -258,10 +257,10 @@ def test_getSubscription7():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -273,9 +272,9 @@ def test_getSubscription7():
         resp=resp['entities']
         sid2=resp[0]["id"]
         if "Result6"==sid2:
-                print("Validated")
+                print("\nValidated")
         else:
-                print("Not Validated")
+                print("\nNot Validated")
         assert r.status_code == 200
 
 
@@ -291,7 +290,7 @@ def test_getSubscription8():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -300,10 +299,10 @@ def test_getSubscription8():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription/"
@@ -315,9 +314,9 @@ def test_getSubscription8():
         resp=resp['entities']
         sid2=resp[0]["id"]
         if "Result7"==sid2:
-                print("Validated")
+                print("\nValidated")
         else:
-                print("Not Validated")
+                print("\nNot Validated")
         assert r.status_code == 200
 
 
@@ -334,16 +333,16 @@ def test_getSubscription9():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #subscribing
         url_del=brokerIp+"/ngsi10/subscription/"
         url=url_del+sid
         r = requests.delete(url,headers=headers)
-        print(r.status_code)
+        #print(r.status_code)
 
         #get request to fetch subscription
         get_url=brokerIp+"/ngsi10/subscription"
@@ -364,8 +363,8 @@ def test_getSubscription10():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
-        print(r.status_code)
+        #print(resp)
+        #print(r.status_code)
         assert r.status_code == 200
 
 #testCase 11
@@ -380,7 +379,7 @@ def test_getSubscription11():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -389,10 +388,10 @@ def test_getSubscription11():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update the created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -400,10 +399,10 @@ def test_getSubscription11():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -420,7 +419,7 @@ def test_getSubscription12():
         resp_content=r.content
         resInJson=resp_content.decode('utf8').replace("'",'"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -429,10 +428,10 @@ def test_getSubscription12():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update the created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -440,10 +439,10 @@ def test_getSubscription12():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -460,7 +459,7 @@ def test_getSubscription18():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -469,10 +468,10 @@ def test_getSubscription18():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -480,10 +479,10 @@ def test_getSubscription18():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -500,7 +499,7 @@ def test_getSubscription19():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -509,10 +508,10 @@ def test_getSubscription19():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update the created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -520,10 +519,10 @@ def test_getSubscription19():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -540,7 +539,7 @@ def test_getSubscription20():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -549,10 +548,10 @@ def test_getSubscription20():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -560,10 +559,10 @@ def test_getSubscription20():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -580,7 +579,7 @@ def test_getSubscription21():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -589,10 +588,10 @@ def test_getSubscription21():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -600,10 +599,10 @@ def test_getSubscription21():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -620,7 +619,7 @@ def test_getSubscription22():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -629,10 +628,10 @@ def test_getSubscription22():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -640,10 +639,10 @@ def test_getSubscription22():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -660,7 +659,7 @@ def test_getSubscription23():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #subscribing
         url=brokerIp+"/ngsi10/subscribeContext"
@@ -669,10 +668,10 @@ def test_getSubscription23():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #update created entity
         url=brokerIp+"/ngsi10/updateContext"
@@ -680,10 +679,10 @@ def test_getSubscription23():
         resp_content1=r.content
         resInJson=resp_content1.decode('utf8').replace("'",'"')
         resp1=json.loads(resInJson)
-        print(resp1)
+        #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:8888/validateNotification"
+        url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
         print(r.content)
         assert r.status_code == 200
@@ -714,7 +713,7 @@ def test_queryrequest1():
         url=brokerIp+"/ngsi10/queryContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata42),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 200
 
 #testCase 22
@@ -725,7 +724,7 @@ def test_queryrequest2():
         url=brokerIp+"/ngsi10/queryContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata43),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 200
 
 
@@ -737,7 +736,7 @@ def test_queryrequest3():
         url=brokerIp+"/ngsi10/queryContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata44),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 200
 
 #testCase 24
@@ -748,7 +747,7 @@ def test_queryrequest4():
         url=brokerIp+"/ngsi10/queryContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata45),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 200
 
 #testCase 25
@@ -759,7 +758,7 @@ def test_case25():
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata46),headers=headers)
-        print(r.status_code)
+        #print(r.status_code)
         assert r.status_code == 500
 
 
@@ -772,23 +771,23 @@ def test_case26():
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','User-Agent':'lightweight-iot-broker'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata47),headers=headers)
-        print(r.content)
+        #print(r.content)
 
         #get the created entity
         url=brokerIp+"/ngsi10/entity/Result047"
         r=requests.get(url)
-	print(r.content)	
+	#print(r.content)	
 
         #passing DELETE in update payload
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','User-Agent':'lightweight-iot-broker'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata48),headers=headers)
-        print(r.content)
+        #print(r.content)
 
         #get the created entity
         url=brokerIp+"/ngsi10/entity/Result047"
         r=requests.get(url)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 404
 
 #testCase 27
@@ -799,7 +798,7 @@ def test_case27():
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata48),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 500
 
 #testCase 28
@@ -813,10 +812,10 @@ def test_case28():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
         assert r.status_code == 200
 
 #testCase 29
@@ -830,16 +829,16 @@ def test_case29():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
         #get request
         get_url=brokerIp+"/ngsi10/subscription/"
         url=get_url+sid
         r=requests.get(url)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 200
 
 #testCase 30
@@ -850,7 +849,7 @@ def test_cases30():
 	url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','User-Agent':'lightweight-iot-broker'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata50),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 404
 
 #testCase 31
@@ -862,13 +861,13 @@ def test_case31():
 	url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','fiware-service':'Abc','fiware-servicepath':'pqr'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata51),headers=headers)
-        print(r.content)
+        #print(r.content)
         
 	#get entity
 	url=brokerIp +"/ngsi10/entity/Result048"
 	r=requests.get(url)
-	print(r.content)
-	print(r.status_code)
+	#print(r.content)
+	#print(r.status_code)
         assert r.status_code == 200
 
 #testCase 32
@@ -879,7 +878,7 @@ def test_case32():
 	url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','fiware-service':'Abc','fiware-servicepath':'pqr'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata52),headers=headers)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 200
 
 #testCase 33
@@ -891,23 +890,23 @@ def test_case33():
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','fiware-service':'Abc','fiware-servicepath':'pqr'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata53),headers=headers)
-        print(r.content)
+        #print(r.content)
 
         #get the created entity
         url=brokerIp+"/ngsi10/entity/Result053"
         r=requests.get(url)
-        print(r.content)
+        #print(r.content)
 
         #passing DELETE in update payload
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json','fiware-service':'Abc','fiware-servicepath':'pqr'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata54),headers=headers)
-        print(r.content)
+        #print(r.content)
 
         #get the created entity
         url=brokerIp+"/ngsi10/entity/Result053"
         r=requests.get(url)
-        print(r.content)
+        #print(r.content)
         assert r.status_code == 404
 
 #testCase 34
@@ -918,7 +917,7 @@ def test_case34():
 	url=brokerIp+"/ngsi10/notifyContext"
 	headers={'Content-Type':'appliction/json'}
 	r=requests.post(url,data=json.dumps(data_ngsi10.subdata55),headers=headers)
-	print(r.content)
+	#print(r.content)
 	assert r.status_code == 200
 
 #testCase 35
@@ -933,16 +932,16 @@ def test_case35():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
-        print(sid)
+        #print(sid)
 
 	#unsubscribe Context
 	url=brokerIp+"/ngsi10/unsubscribeContext"
 	headers={'Content-Type': 'application/json'}
 	r=requests.post(url,json={"subscriptionId":sid,"originator":"POMN"},headers=headers)
-	print(r.content)
+	#print(r.content)
 	assert r.status_code == 200 
 
 #testCase 36
@@ -953,7 +952,7 @@ def test_case36():
         url=brokerIp+"/v1/updateContext"
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata56),headers=headers)
-        print(r.content)
+        #print(r.content)
 	assert r.status_code == 200
 
 #testCase 37
@@ -963,7 +962,7 @@ def test_case36():
 def test_case37():
 	url=brokerIp+"/ngsi10/entity/Result14"
 	r=requests.get(url)
-	print(r.content)
+	#print(r.content)
 	assert r.status_code == 200
 
 #testCase 38
@@ -976,14 +975,14 @@ def test_case38():
 	resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-	print(r.content)
+	#print(r.content)
         name=resp['name']
         type1=resp['type']
 	val=resp['value']
 	if name=='pressure' and type1=='float' and val==55:
-		print("Validated")
+		print("\nValidated")
 	else:
-		print("Not Validated")
+		print("\nNot Validated")
 	assert r.status_code == 200
 
 

@@ -100,6 +100,9 @@ script:
     - cd v1/
     - pytest -s -v
     - cd ../
+    - cd NGSI-LD/
+    - pytest -s -v
+    - cd ../
     - cd persistance/
     - pytest -s -v 
     - echo "Testing Done !"

@@ -7,7 +7,7 @@ subdata1=\
       "type": "Result0"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -55,7 +55,7 @@ subdata3=\
       "type": "Result1"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -98,7 +98,7 @@ subdata5=\
       "type": "Result2"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -142,7 +142,7 @@ subdata7=\
       "type": "Result3"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to create entity without domain metadata with id as Result4
@@ -181,7 +181,7 @@ subdata9=\
       "type": "Result4"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -217,7 +217,7 @@ subdata11=\
       "type": "Result5"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to create entity without any attribute or meta data, with id as Result6 
@@ -244,7 +244,7 @@ subdata13=\
       "type": "Result6"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -292,7 +292,7 @@ subdata15=\
       "type": "Result7"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -305,7 +305,7 @@ subdata16=\
       "type": "Result8"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 
@@ -390,7 +390,7 @@ subdata19=\
       "type": "Result10"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update  entity with different values of attributes of entity Result10 
@@ -474,7 +474,7 @@ subdata22=\
       "type": "Result11"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to upload entity with different values of attribute for entity Result11
@@ -557,7 +557,7 @@ subdata25=\
       "type": "Result12"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update entity with different values for entity Result12
@@ -639,7 +639,7 @@ subdata28=\
       "type": "Result13"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update entity with different values of attribute for entity Result13
@@ -721,7 +721,7 @@ subdata31=\
       "type": "Result14"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update entity with different values of attributes for entity Result14
@@ -803,7 +803,7 @@ subdata34=\
       "type": "Result15"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update entity with different values of attributes for entity Result15
@@ -885,7 +885,7 @@ subdata37=\
       "type": "Result16"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update entity with different values of attributes for entity Result16
@@ -967,7 +967,7 @@ subdata40=\
       "type": "Result17"
     }
   ],
-  "reference": "http://180.179.214.211:8888/v2"
+  "reference": "http://0.0.0.0:8888/v2"
 }
 
 # Payload to update entity with different values of attributes for entity Result17
