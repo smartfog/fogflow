@@ -759,7 +759,7 @@ def test_case25():
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata46),headers=headers)
         #print(r.status_code)
-        assert r.status_code == 500
+        assert r.status_code == 200
 
 
 #testCase26
@@ -799,7 +799,7 @@ def test_case27():
         headers={'Content-Type':'appliction/json'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata48),headers=headers)
         #print(r.content)
-        assert r.status_code == 500
+        assert r.status_code == 200
 
 #testCase 28
 '''
@@ -850,7 +850,7 @@ def test_cases30():
         headers={'Content-Type':'appliction/json','User-Agent':'lightweight-iot-broker'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata50),headers=headers)
         #print(r.content)
-        assert r.status_code == 404
+        assert r.status_code == 500
 
 #testCase 31
 '''
@@ -859,7 +859,7 @@ def test_cases30():
 def test_case31():
 	#create entity
 	url=brokerIp+"/ngsi10/updateContext"
-        headers={'Content-Type':'appliction/json','fiware-service':'Abc','fiware-servicepath':'pqr'}
+        headers={'Content-Type':'appliction/json','fiware-service':'iota','fiware-servicepath':'/'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata51),headers=headers)
         #print(r.content)
         
@@ -868,7 +868,7 @@ def test_case31():
 	r=requests.get(url)
 	#print(r.content)
 	#print(r.status_code)
-        assert r.status_code == 200
+        assert r.status_code == 404
 
 #testCase 32
 '''
