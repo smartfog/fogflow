@@ -445,14 +445,14 @@ def test_getSubscription12():
         url="http://127.0.0.1:1026/v2/entities/"
         #r=requests.post(url,json={"subscriptionId" : sid})
         r=requests.get(url)
-	#print(r.content)
+	print(r.content)
 	resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-	if resp[0]["id"]=="Result11" and resp[0]["type"]=="Result11":
-		print("\nValidated")
-	else:
-		print("\nNot Validated")
+	#if resp[0]["id"]=="Result11" and resp[0]["type"]=="Result11":
+		#print("\nValidated")
+	#else:
+		#print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 13

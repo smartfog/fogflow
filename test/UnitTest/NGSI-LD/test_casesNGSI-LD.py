@@ -349,7 +349,7 @@ def test_case24():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
+        #print(resp)
         if resp[0]["http://example.org/vehicle/brandName"]["value"]=="MARUTI":
                 print("\nValidated")
         else:

@@ -8,8 +8,8 @@ import data
 import sys
 
 # change it by broker ip and port
-DESIGNERIP="http://180.179.214.211:8080"
-BROKERIP = "http://180.179.214.211:8070"
+designerIp="http://localhost:8080"
+brokerIp= "http://localhost:8070"
 
 '''
   test registration for opearator
@@ -17,8 +17,8 @@ BROKERIP = "http://180.179.214.211:8070"
 
 
 def test_persistOPerator():
-    brokerUrl = BROKERIP + "/ngsi10/entity/test011"
-    designerUrl = DESIGNERIP + "/ngsi10/updateContext"
+    brokerUrl = brokerIp + "/ngsi10/entity/test011"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
@@ -43,8 +43,8 @@ def test_persistOPerator():
 
 
 def test_persistFogFunction():
-    brokerUrl = BROKERIP + "/ngsi10/entity/test2"
-    designerUrl = DESIGNERIP + "/ngsi10/updateContext"
+    brokerUrl = brokerIp+ "/ngsi10/entity/test2"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
@@ -69,8 +69,8 @@ def test_persistFogFunction():
 
 
 def test_persistDockerImage():
-    brokerUrl = BROKERIP + "/ngsi10/entity/test3"
-    designerUrl = DESIGNERIP + "/ngsi10/updateContext"
+    brokerUrl = brokerIp+ "/ngsi10/entity/test3"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
@@ -95,8 +95,8 @@ def test_persistDockerImage():
 
 
 def test_persistopology():
-    brokerUrl = BROKERIP + "/ngsi10/entity/test4"
-    designerUrl = DESIGNERIP + "/ngsi10/updateContext"
+    brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
