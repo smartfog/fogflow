@@ -442,7 +442,7 @@ def test_getSubscription12():
         #print(resp1)
 
         #validate via accumulator
-        url="http://180.179.214.211:1026/v2/entities/"
+        url="http://127.0.0.1:1026/v2/entities/"
         #r=requests.post(url,json={"subscriptionId" : sid})
         r=requests.get(url)
 	#print(r.content)
