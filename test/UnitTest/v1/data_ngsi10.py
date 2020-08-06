@@ -475,7 +475,7 @@ subdata22=\
       "type": "Result11"
     }
   ],
-  "reference": "http://180.179.214.211:1026/v2/op/notify"
+  "reference": "http://127.0.0.1::1026/v2/op/notify"
 }
 
 # Payload to upload entity with different values of attribute for entity Result11

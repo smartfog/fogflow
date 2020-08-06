@@ -350,7 +350,7 @@ def test_case24():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         print(resp)
-        if resp[0]["properties"][1]["id"]=="http://example.org/vehicle/brandName":
+        if resp[0]["http://example.org/vehicle/brandName"]["value"]=="MARUTI":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
