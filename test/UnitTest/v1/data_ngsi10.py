@@ -1,3 +1,4 @@
+
 # Subscription request payload
 subdata1=\
 {
@@ -474,7 +475,7 @@ subdata22=\
       "type": "Result11"
     }
   ],
-  "reference": "http://0.0.0.0:8888/v2"
+  "reference": "http://180.179.214.211:1026/v2/op/notify"
 }
 
 # Payload to upload entity with different values of attribute for entity Result11
@@ -1212,36 +1213,28 @@ subdata50=\
 # Payload to create entity with id as Result048
 subdata51=\
 {
-            "contextElements": [
-                {
-                    "entityId": {
-                        "id": "Result048",
-                        "type": "Result048"
-                        },
-                    "attributes": [
-                            {
-                            "name": "temperature",
-                            "type": "float",
-                            "value": 84
-                            },
-                            {
-                            "name": "pressure",
-                            "type": "float",
-                            "value": 55
-                            }
-                        ],
-                    "domainMetadata": [
-                            {
-                            "name": "location",
-                            "type": "point",
-                            "value": {
-                            "latitude": -33.1,
-                            "longitude": -1.1
-                            }}
-                        ]
-                }
-            ],
-            "updateAction": "UPDATE"
+        "contextRegistrations": [
+            {
+                "entities": [
+                    {
+                        "type": "Lamp", 
+                        "id": "Lamp.001"
+                    }
+                ],
+                "attributes": [
+                    {
+                        "name": "on",
+                        "type": "command"
+                    },
+                    {
+                        "name": "off",
+                        "type": "command"
+                    }
+                ],
+                "providingApplication": "http://0.0.0.0:8888"
+            }
+        ],
+    "duration": "P1Y"
 }
 
 # Payload to create entity with id as Result049 with updateAction as Append
@@ -1390,4 +1383,26 @@ subdata56=\
             ],
             "updateAction": "UPDATE"
 }
+
+# Payload for southbound feature
+subdata57=\
+{
+    "contextElements": [
+    {
+        "entityId": {
+        "id": "Lamp.001",
+        "type": "Lamp"
+        },
+        "attributes": [
+             {
+                 "name": "on",
+                 "type": "command",
+                 "value": ""
+             }
+         ]
+    }
+    ],
+    "updateAction": "UPDATE"
+}
+
 

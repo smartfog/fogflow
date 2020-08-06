@@ -281,7 +281,7 @@ def test_getsubscription3():
 
         #update to trigger Notification
         url=brokerIp+"/ngsi10/updateContext"
-        r=requests.post(url,data=json.dumps(v2data.subdata8),headers=headers)
+        r=requests.post(url,data=json.dumps(v2data.subdata9),headers=headers)
         #print(r.status_code)
         #print(r.content)
 

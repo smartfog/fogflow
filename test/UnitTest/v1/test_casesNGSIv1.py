@@ -442,9 +442,17 @@ def test_getSubscription12():
         #print(resp1)
 
         #validate via accumulator
-        url="http://0.0.0.0:8888/validateNotification"
-        r=requests.post(url,json={"subscriptionId" : sid})
-        print(r.content)
+        url="http://180.179.214.211:1026/v2/entities/"
+        #r=requests.post(url,json={"subscriptionId" : sid})
+        r=requests.get(url)
+	#print(r.content)
+	resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+	if resp[0]["id"]=="Result11" and resp[0]["type"]=="Result11":
+		print("\nValidated")
+	else:
+		print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 13
@@ -564,7 +572,11 @@ def test_getSubscription20():
         #validate via accumulator
         url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
-        print(r.content)
+        #print(r.content)
+	if r.content=="Not validated":
+		print("\nValidated")
+	else:
+		print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 16
@@ -644,7 +656,11 @@ def test_getSubscription22():
         #validate via accumulator
         url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
-        print(r.content)
+        #print(r.content)
+	if r.content == "Not validated":
+		print("\nValidated")
+	else:
+		print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 18
@@ -684,7 +700,11 @@ def test_getSubscription23():
         #validate via accumulator
         url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : sid})
-        print(r.content)
+        #print(r.content)
+	if r.content == "Not validated":
+		print("\nValidated")
+	else:
+		print("\nNot Validated")
         assert r.status_code == 200
 
 #testCase 19
@@ -797,7 +817,7 @@ def test_case26():
 def test_case27():
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type':'appliction/json'}
-        r=requests.post(url,data=json.dumps(data_ngsi10.subdata48),headers=headers)
+        r=requests.post(url,data=json.dumps(data_ngsi10.subdata49),headers=headers)
         #print(r.content)
         assert r.status_code == 200
 
@@ -808,7 +828,7 @@ def test_case27():
 def test_case28():
         url=brokerIp+"/ngsi10/subscribeContext"
         headers= {'Content-Type': 'application/json'}
-        r=requests.post(url,data=json.dumps(data_ngsi10.subdata48),headers=headers)
+        r=requests.post(url,data=json.dumps(data_ngsi10.subdata49),headers=headers)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
@@ -825,7 +845,7 @@ def test_case28():
 def test_case29():
         url=brokerIp+"/ngsi10/subscribeContext"
         headers= {'Content-Type': 'application/json'}
-        r=requests.post(url,data=json.dumps(data_ngsi10.subdata48),headers=headers)
+        r=requests.post(url,data=json.dumps(data_ngsi10.subdata49),headers=headers)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
@@ -857,27 +877,34 @@ def test_cases30():
   To test the fiware header with updateAction equal to UPDATE
 '''
 def test_case31():
-	#create entity
-	url=brokerIp+"/ngsi10/updateContext"
-        headers={'Content-Type':'appliction/json','fiware-service':'iota','fiware-servicepath':'/'}
+	#create  and register entity
+	url=brokerIp+"/NGSI9/registerContext"
+        headers={'Content-Type':'appliction/json','fiware-service':'openiot','fiware-servicepath':'/'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata51),headers=headers)
         #print(r.content)
         
-	#get entity
-	url=brokerIp +"/ngsi10/entity/Result048"
-	r=requests.get(url)
+	# maiing a updateContext request 
+	url=brokerIp+"/ngsi10/updateContext"
+	headers={'Content-Type':'appliction/json','fiware-service':'openiot','fiware-servicepath':'/'}
+	r=requests.post(url,data=json.dumps(data_ngsi10.subdata57),headers=headers)
 	#print(r.content)
-	#print(r.status_code)
-        assert r.status_code == 404
+	assert r.status_code == 200
+	
 
 #testCase 32
 '''
   To test the fiware header with updateAction equal to APPEND
 '''
 def test_case32():
-	url=brokerIp+"/ngsi10/updateContext"
-        headers={'Content-Type':'appliction/json','fiware-service':'Abc','fiware-servicepath':'pqr'}
+	url=brokerIp+"/NGSI9/registerContext"
+        headers={'Content-Type':'appliction/json','fiware-service':'openiot','fiware-servicepath':'/'}
         r=requests.post(url,data=json.dumps(data_ngsi10.subdata52),headers=headers)
+        #print(r.content)
+
+        # maiing a updateContext request
+        url=brokerIp+"/ngsi10/updateContext"
+        headers={'Content-Type':'appliction/json','fiware-service':'openiot','fiware-servicepath':'/'}
+        r=requests.post(url,data=json.dumps(data_ngsi10.subdata57),headers=headers)
         #print(r.content)
         assert r.status_code == 200
 
@@ -928,11 +955,10 @@ def test_case35():
 	#create subscription
 	url=brokerIp+"/ngsi10/subscribeContext"
         headers= {'Content-Type': 'application/json'}
-        r=requests.post(url,data=json.dumps(data_ngsi10.subdata56 ),headers=headers)
+        r=requests.post(url,data=json.dumps(data_ngsi10.subdata56),headers=headers)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        #print(resp)
         resp=resp['subscribeResponse']
         sid=resp['subscriptionId']
         #print(sid)

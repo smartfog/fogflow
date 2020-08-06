@@ -350,7 +350,7 @@ def test_case24():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp[0]["type"]=="http://example.org/vehicle/brandName":
+        if resp[0]["properties"][1]["id"]=="http://example.org/vehicle/brandName":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -381,7 +381,7 @@ def test_case26():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp[0]["type"]=="http://example.org/vehicle/brandName"  and resp[0]["id"]=="urn:ngsi-ld:Vehicle:A4580":
+        if resp[0]["type"]=="http://example.org/vehicle/Vehicle"  and resp[0]["id"]=="urn:ngsi-ld:Vehicle:A4580":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -431,7 +431,7 @@ def test_case29():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp[0]["type"]=="Vehicle":
+        if resp[0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -902,7 +902,7 @@ def test_case59():
 
 #testCase 60
 '''
-  T0 test for empty payload in csource registration
+  To test for empty payload in csource registration
 '''
 def test_case60():
         url=brokerIp+"/ngsi-ld/v1/csourceRegistrations/"
@@ -1069,7 +1069,7 @@ def test_case68():
 
 #testCase 69
 '''
-  To test to retrive entity with id as urn:ngsi-ld:B990
+  To test to retrieve entity with id as urn:ngsi-ld:B990
 '''
 def test_case69():
 	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:B990"
@@ -1088,7 +1088,7 @@ def test_case69():
 
 #testCase 70
 '''
-  To test and retrive the entity from discovery
+  To test and retrieve the entity from discovery
 '''
 def test_case70():
         url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:C001"
