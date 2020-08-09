@@ -752,7 +752,7 @@ type Subscriber struct {
 	RequireReliability bool
 	BrokerURL          string
 	NotifyCache        []*ContextElement
-	LDNotifyCache      []*LDContextElement
+	LDNotifyCache      []map[string]interface{}
 }
 
 type SubscribeContextRequest struct {
@@ -1041,8 +1041,8 @@ type FiwareData struct {
 // NGSI-LD starts here.
 
 type LDContextElementResponse struct {
-	LDContextElement LDContextElement `json:"contextElement"`
-	StatusCode       StatusCode       `json:"statusCode"`
+	LDContextElement interface{} `json:"contextElement"`
+	StatusCode       StatusCode  `json:"statusCode"`
 }
 
 type LDNotifyContextRequest struct {

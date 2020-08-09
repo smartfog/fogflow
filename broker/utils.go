@@ -380,7 +380,7 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
-func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
 	elementRespList := make([]LDContextElementResponse, 0)
 
