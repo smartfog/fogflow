@@ -2414,15 +2414,13 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfLD(entities []Entity
 	tb.ldEntities_lock.Lock()
 	for _, entity := range entities {
 		if element, exist := tb.ldEntities[entity.ID]; exist {
-			//returnedElement := element.CloneWithSelectedAttributes(selectedAttributes)
-			//elements = append(elements, *returnedElement)
 			elementMap := element.(map[string]interface{})
-			elements = append(elements, elementMap)
+			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
+			elements = append(elements, returnedElement)
 		}
 	}
 	tb.ldEntities_lock.Unlock()
 	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
-
 }
 
 func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string]interface{}, sid string) {

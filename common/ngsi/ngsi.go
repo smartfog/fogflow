@@ -1072,6 +1072,7 @@ type GeoProperty struct {
 	//<RelationshipName>
 }
 
+/*
 func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *LDContextElement {
 	preparedCopy := LDContextElement{}
 	preparedCopy.Id = ldce.Id
@@ -1110,7 +1111,7 @@ func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []s
 	}
 
 	return &preparedCopy
-}
+} */
 
 type LDLocation struct {
 	Type  string      `json:"type",omitemtpy`

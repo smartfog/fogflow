@@ -9,6 +9,7 @@ import (
 
 type Serializer struct{}
 
+/*
 func (sz Serializer) SerializeEntity(ctxElem *LDContextElement) (map[string]interface{}, error) {
 	jobj := make(map[string]interface{})
 	jobj["id"] = ctxElem.Id
@@ -134,7 +135,7 @@ func (sz Serializer) serializeLocationValue(location LDLocationValue) map[string
 	if len(location.Geometries) > 0 { // Serialize Geometries
 	}
 	return locationValue
-}
+} */
 
 func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
 	entity := make(map[string]interface{})
