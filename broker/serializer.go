@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json" //to be removed later, used for printing only
 	"errors"
-	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"strings"
 	"time"
@@ -11,6 +9,7 @@ import (
 
 type Serializer struct{}
 
+/*
 func (sz Serializer) SerializeEntity(ctxElem *LDContextElement) (map[string]interface{}, error) {
 	jobj := make(map[string]interface{})
 	jobj["id"] = ctxElem.Id
@@ -99,7 +98,7 @@ func (sz Serializer) serializeProvidedBy(providedBy ProvidedBy) map[string]inter
 
 func (sz Serializer) serializeLocation(location LDLocation) map[string]interface{} {
 	serializedLocation := make(map[string]interface{})
-	if location.Type == GEO_PROPERTY {
+	if strings.Contains(location.Type, "GeoProperty") {
 		serializedLocation["type"] = "GeoProperty"
 	}
 	if locationValueMap, ok := location.Value.(LDLocationValue); ok == true {
@@ -114,85 +113,80 @@ func (sz Serializer) serializeLocation(location LDLocation) map[string]interface
 
 func (sz Serializer) serializeLocationValue(location LDLocationValue) map[string]interface{} {
 	locationValue := make(map[string]interface{})
-	switch location.Type {
-	case POINT:
+	if strings.Contains(location.Type, "Point") {
 		locationValue["type"] = "Point"
-	case LINE_STRING:
+	} else if strings.Contains(location.Type, "LineString") {
 		locationValue["type"] = "LineString"
-	case POLYGON:
+	} else if strings.Contains(location.Type, "Polygon") {
 		locationValue["type"] = "Polygon"
-	case MULTI_POINT:
+	} else if strings.Contains(location.Type, "MultiPoint") {
 		locationValue["type"] = "MultiPoint"
-	case MULTI_LINE_STRING:
+	} else if strings.Contains(location.Type, "MultiLineString") {
 		locationValue["type"] = "MultiLineString"
-	case MULTI_POLYGON:
+	} else if strings.Contains(location.Type, "MultiPolygon") {
 		locationValue["type"] = "MultiPolygon"
-	case GEOMETRY_COLLECTION:
+	} else if strings.Contains(location.Type, "GeometryCollection") {
 		locationValue["type"] = "GeometryCollection"
-	default:
-		break
 	}
-	if location.Type != GEOMETRY_COLLECTION {
+	if !(strings.Contains(location.Type, "GeometryCollection")) {
 		locationValue["coordinates"] = location.Coordinates
 	} else { // Serialize GeometryCollection.
 	}
 	if len(location.Geometries) > 0 { // Serialize Geometries
 	}
 	return locationValue
-}
+} */
 
-func (sz Serializer) DeSerializeEntity(expanded []interface{}) (LDContextElement, error) {
-	entity := LDContextElement{}
+func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
+	entity := make(map[string]interface{})
 	for _, val := range expanded {
 		stringsMap := val.(map[string]interface{})
 		for k, v := range stringsMap {
-			switch k {
-			case ID:
+			if strings.Contains(k, "id") {
 				if v != nil {
-					entity.Id = sz.getId(v.(interface{}))
+					entity["id"] = sz.getId(v.(interface{}))
 				}
-				break
-			case TYPE:
+			} else if strings.Contains(k, "type") {
 				if v != nil {
-					entity.Type = sz.getType(v.([]interface{}))
+					entity["type"] = sz.getType(v.([]interface{}))
 				}
-				break
-			case LOCATION:
+			} else if strings.Contains(k, "location") {
 				if v != nil {
-					entity.Location = sz.getLocation(v.([]interface{}))
+					entity["location"] = sz.getLocation(v.([]interface{}))
 				}
-				break
-			case CREATED_AT:
-				break
-			default: // default cases like property, relationship here.
+			} else if strings.Contains(k, "createdAt") {
+				continue
+				// } else if strings.Contains(k, "context") {
+				//      entity["@context"] = v
+			} else { // default cases like property, relationship here.
+
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
 					mp := interfaceArray[0].(map[string]interface{})
-					typ := mp[TYPE].([]interface{})
+					typ := mp["@type"].([]interface{})
 					if len(typ) > 0 {
-						if typ[0].(string) == PROPERTY {
-							property, err := sz.getProperty(k, mp)
+						if strings.Contains(typ[0].(string), "Property") {
+							property, err := sz.getProperty(mp)
 							if err != nil {
 								return entity, err
 							} else {
-								entity.Properties = append(entity.Properties, property)
+								entity[k] = property
 							}
-						} else if typ[0].(string) == RELATIONSHIP {
-							relationship, err := sz.getRelationship(k, mp)
+						} else if strings.Contains(typ[0].(string), "Relationship") {
+							relationship, err := sz.getRelationship(mp)
 							if err != nil {
 								return entity, err
 							} else {
-								entity.Relationships = append(entity.Relationships, relationship)
+								entity[k] = relationship
 							}
 						}
 					}
 				}
-				break
 			}
 		}
 
 	}
-	entity.ModifiedAt = time.Now().String()
+	entity["modifiedAt"] = time.Now().String()
 	return entity, nil
 }
 
@@ -201,55 +195,44 @@ func (sz Serializer) DeSerializeRegistration(expanded []interface{}) (CSourceReg
 	for _, val := range expanded {
 		stringsMap := val.(map[string]interface{})
 		for k, v := range stringsMap {
-			switch k {
-			case ID:
+			if strings.Contains(k, "@id") {
 				if v != nil {
 					registration.Id = sz.getId(v.(interface{}))
 				}
-				break
-			case TYPE:
+			} else if strings.Contains(k, "@type") {
 				if v != nil {
 					registration.Type = sz.getType(v.([]interface{}))
 				}
-				break
-			// timestamp from payload is taken as observationInterval in given datatypes in spec:
-			case TIMESTAMP:
+			} else if strings.Contains(k, "timestamp") { // timestamp from payload is taken as observationInterval in given datatypes in spec:
 				if v != nil {
 					registration.ObservationInterval = sz.getTimeStamp(v.([]interface{}))
 				}
-				break
-			case DESCRIPTION:
+			} else if strings.Contains(k, "description") {
 				if v != nil {
 					registration.Description = sz.getStringValue(v.([]interface{}))
 				}
-				break
-			case ENDPOINT:
+			} else if strings.Contains(k, "endpoint") {
 				if v != nil {
 					registration.Endpoint = sz.getStringValue(v.([]interface{}))
 				}
-				break
-			case EXPIRES:
+			} else if strings.Contains(k, "expires") {
 				if v != nil {
 					registration.Expires = sz.getDateAndTimeValue(v.([]interface{}))
 				}
-				break
-			case INFORMATION:
+			} else if strings.Contains(k, "information") {
 				if v != nil {
 					registration.Information = sz.getInformation(v.([]interface{}))
 				}
-				break
-			case LOCATION:
+			} else if strings.Contains(k, "location") {
 				if v != nil {
 					registration.Location = sz.getStringValue(v.([]interface{}))
 				}
-				break
-			case NAME:
+			} else if strings.Contains(k, "name") {
 				if v != nil {
 					registration.Name = sz.getStringValue(v.([]interface{}))
 				}
-				break
-			default:
-				break
+			} else {
+				// CSource property name
 			}
 		}
 	}
@@ -262,33 +245,19 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 	for _, val := range expanded {
 		stringsMap := val.(map[string]interface{})
 		for k, v := range stringsMap {
-			switch k {
-			case ID:
+			if strings.Contains(k, "@id") {
 				if v != nil {
 					subscription.Id = sz.getId(v.(interface{}))
 				}
-				break
-			case TYPE:
+			} else if strings.Contains(k, "@type") {
 				if v != nil {
 					subscription.Type = sz.getType(v.([]interface{}))
 				}
-				break
-			case NAME:
-				if v != nil {
-					subscription.Name = sz.getValue(v.([]interface{})).(string)
-				}
-				break
-			case ENTITIES:
-				if v != nil {
-					subscription.Entities = sz.getEntities(v.([]interface{}))
-				}
-				break
-			case DESCRIPTION:
+			} else if strings.Contains(k, "description") {
 				if v != nil {
 					subscription.Description = sz.getValue(v.([]interface{})).(string)
 				}
-				break
-			case NOTIFICATION:
+			} else if strings.Contains(k, "notification") {
 				if v != nil {
 					notification, err := sz.getNotification(v.([]interface{}))
 					if err != nil {
@@ -297,14 +266,20 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 						subscription.Notification = notification
 					}
 				}
-				break
-			case WATCHED_ATTRIBUTES:
+			} else if strings.Contains(k, "entities") {
+				if v != nil {
+					subscription.Entities = sz.getEntities(v.([]interface{}))
+				}
+			} else if strings.Contains(k, "name") {
+				if v != nil {
+					subscription.Name = sz.getValue(v.([]interface{})).(string)
+				}
+			} else if strings.Contains(k, "watchedAttributes") {
 				if v != nil {
 					subscription.WatchedAttributes = sz.getArrayOfIds(v.([]interface{}))
 				}
-				break
-			default:
-				break
+			} else {
+				// other subscription fields
 			}
 		}
 	}
@@ -336,137 +311,101 @@ func (sz Serializer) getType(typ []interface{}) string {
 	return Type
 }
 
-func (sz Serializer) getCreatedAt(createdAt []interface{}) string {
-	var CreatedAt string
-	if len(createdAt) > 0 {
-		mp := createdAt[0].(map[string]interface{})
-		if mp[TYPE].(string) == DATE_TIME {
-			CreatedAt = mp[VALUE].(string)
-		}
-	}
-	return CreatedAt
-}
-
-func (sz Serializer) getProperty(propertyName string, propertyMap map[string]interface{}) (Property, error) {
-	Property := Property{}
-	if propertyName != "" {
-		Property.Name = propertyName
-	}
-	Property.Type = PROPERTY
-
+func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string]interface{}, error) {
+	Property := make(map[string]interface{})
 	for propertyField, fieldValue := range propertyMap {
-		switch propertyField {
-		case TYPE:
-			break
-
-		case HAS_VALUE:
+		if strings.Contains(propertyField, "@type") {
 			if fieldValue != nil {
-				Property.Value = sz.getValueFromArray(fieldValue.([]interface{}))
+				Property["type"] = sz.getType(fieldValue.([]interface{}))
 			}
-		case OBSERVED_AT:
+		} else if strings.Contains(propertyField, "hasValue") {
 			if fieldValue != nil {
-				Property.ObservedAt = sz.getDateAndTimeValue(fieldValue.([]interface{}))
+				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
 			}
-
-		case DATASET_ID:
+		} else if strings.Contains(propertyField, "observedAt") {
 			if fieldValue != nil {
-				Property.DatasetId = sz.getDatasetId(fieldValue.([]interface{}))
+				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
 			}
-
-		case INSTANCE_ID:
+		} else if strings.Contains(propertyField, "datasetId") {
 			if fieldValue != nil {
-				Property.InstanceId = sz.getInstanceId(fieldValue.([]interface{}))
+				Property["datasetId"] = sz.getDatasetId(fieldValue.([]interface{}))
 			}
-
-		case UNIT_CODE:
+		} else if strings.Contains(propertyField, "instanceId") {
 			if fieldValue != nil {
-				Property.UnitCode = sz.getUnitCode(fieldValue.(interface{}))
+				Property["instanceId"] = sz.getInstanceId(fieldValue.([]interface{}))
 			}
-
-		case PROVIDED_BY:
+		} else if strings.Contains(propertyField, "unitCode") {
 			if fieldValue != nil {
-				Property.ProvidedBy = sz.getProvidedBy(fieldValue.([]interface{}))
+				Property["unitCode"] = sz.getUnitCode(fieldValue.(interface{}))
 			}
-
-		default:
-			// Nested property or relationship
+		} else if strings.Contains(propertyField, "providedBy") {
+			if fieldValue != nil {
+				Property["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
+			}
+		} else { // Nested property or relationship
 			var typ string
 			nested := fieldValue.([]interface{})
 			for _, val := range nested {
 				mp := val.(map[string]interface{})
 				typInterface := mp["@type"].([]interface{})
 				typ = typInterface[0].(string)
-				if typ == PROPERTY {
-					property, err := sz.getProperty(propertyField, mp)
+				if strings.Contains(typ, "Property") {
+					property, err := sz.getProperty(mp)
 					if err != nil {
 						return Property, err
 					} else {
-						Property.Properties = append(Property.Properties, property)
+						Property[propertyField] = property
 					}
-				} else if typ == RELATIONSHIP {
-					relationship, err := sz.getRelationship(propertyField, mp)
+				} else if strings.Contains(typ, "Relationship") {
+					relationship, err := sz.getRelationship(mp)
 					if err != nil {
 						return Property, err
 					} else {
-						Property.Relationships = append(Property.Relationships, relationship)
+						Property[propertyField] = relationship
 					}
 				}
 			}
 		}
 	}
-	Property.ModifiedAt = time.Now().String()
+	Property["modifiedAt"] = time.Now().String()
 	return Property, nil
 }
 
-func (sz Serializer) getRelationship(relationshipName string, relationshipMap map[string]interface{}) (Relationship, error) {
-	Relationship := Relationship{}
-
-	if relationshipName != "" {
-		Relationship.Name = relationshipName
-	}
-
-	Relationship.Type = RELATIONSHIP
-
+func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (map[string]interface{}, error) {
+	Relationship := make(map[string]interface{})
 	for relationshipField, fieldValue := range relationshipMap {
-		switch relationshipField {
-		case TYPE:
-			break
-
-		case HAS_OBJECT:
+		if strings.Contains(relationshipField, "@type") {
 			if fieldValue != nil {
-				Relationship.Object = sz.getIdFromArray(fieldValue.([]interface{}))
+				Relationship["type"] = sz.getType(fieldValue.([]interface{}))
 			}
-
-		case OBJECT:
+		} else if strings.Contains(relationshipField, "hasObject") {
 			if fieldValue != nil {
-				Relationship.Object = sz.getValueFromArray(fieldValue.([]interface{})).(string)
+				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
+			}
+		} else if strings.Contains(relationshipField, "Object") {
+			if fieldValue != nil {
+				Relationship["object"] = sz.getValueFromArray(fieldValue.([]interface{})).(string)
 			} else {
 				err := errors.New("Relationship Object value can not be nil!")
 				return Relationship, err
 			}
-
-		case OBSERVED_AT:
+		} else if strings.Contains(relationshipField, "observedAt") {
 			if fieldValue != nil {
-				Relationship.ObservedAt = sz.getDateAndTimeValue(fieldValue.([]interface{}))
+				Relationship["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
 			}
-
-		case PROVIDED_BY:
+		} else if strings.Contains(relationshipField, "providedBy") {
 			if fieldValue != nil {
-				Relationship.ProvidedBy = sz.getProvidedBy(fieldValue.([]interface{}))
+				Relationship["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
 			}
-
-		case DATASET_ID:
+		} else if strings.Contains(relationshipField, "datasetId") {
 			if fieldValue != nil {
-				Relationship.DatasetId = sz.getDatasetId(fieldValue.([]interface{}))
+				Relationship["datasetId"] = sz.getDatasetId(fieldValue.([]interface{}))
 			}
-
-		case INSTANCE_ID:
+		} else if strings.Contains(relationshipField, "instanceId") {
 			if fieldValue != nil {
-				Relationship.InstanceId = sz.getInstanceId(fieldValue.([]interface{}))
+				Relationship["instanceId"] = sz.getInstanceId(fieldValue.([]interface{}))
 			}
-
-		default:
-			// Nested property or relationship
+		} else { // Nested property or relationship
 			var typ string
 			nested := fieldValue.([]interface{})
 			for _, val := range nested {
@@ -474,26 +413,25 @@ func (sz Serializer) getRelationship(relationshipName string, relationshipMap ma
 				typInterface := mp["@type"].([]interface{})
 				typ = typInterface[0].(string)
 
-				if typ == PROPERTY {
-					property, err := sz.getProperty(relationshipField, mp)
+				if strings.Contains(typ, "Property") {
+					property, err := sz.getProperty(mp)
 					if err != nil {
 						return Relationship, err
 					} else {
-						Relationship.Properties = append(Relationship.Properties, property)
+						Relationship[relationshipField] = property
 					}
-				} else if typ == RELATIONSHIP {
-					relationship, err := sz.getRelationship(relationshipField, mp)
+				} else if strings.Contains(typ, "Relationship") {
+					relationship, err := sz.getRelationship(mp)
 					if err != nil {
 						return Relationship, err
 					} else {
-						Relationship.Relationships = append(Relationship.Relationships, relationship)
+						Relationship[relationshipField] = relationship
 					}
 				}
 			}
 		}
 	}
-	Relationship.ModifiedAt = time.Now().String()
-
+	Relationship["modifiedAt"] = time.Now().String()
 	return Relationship, nil
 }
 
@@ -502,10 +440,9 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
 	if len(hasValue) > 0 {
 		val := hasValue[0].(map[string]interface{})
-
-		if val[TYPE] != nil {
-			Value["Type"] = val[TYPE].(string)
-			Value["Value"] = val[VALUE].(interface{})
+		if val["@type"] != nil {
+			Value["Type"] = val["@type"].(string)
+			Value["Value"] = val["@value"].(interface{})
 		} else {
 			Value["Value"] = hasValue[0]
 		}
@@ -520,12 +457,12 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 		for _, oneValue := range hasValue {
 			if val := oneValue.(map[string]interface{}); val != nil {
 
-				if val[TYPE] != nil {
-					Value["Type"] = val[TYPE].(string)
-					Value["Value"] = val[VALUE].(interface{})
+				if val["@type"] != nil {
+					Value["Type"] = val["@type"].(string)
+					Value["Value"] = val["@value"].(interface{})
 					return Value
 				}
-				value = val[VALUE].(interface{}) //Value is overwritten, in case of multiple values in payload, value array is never returned..
+				value = val["@value"].(interface{}) //Value is overwritten, in case of multiple values in payload, value array is never returned..
 			}
 		}
 	}
@@ -536,7 +473,7 @@ func (sz Serializer) getIdFromArray(object []interface{}) string {
 	var Id string
 	if len(object) > 0 {
 		hasObject := object[0].(map[string]interface{})
-		Id = hasObject[ID].(string)
+		Id = hasObject["@id"].(string)
 	}
 	return Id
 }
@@ -545,8 +482,8 @@ func (sz Serializer) getDateAndTimeValue(dateTimeValue []interface{}) string {
 	var DateTimeValue string
 	if len(dateTimeValue) > 0 {
 		observedAtMap := dateTimeValue[0].(map[string]interface{})
-		if observedAtMap[TYPE] == DATE_TIME {
-			DateTimeValue = observedAtMap[VALUE].(string)
+		if strings.Contains(observedAtMap["@type"].(string), "DateTime") {
+			DateTimeValue = observedAtMap["@value"].(string)
 		}
 	}
 	return DateTimeValue
@@ -556,8 +493,13 @@ func (sz Serializer) getProvidedBy(providedBy []interface{}) ProvidedBy {
 	ProvidedBy := ProvidedBy{}
 	if len(providedBy) > 0 {
 		providedByMap := providedBy[0].(map[string]interface{})
-		ProvidedBy.Type = sz.getType(providedByMap[TYPE].([]interface{}))
-		ProvidedBy.Object = sz.getIdFromArray(providedByMap[HAS_OBJECT].([]interface{}))
+		for k, v := range providedByMap {
+			if strings.Contains(k, "@type") {
+				ProvidedBy.Type = sz.getType(v.([]interface{}))
+			} else if strings.Contains(k, "hasObject") {
+				ProvidedBy.Object = sz.getIdFromArray(v.([]interface{}))
+			}
+		}
 	}
 	return ProvidedBy
 }
@@ -582,9 +524,13 @@ func (sz Serializer) getLocation(location []interface{}) LDLocation {
 	Location := LDLocation{}
 	if len(location) > 0 {
 		locationMap := location[0].(map[string]interface{})
-		Location.Type = sz.getType(locationMap[TYPE].([]interface{}))
-		value := sz.getLocationValue(locationMap[HAS_VALUE].([]interface{}))
-		Location.Value = value
+		for k, v := range locationMap {
+			if strings.Contains(k, "@type") {
+				Location.Type = sz.getType(v.([]interface{}))
+			} else if strings.Contains(k, "hasValue") {
+				Location.Value = sz.getLocationValue(v.([]interface{}))
+			}
+		}
 	}
 	return Location
 }
@@ -592,36 +538,28 @@ func (sz Serializer) getLocation(location []interface{}) LDLocation {
 func (sz Serializer) getLocationValue(locationValue []interface{}) interface{} {
 	if len(locationValue) > 0 {
 		locationValueMap := locationValue[0].(map[string]interface{})
-		if locationValueMap[VALUE] != nil {
-			valueScalar := locationValueMap[VALUE].(interface{})
+		if locationValueMap["@value"] != nil {
+			valueScalar := locationValueMap["@value"].(interface{})
 			stringValue := valueScalar.(string)
 			return stringValue
-		} else if locationValueMap[TYPE] != nil {
+		} else if locationValueMap["@type"] != nil {
 			LocationValue := LDLocationValue{}
-			LocationValue.Type = sz.getType(locationValueMap[TYPE].([]interface{}))
-			if locationValueMap[COORDINATES] != nil {
-				switch LocationValue.Type {
-				case POINT:
-					LocationValue.Coordinates = sz.getPointLocation(locationValueMap[COORDINATES].([]interface{}))
-					break
-				case LINE_STRING:
-					LocationValue.Coordinates = sz.getArrayofCoordinates(locationValueMap[COORDINATES].([]interface{}))
-					break
-				case POLYGON:
-					LocationValue.Coordinates = sz.getArrayofCoordinates(locationValueMap[COORDINATES].([]interface{}))
-					break
-				case MULTI_POINT:
-					LocationValue.Coordinates = sz.getArrayofCoordinates(locationValueMap[COORDINATES].([]interface{}))
-					break
-				case MULTI_LINE_STRING:
-					LocationValue.Coordinates = sz.getArrayofCoordinates(locationValueMap[COORDINATES].([]interface{}))
-					break
-				case MULTI_POLYGON:
-					LocationValue.Coordinates = sz.getArrayofCoordinates(locationValueMap[COORDINATES].([]interface{}))
-					break
-				case GEOMETRY_COLLECTION:
-					LocationValue.Geometries = sz.getGeometryCollectionLocation(locationValueMap[GEOMETRIES].([]interface{}))
-					break
+			for k, v := range locationValueMap {
+				if strings.Contains(k, "@type") {
+					LocationValue.Type = sz.getType(v.([]interface{}))
+				}
+			}
+			for k, v := range locationValueMap {
+				if strings.Contains(k, "coordinates") {
+					if v != nil {
+						if strings.Contains(LocationValue.Type, "Point") {
+							LocationValue.Coordinates = sz.getPointLocation(v.([]interface{}))
+						} else if strings.Contains(LocationValue.Type, "GeometryCollection") {
+							LocationValue.Geometries = sz.getGeometryCollectionLocation(v.([]interface{}))
+						} else if strings.Contains(LocationValue.Type, "LineString") || strings.Contains(LocationValue.Type, "Polygon") || strings.Contains(LocationValue.Type, "MultiPoint") || strings.Contains(LocationValue.Type, "MultiLineString") || strings.Contains(LocationValue.Type, "MultiPolygon") {
+							LocationValue.Coordinates = sz.getArrayofCoordinates(v.([]interface{}))
+						}
+					}
 				}
 			}
 			return LocationValue
@@ -635,7 +573,7 @@ func (sz Serializer) getPointLocation(coordinates []interface{}) []float64 {
 
 	for _, v := range coordinates {
 		coord := v.(map[string]interface{})
-		Coordinates = append(Coordinates, coord[VALUE].(float64))
+		Coordinates = append(Coordinates, coord["@value"].(float64))
 	}
 	return Coordinates
 }
@@ -657,25 +595,18 @@ func (sz Serializer) getGeometryCollectionLocation(geometries []interface{}) []G
 		geometry := Geometry{}
 		geometryValueMap := val.(map[string]interface{})
 		for k, v := range geometryValueMap {
-			switch k {
-			case TYPE:
+			if strings.Contains(k, "@Type") {
 				geometry.Type = sz.getType(v.([]interface{}))
-				break
-			case COORDINATES:
-				if geometry.Type == POINT {
+			} else if strings.Contains(k, "coordinates") {
+				if strings.Contains(geometry.Type, "Point") {
 					geometry.Coordinates = sz.getPointLocation(v.([]interface{}))
 				} else {
 					geometry.Coordinates = sz.getArrayofCoordinates(v.([]interface{}))
 				}
-				break
 			}
 		}
 		Geometries = append(Geometries, geometry)
 	}
-
-	// Pretty print
-	geos, _ := json.MarshalIndent(Geometries, "", " ")
-	DEBUG.Println("Geometries:", string(geos))
 	return Geometries
 }
 
@@ -685,22 +616,18 @@ func (sz Serializer) getInformation(information []interface{}) []RegistrationInf
 		infoVal := val.(map[string]interface{})
 		regInfo := RegistrationInfo{}
 		for k, v := range infoVal {
-			switch k {
-			case PROPERTIES:
+			if strings.Contains(k, "properties") {
 				if v != nil {
 					regInfo.Properties = sz.getArrayOfIds(v.([]interface{}))
 				}
-				break
-			case RELATIONSHIPS:
+			} else if strings.Contains(k, "relationships") {
 				if v != nil {
 					regInfo.Relationships = sz.getArrayOfIds(v.([]interface{}))
 				}
-				break
-			case ENTITIES:
+			} else if strings.Contains(k, "entities") {
 				if v != nil {
 					regInfo.Entities = sz.getEntities(v.([]interface{}))
 				}
-				break
 			}
 		}
 		regInfoArray = append(regInfoArray, regInfo)
@@ -712,7 +639,7 @@ func (sz Serializer) getArrayOfIds(arrayOfIds []interface{}) []string {
 	var ArrayOfIds []string
 	for _, v := range arrayOfIds {
 		idValue := v.(map[string]interface{})
-		id := idValue[ID].(string)
+		id := idValue["@id"].(string)
 		ArrayOfIds = append(ArrayOfIds, id)
 	}
 	return ArrayOfIds
@@ -723,19 +650,13 @@ func (sz Serializer) getEntities(entitiesArray []interface{}) []EntityId {
 	for _, val := range entitiesArray {
 		entityId := EntityId{}
 		entityFields := val.(map[string]interface{})
-
 		for k, v := range entityFields {
-
-			switch k {
-			case ID:
+			if strings.Contains(k, "@id") {
 				entityId.ID = sz.getId(v.(string))
-				break
-			case TYPE:
+			} else if strings.Contains(k, "@id") {
 				entityId.Type = sz.getType(v.([]interface{}))
-				break
-			case ID_PATTERN:
+			} else if strings.Contains(k, "@id") {
 				entityId.IdPattern = sz.getStringValue(v.([]interface{}))
-				break
 			}
 		}
 		entities = append(entities, entityId)
@@ -747,7 +668,7 @@ func (sz Serializer) getStringValue(value []interface{}) string {
 	var Value string
 	if len(value) > 0 {
 		val := value[0].(map[string]interface{})
-		Value = val[VALUE].(string)
+		Value = val["@value"].(string)
 	}
 	return Value
 }
@@ -757,23 +678,17 @@ func (sz Serializer) getNotification(notificationArray []interface{}) (Notificat
 	for _, val := range notificationArray {
 		notificationFields := val.(map[string]interface{})
 		for k, v := range notificationFields {
-			switch k {
-			case ATTRIBUTES:
+			if strings.Contains(k, "attributes") {
 				notification.Attributes = sz.getArrayOfIds(v.([]interface{}))
-				break
-			case ENDPOINT:
+			} else if strings.Contains(k, "endpoint") {
 				endpoint, err := sz.getEndpoint(v.([]interface{}))
 				if err != nil {
 					return notification, err
 				} else {
 					notification.Endpoint = endpoint
 				}
-				break
-			case FORMAT:
+			} else if strings.Contains(k, "format") {
 				notification.Format = sz.getStringValue(v.([]interface{}))
-				break
-			default:
-				break
 			}
 		}
 	}
@@ -785,20 +700,17 @@ func (sz Serializer) getEndpoint(endpointArray []interface{}) (Endpoint, error) 
 	for _, val := range endpointArray {
 		endpointFields := val.(map[string]interface{})
 		for k, v := range endpointFields {
-			switch k {
-			case ACCEPT:
+			if strings.Contains(k, "accept") {
 				if v != nil {
 					endpoint.Accept = sz.getStringValue(v.([]interface{}))
 				}
-				break
-			case URI:
+			} else if strings.Contains(k, "uri") {
 				if v != nil {
 					endpoint.URI = sz.getStringValue(v.([]interface{}))
 				} else {
 					err := errors.New("URI can not be nil!")
 					return endpoint, err
 				}
-				break
 			}
 		}
 	}
@@ -810,10 +722,9 @@ func (sz Serializer) getTimeStamp(timestampArray []interface{}) TimeInterval {
 	for _, timestamp := range timestampArray {
 		timestampMap := timestamp.(map[string]interface{})
 		for k, v := range timestampMap {
-			switch k {
-			case START:
+			if strings.Contains(k, "start") {
 				timeInterval.Start = sz.getDateAndTimeValue(v.([]interface{}))
-			case END:
+			} else if strings.Contains(k, "end") {
 				timeInterval.End = sz.getDateAndTimeValue(v.([]interface{}))
 			}
 		}
