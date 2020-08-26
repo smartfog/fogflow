@@ -653,9 +653,9 @@ func (sz Serializer) getEntities(entitiesArray []interface{}) []EntityId {
 		for k, v := range entityFields {
 			if strings.Contains(k, "@id") {
 				entityId.ID = sz.getId(v.(string))
-			} else if strings.Contains(k, "@id") {
+			} else if strings.Contains(k, "@type") {
 				entityId.Type = sz.getType(v.([]interface{}))
-			} else if strings.Contains(k, "@id") {
+			} else if strings.Contains(k, "idPattern") {
 				entityId.IdPattern = sz.getStringValue(v.([]interface{}))
 			}
 		}
