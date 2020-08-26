@@ -2584,6 +2584,7 @@ func (tb *ThinBroker) LDAppendEntityAttributes(w rest.ResponseWriter, r *rest.Re
 				}
 			}
 		} else {
+			tb.ldEntities_lock.RUnlock()
 			rest.Error(w, "The entity was not found!", 404)
 			return
 		}
