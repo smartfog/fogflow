@@ -2801,100 +2801,125 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 }
 
 func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req interface{}) error {
-	// Prepare payload for expansion
-	payload := make(map[string]interface{})
-	if req != nil {
-		payload = req.(map[string]interface{})
-	}
-	if payload != nil {
-		payload["@context"] = DEFAULT_CONTEXT
-	}
-	var empty interface{}
-	payload[attr] = empty
+        // Prepare payload for expansion
+/*
+        payload := make(map[string]interface{})
+        fmt.Println("********payload is********1****", payload)
+        fmt.Println("********req is********12****", req)
+        if req != nil {
+                payload = req.(map[string]interface{})
+                 fmt.Println("********payload is********2****", payload)
+        }
+        if payload != nil {
+                payload["@context"] = DEFAULT_CONTEXT
+                fmt.Println("********payload is********3****", payload["@context"])
+        }
+        fmt.Println("********payload is********4****", payload[attr])
+        var empty interface{}
+        payload[attr] = empty
+        fmt.Println("********payload is********5****", payload[attr])
+        // Expand payload
+        if expanded, err := tb.ExpandData(payload); err != nil {
+                fmt.Println("********expand val*****",expanded)
+                return err
+        } else {
+                // deserialize the attribute payload
+                sz := Serializer{}
+                deSerializedPayload, err := sz.DeSerializeEntity(expanded)
+                fmt.Println("********deserialization val*****",deSerializedPayload)
 
-	// Expand payload
-	if expanded, err := tb.ExpandData(payload); err != nil {
-		return err
-	} else {
-		// deserialize the attribute payload
-		sz := Serializer{}
-		deSerializedPayload, err := sz.DeSerializeEntity(expanded)
+                if err != nil {
+                        return err
+                } else {
+                        for attribute, _ := range deSerializedPayload { // Assuming only one attribute in map
+                                attr = attribute
+                                fmt.Println("*********check attributes list*******",attr)
+                        }
+*/
+                        // find attribute in existing table and delete
+//                      var deleteProperty string
+//                      var deleteRelationship string
+                        tb.ldEntities_lock.Lock()
+                        if tb.ldEntities[eid] != nil {
+                                entityMap := tb.ldEntities[eid].(map[string]interface{})
+                                fmt.Println("**********entityMap val is*********",entityMap)
+                                attrExists := false
+                                //for i := 0; i < len(tb.ldEntities[eid].Properties); i++ {
+                                for attrN, attrVal := range entityMap {
+                                        if strings.HasSuffix(attrN, "/"+attr) {
+                                                attrExists = true
+                                        //      fmt.Println("**********attrExists val is*********",attrExists)
+                                                fmt.Println("**********attrVal val is*********",attrVal)
+                                                delete(entityMap,attrN)
+                                                tb.ldEntities[eid] = entityMap
+                                                fmt.Println("**********after del attr entityMap val is*********",entityMap)
+                                        }
+                                }
+                                if attrExists == false {
+                                        tb.ldEntities_lock.Unlock()
+                                        ERROR.Println("Attribute not found!")
+                                        err := errors.New("Attribute not found!")
+                                        return err
+                                }
+                                        // Deleting attribute from registration at Broker: Get rid at broker
+                                        rid := ""
+                                        tb.ldEntityID2RegistrationID_lock.RLock()
+                                        if _, ok := tb.ldEntityID2RegistrationID[eid]; ok == true {
+                                                rid = tb.ldEntityID2RegistrationID[eid]
+                                                fmt.Println("**********rid val is*********",rid)
+                                        }
+                                        tb.ldEntityID2RegistrationID_lock.RUnlock()
 
-		if err != nil {
-			return err
-		} else {
-			for attribute, _ := range deSerializedPayload { // Assuming only one attribute in map
-				attr = attribute
-			}
+                                        // Deleting attribute from registration at Broker: Update registration at broker, if found
+                                        if rid != "" { // Registration is present at Broker; for registrations created explicitly at FogFlow.
+                                                tb.ldContextRegistrations_lock.Lock()
+                                                attrType := ""
+                                                // update registration at broker here.
+                                                for k, info := range tb.ldContextRegistrations[rid].Information {
+                                                        for _, entity := range info.Entities {
+                                                                if entity.ID == eid {
+                                                                        if strings.Contains(attrType, "Property") {
+                                                                                for key, property := range tb.ldContextRegistrations[rid].Information[k].Properties {
+                                                                                        if property == attr {
+                                                                                                tb.ldContextRegistrations[rid].Information[k].Properties = append(tb.ldContextRegistrations[rid].Information[k].Properties[:key], tb.ldContextRegistrations[rid].Information[k].Properties[key+1:]...)
+                                                                                                break
+                                                                                        }
+                                                                                }
+                                                                        } else if strings.Contains(attrType, "Relationship") {
+                                                                                for key, relationship := range tb.ldContextRegistrations[rid].Information[k].Relationships {
+                                                                                        if relationship == attr {
+                                                                                                tb.ldContextRegistrations[rid].Information[k].Relationships = append(tb.ldContextRegistrations[rid].Information[k].Relationships[:key], tb.ldContextRegistrations[rid].Information[k].Relationships[key+1:]...)
+                                                                                                break
+                                                                                        }
+                                                                                }
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                                tb.ldContextRegistrations_lock.Unlock()
+                                        }
+                                        // Update Registration at Discovery
 
-			// find attribute in existing table and delete
-			tb.ldEntities_lock.Lock()
-			if tb.ldEntities[eid] != nil {
-				entityMap := tb.ldEntities[eid].(map[string]interface{})
+                                        tb.registerLDContextElement(entityMap)
 
-				if attrMap, ok := entityMap[attr].(map[string]interface{}); ok == true {
-					attrType := attrMap["type"].(string)
-
-					// Deleting the attribute from tb.ldEntities
-					delete(entityMap, attr)
-					tb.ldEntities[eid] = entityMap
-
-					// Deleting attribute from registration at Broker: Get rid at broker
-					rid := ""
-					tb.ldEntityID2RegistrationID_lock.RLock()
-					if _, ok := tb.ldEntityID2RegistrationID[eid]; ok == true {
-						rid = tb.ldEntityID2RegistrationID[eid]
-					}
-					tb.ldEntityID2RegistrationID_lock.RUnlock()
-
-					// Deleting attribute from registration at Broker: Update registration at broker, if found
-					if rid != "" { // Registration is present at Broker; for registrations created explicitly at FogFlow.
-						tb.ldContextRegistrations_lock.Lock()
-
-						// update registration at broker here.
-						for k, info := range tb.ldContextRegistrations[rid].Information {
-							for _, entity := range info.Entities {
-								if entity.ID == eid {
-									if strings.Contains(attrType, "Property") {
-										for key, property := range tb.ldContextRegistrations[rid].Information[k].Properties {
-											if property == attr {
-												tb.ldContextRegistrations[rid].Information[k].Properties = append(tb.ldContextRegistrations[rid].Information[k].Properties[:key], tb.ldContextRegistrations[rid].Information[k].Properties[key+1:]...)
-												break
-											}
-										}
-									} else if strings.Contains(attrType, "Relationship") {
-										for key, relationship := range tb.ldContextRegistrations[rid].Information[k].Relationships {
-											if relationship == attr {
-												tb.ldContextRegistrations[rid].Information[k].Relationships = append(tb.ldContextRegistrations[rid].Information[k].Relationships[:key], tb.ldContextRegistrations[rid].Information[k].Relationships[key+1:]...)
-												break
-											}
-										}
-									}
-								}
-							}
-						}
-						tb.ldContextRegistrations_lock.Unlock()
-					}
-					// Update Registration at Discovery
-					entityMap := tb.ldEntities[eid].(map[string]interface{})
-					tb.registerLDContextElement(entityMap)
-
-				} else {
-					tb.ldEntities_lock.Unlock()
-					ERROR.Println("Attribute not found!")
-					err := errors.New("Attribute not found!")
-					return err
-				}
-				tb.ldEntities_lock.Unlock()
-			} else {
-				tb.ldEntities_lock.Unlock()
-				ERROR.Println("Entity not found!")
-				err := errors.New("Entity not found!")
-				return err
-			}
-		}
-	}
-	return nil
+                                } else {
+                                        tb.ldEntities_lock.Unlock()
+                                        fmt.Println("**********else part of attrMap********")
+                                        ERROR.Println("Entity not found!")
+                                        err := errors.New("Entity not found!")
+                                        return err
+                                }
+                                tb.ldEntities_lock.Unlock()
+        //              }
+                        /*else {
+                                tb.ldEntities_lock.Unlock()
+                                ERROR.Println("Entity not found!")
+                                err := errors.New("Entity not found!")
+                                return err
+                        }*/
+//              }
+//      }
+        return nil
 }
 
 func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []interface{} {
