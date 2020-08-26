@@ -482,7 +482,7 @@ func (sz Serializer) getDateAndTimeValue(dateTimeValue []interface{}) string {
 	var DateTimeValue string
 	if len(dateTimeValue) > 0 {
 		observedAtMap := dateTimeValue[0].(map[string]interface{})
-		if strings.Contains(observedAtMap["@type"].(string), "DateTime") {
+		if strings.Contains(observedAtMap["@value"].(string), "DateTime") {
 			DateTimeValue = observedAtMap["@value"].(string)
 		}
 	}
