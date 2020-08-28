@@ -304,10 +304,23 @@ func (sz Serializer) getId(id interface{}) string {
 }
 
 func (sz Serializer) getType(typ []interface{}) string {
-	var Type string
-	if len(typ) > 0 {
-		Type = typ[0].(string)
-	}
+	var Type,Type1 string
+        if len(typ) > 0 {
+                Type1 = typ[0].(string)
+                if (strings.Contains(Type1, "GeoProperty")|| strings.Contains(Type1, "geoproperty"))  {
+                        Type = "GeoProperty"
+                }else if (strings.Contains(Type1, "Point") || strings.Contains(Type1, "point")) {
+                        Type = "Point"
+                }else if (strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship")) {
+                        Type = "Relationship"
+                }else if (strings.Contains(Type1, "Property") || strings.Contains(Type1, "property")) {
+                        Type = "Property"
+                }else if (strings.Contains(Type1, "person") || strings.Contains(Type1, "Person")) {
+                        Type = "Person"
+                }else {
+                        Type = typ[0].(string)
+                }
+        }
 	return Type
 }
 
