@@ -1708,12 +1708,12 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			} else {
 				//Update createdAt value.
 				deSerializedEntity["createdAt"] = time.Now().String()
-				for k, _ := range deSerializedEntity { // considering properties and relationships as attributes
+				/*for k, _ := range deSerializedEntity { // considering properties and relationships as attributes
 					if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
 						attrMap := deSerializedEntity[k].(map[string]interface{})
 						attrMap["createdAt"] = time.Now().String()
 					}
-				}
+				}*/
 
 				// Store Context
 				deSerializedEntity["@context"] = context

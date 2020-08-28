@@ -380,7 +380,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		}
 	}
-	Property["modifiedAt"] = time.Now().String()
+	//Property["modifiedAt"] = time.Now().String()
 	return Property, nil
 }
 
@@ -444,7 +444,7 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 			}
 		}
 	}
-	Relationship["modifiedAt"] = time.Now().String()
+	//Relationship["modifiedAt"] = time.Now().String()
 	return Relationship, nil
 }
 
