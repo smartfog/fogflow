@@ -450,15 +450,17 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 
 func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 
-	Value := make(map[string]interface{})
+	//Value := make(map[string]interface{})
+	var Value interface{}
 	if len(hasValue) > 0 {
 		val := hasValue[0].(map[string]interface{})
-		if val["@type"] != nil {
+		/*if val["@type"] != nil {
 			Value["Type"] = val["@type"].(string)
 			Value["Value"] = val["@value"].(interface{})
 		} else {
 			Value["Value"] = hasValue[0]
-		}
+		}*/
+		Value = val["@value"]
 	}
 	return Value
 }
