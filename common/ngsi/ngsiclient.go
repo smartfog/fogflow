@@ -812,3 +812,71 @@ func (nc *NGSI10Client) CreateLDEntityOnRemote(elem map[string]interface{}, link
 	}
 	return nil
 }
+
+func (nc *NGSI10Client) AppendLDEntityOnRemote(elem map[string]interface{}, eid string) error {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (nc *NGSI10Client) UpdateLDEntityAttributeOnRemote(elem map[string]interface{}, eid string) (error ,int) {
+        body, err := json.Marshal(elem)
+        if err != nil {
+                return err,0
+        }
+        req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs", bytes.NewBuffer(body))
+        req.Header.Add("Content-Type", "application/json")
+
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                ERROR.Println(err)
+                return err,0
+        }
+        if resp.StatusCode == 207 {
+                return err,resp.StatusCode
+        }
+        return nil,0
+}
+
+func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]interface{}, eid string, attribute string) (error, int) {
+        body, err := json.Marshal(elem)
+        if err != nil {
+                return err,0
+        }
+        req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs/"+attribute, bytes.NewBuffer(body))
+        req.Header.Add("Content-Type", "application/json")
+
+
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, err := client.Do(req)
+        if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                ERROR.Println(err)
+                return err,0
+        }
+         if resp.StatusCode == 404 {
+                return err,resp.StatusCode
+        }
+        return nil,0
+}
+

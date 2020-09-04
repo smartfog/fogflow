@@ -208,11 +208,13 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 		return
 	}
 	subID := u1.String()
+
 	subscribeCtxAvailabilityReq.SubscriptionId = subID
 
 	// add the new subscription
 	fd.subscriptions_lock.Lock()
 	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
+
 	fd.subscriptions_lock.Unlock()
 
 	// send out the response
