@@ -140,7 +140,9 @@ func (sz Serializer) serializeLocationValue(location LDLocationValue) map[string
 func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
 	entity := make(map[string]interface{})
 	for _, val := range expanded {
+
 		stringsMap := val.(map[string]interface{})
+
 		for k, v := range stringsMap {
 			if strings.Contains(k, "id") {
 				if v != nil {
@@ -166,6 +168,7 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 					typ := mp["@type"].([]interface{})
 					if len(typ) > 0 {
 						if strings.Contains(typ[0].(string), "Property") {
+
 							property, err := sz.getProperty(mp)
 							if err != nil {
 								return entity, err
@@ -173,6 +176,7 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 								entity[k] = property
 							}
 						} else if strings.Contains(typ[0].(string), "Relationship") {
+
 							relationship, err := sz.getRelationship(mp)
 							if err != nil {
 								return entity, err
@@ -304,40 +308,45 @@ func (sz Serializer) getId(id interface{}) string {
 }
 
 func (sz Serializer) getType(typ []interface{}) string {
-	var Type,Type1 string
-        if len(typ) > 0 {
-                Type1 = typ[0].(string)
-                if (strings.Contains(Type1, "GeoProperty")|| strings.Contains(Type1, "geoproperty"))  {
-                        Type = "GeoProperty"
-                }else if (strings.Contains(Type1, "Point") || strings.Contains(Type1, "point")) {
-                        Type = "Point"
-                }else if (strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship")) {
-                        Type = "Relationship"
-                }else if (strings.Contains(Type1, "Property") || strings.Contains(Type1, "property")) {
-                        Type = "Property"
-                }else if (strings.Contains(Type1, "person") || strings.Contains(Type1, "Person")) {
-                        Type = "Person"
-                }else {
-                        Type = typ[0].(string)
-                }
-        }
+
+	var Type, Type1 string
+	if len(typ) > 0 {
+		Type1 = typ[0].(string)
+		if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
+			Type = "GeoProperty"
+		} else if strings.Contains(Type1, "Point") || strings.Contains(Type1, "point") {
+			Type = "Point"
+		} else if strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship") {
+			Type = "Relationship"
+		} else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
+			Type = "Property"
+		} else if strings.Contains(Type1, "person") || strings.Contains(Type1, "Person") {
+			Type = "Person"
+		} else {
+			Type = typ[0].(string)
+		}
+	}
 	return Type
 }
 
 func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string]interface{}, error) {
+
 	Property := make(map[string]interface{})
 	for propertyField, fieldValue := range propertyMap {
 		if strings.Contains(propertyField, "@type") {
 			if fieldValue != nil {
 				Property["type"] = sz.getType(fieldValue.([]interface{}))
+
 			}
 		} else if strings.Contains(propertyField, "hasValue") {
 			if fieldValue != nil {
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
+
 			}
 		} else if strings.Contains(propertyField, "observedAt") {
 			if fieldValue != nil {
 				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
+
 			}
 		} else if strings.Contains(propertyField, "datasetId") {
 			if fieldValue != nil {
@@ -356,6 +365,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 				Property["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
 			}
 		} else { // Nested property or relationship
+
 			var typ string
 			nested := fieldValue.([]interface{})
 			for _, val := range nested {
