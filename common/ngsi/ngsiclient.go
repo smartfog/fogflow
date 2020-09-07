@@ -660,7 +660,6 @@ func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabi
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(nc.IoTDiscoveryURL + "/UpdateLDContextAvailability" + "/#" + sid)
 	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/UpdateLDContextAvailability"+"/"+sid, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -684,8 +683,6 @@ func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabi
 	}
 
 	if subscribeCtxAvailResp.SubscriptionId != "" {
-		fmt.Println("This is return subid")
-		fmt.Println(subscribeCtxAvailResp.SubscriptionId)
 		return subscribeCtxAvailResp.SubscriptionId, nil
 	} else {
 		err = errors.New(subscribeCtxAvailResp.ErrorCode.ReasonPhrase)
