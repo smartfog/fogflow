@@ -208,13 +208,39 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 		return
 	}
 	subID := u1.String()
-
 	subscribeCtxAvailabilityReq.SubscriptionId = subID
 
 	// add the new subscription
 	fd.subscriptions_lock.Lock()
 	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
+	fd.subscriptions_lock.Unlock()
 
+	// send out the response
+	subscribeCtxAvailabilityResp := SubscribeContextAvailabilityResponse{}
+	subscribeCtxAvailabilityResp.SubscriptionId = subID
+	subscribeCtxAvailabilityResp.Duration = subscribeCtxAvailabilityReq.Duration
+	subscribeCtxAvailabilityResp.ErrorCode.Code = 200
+	subscribeCtxAvailabilityResp.ErrorCode.ReasonPhrase = "OK"
+
+	w.WriteJson(&subscribeCtxAvailabilityResp)
+	// trigger the process to send out the matched context availability infomation to the subscriber
+	go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
+}
+
+func (fd *FastDiscovery) UpdateLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
+	eid := r.PathParam("eid")
+	subscribeCtxAvailabilityReq := SubscribeContextAvailabilityRequest{}
+	err := r.DecodeJsonPayload(&subscribeCtxAvailabilityReq)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	subID := eid
+	subscribeCtxAvailabilityReq.SubscriptionId = subID
+
+	// add the new subscription
+	fd.subscriptions_lock.Lock()
+	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
 	fd.subscriptions_lock.Unlock()
 
 	// send out the response

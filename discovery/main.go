@@ -43,6 +43,8 @@ func main() {
 		rest.Post("/ngsi9/registerContext", iotDiscovery.RegisterContext),
 		rest.Post("/ngsi9/discoverContextAvailability", iotDiscovery.DiscoverContextAvailability),
 		rest.Post("/ngsi9/subscribeContextAvailability", iotDiscovery.SubscribeContextAvailability),
+		// api to update subscribe context availability
+		rest.Post("/ngsi9/UpdateLDContextAvailability/#eid", iotDiscovery.UpdateLDContextAvailability),
 		rest.Post("/ngsi9/unsubscribeContextAvailability", iotDiscovery.UnsubscribeContextAvailability),
 		rest.Delete("/ngsi9/registration/#eid", iotDiscovery.deleteRegisteredEntity),
 

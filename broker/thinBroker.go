@@ -1230,6 +1230,8 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 func (tb *ThinBroker) NotifyContextAvailability(w rest.ResponseWriter, r *rest.Request) {
 	notifyContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyContextAvailabilityReq)
+	fmt.Println("This is notifyContext")
+	fmt.Println(notifyContextAvailabilityReq)
 	if err != nil {
 		ERROR.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1660,6 +1662,7 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 
 // Create an NGSI-LD Entity
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
+	fmt.Println("Inside LDCreateEntity..........")
 	//Also allow the header to json+ld for specific cases
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
 		var context []interface{}
@@ -1673,11 +1676,11 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		context = append(context, DEFAULT_CONTEXT)
-
+		fmt.Println(context)
 		//Get a resolved object ([]interface object)
 		resolved, err := tb.ExpandPayload(r, context, contextInPayload)
 		if err != nil {
-
+			fmt.Println("Returned error at ExpandPayload: ", err.Error())
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
 				return
@@ -1701,6 +1704,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 
 			// Deserialize the payload here.
 			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+			fmt.Println(deSerializedEntity)
 
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -1716,9 +1720,9 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				}*/
 
 				// Store Context
-
+				fmt.Println(deSerializedEntity)
 				deSerializedEntity["@context"] = context
-
+				fmt.Println(deSerializedEntity)
 				w.WriteHeader(201)
 
 				// Add the resolved entity to tb.ldEntities
@@ -1736,30 +1740,30 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
-func (tb *ThinBroker) updateLDspecificAttributeValues2RemoteSite(req map[string]interface{}, remoteURL string, eid string, attr string) (error, int) {
+func (tb *ThinBroker) updateLDspecificAttributeValues2RemoteSite(req map[string]interface{}, remoteURL string, eid string, attr string) error {
 	client := NGSI10Client{IoTBrokerURL: remoteURL, SecurityCfg: tb.SecurityCfg}
-	err, code := client.UpdateLDEntityspecificAttributeOnRemote(req, eid, attr)
-
+	err := client.UpdateLDEntityspecificAttributeOnRemote(req, eid, attr)
+	fmt.Println("Error in updateLDContextElement2RemoteSite: ", err)
 	if err != nil {
-		return err, code
+		return err
 	}
-	return nil, code
+	return nil
 }
 
-func (tb *ThinBroker) updateLDAttributeValues2RemoteSite(req map[string]interface{}, remoteURL string, eid string) (error, int) {
+func (tb *ThinBroker) updateLDAttributeValues2RemoteSite(req map[string]interface{}, remoteURL string, eid string) error {
 	client := NGSI10Client{IoTBrokerURL: remoteURL, SecurityCfg: tb.SecurityCfg}
-	err, code := client.UpdateLDEntityAttributeOnRemote(req, eid)
-
+	err := client.UpdateLDEntityAttributeOnRemote(req, eid)
+	fmt.Println("Error in updateLDContextElement2RemoteSite: ", err)
 	if err != nil {
-		return err, code
+		return err
 	}
-	return nil, code
+	return nil
 }
 
 func (tb *ThinBroker) updateLDAttribute2RemoteSite(req map[string]interface{}, remoteURL string, eid string) error {
 	client := NGSI10Client{IoTBrokerURL: remoteURL, SecurityCfg: tb.SecurityCfg}
 	err := client.AppendLDEntityOnRemote(req, eid)
-
+	fmt.Println("Error in updateLDContextElement2RemoteSite: ", err)
 	if err != nil {
 		return err
 	}
@@ -1769,7 +1773,7 @@ func (tb *ThinBroker) updateLDAttribute2RemoteSite(req map[string]interface{}, r
 func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface{}, remoteURL string, link string) error {
 	client := NGSI10Client{IoTBrokerURL: remoteURL, SecurityCfg: tb.SecurityCfg}
 	err := client.CreateLDEntityOnRemote(req, link)
-
+	fmt.Println("Error in updateLDContextElement2RemoteSite: ", err)
 	if err != nil {
 		return err
 	}
@@ -2046,7 +2050,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
 			}
 		}
-
+		fmt.Println(context)
 		// Get an []interface object
 		resolved, err := tb.ExpandPayload(r, context, contextInPayload)
 
@@ -2071,7 +2075,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 			} else {
 				deSerializedSubscription.CreatedAt = time.Now().String()
 				// Create Subscription Id, if missing
-
 				if deSerializedSubscription.Id == "" {
 					u1, err := uuid.NewV4()
 					if err != nil {
@@ -2080,7 +2083,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					}
 					sid := u1.String()
 					deSerializedSubscription.Id = sid
-
 				}
 
 				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
@@ -2092,8 +2094,13 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}
-				w.WriteHeader(201)
-				w.WriteJson(deSerializedSubscription.Id)
+				//w.WriteHeader(201)
+				//w.WriteJson(deSerializedSubscription.Id)
+				LdSubResp := Subscribev2Response{}
+				LdSubResp.SubscriptionResponse.SubscriptionId = deSerializedSubscription.Id
+				LdSubResp.SubscriptionError.SubscriptionId = deSerializedSubscription.Id
+				w.WriteHeader(http.StatusCreated)
+				w.WriteJson(&LdSubResp)
 			}
 		}
 	} else {
@@ -2105,7 +2112,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 // Subscribe to Discovery for context availabiltiy
 func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest) error {
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
-
 	for key, entity := range subReq.Entities {
 		if entity.IdPattern != "" {
 			entity.IsPattern = true
@@ -2121,7 +2127,6 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
-
 	if AvailabilitySubID != "" {
 		tb.createSubscriptionIdMappings(subReq.Id, AvailabilitySubID)
 		tb.subLinks_lock.Lock()
@@ -2152,8 +2157,11 @@ func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRe
 		} else if entities.ID != "" {
 			eid = entities.ID
 		}
+		fmt.Println("This is subscription before tb.entityId2Subcriptions")
+		fmt.Println(tb.entityId2Subcriptions[eid])
 		tb.entityId2Subcriptions[eid] = append(tb.entityId2Subcriptions[eid], subReq.Id)
-
+		fmt.Println("This is subscription after tb.entityId2Subcriptions")
+		fmt.Println(tb.entityId2Subcriptions[eid])
 	}
 	tb.e2sub_lock.Unlock()
 }
@@ -2171,9 +2179,7 @@ func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
 func (tb *ThinBroker) createSubscriptionIdMappings(subID string, availabilitySubID string) {
 	tb.subLinks_lock.Lock()
 	tb.main2Other[subID] = append(tb.main2Other[subID], availabilitySubID)
-
 	tb.availabilitySub2MainSub[availabilitySubID] = subID
-
 	tb.subLinks_lock.Unlock()
 }
 
@@ -2238,11 +2244,12 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, cont
 			context = append(context, contextItems...)
 		}
 		itemsMap["@context"] = context
+		fmt.Println("\n---Item Map--------", itemsMap)
 
 		if expanded, err := tb.ExpandData(itemsMap); err != nil {
 			return nil, err
 		} else {
-
+			fmt.Println("\n--Expanded data------------", expanded)
 			return expanded, nil
 		}
 	}
@@ -2536,7 +2543,7 @@ func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Re
 				} else {
 					err := tb.updateAttributes(deSerializedAttributePayload, eid)
 					if err != nil {
-						rest.Error(w, err.Error(), 404)
+						rest.Error(w, err.Error(), 207)
 						return
 					}
 					w.WriteHeader(204)
@@ -2550,15 +2557,8 @@ func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Re
 				reqCxt, _ := tb.getStringInterfaceMap(r)
 				//link := r.Header.Get("Link") // Pick link header if present
 				//fmt.Println("Here 1..., link sending to remote broker:", link, "\nOwner URL:", ownerURL, "\nMy URL:", tb.MyURL)
-				_, code := tb.updateLDAttributeValues2RemoteSite(reqCxt, ownerURL, eid)
-				if code == 207 {
-					//rest.Error(w, err.Error(), 404)
-					//ERROR.Println(err)
-					rest.Error(w, "The attribute was not found!", 404)
-					return
-				}
+				tb.updateLDAttributeValues2RemoteSite(reqCxt, ownerURL, eid)
 				w.WriteHeader(204)
-
 				//return nil, err
 			} else {
 				ERROR.Println("The entity was not found!")
@@ -2747,12 +2747,7 @@ func (tb *ThinBroker) LDUpdateEntityByAttribute(w rest.ResponseWriter, r *rest.R
 				reqCxt, _ := tb.getStringInterfaceMap(r)
 				//link := r.Header.Get("Link") // Pick link header if present
 				//fmt.Println("Here 1..., link sending to remote broker:", link, "\nOwner URL:", ownerURL, "\nMy URL:", tb.MyURL)
-				_, code := tb.updateLDspecificAttributeValues2RemoteSite(reqCxt, ownerURL, eid, attr)
-				if code == 404 {
-
-					rest.Error(w, "The attribute was not found!", 404)
-					return
-				}
+				tb.updateLDspecificAttributeValues2RemoteSite(reqCxt, ownerURL, eid, attr)
 				w.WriteHeader(204)
 				//return nil, err
 			} else {
@@ -2891,19 +2886,58 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 }
 
 func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req interface{}) error {
+	// Prepare payload for expansion
+	/*
+	   payload := make(map[string]interface{})
+	   fmt.Println("********payload is********1****", payload)
+	   fmt.Println("********req is********12****", req)
+	   if req != nil {
+	           payload = req.(map[string]interface{})
+	            fmt.Println("********payload is********2****", payload)
+	   }
+	   if payload != nil {
+	           payload["@context"] = DEFAULT_CONTEXT
+	           fmt.Println("********payload is********3****", payload["@context"])
+	   }
+	   fmt.Println("********payload is********4****", payload[attr])
+	   var empty interface{}
+	   payload[attr] = empty
+	   fmt.Println("********payload is********5****", payload[attr])
+	   // Expand payload
+	   if expanded, err := tb.ExpandData(payload); err != nil {
+	           fmt.Println("********expand val*****",expanded)
+	           return err
+	   } else {
+	           // deserialize the attribute payload
+	           sz := Serializer{}
+	           deSerializedPayload, err := sz.DeSerializeEntity(expanded)
+	           fmt.Println("********deserialization val*****",deSerializedPayload)
+
+	           if err != nil {
+	                   return err
+	           } else {
+	                   for attribute, _ := range deSerializedPayload { // Assuming only one attribute in map
+	                           attr = attribute
+	                           fmt.Println("*********check attributes list*******",attr)
+	                   }
+	*/
+	// find attribute in existing table and delete
+	//                      var deleteProperty string
+	//                      var deleteRelationship string
 	tb.ldEntities_lock.Lock()
 	if tb.ldEntities[eid] != nil {
 		entityMap := tb.ldEntities[eid].(map[string]interface{})
-
+		fmt.Println("**********entityMap val is*********", entityMap)
 		attrExists := false
 		//for i := 0; i < len(tb.ldEntities[eid].Properties); i++ {
-		for attrN, _ := range entityMap {
+		for attrN, attrVal := range entityMap {
 			if strings.HasSuffix(attrN, "/"+attr) {
 				attrExists = true
-
+				//      fmt.Println("**********attrExists val is*********",attrExists)
+				fmt.Println("**********attrVal val is*********", attrVal)
 				delete(entityMap, attrN)
 				tb.ldEntities[eid] = entityMap
-
+				fmt.Println("**********after del attr entityMap val is*********", entityMap)
 			}
 		}
 		if attrExists == false {
@@ -2917,7 +2951,7 @@ func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req inter
 		tb.ldEntityID2RegistrationID_lock.RLock()
 		if _, ok := tb.ldEntityID2RegistrationID[eid]; ok == true {
 			rid = tb.ldEntityID2RegistrationID[eid]
-
+			fmt.Println("**********rid val is*********", rid)
 		}
 		tb.ldEntityID2RegistrationID_lock.RUnlock()
 
@@ -2950,16 +2984,15 @@ func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req inter
 			tb.ldContextRegistrations_lock.Unlock()
 		}
 		// Update Registration at Discovery
-
+		fmt.Println("\n---entity map before after deletion--------\n", entityMap)
 		tb.registerLDContextElement(entityMap)
 
 	} else {
 		tb.ldEntities_lock.Unlock()
-
+		fmt.Println("**********else part of attrMap********")
 		ERROR.Println("Entity not found!")
 		err := errors.New("Entity not found!")
 		return err
-
 	}
 	tb.ldEntities_lock.Unlock()
 	//              }
@@ -3398,7 +3431,7 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				} else {
-					tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
+					/*tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
 
 					// Update in discovery here.
 					tb.ldSubscriptions_lock.RLock()
@@ -3409,7 +3442,18 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 						rest.Error(w, err.Error(), http.StatusInternalServerError)
 						return
 					}
-					w.WriteHeader(204)
+					w.WriteHeader(204)*/
+					tb.ldSubscriptions_lock.RLock()
+					subReq := tb.ldSubscriptions[sid]
+					tb.ldSubscriptions_lock.RUnlock()
+					err := tb.UpdateLDContextAvailability(subReq, sid)
+					if err != nil {
+						rest.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					} else {
+						// update in broker memory
+						tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
+					}
 				}
 			}
 		} else {
@@ -3420,6 +3464,50 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 	} else {
 		rest.Error(w, "Missing Headers or Incorrect Header values!", 400)
 		return
+	}
+}
+
+// update subscription context availability in discovery
+func (tb *ThinBroker) UpdateLDContextAvailability(subReq *LDSubscriptionRequest, sid string) error {
+	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
+
+	for key, entity := range subReq.Entities {
+		if entity.IdPattern != "" {
+			entity.IsPattern = true
+		}
+		subReq.Entities[key] = entity
+	}
+	ctxAvailabilityRequest.Entities = subReq.Entities
+	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
+	//copy(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
+	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyContextAvailability"
+	ctxAvailabilityRequest.Duration = subReq.Expires
+	eid := ""
+	for key, value := range tb.availabilitySub2MainSub {
+		if tb.availabilitySub2MainSub[key] == value {
+			eid = key
+			break
+		}
+	}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	AvailabilitySubID, err := client.UpdateLDContextAvailability(&ctxAvailabilityRequest, eid)
+
+	if AvailabilitySubID != "" {
+		tb.subLinks_lock.Lock()
+		notifyMessage, alreadyBack := tb.tmpNGSILDNotifyCache[AvailabilitySubID]
+		tb.subLinks_lock.Unlock()
+		if alreadyBack == true {
+			INFO.Println("========forward the availability notify that arrived earlier===========")
+			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
+
+			tb.subLinks_lock.Lock()
+			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)
+			tb.subLinks_lock.Unlock()
+		}
+		return nil
+	} else {
+		INFO.Println("failed to subscribe the availability of requested entities ", err)
+		return err
 	}
 }
 
