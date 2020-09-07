@@ -19,12 +19,14 @@ config.https = {
   port: process.env.PEP_PROXY_HTTPS_PORT || 443,
 };
 
+//IDM configration
 config.idm = {
   host: process.env.PEP_PROXY_IDM_HOST || 'localhost',
   port: process.env.PEP_PROXY_IDM_PORT || 3000,
   ssl: toBoolean(process.env.PEP_PROXY_IDM_SSL_ENABLED, false),
 };
 
+//Apllication information, for which account has been registered on IDM
 config.app = {
   host: process.env.PEP_PROXY_APP_HOST || 'localhost',
   port: process.env.PEP_PROXY_APP_PORT || '80',
