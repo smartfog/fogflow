@@ -276,7 +276,6 @@ func (nc *NGSI10Client) QueryContext(query *QueryContextRequest) ([]*ContextObje
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(text))
 
 	queryCtxResp := QueryContextResponse{}
 	err = json.Unmarshal(text, &queryCtxResp)
@@ -668,7 +667,6 @@ func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabi
 
 	client := nc.SecurityCfg.GetHTTPClient()
 	resp, err := client.Do(req)
-	fmt.Println(resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
