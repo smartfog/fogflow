@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"fmt"
 	"sync"
 
 	. "github.com/smartfog/fogflow/common/ngsi"
@@ -241,6 +242,7 @@ func (fd *FastDiscovery) UpdateLDContextAvailability(w rest.ResponseWriter, r *r
 	// add the new subscription
 	fd.subscriptions_lock.Lock()
 	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
+	fmt.Println(fd.subscriptions[subID])
 	fd.subscriptions_lock.Unlock()
 
 	// send out the response
