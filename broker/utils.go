@@ -380,7 +380,7 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
-func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
 	elementRespList := make([]LDContextElementResponse, 0)
 
@@ -427,4 +427,36 @@ func ldPostNotifyContext(ldCtxElems []LDContextElement, subscriptionId string, U
 	ioutil.ReadAll(resp.Body)
 
 	return nil
+}
+
+func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
+	if len(selectedAttributes) == 0 {
+		return ldElem
+	} else {
+		preparedCopy := make(map[string]interface{})
+		for key, val := range ldElem {
+			if key == "id" {
+				preparedCopy["id"] = val
+			} else if key == "type" {
+				preparedCopy["type"] = val
+			} else if key == "createdAt" {
+				preparedCopy["createdAt"] = val
+			} else if key == "modifiedAt" {
+				//preparedCopy["modifiedAt"] = val
+			} else if key == "location" {
+				preparedCopy["location"] = val
+			} else if key == "@context" {
+				//preparedCopy["@context"] = val
+			} else {
+				// add attribute only if present in selectedAttributes
+				for _, requiredAttrName := range selectedAttributes {
+					if key == requiredAttrName {
+						preparedCopy[key] = val
+						break
+					}
+				}
+			}
+		}
+		return preparedCopy
+	}
 }

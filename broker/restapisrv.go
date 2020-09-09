@@ -66,7 +66,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs", broker.LDUpdateEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDUpdateEntityByAttribute),
 		rest.Delete("/ngsi-ld/v1/entities/#eid", apisrv.DeleteLDEntity),
-		rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", apisrv.DeleteLDAttribute),
+		rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDDeleteEntityAttribute),
 
 		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
 		rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", broker.UpdateCSourceRegistration),
@@ -306,18 +306,6 @@ func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request)
 	} else {
 		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
 		return
-	}
-}
-
-func (apisrv *RestApiSrv) DeleteLDAttribute(w rest.ResponseWriter, r *rest.Request) {
-	var eid = r.PathParam("eid")
-	var attr = r.PathParam("attr")
-
-	err := apisrv.broker.ldDeleteEntityAttribute(eid, attr)
-	if err == nil {
-		w.WriteHeader(204)
-	} else {
-		rest.Error(w, err.Error(), 404)
 	}
 }
 
