@@ -833,50 +833,84 @@ func (nc *NGSI10Client) AppendLDEntityOnRemote(elem map[string]interface{}, eid 
 	return nil
 }
 
-func (nc *NGSI10Client) UpdateLDEntityAttributeOnRemote(elem map[string]interface{}, eid string) (error ,int) {
-        body, err := json.Marshal(elem)
-        if err != nil {
-                return err,0
-        }
-        req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs", bytes.NewBuffer(body))
-        req.Header.Add("Content-Type", "application/json")
+func (nc *NGSI10Client) UpdateLDEntityAttributeOnRemote(elem map[string]interface{}, eid string) (error, int) {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err, 0
+	}
+	req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
 
-        client := nc.SecurityCfg.GetHTTPClient()
-        resp, err := client.Do(req)
-        if resp != nil {
-                defer resp.Body.Close()
-        }
-        if err != nil {
-                ERROR.Println(err)
-                return err,0
-        }
-        if resp.StatusCode == 207 {
-                return err,resp.StatusCode
-        }
-        return nil,0
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err, 0
+	}
+	if resp.StatusCode == 207 {
+		return err, resp.StatusCode
+	}
+	return nil, 0
 }
 
 func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]interface{}, eid string, attribute string) (error, int) {
-        body, err := json.Marshal(elem)
-        if err != nil {
-                return err,0
-        }
-        req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs/"+attribute, bytes.NewBuffer(body))
-        req.Header.Add("Content-Type", "application/json")
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err, 0
+	}
+	req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs/"+attribute, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
 
-
-        client := nc.SecurityCfg.GetHTTPClient()
-        resp, err := client.Do(req)
-        if resp != nil {
-                defer resp.Body.Close()
-        }
-        if err != nil {
-                ERROR.Println(err)
-                return err,0
-        }
-         if resp.StatusCode == 404 {
-                return err,resp.StatusCode
-        }
-        return nil,0
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err, 0
+	}
+	if resp.StatusCode == 404 {
+		return err, resp.StatusCode
+	}
+	return nil, 0
 }
 
+// client to update subscribe Context availbility on discovery
+func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabilityRequest, sid string) (string, error) {
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/UpdateLDContextAvailability"+"/"+sid, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return "", err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	subscribeCtxAvailResp := SubscribeContextAvailabilityResponse{}
+	err = json.Unmarshal(text, &subscribeCtxAvailResp)
+	if err != nil {
+		return "", err
+	}
+
+	if subscribeCtxAvailResp.SubscriptionId != "" {
+		return subscribeCtxAvailResp.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxAvailResp.ErrorCode.ReasonPhrase)
+		return "", err
+	}
+}

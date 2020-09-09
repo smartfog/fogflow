@@ -3398,7 +3398,7 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				} else {
-					tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
+					/*tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
 
 					// Update in discovery here.
 					tb.ldSubscriptions_lock.RLock()
@@ -3408,6 +3408,18 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 					if err := tb.SubscribeLDContextAvailability(subReq); err != nil {
 						rest.Error(w, err.Error(), http.StatusInternalServerError)
 						return
+					}
+					w.WriteHeader(204)*/
+					tb.ldSubscriptions_lock.RLock()
+					//subReq := tb.ldSubscriptions[sid]
+					tb.ldSubscriptions_lock.RUnlock()
+					err := tb.UpdateLDContextAvailability(deSerializedSubscription, sid)
+					if err != nil {
+						rest.Error(w, err.Error(), http.StatusInternalServerError)
+						return
+					} else {
+						// update in broker memory
+						tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
 					}
 					w.WriteHeader(204)
 				}
@@ -3423,6 +3435,50 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 	}
 }
 
+// update subscription context availability in discovery
+func (tb *ThinBroker) UpdateLDContextAvailability(subReq LDSubscriptionRequest, sid string) error {
+	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
+
+	for key, entity := range subReq.Entities {
+		if entity.IdPattern != "" {
+			entity.IsPattern = true
+		}
+		subReq.Entities[key] = entity
+	}
+	ctxAvailabilityRequest.Entities = subReq.Entities
+	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
+	//copy(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
+	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyContextAvailability"
+	ctxAvailabilityRequest.Duration = subReq.Expires
+	eid := ""
+	for key, value := range tb.availabilitySub2MainSub {
+		value = tb.availabilitySub2MainSub[key]
+		if value == sid {
+			eid = key
+			break
+		}
+	}
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	AvailabilitySubID, err := client.UpdateLDContextAvailability(&ctxAvailabilityRequest, eid)
+
+	if AvailabilitySubID != "" {
+		tb.subLinks_lock.Lock()
+		notifyMessage, alreadyBack := tb.tmpNGSILDNotifyCache[AvailabilitySubID]
+		tb.subLinks_lock.Unlock()
+		if alreadyBack == true {
+			INFO.Println("========forward the availability notify that arrived earlier===========")
+			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
+
+			tb.subLinks_lock.Lock()
+			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)
+			tb.subLinks_lock.Unlock()
+		}
+		return nil
+	} else {
+		INFO.Println("failed to subscribe the availability of requested entities ", err)
+		return err
+	}
+}
 func (tb *ThinBroker) UpdateSubscriptionInMemory(sub LDSubscriptionRequest, sid string) {
 	tb.ldSubscriptions_lock.Lock()
 	subscription := tb.ldSubscriptions[sid]
