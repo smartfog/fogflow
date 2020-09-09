@@ -3421,6 +3421,7 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 						// update in broker memory
 						tb.UpdateSubscriptionInMemory(deSerializedSubscription, sid)
 					}
+					w.WriteHeader(204)
 				}
 			}
 		} else {
