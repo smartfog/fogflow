@@ -26,6 +26,7 @@ callbackUrl=`cat $(pwd)/oauth_config.js | grep "Redirect_uri" | cut -d ":" -f 2-
 appUri=`cat $(pwd)/oauth_config.js | grep "Url" | cut -d ":" -f 2- | sed 's/"//g' | tr -d '\n'`
 
 #Generate API token, It will return X-Subject-Token taht will further use for application register
+#The curl command will retry thrice to reach to server, if packet drops in previous attempts
 for connect in 1 2 3
 do
    curl --include \
