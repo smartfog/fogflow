@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/sethgrid/pester"
@@ -270,6 +271,7 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 
 // Ask the kernel for a free open port that is ready to use
 func (e *Executor) findFreePortNumber() int {
+	fmt.Println("finding free port number")
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
 		panic(err)
@@ -388,13 +390,25 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.Subscriptions = make([]string, 0)
 
 	for _, inputStream := range task.Inputs {
-		subID, err := e.subscribeInputStream(freePort, &inputStream)
-		if err == nil {
-			DEBUG.Println("===========subID = ", subID)
-			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-			taskCtx.EntityID2SubID[inputStream.ID] = subID
+		NGSILD := e.queryForNGSILdEntity(inputStream.ID)
+		if NGSILD != 404 {
+			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
+			if err == nil {
+				DEBUG.Println("===========subID = ", subID)
+				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+				taskCtx.EntityID2SubID[inputStream.ID] = subID
+			} else {
+				ERROR.Println(err)
+			}
 		} else {
-			ERROR.Println(err)
+			subID, err := e.subscribeInputStream(freePort, &inputStream)
+			if err == nil {
+				DEBUG.Println("===========subID = ", subID)
+				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+				taskCtx.EntityID2SubID[inputStream.ID] = subID
+			} else {
+				ERROR.Println(err)
+			}
 		}
 	}
 
@@ -409,6 +423,16 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	e.registerTask(task, freePort, containerId)
 
 	return true
+}
+
+func (e *Executor) queryForNGSILdEntity(eid string) int {
+	if eid == "" {
+		return 404
+	}
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+	statusCode := client.QueryForNGSILDEntity(eid)
+	fmt.Println("This is status code")
+	return statusCode
 }
 
 func (e *Executor) registerEndPointService(serviceName string, taskID string, operateName string, ipAddr string, port string, location PhysicalLocation) EntityId {
@@ -530,7 +554,42 @@ func (e *Executor) deregisterTask(taskID string) {
 	}
 }
 
+func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputStream) (string, error) {
+	LdSubscription := LDSubscriptionRequest{}
+
+	newEntity := EntityId{}
+
+	if len(inputStream.ID) > 0 { // for a specific context entity
+		newEntity.IsPattern = false
+		newEntity.Type = inputStream.Type
+		newEntity.ID = inputStream.ID
+	} else { // for all context entities with a specific type
+		newEntity.Type = inputStream.Type
+		newEntity.IsPattern = true
+	}
+
+	LdSubscription.Entities = make([]EntityId, 0)
+	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
+	LdSubscription.Type = "Subscription"
+	LdSubscription.WatchedAttributes = inputStream.AttributeList
+
+	LdSubscription.Notification.Endpoint.URI = "http://" + e.workerCfg.InternalIP + ":" + agentPort + "notifyContext"
+
+	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", LdSubscription)
+
+	e.brokerURL = strings.TrimSuffix(e.brokerURL, "/ngsi10")
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+	sid, err := client.SubscribeLdContext(&LdSubscription, true)
+	if err != nil {
+		ERROR.Println(err)
+		return "", err
+	} else {
+		return sid, nil
+	}
+}
+
 func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStream) (string, error) {
+	fmt.Println("====================Subscription here ===================")
 	subscription := SubscribeContextRequest{}
 
 	newEntity := EntityId{}
