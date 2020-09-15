@@ -241,7 +241,9 @@ async function db(contextData) {
 }
 
 process.on('unhandledRejection', (reason, promise) => {
-  console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+ //bug-113 fix
+ console.log('Retrying.. There is an Unhandled Rejection at:', promise, 'reason:', reason);
+  queryForEntity();
 });
 
 
