@@ -927,6 +927,19 @@ func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
 
 }
 
+func (nc *NGSI10Client) QueryForNGSIV1Entity( eid string) int {
+        fmt.Println(eid)
+        fmt.Println(nc.IoTBrokerURL+"/entity/"+eid)
+        req ,_:= http.NewRequest("GET", nc.IoTBrokerURL+"/entity/" + eid, nil)
+        client := nc.SecurityCfg.GetHTTPClient()
+        resp, _ := client.Do(req)
+        fmt.Println("++++++++This is response code +++++++")
+        fmt.Println(resp.StatusCode)
+        return resp.StatusCode
+
+}
+
+
 // client to update subscribe Context availbility on discovery
 func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabilityRequest, sid string) (string, error) {
 	body, err := json.Marshal(*sub)

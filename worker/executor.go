@@ -391,7 +391,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	for _, inputStream := range task.Inputs {
 		NGSILD := e.queryForNGSILdEntity(inputStream.ID)
-		if NGSILD != 404 {
+		if NGSILD == 200 {
 			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
@@ -400,7 +400,9 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 			} else {
 				ERROR.Println(err)
 			}
-		} else {
+		} 
+		NGSIV1 := e.queryForNGSIV1Entity(inputStream.ID)
+		if NGSIV1 == 200 {
 			subID, err := e.subscribeInputStream(freePort, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
@@ -429,10 +431,23 @@ func (e *Executor) queryForNGSILdEntity(eid string) int {
 	if eid == "" {
 		return 404
 	}
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+	brokerURL := e.brokerURL
+	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
+	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	statusCode := client.QueryForNGSILDEntity(eid)
-	fmt.Println("This is status code")
+	fmt.Println(statusCode)
 	return statusCode
+}
+
+func (e *Executor) queryForNGSIV1Entity(eid string) int {
+        if eid == "" {
+                return 200
+        }
+        fmt.Println(e.brokerURL)
+        client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+        statusCode := client.QueryForNGSIV1Entity(eid)
+        fmt.Println(statusCode)
+        return statusCode
 }
 
 func (e *Executor) registerEndPointService(serviceName string, taskID string, operateName string, ipAddr string, port string, location PhysicalLocation) EntityId {
@@ -573,7 +588,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	LdSubscription.Type = "Subscription"
 	LdSubscription.WatchedAttributes = inputStream.AttributeList
 
-	LdSubscription.Notification.Endpoint.URI = "http://" + e.workerCfg.InternalIP + ":" + agentPort + "notifyContext"
+	LdSubscription.Notification.Endpoint.URI = "http://" + e.workerCfg.InternalIP + ":" + agentPort + "/notifyContext"
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", LdSubscription)
 
