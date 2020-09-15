@@ -187,3 +187,328 @@ FogFlow dashboard can be opened in web browser to see the current system status 
 
 	If self-signed SSL certificate is being used, a browser warning indication can be seen that the crtificate should not be trusted.
 	It can be proceeded past this warning to view the FogFlow dashboard web page via https.
+
+
+
+Identity Management
+=================================
+
+Identity management(IdM) is a process for identifying, authenticating individuals or groups to have access to applications or system by associating some auth token with established identities. IdM is the task of controlling data about users or applications.
+
+
+Terminology
+---------------
+
+**Keyrock** is the FIWARE component responsible for Identity Management. Keyrock also provide feature to add OAuth2-based authentication and authorization security in order to secure services and applications.
+
+**PEP Proxy Wilma** is a FIWARE Generic Enabler that enhances the performance of Identity Management. It combines with Keyrock to secure access to endpoints exposed by FIWARE Generic Enablers. Wilma listens for any request, authenticates it from Keyrock and stores it in its cache for a limited period of time. If a new request arrives, Wilma will first check in its cache and if any grant is stored, it will directly authenticate otherwise it will send the request to Keyrock for authentication. 
+
+
+.. figure:: figures/security_architecture.png
+
+
+
+Note: In above diagram n ( n is numeric) is used for cloud node and n’ for edge node.
+
+
+FogFlow cloud node flow:
+
+1. As in architecture diagram, PEP Proxy will register itself first on Keyrock. Detail explanation are is given in below topics of this tutorial.
+
+2. User can access the application directly by using the access-token of PEP proxy.
+
+
+FogFlow edge node flow:
+
+1. On behalf of edge node, one application will be register on keyrock it will be using OAuth credentials. Detail explanation is given in below topics of this tutorial.
+
+2. After the authentication edge node will be able to communicate with FogFlow cloud node.
+
+3. Any device can register itself or communicate with FogFlow edge node using edge’s OAuth access-token.
+
+
+
+Installation
+------------------
+
+
+.. code-block:: console
+
+
+        # the docker-compose file to start security components on the cloud node
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.idm.yml
+
+	# the configuration file used by IdM
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/idm_config.js
+
+        # the configuration file used by PEP Proxy
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/pep_config.js
+
+
+
+Change the IP configuration accordingly
+-------------------------------------------------------------
+
+Configuration file need to be modified at the following places with IP addresses  according to user own environment.
+
+- Change PEP Proxy host-port and container port in docker-compose.idm.yml file.
+
+- Change the IdM config file at following places as per the environment.
+
+
+.. code-block:: console
+
+        
+        config.port = 3000;
+        config.host = "http://<IdM IP>:" + config.port;
+
+        config.database = {
+            host: "localhost",
+            password: "idm",
+            username: "root",
+            database: "idm",
+            dialect: "mysql",
+            port: undefined
+        };
+
+
+Start all Security components:
+
+.. code-block:: console
+
+        docker-compose -f docker-compose.idm.yml up -d
+
+        #Check all the containers are Up and Running using "docker ps -a"
+         docker ps -a
+
+
+
+Setup components on Cloud node
+-------------------------------
+
+Below are the steps that need to be done to setup communication in between IdM components.
+
+
+**Step1**: Authenticate PEP Proxy itself with Keyrock Identity Management.
+
+
+
+.. figure:: figures/keyrock_Account_Portal.png
+
+
+
+
+Login to Keyrock (http://180.179.214.135:3000/idm/)  account with user credentials i.e. Email and Password. 
+    For Example: admin@test.com and 1234.
+After Login, Click “Applications””FogFLow PEP”.
+Click “PEP Proxy” link to get Application ID , PEP Proxy Username and PEP Proxy Password.
+
+Note: 
+Application ID , PEP Proxy Username and PEP Proxy Password will generate by clicking ‘Register PEP Proxy’ button.
+
+
+Change the followings (marked with Bold Font) inside the config file, get PEP Proxy Credentials from Keyrock Dashboard while registering an application. Note that single instance of Wilma will be installed for each application that user wants to secure.
+
+
+.. code-block:: console
+
+        config.pep_port = process.env.PEP_PROXY_PORT || 80;
+        config.idm = {
+          host: process.env.PEP_PROXY_IDM_HOST || '180.179.214.135',
+          port: process.env.PEP_PROXY_IDM_PORT || 3000,
+          ssl: toBoolean(process.env.PEP_PROXY_IDM_SSL_ENABLED, false),
+        };
+        config.app = {
+          host: process.env.PEP_PROXY_APP_HOST || '180.179.214.135',
+          port: process.env.PEP_PROXY_APP_PORT || ’80’,
+          ssl: toBoolean(process.env.PEP_PROXY_APP_SSL_ENABLED, false), // Use true if the app server listens in https
+        };
+
+        config.pep = {
+          app_id: process.env.PEP_PROXY_APP_ID || '9b51b184-808c-498c-8aac-74ffedc1ee72',
+          username: process.env.PEP_PROXY_USERNAME || 'pep_proxy_4abf36da-0936-46f9-a7f5-ac7edb7c86b6,
+          password: process.env.PEP_PASSWORD || 'pep_proxy_fb4955df-79fb-4dd7-8968-e8e60e4d6159',
+          token: {
+              secret: process.env.PEP_TOKEN_SECRET || '', // Secret must be configured in order validate a jwt
+          },
+          trusted_apps: [],
+        };
+
+
+Restart the PEP container after above changes.
+
+
+**Step2**: Request Keyrock IDM to generate access-token and refresh token.
+
+
+1. Set the HTTP request Header, payload and Authorization field as per below screen shots.
+
+2. Click “Send” Button to get access-token.
+
+
+
+.. figure:: figures/detailDescriptionofSampleRequest.png
+
+
+
+
+Note: Obtain Client ID and Client Secret from Keyrock dashboard under ‘Oauth2 Credentials’
+
+
+
+.. figure:: figures/detailDescriptionofSampleRequest2.png
+
+
+
+Note: IoT sensor ID and Password can be obtained from keyrock dashboard
+
+
+
+.. figure:: figures/responseFromKeyrock.png
+
+
+
+.. figure:: figures/architectureDiagram.png
+
+
+
+1. Access-token should be already known to user.
+
+2. For an application designer register a pep proxy to keyrock.
+
+3. Keyrock will send access-token to pep.
+
+4. Using that token user will send create entity request to designer.
+
+5. Designer will send token to keyrock to authenticate.
+
+6. Entity creation request will transfer to FogFlow.
+
+
+
+**entity Registration using token_access**
+
+
+.. code-block:: console
+
+        curl -iX POST   'http://<Cloud_Public_IP>:<PEP_Host-port>/ngsi10/updateContext'  -H 'X-Auth-Token: <token>'  -H 'Content-Type: application/json' 
+     -d '
+      {
+        "contextElements": [
+          {
+           "entityId": {
+              "id": "Temperature100",
+              "type": "Temperature",
+              "isPattern": false
+          },
+           "attributes": [
+              {
+              "name": "temp",
+              "type": "float",
+              "value": 34
+              }
+            ],
+           "domainMetadata": [
+             {
+              "name": "location",
+              "type": "point",
+              "value": {
+                "latitude": 49.406393,
+                "longitude": 8.684208
+               }
+             }
+            ],
+         "updateAction": "UPDATE"
+         }
+       ]
+      }'
+
+
+Setup components on Edge
+-------------------------
+
+
+FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow cloud-edge communication OAuth Token has been used. In order to create an OAuth Token, first need to register an application on Keyrock. So, a script will call with the start of edge node and it will register an application with the keyrock on behalf of edge node using the Keyrock APIs. The script will perform following steps:
+
+**tools Requirement**
+Two commands need to install before setup edge:
+1. Curl
+2. jq
+
+
+scripts Installation
+---------------------
+
+Below scripts need to download for setting up edge node.
+
+.. code-block:: console    
+         
+	#download the deployment scripts
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/script.sh
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/delete.ah
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/oauth_config.js
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/delete_config.js
+
+        #make them executable
+        chmod +x script.sh start.sh stop.sh delete.sh
+
+
+Change the IP configuration accordingly
+-------------------------------------------------------------
+
+Chanage the following things in configuration file:
+
+* Change the oauth_config.js and add IdM IP, Application name, redirect_url and Url for the application that is need to be registered.
+ 
+.. code-block:: console    
+
+      #start components in the same script
+      ./start.sh 
+
+
+
+To secure FogFlow cloud-edge communication OAuth Token has been used. In order to create an OAuth Token, 
+
+* An application need to be registered on Keyrock. 
+
+* A script will call with the start of edge node and it will register an application with the keyrock on behalf of that edge node using the Keyrock APIs. 
+
+
+Note: the start.sh script will return API token, Application ID its Secret and the access token on console. Please save these for further use.
+
+
+register device on edge node
+----------------------------
+
+.. code-block:: console
+ 
+
+     Curl -iX POST 'http://180.179.214.135:8060/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token>' -H 'fiware-servicepath: /' -d '
+      {
+          "contextRegistrations": [
+              {
+                  "entities": [
+                      {
+                          "type": "Lamp",
+                          "isPattern": "false",
+                          "id": "Lamp.0020"
+                      }
+                  ], 
+                  "attributes": [
+                      {
+                          "name": "on",
+                          "type": "command"
+                      },
+                      {
+                          "name": "off",
+                          "type": "command"
+                      }
+                  ],
+                  "providingApplication": "http://180.179.214.208:8888"
+              }
+          ],
+        "duration": "P1Y"
+      }'
+
