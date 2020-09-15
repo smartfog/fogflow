@@ -190,8 +190,8 @@ FogFlow dashboard can be opened in web browser to see the current system status 
 
 
 
-Identity Management
-=================================
+Secure FogFlow using Identity Management
+==========================================
 
 Identity management(IdM) is a process for identifying, authenticating individuals or groups to have access to applications or system by associating some auth token with established identities. IdM is the task of controlling data about users or applications.
 
@@ -280,11 +280,11 @@ Start all Security components:
 
         #Check all the containers are Up and Running using "docker ps -a"
          docker ps -a
+	 
 
 
-
-Setup components on Cloud node
--------------------------------
+Setup security components on Cloud node
+-------------------------------------------------
 
 Below are the steps that need to be done to setup communication in between IdM components.
 
@@ -297,9 +297,9 @@ Below are the steps that need to be done to setup communication in between IdM c
 
 
 
-
 Login to Keyrock (http://180.179.214.135:3000/idm/)  account with user credentials i.e. Email and Password. 
     For Example: admin@test.com and 1234.
+    
 After Login, Click “Applications””FogFLow PEP”.
 Click “PEP Proxy” link to get Application ID , PEP Proxy Username and PEP Proxy Password.
 
@@ -307,7 +307,7 @@ Note:
 Application ID , PEP Proxy Username and PEP Proxy Password will generate by clicking ‘Register PEP Proxy’ button.
 
 
-Change the followings (marked with Bold Font) inside the config file, get PEP Proxy Credentials from Keyrock Dashboard while registering an application. Note that single instance of Wilma will be installed for each application that user wants to secure.
+Change the followings inside the pep_config file, get PEP Proxy Credentials from Keyrock Dashboard while registering an application. Note that single instance of Wilma will be installed for each application that user wants to secure.
 
 
 .. code-block:: console
@@ -326,7 +326,7 @@ Change the followings (marked with Bold Font) inside the config file, get PEP Pr
 
         config.pep = {
           app_id: process.env.PEP_PROXY_APP_ID || '9b51b184-808c-498c-8aac-74ffedc1ee72',
-          username: process.env.PEP_PROXY_USERNAME || 'pep_proxy_4abf36da-0936-46f9-a7f5-ac7edb7c86b6,
+          username: process.env.PEP_PROXY_USERNAME || 'pep_proxy_4abf36da-0936-46f9-a7f5-ac7edb7c86b6',
           password: process.env.PEP_PASSWORD || 'pep_proxy_fb4955df-79fb-4dd7-8968-e8e60e4d6159',
           token: {
               secret: process.env.PEP_TOKEN_SECRET || '', // Secret must be configured in order validate a jwt
@@ -335,7 +335,7 @@ Change the followings (marked with Bold Font) inside the config file, get PEP Pr
         };
 
 
-Restart the PEP container after above changes.
+Restart the PEP Proxy container after above changes.
 
 
 **Step2**: Request Keyrock IDM to generate access-token and refresh token.
@@ -365,6 +365,10 @@ Note: IoT sensor ID and Password can be obtained from keyrock dashboard
 
 
 .. figure:: figures/responseFromKeyrock.png
+
+
+
+The flow of cloud security implementation can be understand by below figure.
 
 
 
@@ -482,10 +486,12 @@ Note: the start.sh script will return API token, Application ID its Secret and t
 register device on edge node
 ----------------------------
 
+An example payload of registration device is given below.
+
 .. code-block:: console
  
 
-     Curl -iX POST 'http://180.179.214.135:8060/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token>' -H 'fiware-servicepath: /' -d '
+     Curl -iX POST 'http://<Application_IP>:<Application_Port>/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token>' -H 'fiware-servicepath: /' -d '
       {
           "contextRegistrations": [
               {
@@ -506,7 +512,7 @@ register device on edge node
                           "type": "command"
                       }
                   ],
-                  "providingApplication": "http://180.179.214.208:8888"
+                  "providingApplication": "http://0.0.0.0:8888"
               }
           ],
         "duration": "P1Y"
