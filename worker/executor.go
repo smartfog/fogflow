@@ -799,14 +799,28 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 	if e.workerCfg.Worker.StartActualTask == false {
 		return
 	}
-
-	subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
-	if err == nil {
-		DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
-		taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-		taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
-	} else {
-		ERROR.Println(err)
+	Id := flow.InputStream.ID 
+	NGSILD := e.queryForNGSILdEntity(Id)
+	if NGSILD == 200 {
+		subID, err := e.subscribeLdInputStream(taskCtx.ListeningPort, &flow.InputStream)
+		if err == nil {
+			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
+			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+			taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
+		} else {
+			ERROR.Println(err)
+		}
+	}
+	NGSIV1 := e.queryForNGSIV1Entity(Id)
+	if NGSIV1 ==200 {
+		subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
+                if err == nil {
+                        DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
+                        taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+                        taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
+                } else {
+                        ERROR.Println(err)
+                }
 	}
 }
 
