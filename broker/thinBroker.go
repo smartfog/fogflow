@@ -1719,6 +1719,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 
 				deSerializedEntity["@context"] = context
 
+				w.Header().Set("Location","/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 
 				// Add the resolved entity to tb.ldEntities
