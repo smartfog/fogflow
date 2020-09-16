@@ -400,7 +400,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 			} else {
 				ERROR.Println(err)
 			}
-		} 
+		}
 		NGSIV1 := e.queryForNGSIV1Entity(inputStream.ID)
 		if NGSIV1 == 200 {
 			subID, err := e.subscribeInputStream(freePort, &inputStream)
@@ -427,6 +427,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	return true
 }
 
+//Query for NGSILD Entity with entityId
 func (e *Executor) queryForNGSILdEntity(eid string) int {
 	if eid == "" {
 		return 404
@@ -439,15 +440,16 @@ func (e *Executor) queryForNGSILdEntity(eid string) int {
 	return statusCode
 }
 
+// Query for NGSIV1 Entity with EntityId
 func (e *Executor) queryForNGSIV1Entity(eid string) int {
-        if eid == "" {
-                return 200
-        }
-        fmt.Println(e.brokerURL)
-        client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-        statusCode := client.QueryForNGSIV1Entity(eid)
-        fmt.Println(statusCode)
-        return statusCode
+	if eid == "" {
+		return 200
+	}
+	fmt.Println(e.brokerURL)
+	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+	statusCode := client.QueryForNGSIV1Entity(eid)
+	fmt.Println(statusCode)
+	return statusCode
 }
 
 func (e *Executor) registerEndPointService(serviceName string, taskID string, operateName string, ipAddr string, port string, location PhysicalLocation) EntityId {
@@ -569,6 +571,7 @@ func (e *Executor) deregisterTask(taskID string) {
 	}
 }
 
+// Subscribe for NGSILD input stream
 func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputStream) (string, error) {
 	LdSubscription := LDSubscriptionRequest{}
 
@@ -591,9 +594,9 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	LdSubscription.Notification.Endpoint.URI = "http://" + e.workerCfg.InternalIP + ":" + agentPort + "/notifyContext"
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", LdSubscription)
-
-	e.brokerURL = strings.TrimSuffix(e.brokerURL, "/ngsi10")
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+	brokerURL := e.brokerURL
+	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
+	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	sid, err := client.SubscribeLdContext(&LdSubscription, true)
 	if err != nil {
 		ERROR.Println(err)
@@ -603,6 +606,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	}
 }
 
+//Subscribe for NGSIV1 input stream
 func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStream) (string, error) {
 	fmt.Println("====================Subscription here ===================")
 	subscription := SubscribeContextRequest{}
@@ -799,7 +803,7 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 	if e.workerCfg.Worker.StartActualTask == false {
 		return
 	}
-	Id := flow.InputStream.ID 
+	Id := flow.InputStream.ID
 	NGSILD := e.queryForNGSILdEntity(Id)
 	if NGSILD == 200 {
 		subID, err := e.subscribeLdInputStream(taskCtx.ListeningPort, &flow.InputStream)
@@ -812,15 +816,15 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 		}
 	}
 	NGSIV1 := e.queryForNGSIV1Entity(Id)
-	if NGSIV1 ==200 {
+	if NGSIV1 == 200 {
 		subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
-                if err == nil {
-                        DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
-                        taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-                        taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
-                } else {
-                        ERROR.Println(err)
-                }
+		if err == nil {
+			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
+			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+			taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
+		} else {
+			ERROR.Println(err)
+		}
 	}
 }
 

@@ -919,6 +919,8 @@ func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireRe
 	}
 }
 
+//Query for NGSILD entity with entityId
+
 func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
 	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid, nil)
 	client := nc.SecurityCfg.GetHTTPClient()
@@ -927,18 +929,16 @@ func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
 
 }
 
-func (nc *NGSI10Client) QueryForNGSIV1Entity( eid string) int {
-        fmt.Println(eid)
-        fmt.Println(nc.IoTBrokerURL+"/entity/"+eid)
-        req ,_:= http.NewRequest("GET", nc.IoTBrokerURL+"/entity/" + eid, nil)
-        client := nc.SecurityCfg.GetHTTPClient()
-        resp, _ := client.Do(req)
-        fmt.Println("++++++++This is response code +++++++")
-        fmt.Println(resp.StatusCode)
-        return resp.StatusCode
+// Query for NGSIV1 entity with entityId
+
+func (nc *NGSI10Client) QueryForNGSIV1Entity(eid string) int {
+	fmt.Println(nc.IoTBrokerURL + "/entity/" + eid)
+	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/entity/"+eid, nil)
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, _ := client.Do(req)
+	return resp.StatusCode
 
 }
-
 
 // client to update subscribe Context availbility on discovery
 func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabilityRequest, sid string) (string, error) {

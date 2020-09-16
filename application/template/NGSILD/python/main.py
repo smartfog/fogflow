@@ -14,8 +14,8 @@ brokerURL = ''
 outputs = []
 timer = None
 lock = threading.Lock()
-counter = 0 
-
+counter = 0
+create = 0 
 @app.errorhandler(400)
 def not_found(error):
     return make_response(jsonify( { 'error': 'Bad request' } ), 400)
@@ -38,13 +38,10 @@ def admin():
 @app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
     print "=============notify============="
-    data=request.get_json()
-    print(data)
     if not request.json:
         abort(400)
     	
     objs = readContextElements(request.json)
-    print(objs)
     global counter
     counter = counter + 1
     
@@ -69,7 +66,6 @@ def object2Element(ctxObj):
     return ctxElement
 
 def readContextElements(data):
-    print data
 
     ctxObjects = []
     
@@ -106,7 +102,7 @@ def handleTimer():
     entity = {}       
     entity['id'] = "urn:ngsi-ld:result.01"
     entity['type'] = "Result"
-    entity['counter'] = counter    
+    entity['counter'] = counter 
     publishResult(entity)
         
     timer = threading.Timer(10, handleTimer)
@@ -117,47 +113,53 @@ def update(resultCtxObj):
     if brokerURL == '':
         return
 
-    ctxElement = object2Element(ctxObj)
+    ctxElement = object2Element(resultCtxObj)
 
-    id=ctxObj['id']
-    ctxObj.pop("id")
-    ctxObj.pop("type")    
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
-    response = requests.patch(brokerURL + '/ngsi-ld/v1/entities/'+ id +'/attrs', data=json.dumps(updateCtxReq), headers=headers)
+    id=ctxElement['id']
+    ctxElement.pop("id")
+    ctxElement.pop("type")
+    headers = {'Accept' : 'application/ld+json', 'Content-Type' : 'application/ld+json'}
+    response = requests.patch('http://' +brokerURL + '/ngsi-ld/v1/entities/'+ id +'/attrs', data=json.dumps(ctxElement), headers=headers)
     return response.status_code
     
 def sendDataToBroker(resultCtxObj):
-    response=cretaeRequest(resultCtxObj)
-    if response != 409:
+    global create
+    if create == 0 :
+        response=cretaeRequest(resultCtxObj)
+	if response != 201:
+            print 'failed to create context'
+    else :
 	print("Entity already has been created trying for update request....")
+	print(resultCtxObj)
         response=update(resultCtxObj)
 	if response != 204:
 	    print 'failed to update context'
 	
 def publishResult(result):
     resultCtxObj = {}
-    print(result)
     resultCtxObj['id']=result['id']
     resultCtxObj['type']=result['type']
     data={}
     data['type']="Property"
     data['value']=result['counter']
-    resultCtxObj['count']=data
-    
+    resultCtxObj['count']=data 
     sendDataToBroker(resultCtxObj)
 
 def cretaeRequest(ctxObj):
     global brokerURL
+    global create
+    brokerURL="180.179.214.208:8070"
     if brokerURL == '':
         return
         
     ctxElement = object2Element(ctxObj)
     
-
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json', 'Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-    response = requests.post(brokerURL + '/ngsi-ld/v1/entities/', data=json.dumps(updateCtxReq), headers=headers)
-    if response.status_code != 201:
-        return response.status_code
+    headers = {'Accept' : 'application/ld+json', 'Content-Type' : 'application/ld+json', 'Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+    response = requests.post('http://' +brokerURL + '/ngsi-ld/v1/entities/', data=json.dumps(ctxElement), headers=headers)
+    
+    if response.status_code == 201:
+        create = create+1
+    return response.status_code
 
                              
 if __name__ == '__main__':
