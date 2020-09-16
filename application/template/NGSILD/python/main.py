@@ -108,6 +108,8 @@ def handleTimer():
     timer = threading.Timer(10, handleTimer)
     timer.start()
 
+#update request on broker
+
 def update(resultCtxObj):
     global brokerURL
     if brokerURL == '':
@@ -119,7 +121,7 @@ def update(resultCtxObj):
     ctxElement.pop("id")
     ctxElement.pop("type")
     headers = {'Accept' : 'application/ld+json', 'Content-Type' : 'application/ld+json'}
-    response = requests.patch('http://' +brokerURL + '/ngsi-ld/v1/entities/'+ id +'/attrs', data=json.dumps(ctxElement), headers=headers)
+    response = requests.patch(brokerURL + '/ngsi-ld/v1/entities/'+ id +'/attrs', data=json.dumps(ctxElement), headers=headers)
     return response.status_code
     
 def sendDataToBroker(resultCtxObj):
@@ -127,13 +129,13 @@ def sendDataToBroker(resultCtxObj):
     if create == 0 :
         response=cretaeRequest(resultCtxObj)
 	if response != 201:
-            print 'failed to create context'
+            print 'failed to send the create request'
     else :
 	print("Entity already has been created trying for update request....")
 	print(resultCtxObj)
         response=update(resultCtxObj)
 	if response != 204:
-	    print 'failed to update context'
+	    print 'failed to send the updte request'
 	
 def publishResult(result):
     resultCtxObj = {}
@@ -145,17 +147,18 @@ def publishResult(result):
     resultCtxObj['count']=data 
     sendDataToBroker(resultCtxObj)
 
+# create request on broker
+
 def cretaeRequest(ctxObj):
     global brokerURL
     global create
-    brokerURL="180.179.214.208:8070"
     if brokerURL == '':
         return
-        
+    print(brokerURL)     
     ctxElement = object2Element(ctxObj)
     
     headers = {'Accept' : 'application/ld+json', 'Content-Type' : 'application/ld+json', 'Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-    response = requests.post('http://' +brokerURL + '/ngsi-ld/v1/entities/', data=json.dumps(ctxElement), headers=headers)
+    response = requests.post(brokerURL + '/ngsi-ld/v1/entities/', data=json.dumps(ctxElement), headers=headers)
     
     if response.status_code == 201:
         create = create+1

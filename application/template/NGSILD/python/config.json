@@ -1,6 +1,6 @@
 [{
 	"command": "CONNECT_BROKER",
-	"brokerURL": "http://192.168.1.80:8091/ngsi10"
+	"brokerURL": "http://180.179.214.208:8070"
 }, {
 	"command": "SET_OUTPUTS",
 	"id": "Stream.ChildFound.01",
