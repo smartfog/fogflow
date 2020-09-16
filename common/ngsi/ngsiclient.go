@@ -884,7 +884,6 @@ func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireRe
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("======Comming IotBrokerUrl======", nc.IoTBrokerURL)
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/ld+json")
 	req.Header.Add("Accept", "application/ld+json")
@@ -932,7 +931,6 @@ func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
 // Query for NGSIV1 entity with entityId
 
 func (nc *NGSI10Client) QueryForNGSIV1Entity(eid string) int {
-	fmt.Println(nc.IoTBrokerURL + "/entity/" + eid)
 	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/entity/"+eid, nil)
 	client := nc.SecurityCfg.GetHTTPClient()
 	resp, _ := client.Do(req)
