@@ -2088,7 +2088,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
 				tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
-				tb.createSubscription(&deSerializedSubscription)
+				if err :=  tb.createSubscription(&deSerializedSubscription);err != nil {
+                                        rest.Error(w, "Already exist!", 409)
+                                        return
+                                }
 				if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -2160,12 +2163,21 @@ func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRe
 }
 
 // Store in SubID - SubscriptionPayload Map
-func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
+func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (error)
 	subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
+        if _,exist := tb.ldSubscriptions[subscription.Id]; exist == true {
+                        fmt.Println("Already exists here...!!")
+                        tb.ldSubscriptions_lock.Unlock()
+                        err := errors.New("AlreadyExists!")
+                        fmt.Println("Error: ", err.Error())
+                        return err
+        }else {
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
+	retrun nil
+	}
 }
 
 // Store SubID - AvailabilitySubID Mappings
