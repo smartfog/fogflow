@@ -2163,7 +2163,7 @@ func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRe
 }
 
 // Store in SubID - SubscriptionPayload Map
-func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (error)
+func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (error){
 	subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
@@ -2176,8 +2176,8 @@ func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (e
         }else {
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
-	retrun nil
 	}
+	return nil
 }
 
 // Store SubID - AvailabilitySubID Mappings
