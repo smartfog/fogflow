@@ -1272,7 +1272,7 @@ def test_case75():
 #testCase 76
 '''
   To test if Subscription contains context when context is sent in payload
-'''
+
 def test_case76():
 	#to fetch a subscription containing context
 	url=brokerIp+"/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:20"
@@ -1291,12 +1291,13 @@ def test_case76():
                 print("\nNot Validated")
         #print(r.status_code)
         assert r.status_code == 200
+'''
 
-#testCase 77
+#testCase 76
 '''
   To test if discovery's context availablity is updated on updating 
 '''
-def test_case77():
+def test_case76():
 	#to create entity
 	url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
