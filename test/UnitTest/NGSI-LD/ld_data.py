@@ -256,7 +256,7 @@ subdata7=\
                    ]
              }
             ],
-             "endpoint": "http://180.179.214.211:8888/csource",
+             "endpoint": "http://127.0.0.1:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -296,7 +296,7 @@ subdata8=\
                  ]
          }
          ],
-         "endpoint": "http://180.179.214.211:8888/csource",
+         "endpoint": "http://127.0.0.1:8888/csource",
          "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
          "timestamp": {
          "start": "2017-11-29T14:53:15"
@@ -357,7 +357,7 @@ subdata9=\
                ]
          }
        ],
-         "endpoint": "http://180.179.214.211:8888/csource",
+         "endpoint": "http://127.0.0.1:8888/csource",
          "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
          "timestamp": {
          "start": "2017-11-29T14:53:15"
@@ -408,7 +408,7 @@ subdata10=\
                              "attributes": ["brandName"],
                              "format": "keyValues",
                              "endpoint": {
-                                             "uri": "http://180.179.214.211:8888/ld-notify",
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
                                              "accept": "application/json"
                                }
              }
@@ -460,7 +460,7 @@ subdata12=\
              "attributes": ["http://example.org/vehicle/brandName2"],
              "format": "keyValues",
              "endpoint": {
-                             "uri": "http://180.179.214.211:8888/ld-notify",
+                             "uri": "http://127.0.0.1:8888/ld-notify",
                              "accept": "application/json"
               }
            }
@@ -596,7 +596,7 @@ subdata19=\
       ]
     }
   ],
-  "endpoint": "http://180.179.214.211:8888/csource",
+  "endpoint": "http://127.0.0.1:8888/csource",
   "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
   "timestamp": {
     "start": "2017-11-29T14:53:15"
@@ -645,7 +645,7 @@ subdata20=\
              "notification": {
              "format": "keyValues",
              "endpoint": {
-                             "uri": "http://180.179.214.211:8888/ld-notify",
+                             "uri": "http://127.0.0.1:8888/ld-notify",
                              "accept": "application/json"
               }
            }
@@ -683,7 +683,7 @@ subdata21=\
                    ]
              }
             ],
-             "endpoint": "http://180.179.214.211:8888//csource",
+             "endpoint": "http://127.0.0.1:8888//csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -715,7 +715,7 @@ subdata22=\
                      ]
              }
             ],
-             "endpoint": "http://180.179.214.211:8888/csource",
+             "endpoint": "http://127.0.0.1:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -748,7 +748,7 @@ subdata23=\
       ]
     }
   ],
-  "endpoint": "http://180.179.214.211:8888/csource",
+  "endpoint": "http://127.0.0.1:8888/csource",
   "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
   "timestamp": {
     "start": "2017-11-29T14:53:15"
@@ -809,7 +809,7 @@ subdata24=\
                      ]
              }
             ],
-             "endpoint": "http://180.179.214.211:8888/csource",
+             "endpoint": "http://127.0.0.1:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -892,7 +892,7 @@ subdata28=\
                    ]
              }
             ],
-             "endpoint": "http://180.179.214.211:8888/csource",
+             "endpoint": "http://127.0.0.1:8888/csource",
              "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
              "timestamp": {
                              "start": "2017-11-29T14:53:15"
@@ -914,7 +914,7 @@ subdata29=\
                              "attributes": ["brandName"],
                              "format": "keyValues",
                              "endpoint": {
-                                             "uri": "http://180.179.214.211:8888/ld-notify",
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
                                              "accept": "application/json"
                                }
              }
@@ -934,7 +934,7 @@ subdata30=\
                              "attributes": ["brandName"],
                              "format": "keyValues",
                              "endpoint": {
-                                             "uri": "http://180.179.214.211:8888/ld-notify",
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
                                              "accept": "application/json"
                                }
              }
@@ -954,7 +954,7 @@ subdata31=\
              "attributes": ["http://example.org/vehicle/brandName2"],
              "format": "keyValues",
              "endpoint": {
-                             "uri": "http://180.179.214.211:8888/ld-notify",
+                             "uri": "http://127.0.0.1:8888/ld-notify",
                              "accept": "application/json"
               }
            }
@@ -1075,3 +1075,167 @@ subdata34=\
                                 }
                 }
 }
+
+
+#Payload to create new entity with different context link
+subdata35=\
+{
+	"id": "urn:ngsi-ld:Vehicle:A909",
+	"type": "Vehicle",
+	"brandName": {
+		"type": "Property",
+		"value": "Mercedes"
+	},
+	"isParked": {
+		"type": "Relationship",
+		"object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+		"observedAt": "2017-07-29T12:00:04",
+		"providedBy": {
+			"type": "Relationship",
+			"object": "urn:ngsi-ld:Person:Bob"
+		}
+	},
+	"speed": {
+		"type": "Property",
+		"value": 80
+	},
+	"createdAt": "2017-07-29T12:00:04",
+	"location": {
+		"type": "GeoProperty",
+		"value": {
+			"type": "Point",
+			"coordinates": [-8.5, 41.2]
+		}
+	}
+}
+
+subdata36=\
+{
+             "id": "urn:ngsi-ld:Subscription:19",
+             "type": "Subscription",
+             "entities": [{
+                             "idPattern": ".*",
+                             "type": "Vehicle"
+             }],
+             "watchedAttributes": ["brandName","speed"],
+             "notification": {
+                             "attributes": ["brandName","speed"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+      }
+
+
+subdata37=\
+{
+             "id": "urn:ngsi-ld:Subscription:20",
+             "type": "Subscription",
+             "entities": [{
+                             "id": "urn:ngsi-ld:Vehicle:A3000",
+                             "type": "Vehicle"
+             }],
+             "watchedAttributes": ["brandName","speed"],
+             "notification": {
+                             "attributes": ["brandName","speed"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             },
+	     "context": ["https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"]
+      }
+
+
+subdata38=\
+{
+    "id": "urn:ngsi-ld:Vehicle:A3000",
+    "type": "Vehicle",
+    "brandName": {
+        "type": "Property",
+        "value": "Mercedes"
+    },
+    "isParked": {
+        "type": "Relationship",
+        "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+        "observedAt": "2017-07-29T12:00:04",
+        "providedBy": {
+            "type": "Relationship",
+            "object": "urn:ngsi-ld:Person:Bob"
+        }
+    },
+    "speed": {
+        "type": "Property",
+        "value": 80
+    },
+    "createdAt": "2017-07-29T12:00:04",
+    "location": {
+        "type": "GeoProperty",
+        "value": {
+            "type": "Point",
+            "coordinates": [-8.5, 41.2]
+        }
+    }
+}
+
+subdata39=\
+{
+             "id": "urn:ngsi-ld:Subscription:020",
+             "type": "Subscription",
+             "entities": [{
+                             "idPattern": ".*",
+                             "type": "Vehicle"
+             }],
+             "watchedAttributes": ["brandName","speed"],
+             "notification": {
+                             "attributes": ["brandName","speed"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+     }
+
+subdata40=\
+{
+  "id": "urn:ngsi-ld:Vehicle:A4000",
+ "type": "Vehicle",
+ "brandName": {
+  "type": "Property",
+  "value": "Mercedes"
+ },
+ "isParked": {
+  "type": "Relationship",
+  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+  "observedAt": "2017-07-29T12:00:04",
+  "providedBy": {
+   "type": "Relationship",
+   "object": "urn:ngsi-ld:Person:Bob"
+  }
+ },
+ "speed": {
+  "type": "Property",
+  "value": 80
+ },
+ "createdAt": "2017-07-29T12:00:04",
+ "location": {
+  "type": "GeoProperty",
+  "value": {
+   "type": "Point",
+   "coordinates": [-8.5, 41.2]
+  }
+ }
+}
+
+subdata41=\
+{
+	"@context": {
+		"brandName": "brandName"
+	},
+	"value": "BMW1"
+}
+

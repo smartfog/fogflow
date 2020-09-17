@@ -22,8 +22,8 @@ def test_case1():
         url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata1),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 201
 
 #testCase 2
@@ -34,8 +34,8 @@ def test_case2():
         url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata2),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 201
 
 #testCase 3
@@ -46,8 +46,8 @@ def test_case3():
         url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata3),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 201
 
 #testCase 4
@@ -58,8 +58,8 @@ def test_case4():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
         headers={'Content-Type' : 'application/json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata4),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 204
 
 
@@ -71,7 +71,7 @@ def test_case5():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
         headers={'Content-Type' : 'application/json'}
         r=requests.patch(url,data=json.dumps(ld_data.subdata5),headers=headers)
-        #print(r.status_code)
+        print(r.status_code)
         assert r.status_code == 204
 
 #testCase 6
@@ -82,8 +82,8 @@ def test_case6():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4580/attrs/brandName"
         headers={'Content-Type' : 'application/json'}
         r=requests.patch(url,data=json.dumps(ld_data.subdata6),headers=headers)
-        #print(r.content)
-	#print(r.status_code)
+        print(r.content)
+	print(r.status_code)
         assert r.status_code == 204
 
 #testCase 7
@@ -93,8 +93,8 @@ def test_case6():
 def test_case7():
 	url=brokerIp+"/ngsi-ld/v1/entities/"
 	r=requests.post(url,data=json.dumps(ld_data.subdata13))
-	#print(r.content)
-	#print(r.status_code)
+	print(r.content)
+	print(r.status_code)
 	assert r.status_code == 400
 
 #testCase 8
@@ -105,8 +105,8 @@ def test_case8():
         url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
 	r=requests.post(url,data=json.dumps(ld_data.subdata),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 201
 
 #testCase 9
@@ -117,8 +117,8 @@ def test_case9():
 	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 207
 
 #testCase 10
@@ -129,8 +129,8 @@ def test_case10():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A800/attrs"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 404
 
 #testCase 11
@@ -141,8 +141,8 @@ def test_case11():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A800/attrs"
         headers={'Content-Type' : 'application/json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 404
 
 #testCase 12
@@ -151,10 +151,10 @@ def test_case11():
 '''
 def test_case12():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4580/attrs"
-        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        headers={'Content-Type' : 'application/json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 204
 
 #testCase 13
@@ -165,8 +165,8 @@ def test_case13():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata15),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 500
 
 #testCase 14
@@ -176,8 +176,8 @@ def test_case13():
 def test_case14():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
         r=requests.post(url,data=json.dumps(ld_data.subdata14))
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 400
 
 #testCase 15
@@ -188,8 +188,8 @@ def test_case15():
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4580/attrs"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.patch(url,data=json.dumps(ld_data.subdata15),headers=headers) 
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 500
 
 #testCase 16
@@ -201,15 +201,15 @@ def test_case16():
 	url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata16),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
 
 	#update the corresponding entity using patch        
 	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A700/attrs"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.patch(url,data=json.dumps(ld_data.subdata14),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 207
 
 #testCase 17
@@ -302,7 +302,7 @@ def test_case21():
 	#to delete attribute of corresponding entity 
         url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A501/attrs/brandName1"
         r=requests.delete(url)
-        #print(r.content)
+        print(r.content)
 	#print(r.status_code)
         assert r.status_code == 404
 
@@ -421,7 +421,7 @@ def test_case28():
 
 #testCase 29
 '''
-  To test to retrieve a specific entity by Type, context in Link Header
+  To test to retrieve  entities by Type, with context in Link Header
 '''
 def test_case29():
         url=brokerIp+"/ngsi-ld/v1/entities?type=Vehicle"
@@ -431,7 +431,7 @@ def test_case29():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp[0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle":
+        if resp[0]["type"]=="Vehicle":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -959,6 +959,7 @@ def test_case63():
         url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle"
         headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
+	#print(r.content)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
@@ -967,7 +968,7 @@ def test_case63():
                 print("\nValidated")
         else:
                 print("\nNot Validated")
-        #print(r.status_code)
+        print(r.status_code)
         assert r.status_code == 200
 
 #testCase 64
@@ -1006,9 +1007,9 @@ def test_case65():
         url=brokerIp+"/ngsi-ld/v1/csourceRegistrations/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata28),headers=headers)
-        #print(r.content)
+        print(r.content)
         #print(r.status_code)
-        assert r.status_code == 400
+        assert r.status_code == 400  
 
 #testCase 66
 '''
@@ -1054,7 +1055,6 @@ def test_case67():
         #print(r.status_code)
         assert r.status_code == 201
 
-
 #testCase 68
 '''
   To test create entity with nested property with  context in Link
@@ -1063,8 +1063,8 @@ def test_case68():
 	url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata34),headers=headers)
-        #print(r.content)
-        #print(r.status_code)
+        print(r.content)
+        print(r.status_code)
         assert r.status_code == 201
 
 #testCase 69
@@ -1075,6 +1075,7 @@ def test_case69():
 	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:B990"
         headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
+	#print(r.content)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
@@ -1083,7 +1084,7 @@ def test_case69():
                 print("\nValidated")
         else:
                 print("\nNot Validated")
-        #print(r.status_code)
+        print(r.status_code)
         assert r.status_code == 200
 
 #testCase 70
@@ -1102,5 +1103,223 @@ def test_case70():
         else:
                 print("\nNot Validated")
         #print(r.status_code)
+        assert r.status_code == 200
+
+
+#testCase 71
+'''
+  To test entity creation with different Context Link in Header
+'''
+def test_case71():
+	url=brokerIp+"/ngsi-ld/v1/entities/"
+	headers={'Content-Type' : 'application/json','Accept' : 'application/ld+json','Link' : '<{{link}}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'}
+	r=requests.post(url,data=json.dumps(ld_data.subdata35),headers=headers)
+	#print(r.content)
+	print(r.status_code)
+	assert r.status_code == 201
+
+
+#testCase 72 
+'''
+  To test if multiple subscription can be created with same subscription Id
+'''
+def test_case72():
+	url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+	headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+	r=requests.post(url,data=json.dumps(ld_data.subdata36),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+        #get subscription over discovery before update
+        url=discoveryIp+"/ngsi9/subscription"
+        r=requests.get(url)
+        #print(r.content)
+        #print(r.status_code)
+	
+	#to create same subscription again
+	url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata36),headers=headers)
+        print(r.content)
+        #print(r.status_code)
+	assert r.status_code == 409
+
+#testCase 73
+'''
+  To test if subscription can be created with context in Payload
+'''
+def test_case73():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata37),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+	#to get the subscription from broker 
+	url=brokerIp+"/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:20"
+	headers={'Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp)
+        if  resp["id"]=="urn:ngsi-ld:Subscription:20":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
+        #print(r.status_code)
+        assert r.status_code == 200
+
+#testCase 74
+'''
+  To test if delete attribute is reflected over discovery
+'''
+def test_case74():
+	#to create an entity
+	url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata38),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+	#to fetch the registration from discovery
+	url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
+        r=requests.get(url)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp["AttributesList"]["https://uri.etsi.org/ngsi-ld/default-context/brandName"])
+	print("\nchecking if brandName attribute is present in discovery before deletion")
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
+                if resp["AttributesList"]["https://uri.etsi.org/ngsi-ld/default-context/brandName"]["type"] == "Property":
+			print("\n-----> brandName is existing...!!")
+		else:
+			print("\n-----> brandName does not exist..!")
+        else:
+                print("\nNot Validated")
+        #print(r.status_code)
+
+
+	#to delete brandName attribute
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A3000/attrs/brandName"
+        r=requests.delete(url)
+        #print(r.content)
+        #print(r.status_code)
+
+	#To fetch registration again from discovery
+	url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
+        r=requests.get(url)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp["AttributesList"])
+	print("\nchecking if brandName attribute is present in discovery after deletion")
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
+                if "https://uri.etsi.org/ngsi-ld/default-context/brandName" in resp["AttributesList"]:
+                        print("\n-----> brandName is existing...!!")
+                else:
+                        print("\n-----> brandName does not exist because deleted...!")
+        else:
+                print("\nNot Validated")
+	assert r.status_code == 200
+
+#testCase 75
+'''
+  To test if appended attribute is reflected on discovery 
+'''
+def test_case75():
+	#to fetch registration of entity from discovery before appending
+	url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
+        r=requests.get(url)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp["AttributesList"])
+        print("\nchecking if brandName1 attribute is present in discovery after deletion")
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
+                if "http://example.org/vehicle/brandName1" in resp["AttributesList"]:
+                        print("\n-----> brandName1 is existing...!!")
+                else:
+                        print("\n-----> brandName1 does not exist yet...!")
+        else:
+                print("\nNot Validated")
+
+	#to append an entity with id as urn:ngsi-ld:Vehicle:A3000
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A3000/attrs"
+        headers={'Content-Type' : 'application/json'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata4),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+        assert r.status_code == 204
+
+	#to fetch registration of entity from discovery after appending
+	url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
+        r=requests.get(url)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp["AttributesList"])
+        print("\nchecking if brandName1 attribute is present in discovery after deletion")
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
+                if "http://example.org/vehicle/brandName1" in resp["AttributesList"]:
+                        print("\n-----> brandName1 is existing after appending...!!")
+                else:
+                        print("\n-----> brandName1 does not exist yet...!")
+        else:
+                print("\nNot Validated")
+	assert r.status_code == 200
+
+#testCase 76
+'''
+  To test if Subscription contains context when context is sent in payload
+'''
+def test_case76():
+	#to fetch a subscription containing context
+	url=brokerIp+"/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:20"
+	headers={'Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp['context'][0])
+        if  resp["id"]=="urn:ngsi-ld:Subscription:20":
+		if resp['context'][0]  == 'https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld':
+                	print("\nValidated")
+		else:
+			print("\nNot Validated")
+        else:
+                print("\nNot Validated")
+        #print(r.status_code)
+        assert r.status_code == 200
+
+#testCase 77
+'''
+  To test if discovery's context availablity is updated on updating 
+'''
+def test_case77():
+	#to create entity
+	url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata40),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+	#to create subscription
+	url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata39),headers=headers)
+	#print(r.content)
+        #print(r.status_code)
+
+	#Update entity to fire notification
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4000/attrs"
+        headers={'Content-Type' : 'application/json'}
+        r=requests.patch(url,data=json.dumps(ld_data.subdata41),headers=headers)
+        #print(r.status_code)
+        
+	#to validate
+	url="http://0.0.0.0:8888/validateNotification"
+        r=requests.post(url,json={"subscriptionId" : "urn:ngsi-ld:Subscription:020"})
+        print(r.content)
         assert r.status_code == 200
 
