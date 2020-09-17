@@ -2549,7 +2549,7 @@ func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Re
 				} else {
 					err := tb.updateAttributes(deSerializedAttributePayload, eid)
 					if err != nil {
-						rest.Error(w, err.Error(), 404)
+						rest.Error(w, err.Error(), 207)
 						return
 					}
 					w.WriteHeader(204)
