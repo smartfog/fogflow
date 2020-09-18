@@ -218,20 +218,22 @@ Note: In above diagram n ( n is numeric) is used for cloud node and n’ for edg
 
 FogFlow cloud node flow:
 
-1. As in architecture diagram, PEP Proxy will register itself on behalf FogFlow Designer first on Keyrock. Detail explanation are is given in below topics of this tutorial.
+1. As in architecture diagram, PEP Proxy will register itself on behalf FogFlow Designer first on Keyrock. Detail explanation is given in `below`_ topics of this tutorial.
 
 2. User can access Designer via PEP proxy proxy by using the access-token of PEP proxy in reaquest header.
 
+.. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#setup-security-components-on-cloud-node
 
 FogFlow edge node flow:
 
 
-1. On behalf of edge node, one application will be register on keyrock it will be using OAuth credentials. Detail explanation is given in below topics of this tutorial.
+1. On behalf of edge node, one application will be register on keyrock it will be using OAuth credentials. Detail explanation is given in below topics of this tutorial. Click `here`_ to refer.
 
 2. After the authentication edge node will be able to communicate with FogFlow cloud node.
 
 3. Any device can register itself or communicate with FogFlow edge node using edge’s OAuth access-token.
 
+.. _`here`: https://fogflow.readthedocs.io/en/latest/https.html#setup-components-on-edge
 
 
 Installation
