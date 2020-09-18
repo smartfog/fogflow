@@ -336,17 +336,21 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 		if strings.Contains(propertyField, "@type") {
 			if fieldValue != nil {
 				Property["type"] = sz.getType(fieldValue.([]interface{}))
-
 			}
 		} else if strings.Contains(propertyField, "hasValue") {
 			if fieldValue != nil {
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
-
-			}
+				if Property["value"] == "nil" || Property["value"] == "" {
+					err := errors.New("Property value can not be nil!")
+                                         return Property, err
+                                        }
+                       }else {
+                                err := errors.New("Property value can not be nil!")
+                                return Property, err
+                        }
 		} else if strings.Contains(propertyField, "observedAt") {
 			if fieldValue != nil {
 				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
-
 			}
 		} else if strings.Contains(propertyField, "datasetId") {
 			if fieldValue != nil {
