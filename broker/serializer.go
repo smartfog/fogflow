@@ -358,7 +358,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		} else if strings.Contains(propertyField, "unitCode") {
 			if fieldValue != nil {
-				Property["unitCode"] = sz.getUnitCode(fieldValue.(interface{}))
+				Property["unitCode"] = sz.getUnitCode(fieldValue.([]interface{}))
 			}
 		} else if strings.Contains(propertyField, "providedBy") {
 			if fieldValue != nil {
@@ -540,8 +540,13 @@ func (sz Serializer) getInstanceId(instanceId []interface{}) string {
 }
 
 //UNIT_CODE
-func (sz Serializer) getUnitCode(unitCode interface{}) string {
-	return ""
+func (sz Serializer) getUnitCode(unitCode []interface{}) string {
+	var UnitCode string
+        if len(unitCode) > 0 {
+                unitCodeMap := unitCode[0].(map[string]interface{})
+                UnitCode = unitCodeMap["@value"].(string)
+                 }
+        return UnitCode
 }
 
 //LOCATION
