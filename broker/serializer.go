@@ -404,7 +404,14 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 		} else if strings.Contains(relationshipField, "hasObject") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
-			}
+				if Relationship["object"] == "nil" || Relationship["object"] == ""{
+                                         err := errors.New("Relationship Object value can not be nil!")
+                                         return Relationship, err
+                                        }
+                       }else {
+				err := errors.New("Relationship Object value can not be nil!")
+                                return Relationship, err
+                        }
 		} else if strings.Contains(relationshipField, "Object") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getValueFromArray(fieldValue.([]interface{})).(string)
