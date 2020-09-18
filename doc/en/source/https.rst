@@ -193,15 +193,20 @@ FogFlow dashboard can be opened in web browser to see the current system status 
 Secure FogFlow using Identity Management
 ==========================================
 
-Identity management(IdM) is a process for identifying, authenticating individuals or groups to have access to applications or system by associating some auth token with established identities. IdM is the task of controlling data about users or applications.
+Identity management(IdM) is a process for identifying, authenticating individuals or groups to have access to applications or system by associating some auth token with established identities. IdM is the task of controlling data about users or applications. In this tutorialFogFlow Designer security implementation and secure Cloud-Edge communication is explained and tested.
 
 
 Terminology
 ---------------
 
-**Keyrock** is the FIWARE component responsible for Identity Management. Keyrock also provide feature to add OAuth2-based authentication and authorization security in order to secure services and applications.
+**Keyrock**: `Keyrock`_ is the FIWARE component responsible for Identity Management. Keyrock also provide feature to add OAuth2-based authentication and authorization security in order to secure services and applications.
 
-**PEP Proxy Wilma** is a FIWARE Generic Enabler that enhances the performance of Identity Management. It combines with Keyrock to secure access to endpoints exposed by FIWARE Generic Enablers. Wilma listens for any request, authenticates it from Keyrock and stores it in its cache for a limited period of time. If a new request arrives, Wilma will first check in its cache and if any grant is stored, it will directly authenticate otherwise it will send the request to Keyrock for authentication. 
+**PEP Proxy Wilma**: `PEP Proxy Wilma`_ is a FIWARE Generic Enabler that enhances the performance of Identity Management. It combines with Keyrock to secure access to endpoints exposed by FIWARE Generic Enablers. Wilma listens for any request, authenticates it from Keyrock and stores it in its cache for a limited period of time. If a new request arrives, Wilma will first check in its cache and if any grant is stored, it will directly authenticate otherwise it will send the request to Keyrock for authentication. 
+
+.. _`Keyrock`: https://fiware-idm.readthedocs.io/en/latest/
+.. _`PEP Proxy Wilma`: https://fiware-pep-proxy.readthedocs.io/en/latest/
+
+
 
 
 .. figure:: figures/security_architecture.png
@@ -213,12 +218,13 @@ Note: In above diagram n ( n is numeric) is used for cloud node and n’ for edg
 
 FogFlow cloud node flow:
 
-1. As in architecture diagram, PEP Proxy will register itself first on Keyrock. Detail explanation are is given in below topics of this tutorial.
+1. As in architecture diagram, PEP Proxy will register itself on behalf FogFlow Designer first on Keyrock. Detail explanation are is given in below topics of this tutorial.
 
-2. User can access the application directly by using the access-token of PEP proxy.
+2. User can access Designer via PEP proxy proxy by using the access-token of PEP proxy in reaquest header.
 
 
 FogFlow edge node flow:
+
 
 1. On behalf of edge node, one application will be register on keyrock it will be using OAuth credentials. Detail explanation is given in below topics of this tutorial.
 
@@ -286,7 +292,7 @@ Start all Security components:
 Setup security components on Cloud node
 -------------------------------------------------
 
-Below are the steps that need to be done to setup communication in between IdM components.
+Below are the steps that need to be done to setup communication between IdM components.
 
 
 **Step1**: Authenticate PEP Proxy itself with Keyrock Identity Management.
@@ -300,14 +306,14 @@ Below are the steps that need to be done to setup communication in between IdM c
 Login to Keyrock (http://180.179.214.135:3000/idm/)  account with user credentials i.e. Email and Password. 
     For Example: admin@test.com and 1234.
     
-After Login, Click “Applications””FogFLow PEP”.
+After Login, Click “Applications” then ”FogFLow PEP”.
 Click “PEP Proxy” link to get Application ID , PEP Proxy Username and PEP Proxy Password.
 
 Note: 
 Application ID , PEP Proxy Username and PEP Proxy Password will generate by clicking ‘Register PEP Proxy’ button.
 
 
-Change the followings inside the pep_config file, get PEP Proxy Credentials from Keyrock Dashboard while registering an application. Note that single instance of Wilma will be installed for each application that user wants to secure.
+To setup PEP proxy for securing Designer, change the followings inside the pep_config file. Get PEP Proxy Credentials from Keyrock Dashboard while registering an application. Note that single instance of Wilma will be installed for each application that user wants to secure.
 
 
 .. code-block:: console
@@ -372,9 +378,13 @@ The flow of cloud security implementation can be understand by below figure.
 
 
 
+
 .. figure:: figures/architectureDiagram.png
 
 
+
+
+Below are some points related to above architecture diagram:
 
 1. Access-token should be already known to user.
 
@@ -434,9 +444,12 @@ Setup components on Edge
 
 FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow cloud-edge communication OAuth Token has been used. In order to create an OAuth Token, first need to register an application on Keyrock. So, a script will call with the start of edge node and it will register an application with the keyrock on behalf of edge node using the Keyrock APIs. The script will perform following steps:
 
-**tools Requirement**
+**Prerequisite**
+
 Two commands need to install before setup edge:
+
 1. Curl
+
 2. jq
 
 
@@ -465,8 +478,11 @@ Change the IP configuration accordingly
 Chanage the following things in configuration file:
 
 * Change the oauth_config.js and add IdM IP, Application name, redirect_url and Url for the application that is need to be registered.
+
+**Start Edge node components**
  
 .. code-block:: console    
+
 
       #start components in the same script
       ./start.sh 
@@ -518,3 +534,14 @@ An example payload of registration device is given below.
         "duration": "P1Y"
       }'
 
+
+**Stop Edge node components**
+
+
+* Change the delete_config.js and add Application ID(APP_ID) and IDM token (received while registering application)  for the application that is need to be registered.
+
+
+.. code-block:: console
+
+       #stop all components in the same script
+       ./stop.sh
