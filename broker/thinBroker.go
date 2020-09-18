@@ -1703,7 +1703,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
 
 			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				rest.Error(w, err.Error(), 400)
 				return
 			} else {
 				//Update createdAt value.
