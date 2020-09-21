@@ -112,7 +112,7 @@ to enable FogFlow Ecosystem to interact with Scorpio context broker. The NGSI-LD
 
 
 **FogFlow NGSI-LD Support** FogFlow is providing NGSI-LD API support along with NGSI9 and NGSI10. 
-This format aims at utilizing the **linked data model used by Fiware** for the purpose of deriving a hassle free and better mode of communication among components of fogflow or other GE's. It reduces the complexity of maintaining the data among NGSIv1 and NGSIv2 model by establishing a relationship between data to deduce information in a more efficient manner.
+NGSI-LD format aims at utilizing the **linked data model used by Fiware** for the purpose of deriving a hassle free and better mode of communication among components of fogflow or other GE's. It reduces the complexity of maintaining the data among NGSIv1 and NGSIv2 model by establishing a relationship between data to deduce information in a more efficient manner.
 
 - The reason for incorporating this model is the dire need of linked data association that are forming the backbone of Edge Computing. 
 - this bridges the gap between Fogflow and other GE's, since this has made possible to interact among each other, like the interaction among Fogflow and Scorpio Broker.
