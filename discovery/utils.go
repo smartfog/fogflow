@@ -10,8 +10,13 @@ import (
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) bool {
 	// (1) check entityId part
 	entity := EntityId{}
+	if strings.HasPrefix(registration.Type, "https://uri.etsi.org/ngsi-ld/default-context/") {
+		entity.Type = registration.Type
+	} else {
+		entity.Type = registration.Type
+	}
 	entity.ID = registration.ID
-	entity.Type = registration.Type
+	//entity.Type = registration.Type
 	entity.IsPattern = false
 	atLeastOneMatched := false
 	for _, tmp := range idFilter {
