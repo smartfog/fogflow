@@ -1718,7 +1718,8 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				// Store Context
 
 				deSerializedEntity["@context"] = context
-				if !strings.HasPrefix(deSerializedEntity["id"].(string),"urn:ngsi-ld:") {
+
+        if !strings.HasPrefix(deSerializedEntity["id"].(string),"urn:ngsi-ld:") {
 					rest.Error(w, "Entity id must contain uri!", 400)
 					return
 				}
@@ -2552,7 +2553,7 @@ func (tb *ThinBroker) LDUpdateEntityAttributes(w rest.ResponseWriter, r *rest.Re
 				} else {
 					err := tb.updateAttributes(deSerializedAttributePayload, eid)
 					if err != nil {
-						rest.Error(w, err.Error(), 404)
+						rest.Error(w, err.Error(), 207)
 						return
 					}
 					w.WriteHeader(204)
