@@ -1703,7 +1703,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
 
 			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				rest.Error(w, err.Error(), 400)
 				return
 			} else {
 				//Update createdAt value.
@@ -1719,6 +1719,10 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 
 				deSerializedEntity["@context"] = context
 
+        if !strings.HasPrefix(deSerializedEntity["id"].(string),"urn:ngsi-ld:") {
+					rest.Error(w, "Entity id must contain uri!", 400)
+					return
+				}
 				w.Header().Set("Location","/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 
