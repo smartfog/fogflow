@@ -336,17 +336,21 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 		if strings.Contains(propertyField, "@type") {
 			if fieldValue != nil {
 				Property["type"] = sz.getType(fieldValue.([]interface{}))
-
 			}
 		} else if strings.Contains(propertyField, "hasValue") {
 			if fieldValue != nil {
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
-
-			}
+				if Property["value"] == "nil" || Property["value"] == "" {
+					err := errors.New("Property value can not be nil!")
+                                         return Property, err
+                                        }
+                       }else {
+                                err := errors.New("Property value can not be nil!")
+                                return Property, err
+                        }
 		} else if strings.Contains(propertyField, "observedAt") {
 			if fieldValue != nil {
 				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
-
 			}
 		} else if strings.Contains(propertyField, "datasetId") {
 			if fieldValue != nil {
@@ -358,7 +362,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		} else if strings.Contains(propertyField, "unitCode") {
 			if fieldValue != nil {
-				Property["unitCode"] = sz.getUnitCode(fieldValue.(interface{}))
+				Property["unitCode"] = sz.getUnitCode(fieldValue.([]interface{}))
 			}
 		} else if strings.Contains(propertyField, "providedBy") {
 			if fieldValue != nil {
@@ -404,7 +408,14 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 		} else if strings.Contains(relationshipField, "hasObject") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
-			}
+				if Relationship["object"] == "nil" || Relationship["object"] == ""{
+                                         err := errors.New("Relationship Object value can not be nil!")
+                                         return Relationship, err
+                                        }
+                       }else {
+				err := errors.New("Relationship Object value can not be nil!")
+                                return Relationship, err
+                        }
 		} else if strings.Contains(relationshipField, "Object") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getValueFromArray(fieldValue.([]interface{})).(string)
@@ -540,8 +551,13 @@ func (sz Serializer) getInstanceId(instanceId []interface{}) string {
 }
 
 //UNIT_CODE
-func (sz Serializer) getUnitCode(unitCode interface{}) string {
-	return ""
+func (sz Serializer) getUnitCode(unitCode []interface{}) string {
+	var UnitCode string
+        if len(unitCode) > 0 {
+                unitCodeMap := unitCode[0].(map[string]interface{})
+                UnitCode = unitCodeMap["@value"].(string)
+                 }
+        return UnitCode
 }
 
 //LOCATION

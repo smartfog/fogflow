@@ -1703,7 +1703,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
 
 			if err != nil {
-				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				rest.Error(w, err.Error(), 400)
 				return
 			} else {
 				//Update createdAt value.
@@ -1718,7 +1718,11 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				// Store Context
 
 				deSerializedEntity["@context"] = context
-
+				if !strings.HasPrefix(deSerializedEntity["id"].(string),"urn:ngsi-ld:") {
+					rest.Error(w, "Entity id must contain uri!", 400)
+					return
+				}
+				w.Header().Set("Location","/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 
 				// Add the resolved entity to tb.ldEntities
@@ -2087,7 +2091,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
 				tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
-				tb.createSubscription(&deSerializedSubscription)
+				if err :=  tb.createSubscription(&deSerializedSubscription);err != nil {
+                                        rest.Error(w, "Already exist!", 409)
+                                        return
+                                }
 				if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
 					rest.Error(w, err.Error(), http.StatusInternalServerError)
 					return
@@ -2159,12 +2166,21 @@ func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRe
 }
 
 // Store in SubID - SubscriptionPayload Map
-func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
+func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (error){
 	subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
+        if _,exist := tb.ldSubscriptions[subscription.Id]; exist == true {
+                        fmt.Println("Already exists here...!!")
+                        tb.ldSubscriptions_lock.Unlock()
+                        err := errors.New("AlreadyExists!")
+                        fmt.Println("Error: ", err.Error())
+                        return err
+        }else {
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
+	}
+	return nil
 }
 
 // Store SubID - AvailabilitySubID Mappings

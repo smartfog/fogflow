@@ -446,7 +446,7 @@ func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttrib
 			} else if key == "location" {
 				preparedCopy["location"] = val
 			} else if key == "@context" {
-				//preparedCopy["@context"] = val
+				preparedCopy["@context"] = val
 			} else {
 				// add attribute only if present in selectedAttributes
 				for _, requiredAttrName := range selectedAttributes {
