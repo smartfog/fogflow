@@ -1157,7 +1157,7 @@ The following figure shows a brief overview of how the APIs in current scope wil
 
 Entities API
 ------------
-For the purpose of interaction with Fogflow, IOT devices approaches broker with entity creation request where it is expanded as per given context. Broker further forwards the registration request to Fogflow Discovery in correspondence to the created entity.
+For the purpose of interaction with Fogflow, IOT devices approaches broker with entity creation request where it is resolved as per given context. Broker further forwards the registration request to Fogflow Discovery in correspondence to the created entity.
 
 .. note:: Use port 80 for accessing the cloud broker, whereas for edge broker, the default port is 8070. The localhost is the coreservice IP for the system hosting fogflow. 
 
