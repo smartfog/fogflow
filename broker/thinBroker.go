@@ -2837,7 +2837,11 @@ func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) 
 	tb.ldEntities[eid] = entityMap
 
 	// update registration on discovery
-	tb.registerLDContextElement(entityMap)
+	//tb.registerLDContextElement(entityMap)
+
+        //Notify to subscribers
+        go tb.LDNotifySubscribers(entityMap, true)
+
 
 	tb.ldEntities_lock.Unlock()
 
