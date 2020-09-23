@@ -501,7 +501,6 @@ func (tb *ThinBroker) UpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		tb.handleInternalUpdateContext(&updateCtxReq)
 	}
-
 	//Southbound feature addition
 	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
 		fs := r.Header.Get("fiware-service")
@@ -2185,7 +2184,6 @@ func (tb *ThinBroker) createSubscriptionIdMappings(subID string, availabilitySub
 func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, contextInPayload bool) ([]interface{}, error) {
 	//get map[string]interface{} of reqBody
 	itemsMap, err := tb.getStringInterfaceMap(r)
-
 	if err != nil {
 		return nil, err
 	} else {
@@ -2824,7 +2822,11 @@ func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) 
 	tb.ldEntities[eid] = entityMap
 
 	// update registration on discovery
-	tb.registerLDContextElement(entityMap)
+	//tb.registerLDContextElement(entityMap)
+
+	// send notification to the subscriber
+
+	go tb.LDNotifySubscribers(entityMap, true)
 
 	tb.ldEntities_lock.Unlock()
 

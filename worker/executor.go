@@ -287,7 +287,8 @@ func (e *Executor) findFreePortNumber() int {
 
 func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	dockerImage := task.DockerImage
-
+	fmt.Println("=========This is task============")
+	fmt.Println(task)
 	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
 	if e.workerCfg.Worker.StartActualTask == false {
 		// just for the performance evaluation of Topology Master
@@ -331,6 +332,8 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// set broker URL
 	setBrokerCmd := make(map[string]interface{})
 	setBrokerCmd["command"] = "CONNECT_BROKER"
+	fmt.Println("This is broker url")
+	fmt.Println(e.httpBrokerURL)
 	setBrokerCmd["brokerURL"] = e.httpBrokerURL
 	commands = append(commands, setBrokerCmd)
 
@@ -392,6 +395,8 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	for _, inputStream := range task.Inputs {
 		NGSILD := e.queryForNGSILdEntity(inputStream.ID)
 		if NGSILD == 200 {
+			fmt.Println("==============This is input straem============")
+			fmt.Println(&inputStream)
 			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
@@ -578,12 +583,10 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	newEntity := EntityId{}
 
 	if len(inputStream.ID) > 0 { // for a specific context entity
-		newEntity.IsPattern = false
 		newEntity.Type = inputStream.Type
 		newEntity.ID = inputStream.ID
 	} else { // for all context entities with a specific type
 		newEntity.Type = inputStream.Type
-		newEntity.IsPattern = true
 	}
 
 	LdSubscription.Entities = make([]EntityId, 0)

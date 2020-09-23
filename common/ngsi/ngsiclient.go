@@ -922,6 +922,8 @@ func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireRe
 
 func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
 	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid, nil)
+	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Accept", "application/ld+json")
 	client := nc.SecurityCfg.GetHTTPClient()
 	resp, _ := client.Do(req)
 	return resp.StatusCode
