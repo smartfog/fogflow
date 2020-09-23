@@ -271,7 +271,6 @@ func (e *Executor) startContainer(dockerImage string, portNum string, functionCo
 
 // Ask the kernel for a free open port that is ready to use
 func (e *Executor) findFreePortNumber() int {
-	fmt.Println("finding free port number")
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
 		panic(err)
@@ -332,8 +331,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// set broker URL
 	setBrokerCmd := make(map[string]interface{})
 	setBrokerCmd["command"] = "CONNECT_BROKER"
-	fmt.Println("This is broker url")
-	fmt.Println(e.httpBrokerURL)
 	setBrokerCmd["brokerURL"] = e.httpBrokerURL
 	commands = append(commands, setBrokerCmd)
 
@@ -395,7 +392,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	for _, inputStream := range task.Inputs {
 		NGSILD := e.queryForNGSILdEntity(inputStream.ID)
 		if NGSILD == 200 {
-			fmt.Println("==============This is input straem============")
 			fmt.Println(&inputStream)
 			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
 			if err == nil {
