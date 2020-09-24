@@ -184,9 +184,10 @@ def cretaeRequest(ctxObj):
     response = requests.post(brokerURL + '/ngsi-ld/v1/entities/',
                              data=json.dumps(ctxElement),
                              headers=headers)
-    print response.status_code
     if response.status_code == 201:
         create = create + 1
+    if response.status_code != 201:
+        create = 1
     return response.status_code
 
 
