@@ -72,7 +72,7 @@ def object2Element(ctxObj):
     ctxElement = {}
     
     ctxElement['entityId'] = ctxObj['entityId'];
-    
+        
     ctxElement['attributes'] = []  
     if 'attributes' in ctxObj:
         for key in ctxObj['attributes']:

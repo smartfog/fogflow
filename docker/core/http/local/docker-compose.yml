@@ -1,23 +1,24 @@
 version: "3"
 services:     
     designer:
-        image: fogflow/designer
+        image: fogflow/designer:latest
         volumes:
-            - ./config.json:/app/config.json                
+            - ./config.json:/app/config.json
         ports:
             - 8080:8080
             - 1030:1030
         depends_on: 
             - discovery
             - cloud_broker
+            - dgraph
         restart: always
-            
+                       
     discovery:
         image: fogflow/discovery
         volumes:
             - ./config.json:/config.json                        
         ports:
-            - 8090:8090
+            - 8060:8060
         restart: always
 
     master:
@@ -70,5 +71,14 @@ services:
       depends_on: 
         - discovery    
         - cloud_broker
-        - designer
-      restart: always             
+      restart: always           
+        
+    dgraph:                                   
+        image: fogflow/dgraph:latest
+        volumes:
+            - ./dgraph:/dgraph           
+        ports:
+            - 6080:6080
+            - 8082:8080
+            - 9082:9080
+            - 8000:8000        

@@ -1,7 +1,7 @@
 {
-    "coreservice_ip": "host.docker.internal",   
-    "external_hostip": "host.docker.internal",
-    "internal_hostip": "host.docker.internal", 
+    "coreservice_ip": "127.0.0.1",   
+    "external_hostip": "127.0.0.1",
+    "internal_hostip": "127.0.0.1", 
     "physical_location":{
         "longitude": 139,
         "latitude": 35
@@ -14,7 +14,7 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 8090
+        "http_port": 8060
     },
     "broker": {
         "http_port": 8070
@@ -38,5 +38,8 @@
     },
     "https": {
         "enabled" : false
-    } 
+    },
+    "persistent_storage": {
+        "port": 9082
+    }     
 }

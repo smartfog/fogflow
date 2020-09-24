@@ -13,9 +13,9 @@ var NGSIProxy = (function() {
             self.socket.emit('subscriptions', self.subscriptions);
         });
         this.socket.on('notify', function(data) {
-            //console.log(data);
+            entities = data.entities;
             if(self.notifyHandler) {
-                self.notifyHandler(data);
+                self.notifyHandler(entities);
             }
         });
     };      

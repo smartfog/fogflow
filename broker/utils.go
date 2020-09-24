@@ -15,7 +15,7 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL)
+		return postOrionV2NotifyContext(ctxElems, URL, subscriptionId)
 	}
 
 	for _, elem := range ctxElems {
@@ -76,7 +76,7 @@ type OrionV2Metadata struct {
 }
 
 // send an notify to orion broker based on v2, for the compatability reason
-func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
+func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptionId string) error {
 	elementList := make([]map[string]interface{}, 0)
 	for _, elem := range ctxElems {
 		// convert it to NGSI v2
@@ -106,7 +106,7 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string) error {
 	}
 
 	notifyCtxReq := &OrionV2NotifyContextRequest{
-		SubscriptionId: "",
+		SubscriptionId: subscriptionId,
 		Entities:       elementList,
 	}
 
@@ -376,4 +376,87 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 	// add it as new metadata
 	(*ctxElement).Metadata = append((*ctxElement).Metadata, *metadata)
+}
+
+// NGSI-LD starts here.
+
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
+	INFO.Println("NOTIFY: ", URL)
+	elementRespList := make([]LDContextElementResponse, 0)
+
+	//if IsOrionBroker == true {
+	//        return postOrionV2NotifyContext(ctxElems, URL)
+	//}
+
+	for _, elem := range ldCtxElems {
+		elementResponse := LDContextElementResponse{}
+		elementResponse.LDContextElement = elem
+		elementResponse.StatusCode.Code = 200
+		elementResponse.StatusCode.ReasonPhrase = "OK"
+
+		elementRespList = append(elementRespList, elementResponse)
+	}
+
+	notifyCtxReq := &LDNotifyContextRequest{
+		SubscriptionId:     subscriptionId,
+		LDContextResponses: elementRespList,
+	}
+
+	body, err := json.Marshal(notifyCtxReq)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	if strings.HasPrefix(URL, "https") == true {
+		client = httpsCfg.GetHTTPClient()
+	}
+
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+
+	ioutil.ReadAll(resp.Body)
+
+	return nil
+}
+
+func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
+	if len(selectedAttributes) == 0 {
+		return ldElem
+	} else {
+		preparedCopy := make(map[string]interface{})
+		for key, val := range ldElem {
+			if key == "id" {
+				preparedCopy["id"] = val
+			} else if key == "type" {
+				preparedCopy["type"] = val
+			} else if key == "createdAt" {
+				preparedCopy["createdAt"] = val
+			} else if key == "modifiedAt" {
+				//preparedCopy["modifiedAt"] = val
+			} else if key == "location" {
+				preparedCopy["location"] = val
+			} else if key == "@context" {
+				preparedCopy["@context"] = val
+			} else {
+				// add attribute only if present in selectedAttributes
+				for _, requiredAttrName := range selectedAttributes {
+					if key == requiredAttrName {
+						preparedCopy[key] = val
+						break
+					}
+				}
+			}
+		}
+		return preparedCopy
+	}
 }

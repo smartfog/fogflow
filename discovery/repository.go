@@ -54,9 +54,26 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 			existRegistration.Type = entity.Type
 		}
 
+		attrilist := make(map[string]ContextRegistrationAttribute)
 		// update existing attribute table
 		for _, attr := range registration.ContextRegistrationAttributes {
+			//existRegistration.AttributesList[:0]
 			existRegistration.AttributesList[attr.Name] = attr
+			attrilist[attr.Name] = attr
+		}
+
+		for _, attributeOld := range existRegistration.AttributesList {
+			//fmt.Println("\n---inside attribute print---\n",attributeOld.Name)
+			found := false
+			for _, attributeNew := range attrilist {
+				if attributeNew.Name == attributeOld.Name {
+					found = true
+					break
+				}
+			}
+			if found == false {
+				delete(existRegistration.AttributesList, attributeOld.Name)
+			}
 		}
 
 		// update existing metadata table
@@ -96,6 +113,26 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 
 	return er.ctxRegistrationList[eid]
 }
+
+/*func(er *EntityRepository) updateDeletedAttribute(entity EntityId, registration *ContextRegistration) {
+	 er.ctxRegistrationList_lock.Lock()
+        defer er.ctxRegistrationList_lock.Unlock()
+
+        eid := entity.ID
+        fmt.Println("\n--------entity id--------\n",eid)
+
+        if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
+
+                // update existing attribute table
+                for _, attr := range registration.ContextRegistrationAttributes {
+                        fmt.Println("\n---Print attr---\n",attr)
+                        //existRegistration.AttributesList[attr.Name] = attr
+                        //fmt.Println("\n---pront---\n",existRegistration.AttributesList[attr.Name])
+                        existRegistration.AttributesList[attr.Name] = attr
+                }
+
+        return er.ctxRegistrationList[eid]
+}*/
 
 func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
 	return er.queryEntitiesInMemory(entities, attributes, restriction)

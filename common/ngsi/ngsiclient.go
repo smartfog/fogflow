@@ -785,3 +785,193 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 
 	return err
 }
+
+// NGSI-LD feature addition
+
+func (nc *NGSI10Client) CreateLDEntityOnRemote(elem map[string]interface{}, link string) error {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/ld+json")
+
+	if link != "" {
+		req.Header.Add("Link", link)
+	}
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (nc *NGSI10Client) AppendLDEntityOnRemote(elem map[string]interface{}, eid string) error {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err
+	}
+	return nil
+}
+
+func (nc *NGSI10Client) UpdateLDEntityAttributeOnRemote(elem map[string]interface{}, eid string) (error, int) {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err, 0
+	}
+	req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err, 0
+	}
+	if resp.StatusCode == 207 {
+		return err, resp.StatusCode
+	}
+	return nil, 0
+}
+
+func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]interface{}, eid string, attribute string) (error, int) {
+	body, err := json.Marshal(elem)
+	if err != nil {
+		return err, 0
+	}
+	req, err := http.NewRequest("PATCH", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid+"/attrs/"+attribute, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return err, 0
+	}
+	if resp.StatusCode == 404 {
+		return err, resp.StatusCode
+	}
+	return nil, 0
+}
+
+func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool) (string, error) {
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Accept", "application/ld+json")
+	req.Header.Add("Link", "<{{link}}>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	if requireReliability == true {
+		req.Header.Add("Require-Reliability", "true")
+	}
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return "", err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	subscribeCtxResp := SubscribeContextResponse{}
+	err = json.Unmarshal(text, &subscribeCtxResp)
+	if err != nil {
+		return "", err
+	}
+
+	if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
+		return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
+		return "", err
+	}
+}
+
+//Query for NGSILD entity with entityId
+
+func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
+	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid, nil)
+	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Accept", "application/ld+json")
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, _ := client.Do(req)
+	return resp.StatusCode
+
+}
+
+// Query for NGSIV1 entity with entityId
+
+func (nc *NGSI10Client) QueryForNGSIV1Entity(eid string) int {
+	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/entity/"+eid, nil)
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, _ := client.Do(req)
+	return resp.StatusCode
+
+}
+
+// client to update subscribe Context availbility on discovery
+func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabilityRequest, sid string) (string, error) {
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/UpdateLDContextAvailability"+"/"+sid, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return "", err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	subscribeCtxAvailResp := SubscribeContextAvailabilityResponse{}
+	err = json.Unmarshal(text, &subscribeCtxAvailResp)
+	if err != nil {
+		return "", err
+	}
+
+	if subscribeCtxAvailResp.SubscriptionId != "" {
+		return subscribeCtxAvailResp.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxAvailResp.ErrorCode.ReasonPhrase)
+		return "", err
+	}
+}

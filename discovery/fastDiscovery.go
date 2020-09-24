@@ -208,11 +208,13 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 		return
 	}
 	subID := u1.String()
+
 	subscribeCtxAvailabilityReq.SubscriptionId = subID
 
 	// add the new subscription
 	fd.subscriptions_lock.Lock()
 	fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
+
 	fd.subscriptions_lock.Unlock()
 
 	// send out the response
@@ -225,6 +227,39 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	w.WriteJson(&subscribeCtxAvailabilityResp)
 	// trigger the process to send out the matched context availability infomation to the subscriber
 	go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
+}
+
+//receive updateContextAvailability for subscription
+func (fd *FastDiscovery) UpdateLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
+	sid := r.PathParam("sid")
+	subscribeCtxAvailabilityReq := SubscribeContextAvailabilityRequest{}
+	err := r.DecodeJsonPayload(&subscribeCtxAvailabilityReq)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	subID := sid
+	subscribeCtxAvailabilityReq.SubscriptionId = subID
+
+	// add the new subscription
+	fd.subscriptions_lock.Lock()
+	if sid != "" {
+		fd.subscriptions[subID] = &subscribeCtxAvailabilityReq
+	}
+	fd.subscriptions_lock.Unlock()
+
+	// send out the response
+	subscribeCtxAvailabilityResp := SubscribeContextAvailabilityResponse{}
+	subscribeCtxAvailabilityResp.SubscriptionId = subID
+	subscribeCtxAvailabilityResp.Duration = subscribeCtxAvailabilityReq.Duration
+	subscribeCtxAvailabilityResp.ErrorCode.Code = 200
+	subscribeCtxAvailabilityResp.ErrorCode.ReasonPhrase = "OK"
+
+	w.WriteJson(&subscribeCtxAvailabilityResp)
+	// trigger the process to send out the matched context availability infomation to the subscriber
+	if sid != "" {
+		go fd.handleSubscribeCtxAvailability(&subscribeCtxAvailabilityReq)
+	}
 }
 
 // handle NGSI9 subscription based on the local database

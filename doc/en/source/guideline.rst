@@ -25,39 +25,53 @@ Note that contribution workflows themselves (e.g. pull requests, etc.) are descr
 
 
 
- Pull Request protocol
-===========================
+Branch Management Guidelines 
+-------------------------------
+
+.. figure:: figures/gitGuideline.jpg
+
+Community can have two main branches with an infinite lifetime:
+
+1. **Master branch**:This is a highly stable branch that is always production-ready and contains the last release version of source code in production.
+2. **Development branch**: Derived from the master branch, the development branch serves as a branch for integrating different features planned for an upcoming release. This branch may or may not be as stable as the master branch. It is where developers collaborate and merge feature branches.All of the changes should be merged back into master somehow and then tagged with a release number.
 
 
-As explained in `FIWARE Development Guidelines`_, contributions are done using a pull request (PR). The detailed "protocol" used in such PR a is described below:
+Apart from those two primary branches, there are other branches in the workflow:
 
-.. _`FIWARE Development Guidelines`: https://forge.fiware.org/plugins/mediawiki/wiki/fiware/index.php/Developer_Guidelines
+- **Feature Branch**:Forked from the development branch for feature development i.e.enhancement or documnetation. Merged back to the development branch after feature development or enhacement implementation.
 
-* Direct commits to master branch (even single-line modifications) are not allowed. Every modification has to come as a PR.
-* In case the PR is implementing/fixing a numbered issue, the issue number has to be referenced in the body of the PR at creation time.
-* Anybody is welcome to provide comments to the PR (either direct comments or using the review feature offered by Github).
-* Use *code line comments* instead of *general comments*, for traceability reasons (see comments lifecycle below).
+- **Bug Branch**:Ramify from the development branch.Merged back to the development branch after bug fixing.
 
-* Comments lifecycle
+- **Hotfix branch**:Hotfix branches are created from the master branch. It is the current production release running live and causing troubles due to a severe bug.But changes on development are yet unstable. We may then branch off a hotfix branch and start fixing the problem. It should be rarest occasion, in case only critical bugs.
 
-  * Comment is created, initiating a *comment thread*.
-  * New comments can be added as responses to the original one, starting a discussion.
-  * After discussion, the comment thread ends in one of the following ways:
-  
-    - 'Fixed in < commit hash >' in case the discussion involves a fix in the PR branch (which commit hash is
-       included as reference).
-    - 'NTC' , if finally nothing needs to be done (NTC = Nothing To Change).
-    
- * PR can be merged when the following conditions are met:
-    * All comment threads are closed.
-    * All the participants in the discussion have provided a 'LGTM' general comment (LGTM = Looks good to me)
- * Self-merging is not allowed (except in rare and justified circumstances).
+**Note**:Only NLE and NECTI members have privilege to create and merge Hotfix branch.
 
-Some additional remarks to take into account when contributing with new PRs:
+.. list-table::  **Branch naming convention** 
+   :widths: 20 40 40
+   :header-rows: 1
 
-* PR must include not only code contributions, but their corresponding pieces of documentation (new or modifications to existing one) and tests.
-* PR modifications must pass full regression based on existing test (unit, functional, memory, e2e) in addition to whichever new test added due to the new functionality.
-* PR should be of an appropriated size that makes review achievable. Too large PRs could be closed with a "please, redo the work in smaller pieces" without any further discussing.
+   * - Branch				
+     - Branches naming guideline	 		 
+     - Remarks
+     
+   * - Feature branches
+     - Must branch from: *development*. Must merge back into: *development* .Branch naming convention: *feature-feature_id*						
+     - *feature_id* is the Github issue id from **https://github.com/smartfog/fogflow/issues**
+
+   * - Bug Branches
+     - Must branch from: *development*. Must merge back into: *development* .Branch naming convention: *bug-bug_id*						
+     - *bug_id* is the Github issue id from **https://github.com/smartfog/fogflow/issues**
+
+   * - Hotfix Branches
+     - Must branch from: *master branch*.Must merge back into: *master branch*.Branch naming convention: *hotfix-bug number*.						
+     - *Bug number* is the Github issue id from **https://github.com/smartfog/fogflow/issues**
+
+Permissions to the branches:
+*******************************
+
+- **Master** - We tend to very strict that only NLE members and privileged members of NECTI can merge on Master branch and accept the pull requests. Pull requests to master can be raised by only NECTI OR NLE members. 
+
+- **Development** - Any community member can raise the pull request to the development branch but it should be reviewed by NLE or NECTI members.Development branches commits will be moved to master branch only when all the test cases define in travis.yml, will run successfully.
 
 
 Code style guidelines

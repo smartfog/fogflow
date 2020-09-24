@@ -1,7 +1,7 @@
 {
-    "coreservice_ip": "10.156.0.9",   
-    "external_hostip": "10.156.0.9",
-    "internal_hostip": "172.17.0.1", 
+    "coreservice_ip": "127.0.0.1",   
+    "external_hostip": "127.0.0.1",
+    "internal_hostip": "127.0.0.1", 
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221
@@ -38,5 +38,8 @@
     },
     "https": {
         "enabled" : false
+    },
+    "persistent_storage": {
+        "port": 9082
     } 
 }
