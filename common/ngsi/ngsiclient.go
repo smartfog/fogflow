@@ -879,6 +879,67 @@ func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]
 	return nil, 0
 }
 
+func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool) (string, error) {
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Accept", "application/ld+json")
+	req.Header.Add("Link", "<{{link}}>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	if requireReliability == true {
+		req.Header.Add("Require-Reliability", "true")
+	}
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return "", err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	subscribeCtxResp := SubscribeContextResponse{}
+	err = json.Unmarshal(text, &subscribeCtxResp)
+	if err != nil {
+		return "", err
+	}
+
+	if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
+		return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
+		return "", err
+	}
+}
+
+//Query for NGSILD entity with entityId
+
+func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
+	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid, nil)
+	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Accept", "application/ld+json")
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, _ := client.Do(req)
+	return resp.StatusCode
+
+}
+
+// Query for NGSIV1 entity with entityId
+
+func (nc *NGSI10Client) QueryForNGSIV1Entity(eid string) int {
+	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/entity/"+eid, nil)
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, _ := client.Do(req)
+	return resp.StatusCode
+
+}
+
 // client to update subscribe Context availbility on discovery
 func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabilityRequest, sid string) (string, error) {
 	body, err := json.Marshal(*sub)

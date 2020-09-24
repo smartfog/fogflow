@@ -1,0 +1,10 @@
+FROM python:2.7-alpine
+
+RUN mkdir /task
+ADD main.py /task
+ADD requirements.txt  /task
+WORKDIR /task
+
+RUN pip install -r requirements.txt
+
+CMD ["python", "./main.py"]
