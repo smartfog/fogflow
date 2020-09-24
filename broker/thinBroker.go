@@ -2821,7 +2821,7 @@ func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) 
 	entityMap["modifiedAt"] = time.Now().String()
 	tb.ldEntities[eid] = entityMap
 
-	// update registration on discovery
+	// registration of entity is not required on discovery while attribute updation
 	//tb.registerLDContextElement(entityMap)
 
 	// send notification to the subscriber
