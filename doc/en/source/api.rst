@@ -1179,11 +1179,11 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 .. code-block:: console
 
-   curl -iX POST\
+   curl -iX POST \
      'http://localhost:80/ngsi-ld/v1/entities/' \
       -H 'Content-Type: application/json' \
       -H 'Accept: application/ld+json' \
-      -H 'Link: "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"' \
+      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
       -d '
         {
 	      "id": "urn:ngsi-ld:Vehicle:A100",
@@ -1232,7 +1232,7 @@ Accept            application/ld+json
 
 .. code-block:: console
    
-    curl -iX POST\
+    curl -iX POST \
      'http://localhost:80/ngsi-ld/v1/entities/' \
       -H 'Content-Type: application/json' \
       -H 'Accept: application/ld+json' \
@@ -1295,7 +1295,7 @@ Accept            application/ld+json
 
 .. code-block:: console
 
-      curl -iX POST\
+      curl -iX POST \
      'http://localhost:80/ngsi-ld/v1/entities/' \
       -H 'Content-Type: application/json' \
       -H 'Accept: application/ld+json' \
@@ -1396,7 +1396,7 @@ Content-Type      application/json
 
 .. code-block:: console
 
-       curl -iX POST\
+       curl -iX POST \
        'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs' \
        -H 'Content-Type: application/json' \
        -d'
@@ -1426,7 +1426,7 @@ Content-Type      application/json
 
 .. code-block:: console
 
-        curl -iX PATCH\
+        curl -iX PATCH \
        'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs' \
        -H 'Content-Type: application/json' \
        -d'
@@ -1455,13 +1455,13 @@ Content-Type      application/json
 
 .. code-block:: console
 
-        curl -iX PATCH\
+        curl -iX PATCH \
        'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName' \
        -H 'Content-Type: application/json' \
        -d'
         {
 	       "@context": {
-		                "brandName": "http://example.org/vehicle/brandName"
+		                "brandName1": "http://example.org/vehicle/brandName1"
 	        },
 	        "value": "BMW"
          }'
@@ -1482,7 +1482,7 @@ eid              Entity Id
 
 .. code-block:: console
 
-   curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100
+   curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100  -H 'Content-Type: application/json' -H 'Accept: application/ld+json'
 
 
 **h. To delete an attribute of an NGSI-LD context entity**
@@ -1519,7 +1519,7 @@ eid              Entity Id
 
 .. code-block:: console
 
-   curl http:///ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4569
+   curl http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4569
 
 
 **j. To retrieve entities by attributes**
@@ -1537,7 +1537,8 @@ Value 1          Attriute Value
 
 .. code-block:: console
 
-   curl http:///ngsi-ld/v1/entities?attrs=http://example.org/vehicle/brandName
+   curl http://localhost:80/ngsi-ld/v1/entities?attrs=http://example.org/vehicle/brandName -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
+
 
 
 **k. To retrieve a specific entity by ID and Type**
@@ -1556,7 +1557,7 @@ Value 2          Type Value of Entity
 
 .. code-block:: console
 
-   curl http:///ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4569&type=http://example.org/vehicle/Vehicle
+   curl http://localhost:80/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4569&type=http://example.org/vehicle/Vehicle
 
 
 **l. To retrieve a specific entity by Type**
@@ -1574,7 +1575,7 @@ Value 1          Type Value
 
 .. code-block:: console
 
-   curl http://localhost:80//ngsi-ld/v1/entities?type=http://example.org/vehicle/Vehicle
+   curl http://localhost:80/ngsi-ld/v1/entities?type=http://example.org/vehicle/Vehicle
 
 
 **m. To retrieve a specific entity by Type, context in Link Header**
@@ -1603,7 +1604,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 .. code-block:: console
 
-   curl -H "Link : https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"  http://localhost:80//ngsi-ld/v1/entities?type=Vehicle
+   curl -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'  http://localhost:80//ngsi-ld/v1/entities?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
 
 
 **n. To retrieve a specific entity by IdPattern and Type**
@@ -1652,7 +1653,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
      'http://localhost:80/ngsi-ld/v1/csourceRegistrations' \
       -H 'Content-Type: application/json' \
       -H 'Accept: application/ld+json' \
-      -H 'Link: "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"' \
+      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
       -d '
 	{
   		"id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
@@ -1706,7 +1707,7 @@ Content-Type      application/json
 
 .. code-block:: console
 
-        curl -iX POST\
+        curl -iX POST \
        'http://localhost:80/ngsi-ld/v1/csourceRegistrations' \
        -H 'Content-Type: application/json' \
        -d'
@@ -1793,7 +1794,7 @@ Content-Type      application/json
 
 .. code-block:: console
 
-        curl -iX PATCH\
+        curl -iX PATCH \
        'http://localhost:80/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458' \
        -H 'Content-Type: application/json' \
        -d'
@@ -1881,7 +1882,7 @@ contRegid        Context Registration Id
 
 .. code-block:: console
 
-   curl -iX DELETE http:///ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458
+   curl -iX DELETE http://localhost:80/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458
 
 
 **e. To get a registration by Type**
@@ -1899,7 +1900,7 @@ Value 1          Type Value
 
 .. code-block:: console
 
-   curl http:///ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle
+   curl -iX GET http://localhost:80/ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
 
 
 **f. To get a registration by Type, context in Link Header**
@@ -1928,8 +1929,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 .. code-block:: console
 
-   curl -H "Link : https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"  http:///ngsi-ld/v1/csourceRegistrations?type=Vehicle
-
+        curl -iX GET  -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' http://localhost:80/ngsi-ld/v1/csourceRegistrations?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
 
 **g. To get a registration by ID and Type**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1947,7 +1947,7 @@ Value 2          Type Value of Entity
 
 .. code-block:: console
 
-   curl http:///ngsi-ld/v1/csourceRegistrations?id=urn:ngsi-ld:Vehicle:C1234&type=http://example.org/vehicle/Vehicle
+   curl http://localhost:80/ngsi-ld/v1/csourceRegistrations?id=urn:ngsi-ld:Vehicle:C1234&type=http://example.org/vehicle/Vehicle
 
 
 **h. To get a registration by IdPattern and Type**
@@ -1966,7 +1966,7 @@ Value 2          Type Value of Entity
 
 .. code-block:: console
 
-   curl http://ngsi-ld/v1/csourceRegistrations?idPattern=urn:ngsi-ld:Vehicle:C.*&type=http://example.org/vehicle/Vehicle
+   curl http://localhost:80/ngsi-ld/v1/csourceRegistrations?idPattern=urn:ngsi-ld:Vehicle:C.*&type=http://example.org/vehicle/Vehicle
 
 
 Subscription API
@@ -1995,9 +1995,9 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 .. code-block:: console
 
    curl -iX POST\
-     'http://localhost:80/ngsi-ld/v1/subscriptions' \
+     'http://localhost:80/ngsi-ld/v1/subscriptions/' \
       -H 'Content-Type: application/ld+json' \
-      -H 'Link: "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"' \
+      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
       -d '
        {
 		"type": "Subscription",
@@ -2026,7 +2026,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 .. code-block:: console
 
-   curl http://localhost.80/ngsi-ld/subscriptions
+   curl http://localhost:80/ngsi-ld/subscriptions/ -H 'Accept: application/ld+json'
 
 
 **c. To retrieve a specific subscription based on subscription id**
@@ -2077,7 +2077,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
    curl -iX POST\
      'http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71' \
       -H 'Content-Type: application/ld+json' \
-      -H 'Link: "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"' \
+      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
       -d '
        {
 	 	"id": "urn:ngsi-ld:Subscription:7",
