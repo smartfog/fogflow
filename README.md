@@ -83,9 +83,9 @@ motivation, functionalities, and benefits of FogFlow.
 The instructions to install FogFlow can be found in the
 [Installation Guide](https://fogflow.readthedocs.io/en/latest/setup.html)
 
-## tutorial
+## Tutorial
 
-Information about how to use FogFlow can be found in the
+A detailed tutorial can be found in the
 [User & Programmers Manual](https://fogflow.readthedocs.io)
 
 ## API
