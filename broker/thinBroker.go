@@ -1741,6 +1741,62 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 
+func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) error {
+	tb.ldEntities_lock.Lock()
+	fmt.Println("This is start of updateCotext")
+	entity := tb.ldEntities[eid]
+	entityMap := entity.(map[string]interface{})
+	for k, v := range elem {
+		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+			if _, ok := entityMap[k]; ok == true {
+				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
+				attrMap := elem[k].(map[string]interface{})            // to be updated as
+				if strings.Contains(attrMap["type"].(string), "Property") {
+					if attrMap["value"] != nil {
+						entityAttrMap["value"] = attrMap["value"]
+					}
+					if attrMap["observedAt"] != nil {
+						entityAttrMap["observedAt"] = attrMap["observedAt"]
+					}
+					if attrMap["datasetId"] != nil {
+						entityAttrMap["datasetId"] = attrMap["datasetId"]
+					}
+					if attrMap["instanceId"] != nil {
+						entityAttrMap["instanceId"] = attrMap["instanceId"]
+					}
+					if attrMap["unitCode"] != nil {
+						entityAttrMap["unitCode"] = attrMap["unitCode"]
+					}
+				} else if strings.Contains(attrMap["type"].(string), "Relationship") {
+					if attrMap["object"] != nil {
+						entityAttrMap["object"] = attrMap["object"]
+					}
+					if attrMap["providedBy"] != nil {
+						entityAttrMap["providedBy"] = attrMap["providedBy"]
+					}
+					if attrMap["datasetId"] != nil {
+						entityAttrMap["datasetId"] = attrMap["datasetId"]
+					}
+					if attrMap["instanceId"] != nil {
+						entityAttrMap["instanceId"] = attrMap["instanceId"]
+					}
+				}
+				entityAttrMap["modifiedAt"] = time.Now().String()
+				entityMap[k] = entityAttrMap
+			} else {
+				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+
+				entityMap[k]  = v
+				}
+			}
+		}
+	}
+	entityMap["modifiedAt"] = time.Now().String()
+	tb.ldEntities[eid] = entityMap
+	tb.ldEntities_lock.Unlock()
+	return nil
+}
+
 func (tb *ThinBroker)updateLdContextElement (ctxEle map[string]interface{})  {
 	fmt.Println("This is start of updateLdContextElement")
 	eid := getId(ctxEle)
@@ -1748,7 +1804,7 @@ func (tb *ThinBroker)updateLdContextElement (ctxEle map[string]interface{})  {
 	tb.ldEntities_lock.RLock()
 	if _ , exist := tb.ldEntities[eid] ; exist {
 		tb.ldEntities_lock.RUnlock()
-		tb.updateAttributes(ctxEle,eid)
+		tb.updateCtxElemet(ctxEle,eid)
 	} else {
 		tb.ldEntities_lock.RUnlock()
 		tb.ldEntities_lock.Lock()
@@ -2840,11 +2896,11 @@ func (tb *ThinBroker) LDUpdateEntityByAttribute(w rest.ResponseWriter, r *rest.R
 
 func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) error {
 	tb.ldEntities_lock.Lock()
-	fmt.Println("This is start of updateCotext")
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
-	for k, v := range elem {
-		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+	missing := false
+	for k, _ := range elem {
+		if k != "@context" && k != "modifiedAt" {
 			if _, ok := entityMap[k]; ok == true {
 				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
 				attrMap := elem[k].(map[string]interface{})            // to be updated as
@@ -2881,18 +2937,30 @@ func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) 
 				entityAttrMap["modifiedAt"] = time.Now().String()
 				entityMap[k] = entityAttrMap
 			} else {
-				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-
-				entityMap[k]  = v
-				}
+				missing = true
+				ERROR.Println("Attribute", k, "was not found in the entity!")
 			}
 		}
 	}
 	entityMap["modifiedAt"] = time.Now().String()
 	tb.ldEntities[eid] = entityMap
+
+	// registration of entity is not required on discovery while attribute updation
+	//tb.registerLDContextElement(entityMap)
+
+	// send notification to the subscriber
+
+	go tb.LDNotifySubscribers(entityMap, true)
+
 	tb.ldEntities_lock.Unlock()
+
+	if missing == true {
+		err := errors.New("Some attributes were not found!")
+		return err
+	}
 	return nil
 }
+
 
 func (tb *ThinBroker) ldDeleteEntity(eid string) error {
 	tb.ldEntities_lock.Lock()
