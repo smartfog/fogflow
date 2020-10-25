@@ -1681,10 +1681,10 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
 				return
 			}
-			if err.Error() == "AlreadyExists!" {
+			/*if err.Error() == "AlreadyExists!" {
 				rest.Error(w, "AlreadyExists!", 409)
 				return
-			}
+			}*/
 			if err.Error() == "Id can not be nil!" {
 				rest.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -1725,11 +1725,12 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				w.Header().Set("Location","/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 
+				tb.handleLdExternalUpdateContext(deSerializedEntity)
 				// Add the resolved entity to tb.ldEntities
-				tb.saveEntity(deSerializedEntity)
+				//tb.saveEntity(deSerializedEntity)
 
 				//Register new context element on discovery
-				tb.registerLDContextElement(deSerializedEntity)
+				//tb.registerLDContextElement(deSerializedEntity)
 
 				//tb.LDNotifySubscribers(&deSerializedEntity, true)
 			}
@@ -1739,6 +1740,56 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 }
+
+func (tb *ThinBroker)updateLdContextElement (ctxEle map[string]interface{})  {
+	fmt.Println("This is start of updateLdContextElement")
+	eid := getId(ctxEle)
+	fmt.Println("This is entity id",eid)
+	tb.ldEntities_lock.RLock()
+	if _ , exist := tb.ldEntities[eid] ; exist {
+		tb.ldEntities_lock.RUnlock()
+		tb.updateAttributes(ctxEle,eid)
+	} else {
+		tb.ldEntities_lock.RUnlock()
+		tb.ldEntities_lock.Lock()
+		tb.ldEntities[eid] = ctxEle
+		tb.ldEntities_lock.Unlock()
+	}
+}
+func (tb *ThinBroker)UpdateLdContext2LocalSite(updateCtxReq map[string]interface{}) {
+	fmt.Println("This is start  of UpdateLdContext2LocalSite")
+	tb.ldEntities_lock.Lock()
+	eid := getId(updateCtxReq)
+	hasLdUpdatedMetadata := hasLdUpdatedMetadata(updateCtxReq, tb.ldEntities[eid])
+	fmt.Println(hasLdUpdatedMetadata)
+	tb.ldEntities_lock.Unlock()
+	tb.updateLdContextElement(updateCtxReq)
+	fmt.Println("hasLdUpdatedMetadata :",hasLdUpdatedMetadata)
+	fmt.Println("This is end of UpdateLdContext2LocalSite")
+}
+
+func (tb *ThinBroker)UpdateLdContext2RemoteSite(updateCtxReq map[string]interface{}, brokerURL string) {
+	fmt.Println("remote update")
+        /*INFO.Println(brokerURL)
+        eid := getId(updateCtxReq)
+        header := tb.NGSILDHeader[eid]
+        client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
+        client.CreateLDEntityOnRemote(updateCtxReq , header.link)*/
+}
+
+
+func (tb *ThinBroker)handleLdExternalUpdateContext(updateCtxReq map[string]interface{}) {
+	eid := getId(updateCtxReq)
+	fmt.Println(eid)
+        brokerURL := tb.queryOwnerOfLDEntity(eid)
+        if brokerURL == tb.myProfile.MyURL {
+                tb.UpdateLdContext2LocalSite(updateCtxReq)
+        } else {
+                tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL)
+        }
+}
+
+
 
 func (tb *ThinBroker) updateLDspecificAttributeValues2RemoteSite(req map[string]interface{}, remoteURL string, eid string, attr string) (error, int) {
 	client := NGSI10Client{IoTBrokerURL: remoteURL, SecurityCfg: tb.SecurityCfg}
@@ -2232,7 +2283,7 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, cont
 			}
 			ownerURL := tb.queryOwnerOfLDEntity(entityId)
 			if ownerURL == tb.MyURL {
-				tb.ldEntities_lock.RLock()
+				/*tb.ldEntities_lock.RLock()
 				if _, ok := tb.ldEntities[entityId]; ok == true {
 					fmt.Println("Already exists here...!!")
 					tb.ldEntities_lock.RUnlock()
@@ -2240,7 +2291,7 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, cont
 					fmt.Println("Error: ", err.Error())
 					return nil, err
 				}
-				tb.ldEntities_lock.RUnlock()
+				tb.ldEntities_lock.RUnlock()*/
 			}
 			if ownerURL != tb.MyURL {
 				ownerURL = strings.TrimSuffix(ownerURL, "/ngsi10")
@@ -2789,11 +2840,11 @@ func (tb *ThinBroker) LDUpdateEntityByAttribute(w rest.ResponseWriter, r *rest.R
 
 func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) error {
 	tb.ldEntities_lock.Lock()
+	fmt.Println("This is start of updateCotext")
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
-	missing := false
-	for k, _ := range elem {
-		if k != "@context" && k != "modifiedAt" {
+	for k, v := range elem {
+		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
 			if _, ok := entityMap[k]; ok == true {
 				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
 				attrMap := elem[k].(map[string]interface{})            // to be updated as
@@ -2830,27 +2881,16 @@ func (tb *ThinBroker) updateAttributes(elem map[string]interface{}, eid string) 
 				entityAttrMap["modifiedAt"] = time.Now().String()
 				entityMap[k] = entityAttrMap
 			} else {
-				missing = true
-				ERROR.Println("Attribute", k, "was not found in the entity!")
+				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+
+				entityMap[k]  = v
+				}
 			}
 		}
 	}
 	entityMap["modifiedAt"] = time.Now().String()
 	tb.ldEntities[eid] = entityMap
-
-	// registration of entity is not required on discovery while attribute updation
-	//tb.registerLDContextElement(entityMap)
-
-	// send notification to the subscriber
-
-	go tb.LDNotifySubscribers(entityMap, true)
-
 	tb.ldEntities_lock.Unlock()
-
-	if missing == true {
-		err := errors.New("Some attributes were not found!")
-		return err
-	}
 	return nil
 }
 

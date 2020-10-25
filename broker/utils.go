@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"fmt"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -460,3 +461,48 @@ func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttrib
 		return preparedCopy
 	}
 }
+
+func isNewLdAttribute(name string , currEle map[string]interface{}) bool {
+        for attr, _:= range currEle {
+                if attr == name {
+                        return false
+                }
+        }
+
+        return true
+}
+
+func getId(updateCtxEle map[string]interface{}) string {
+        var eid string
+        if _, ok := updateCtxEle["id"]; ok == true {
+                eid = updateCtxEle["id"].(string)
+        } else if _, ok := updateCtxEle["@id"]; ok == true {
+                eid =  updateCtxEle["@id"].(string)
+        }
+        return eid
+}
+
+
+func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
+        if recCtxEle == nil && currCtxEle == nil {
+                return false
+        }
+        if currCtxEle == nil {
+                return true
+        }
+	recCtxEleMap := recCtxEle.(map[string]interface{})
+	currCtxEleMap :=  currCtxEle.(map[string]interface{})
+        for attr, _ := range recCtxEleMap {
+                fmt.Println("This is key of receive data")
+                fmt.Println(attr)
+                if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
+                        if isNewLdAttribute(attr, currCtxEleMap) == true {
+                                fmt.Println("Return true")
+                                return true
+                }
+                        }
+        }
+        return false
+}
+
+
