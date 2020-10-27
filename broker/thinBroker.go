@@ -1664,6 +1664,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		var context []interface{}
 		contextInPayload := true
 		//Get Link header if present
+		Link := r.Header.Get("Link")
 		if link := r.Header.Get("Link"); link != "" {
 			contextInPayload = false                    // Context in Link header
 			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
@@ -1725,7 +1726,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				w.Header().Set("Location","/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 
-				tb.handleLdExternalUpdateContext(deSerializedEntity)
+				tb.handleLdExternalUpdateContext(deSerializedEntity,Link)
 				// Add the resolved entity to tb.ldEntities
 				//tb.saveEntity(deSerializedEntity)
 
@@ -1742,8 +1743,6 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) error {
-	tb.ldEntities_lock.Lock()
-	fmt.Println("This is start of updateCotext")
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
 	for k, v := range elem {
@@ -1793,23 +1792,19 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 	}
 	entityMap["modifiedAt"] = time.Now().String()
 	tb.ldEntities[eid] = entityMap
-	tb.ldEntities_lock.Unlock()
 	return nil
 }
 
 func (tb *ThinBroker)updateLdContextElement (ctxEle map[string]interface{})  {
 	fmt.Println("This is start of updateLdContextElement")
+	tb.ldEntities_lock.Lock()
+	defer tb.ldEntities_lock.Unlock()
 	eid := getId(ctxEle)
 	fmt.Println("This is entity id",eid)
-	tb.ldEntities_lock.RLock()
 	if _ , exist := tb.ldEntities[eid] ; exist {
-		tb.ldEntities_lock.RUnlock()
 		tb.updateCtxElemet(ctxEle,eid)
 	} else {
-		tb.ldEntities_lock.RUnlock()
-		tb.ldEntities_lock.Lock()
 		tb.ldEntities[eid] = ctxEle
-		tb.ldEntities_lock.Unlock()
 	}
 }
 func (tb *ThinBroker)UpdateLdContext2LocalSite(updateCtxReq map[string]interface{}) {
@@ -1820,28 +1815,27 @@ func (tb *ThinBroker)UpdateLdContext2LocalSite(updateCtxReq map[string]interface
 	fmt.Println(hasLdUpdatedMetadata)
 	tb.ldEntities_lock.Unlock()
 	tb.updateLdContextElement(updateCtxReq)
-	fmt.Println("hasLdUpdatedMetadata :",hasLdUpdatedMetadata)
-	fmt.Println("This is end of UpdateLdContext2LocalSite")
+	if hasLdUpdatedMetadata == true {
+		tb.registerLDContextElement(updateCtxReq)
+	}
+	go tb.LDNotifySubscribers(updateCtxReq ,true)
 }
 
-func (tb *ThinBroker)UpdateLdContext2RemoteSite(updateCtxReq map[string]interface{}, brokerURL string) {
-	fmt.Println("remote update")
-        /*INFO.Println(brokerURL)
-        eid := getId(updateCtxReq)
-        header := tb.NGSILDHeader[eid]
+func (tb *ThinBroker)UpdateLdContext2RemoteSite(updateCtxReq map[string]interface{}, brokerURL string, link string) {
+        INFO.Println(brokerURL)
         client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
-        client.CreateLDEntityOnRemote(updateCtxReq , header.link)*/
+        client.CreateLDEntityOnRemote(updateCtxReq,link)
 }
 
-
-func (tb *ThinBroker)handleLdExternalUpdateContext(updateCtxReq map[string]interface{}) {
+func (tb *ThinBroker)handleLdExternalUpdateContext(updateCtxReq map[string]interface{}, link string) {
 	eid := getId(updateCtxReq)
 	fmt.Println(eid)
+	fmt.Println("updateCtxReq:",updateCtxReq)
         brokerURL := tb.queryOwnerOfLDEntity(eid)
         if brokerURL == tb.myProfile.MyURL {
                 tb.UpdateLdContext2LocalSite(updateCtxReq)
         } else {
-                tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL)
+                tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, link)
         }
 }
 
@@ -2536,17 +2530,17 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 	eid := ctxElem["id"].(string)
 	tb.e2sub_lock.RLock()
 	defer tb.e2sub_lock.RUnlock()
-	var subscriberList []string
-	if list, ok := tb.entityId2Subcriptions[eid]; ok == true {
+	subscriberList := tb.entityId2Subcriptions[eid]
+	/*if list, ok := tb.entityId2Subcriptions[eid]; ok == true {
 		subscriberList = append(subscriberList, list...)
-	}
-	for k, _ := range tb.entityId2Subcriptions {
+	}*/
+	/*for k, _ := range tb.entityId2Subcriptions {
 		matched := tb.matchPattern(k, eid) // (pattern, id) to check if the current eid lies in the pattern given in the key.
 		if matched == true {
 			list := tb.entityId2Subcriptions[k]
 			subscriberList = append(subscriberList, list...)
 		}
-	}
+	}*/
 	//send this context element to the subscriber
 	for _, sid := range subscriberList {
 		elements := make([]map[string]interface{}, 0)
