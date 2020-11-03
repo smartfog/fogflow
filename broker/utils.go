@@ -133,6 +133,45 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptio
 	return nil
 }
 
+
+func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", ProviderURL+"/subscribeContext", bytes.NewBuffer(body))// add NGSILD url
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
+	req.Header.Add("Require-Reliability", "true")
+
+	// add link header
+	client := httpsCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+                defer resp.Body.Close()
+        }
+        if err != nil {
+                return "", err
+        }
+
+        text, _ := ioutil.ReadAll(resp.Body)
+
+        subscribeCtxResp := SubscribeContextResponse{}
+        err = json.Unmarshal(text, &subscribeCtxResp)
+        if err != nil {
+                return "", err
+        }
+
+        if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
+                return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
+        } else {
+                err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
+                return "", err
+        }
+
+}
+
 func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
