@@ -1429,28 +1429,26 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
 
 		if registration.ProvidingApplication == tb.MyURL {
-			fmt.Println(registration.ProvidingApplication)
 			fmt.Println(tb.MyURL)
-			fmt.Println(action)
 			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
-				fmt.Println(" tb.notifyOneLDSubscriberWithCurrentStatus")
 				tb.notifyOneLDSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
 			}
 		} else {
 			//for matched entities provided by other IoT Brokers
-			newv2Subscription := LDSubscriptionRequest{}
-			newv2Subscription.Entities = registration.EntityIdList
-			newv2Subscription.Notification.Endpoint.URI = tb.MyURL
-			newv2Subscription.Subscriber.BrokerURL = registration.ProvidingApplication
+			newLDSubscription := LDSubscriptionRequest{}
+			newLDSubscription.Entities = registration.EntityIdList
+			newLDSubscription.Notification.Endpoint.URI = tb.MyURL
+			newLDSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {
-				sid, err := subscriptionLDContextProvider(&newv2Subscription, registration.ProvidingApplication, tb.SecurityCfg)
+				registration.ProvidingApplication = strings.TrimSuffix(registration.ProvidingApplication, "/ngsi10")
+				sid, err := subscriptionLDContextProvider(&newLDSubscription, registration.ProvidingApplication, tb.SecurityCfg)
 				if err == nil {
 					INFO.Println("issue a new subscription ", sid)
 
 					tb.ldSubscriptions_lock.Lock()
-					tb.ldSubscriptions[sid] = &newv2Subscription
+					tb.ldSubscriptions[sid] = &newLDSubscription
 					tb.ldSubscriptions_lock.Unlock()
 
 					tb.subLinks_lock.Lock()
@@ -1604,6 +1602,7 @@ func (tb *ThinBroker) handleNGSIV2Notify(mainSubID string, notifyv2ContextAvaila
 			newv2Subscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {
+				registration.ProvidingApplication = strings.TrimSuffix(registration.ProvidingApplication, "/ngsi10")
 				sid, err := subscriptionProvider(&newv2Subscription, registration.ProvidingApplication, tb.SecurityCfg)
 				if err == nil {
 					INFO.Println("issue a new subscription ", sid)
@@ -2362,26 +2361,59 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Id = sid
 
 				}
+				// send response
+				w.WriteHeader(http.StatusCreated)
+				subResp := SubscribeContextResponse{}
+				subResp.SubscribeResponse.SubscriptionId = deSerializedSubscription.Id
+				subResp.SubscribeError.SubscriptionId = deSerializedSubscription.Id
+				w.WriteJson(&subResp)
+
+				if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
+					deSerializedSubscription.Subscriber.IsInternal = true
+				} else {
+					deSerializedSubscription.Subscriber.IsInternal = false
+				}
 
 				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
 				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
 				tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
-				if err :=  tb.createSubscription(&deSerializedSubscription);err != nil {
+
+				if r.Header.Get("Require-Reliability") == "true" {
+					deSerializedSubscription.Subscriber.RequireReliability = true
+					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
+				} else {
+					deSerializedSubscription.Subscriber.RequireReliability = false
+				}
+				/*if err :=  tb.createSubscription(&deSerializedSubscription);err != nil {
                                         rest.Error(w, "Already exist!", 409)
                                         return
-                                }
-				fmt.Println("deSerializedSubscription:",&deSerializedSubscription)
-				if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
-					rest.Error(w, err.Error(), http.StatusInternalServerError)
-					return
+                                }*/
+				tb.createSubscription(&deSerializedSubscription)
+				if deSerializedSubscription.Subscriber.IsInternal == true {
+					INFO.Println("internal subscription coming from another broker")
+
+					//	for _, entity := range subReq.Entities {
+					//		tb.e2sub_lock.Lock()
+					//		tb.entityId2Subcriptions[entity.ID] = append(tb.entityId2Subcriptions[entity.ID], subID)
+					//		tb.e2sub_lock.Unlock()
+					//	}
+				//	tb.notifyOneSubscriberWithCurrentStatus(subReq.Entities, subID)
+				} else {
+					tb.SubscribeLDContextAvailability(&deSerializedSubscription)
 				}
-				w.WriteHeader(http.StatusCreated)
+				//fmt.Println("deSerializedSubscription:",&deSerializedSubscription)
+			//	if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
+			//		rest.Error(w, err.Error(), http.StatusInternalServerError)
+			//		return
+			//	}
+				// save subscription
+				/*w.WriteHeader(http.StatusCreated)
 				//w.WriteJson(deSerializedSubscription.Id)
 				subResp := SubscribeContextResponse{}
 				subResp.SubscribeResponse.SubscriptionId = deSerializedSubscription.Id
 				subResp.SubscribeError.SubscriptionId = deSerializedSubscription.Id
-				w.WriteJson(&subResp)
+				w.WriteJson(&subResp)*/
 			}
 		}
 	} else {
@@ -2453,21 +2485,20 @@ func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRe
 }
 
 // Store in SubID - SubscriptionPayload Map
-func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (error){
-	subscription.Subscriber.RequireReliability = true
+func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest){
+	//subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
-        if _,exist := tb.ldSubscriptions[subscription.Id]; exist == true {
+        /*if _,exist := tb.ldSubscriptions[subscription.Id]; exist == true {
                         fmt.Println("Already exists here...!!")
                         tb.ldSubscriptions_lock.Unlock()
                         err := errors.New("AlreadyExists!")
                         fmt.Println("Error: ", err.Error())
                         return err
-        }else {
+        }else {*/
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
-	}
-	return nil
+        //	}
 }
 
 // Store SubID - AvailabilitySubID Mappings

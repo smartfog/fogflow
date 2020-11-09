@@ -139,7 +139,7 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", ProviderURL+"/subscribeContext", bytes.NewBuffer(body))// add NGSILD url
+	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))// add NGSILD url
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
@@ -216,7 +216,7 @@ func subscriptionProvider(sub *SubscriptionRequest, ProviderURL string, httpsCfg
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", ProviderURL+"/subscriptions", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", ProviderURL+"/v2/subscriptions", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
