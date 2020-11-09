@@ -2393,12 +2393,12 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
 
-					//	for _, entity := range subReq.Entities {
-					//		tb.e2sub_lock.Lock()
-					//		tb.entityId2Subcriptions[entity.ID] = append(tb.entityId2Subcriptions[entity.ID], subID)
-					//		tb.e2sub_lock.Unlock()
-					//	}
-				//	tb.notifyOneSubscriberWithCurrentStatus(subReq.Entities, subID)
+						for _, entity := range deSerializedSubscription.Entities {
+							tb.LDe2sub_lock.Lock()
+							tb.entityId2LDSubcriptions[entity.ID] = append(tb.entityId2LDSubcriptions[entity.ID], deSerializedSubscription.Id)
+							tb.LDe2sub_lock.Unlock()
+						}
+					tb.notifyOneLDSubscriberWithCurrentStatus(deSerializedSubscription.Entities, deSerializedSubscription.Id)
 				} else {
 					tb.SubscribeLDContextAvailability(&deSerializedSubscription)
 				}
@@ -2478,7 +2478,7 @@ func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRe
 		} else if entities.ID != "" {
 			eid = entities.ID
 		}
-		tb.entityId2Subcriptions[eid] = append(tb.entityId2Subcriptions[eid], subReq.Id)
+		tb.entityId2LDSubcriptions[eid] = append(tb.entityId2LDSubcriptions[eid], subReq.Id)
 
 	}
 	tb.e2sub_lock.Unlock()
@@ -2741,9 +2741,9 @@ func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 
 func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkSelectedAttributes bool) {
 	eid := ctxElem["id"].(string)
-	tb.e2sub_lock.RLock()
-	defer tb.e2sub_lock.RUnlock()
-	subscriberList := tb.entityId2Subcriptions[eid]
+	tb.LDe2sub_lock.RLock()
+	defer tb.LDe2sub_lock.RUnlock()
+	subscriberList := tb.entityId2LDSubcriptions[eid]
 	/*if list, ok := tb.entityId2Subcriptions[eid]; ok == true {
 		subscriberList = append(subscriberList, list...)
 	}*/
