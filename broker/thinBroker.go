@@ -846,7 +846,6 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 	}
 	selectedAttributes := ldSubscription.WatchedAttributes
 	tb.ldSubscriptions_lock.RUnlock()
-	//elements := make([]map[string]interface{}, 0)
 	tb.ldEntities_lock.Lock()
 	for _, entity := range entities {
 		if element, exist := tb.ldEntities[entity.ID]; exist {
@@ -857,8 +856,6 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 	}
 	tb.ldEntities_lock.Unlock()
 	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
-	//fmt.Println("subscription:",subscription)
-	//fmt.Println(entities)
 }
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
 	// Create NGSIv1 Context Element
@@ -2705,16 +2702,16 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 	tb.LDe2sub_lock.RLock()
 	defer tb.LDe2sub_lock.RUnlock()
 	subscriberList := tb.entityId2LDSubcriptions[eid]
-	/*if list, ok := tb.entityId2Subcriptions[eid]; ok == true {
+	if list, ok := tb.entityId2Subcriptions[eid]; ok == true {
 		subscriberList = append(subscriberList, list...)
-	}*/
-	/*for k, _ := range tb.entityId2Subcriptions {
+	}
+	for k, _ := range tb.entityId2Subcriptions {
 		matched := tb.matchPattern(k, eid) // (pattern, id) to check if the current eid lies in the pattern given in the key.
 		if matched == true {
 			list := tb.entityId2Subcriptions[k]
 			subscriberList = append(subscriberList, list...)
 		}
-	}*/
+	}
 	//send this context element to the subscriber
 	for _, sid := range subscriberList {
 		elements := make([]map[string]interface{}, 0)
@@ -2743,20 +2740,6 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 	}
 }
 
-/*func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfLD(entities []EntityId, sid string, selectedAttributes []string) {
-	// Create NGSI-LD Context Element
-	elements := make([]map[string]interface{}, 0)
-	tb.ldEntities_lock.Lock()
-	for _, entity := range entities {
-		if element, exist := tb.ldEntities[entity.ID]; exist {
-			elementMap := element.(map[string]interface{})
-			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
-			elements = append(elements, returnedElement)
-		}
-	}
-	tb.ldEntities_lock.Unlock()
-	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
-}*/
 
 func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string]interface{}, sid string) {
 	tb.ldSubscriptions_lock.Lock()
