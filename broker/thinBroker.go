@@ -2385,14 +2385,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					deSerializedSubscription.Subscriber.RequireReliability = false
 				}
-				/*if err :=  tb.createSubscription(&deSerializedSubscription);err != nil {
-                                        rest.Error(w, "Already exist!", 409)
-                                        return
-                                }*/
+				// save subscription
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
-
 						for _, entity := range deSerializedSubscription.Entities {
 							tb.LDe2sub_lock.Lock()
 							tb.entityId2LDSubcriptions[entity.ID] = append(tb.entityId2LDSubcriptions[entity.ID], deSerializedSubscription.Id)
@@ -2402,18 +2398,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					tb.SubscribeLDContextAvailability(&deSerializedSubscription)
 				}
-				//fmt.Println("deSerializedSubscription:",&deSerializedSubscription)
-			//	if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
-			//		rest.Error(w, err.Error(), http.StatusInternalServerError)
-			//		return
-			//	}
-				// save subscription
-				/*w.WriteHeader(http.StatusCreated)
-				//w.WriteJson(deSerializedSubscription.Id)
-				subResp := SubscribeContextResponse{}
-				subResp.SubscribeResponse.SubscriptionId = deSerializedSubscription.Id
-				subResp.SubscribeError.SubscriptionId = deSerializedSubscription.Id
-				w.WriteJson(&subResp)*/
 			}
 		}
 	} else {
@@ -2425,22 +2409,17 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 // Subscribe to Discovery for context availabiltiy
 func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest) error {
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
-	fmt.Println("subReq:",subReq)
 	for key, entity := range subReq.Entities {
-		fmt.Println("key, entity:",key,entity)
 		if entity.IdPattern != "" {
 			entity.IsPattern = true
 		}
 		subReq.Entities[key] = entity
 	}
 	ctxAvailabilityRequest.Entities = subReq.Entities
-	fmt.Println("ctxAvailabilityRequest.Entities:",ctxAvailabilityRequest.Entities)
 	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
 	//copy(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)	
-	fmt.Println("tb.MyURL:",tb.MyURL)
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
-	fmt.Println("This is ctxAvailabilityRequest: ",ctxAvailabilityRequest)
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
@@ -2489,27 +2468,9 @@ func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest){
 	//subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
-        /*if _,exist := tb.ldSubscriptions[subscription.Id]; exist == true {
-                        fmt.Println("Already exists here...!!")
-                        tb.ldSubscriptions_lock.Unlock()
-                        err := errors.New("AlreadyExists!")
-                        fmt.Println("Error: ", err.Error())
-                        return err
-        }else {*/
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
-        //	}
 }
-
-// Store SubID - AvailabilitySubID Mappings
-/*func (tb *ThinBroker) createSubscriptionIdMappings(subID string, availabilitySubID string) {
-	tb.subLinks_lock.Lock()
-	tb.main2Other[subID] = append(tb.main2Other[subID], availabilitySubID)
-
-	tb.availabilitySub2MainSub[availabilitySubID] = subID
-
-	tb.subLinks_lock.Unlock()
-}*/
 
 // Expand the payload
 func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, contextInPayload bool) ([]interface{}, error) {
