@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"fmt"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -133,13 +133,12 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptio
 	return nil
 }
 
-
 func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))// add NGSILD url
+	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body)) // add NGSILD url
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
@@ -149,26 +148,26 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
 	if resp != nil {
-                defer resp.Body.Close()
-        }
-        if err != nil {
-                return "", err
-        }
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
 
-        text, _ := ioutil.ReadAll(resp.Body)
+	text, _ := ioutil.ReadAll(resp.Body)
 
-        subscribeCtxResp := SubscribeContextResponse{}
-        err = json.Unmarshal(text, &subscribeCtxResp)
-        if err != nil {
-                return "", err
-        }
+	subscribeCtxResp := SubscribeContextResponse{}
+	err = json.Unmarshal(text, &subscribeCtxResp)
+	if err != nil {
+		return "", err
+	}
 
-        if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
-                return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
-        } else {
-                err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
-                return "", err
-        }
+	if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
+		return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
+		return "", err
+	}
 
 }
 
@@ -501,47 +500,44 @@ func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttrib
 	}
 }
 
-func isNewLdAttribute(name string , currEle map[string]interface{}) bool {
-        for attr, _:= range currEle {
-                if attr == name {
-                        return false
-                }
-        }
+func isNewLdAttribute(name string, currEle map[string]interface{}) bool {
+	for attr, _ := range currEle {
+		if attr == name {
+			return false
+		}
+	}
 
-        return true
+	return true
 }
 
 func getId(updateCtxEle map[string]interface{}) string {
-        var eid string
-        if _, ok := updateCtxEle["id"]; ok == true {
-                eid = updateCtxEle["id"].(string)
-        } else if _, ok := updateCtxEle["@id"]; ok == true {
-                eid =  updateCtxEle["@id"].(string)
-        }
-        return eid
+	var eid string
+	if _, ok := updateCtxEle["id"]; ok == true {
+		eid = updateCtxEle["id"].(string)
+	} else if _, ok := updateCtxEle["@id"]; ok == true {
+		eid = updateCtxEle["@id"].(string)
+	}
+	return eid
 }
-
 
 func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
-        if recCtxEle == nil && currCtxEle == nil {
-                return false
-        }
-        if currCtxEle == nil {
-                return true
-        }
+	if recCtxEle == nil && currCtxEle == nil {
+		return false
+	}
+	if currCtxEle == nil {
+		return true
+	}
 	recCtxEleMap := recCtxEle.(map[string]interface{})
-	currCtxEleMap :=  currCtxEle.(map[string]interface{})
-        for attr, _ := range recCtxEleMap {
-                fmt.Println("This is key of receive data")
-                fmt.Println(attr)
-                if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
-                        if isNewLdAttribute(attr, currCtxEleMap) == true {
-                                fmt.Println("Return true")
-                                return true
-                }
-                        }
-        }
-        return false
+	currCtxEleMap := currCtxEle.(map[string]interface{})
+	for attr, _ := range recCtxEleMap {
+		fmt.Println("This is key of receive data")
+		fmt.Println(attr)
+		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
+			if isNewLdAttribute(attr, currCtxEleMap) == true {
+				fmt.Println("Return true")
+				return true
+			}
+		}
+	}
+	return false
 }
-
-
