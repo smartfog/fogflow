@@ -1400,6 +1400,7 @@ Accept            application/ld+json
        curl -iX POST \
        'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
+       -H 'Accept: application/ld+json' \
        -d'
         {
 	     "@context": {
@@ -1431,6 +1432,7 @@ Accept            application/ld+json
         curl -iX POST \
        'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
+       -H 'Accept: application/ld+json' \
        -d'
         {
 	       "@context": {
