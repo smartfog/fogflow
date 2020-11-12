@@ -1161,7 +1161,7 @@ For the purpose of interaction with Fogflow, IOT devices approaches broker with 
 
 .. note:: Use port 80 for accessing the cloud broker, whereas for edge broker, the default port is 8070. The localhost is the coreservice IP for the system hosting fogflow. 
 
-**POST /ngsi-ld/v1/entities**
+**POST /ngsi-ld/v1/entities/**
 
 **a. To create NGSI-LD context entity, with context in Link in Header**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1384,12 +1384,13 @@ Accept            application/ld+json
 **d. To append additional attributes to an existing entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**POST /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs**
+**POST /ngsi-ld/v1/entities/**
 
 =============     ======================================
 key               Value
 =============     ======================================
 Content-Type      application/json
+Accept            application/ld+json
 =============     ======================================
 
 **Request**
@@ -1397,7 +1398,7 @@ Content-Type      application/json
 .. code-block:: console
 
        curl -iX POST \
-       'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs' \
+       'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
        -d'
         {
@@ -1414,20 +1415,21 @@ Content-Type      application/json
 **e. To update specific attributes of an existing entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**PATCH /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs**
+**POST /ngsi-ld/v1/entities/**
 
 =============     ======================================
 key               Value
 =============     ======================================
 Content-Type      application/json
+Accept            application/ld+json
 =============     ======================================
 
 **Request**
 
 .. code-block:: console
 
-        curl -iX PATCH \
-       'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs' \
+        curl -iX POST \
+       'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
        -d'
         {
@@ -1438,35 +1440,8 @@ Content-Type      application/json
 		                  "type": "Property",
 		                  "value": "AUDI"
 	        }
-         }'
-
-**f. To update the value of a specific attribute of an existing entity**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**PATCH /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName**
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-=============     ======================================
-
-**Request**
-
-.. code-block:: console
-
-        curl -iX PATCH \
-       'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName' \
-       -H 'Content-Type: application/json' \
-       -d'
-        {
-	       "@context": {
-		                "brandName1": "http://example.org/vehicle/brandName1"
-	        },
-	        "value": "BMW"
-         }'
-
-
+	}'
+  
 **g. To delete an NGSI-LD context entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
