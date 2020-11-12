@@ -24,8 +24,7 @@ There are several ways of creating an NGSI-LD Entity on FogFlow Broker:
 * When context is provided in the payload: Context is in the payload itself, there is no need to attach a Link header in the request.
 * When the request payload is already expanded: Some payloads are already expanded using some context.
 
-Curl requests for creating an entity on FogFlow Broker in different ways are given below. All the are the POST requests to FogFlow Broker. Broker returns a response of "201 Created" for a successful creation of a new entity and "409 Conflict" on creating an already existing entity.
-
+Curl requests for creating an entity on FogFlow Broker in different ways are given below. All the are the POST requests to FogFlow Broker. Broker returns a response of "201 Created" for a successful creation of a entity .
 **When context is provided in the Link header:**
 
 .. code-block:: console
@@ -211,9 +210,8 @@ Entities can be updated by updating their attributes (properties and relationshi
 
 * Add more attributes to the entity: More properties or relationships or both can be added to an existing entity. This is a POST http request to Broker to append more attributes to the entity.
 * Update existing attributes of the entity: Existing properties or relationships or both can be updated for an entity. This is a PATCH http request to FogFlow Broker.
-* Update specific attribute of the entity: Fields of an existing attribute can be updated for an entity. This update is also called partial update. This is also a PATCH request to the FogFlow Broker.
 
-FogFlow Broker returns "204 NoContent" on a successful attribute update, "404 NotFound" for a non-existing entity. While updating the attributes of an exiting entity, some of the attributes provided in the request payload may not exist. For such cases, FogFlow Broker return a "207 MultiStatus" error.
+. Broker returns a response of "201 Created" for a successful update of a entity .
 
 Here are the curl requests for these Updates.
 
@@ -221,8 +219,8 @@ Here are the curl requests for these Updates.
 
 .. code-block:: console
 
-	curl -iX PATCH \
-	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/entities/<Entity-Id>/attrs' \
+	curl -iX POST \
+	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/entities/' \
 	-H 'Content-Type: application/ld+json' \
 	-d '
 	{
@@ -245,8 +243,8 @@ Here are the curl requests for these Updates.
 
 .. code-block:: console
 
-	curl -iX PATCH \
-	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/entities/<Entity-Id>/attrs' \
+	curl -iX POST \
+	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/entities/' \
 	-H 'Content-Type: application/ld+json' \
 	-d '
 	{
@@ -257,21 +255,6 @@ Here are the curl requests for these Updates.
 			"type": "Property",
 			"object": "Audi"
 		}
-	}'
-
-**Update specific attribute of the entity:**
-
-.. code-block:: console
-
-	curl -iX PATCH \
-	'http://<Thin_Broker_IP>:8070/ngsi-ld/v1/entities/<Entity-Id>/attrs/<Attribute-Name>' \
-	-H 'Content-Type: application/ld+json' \
-	-d '
-		{
-		"@context": {
-			"brandName": "https://uri.etsi.org/ngsi-ld/default-context/brandName"
-		},
-		"value": "Suzuki"
 	}'
 
 
