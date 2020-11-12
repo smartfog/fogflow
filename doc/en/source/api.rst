@@ -1404,9 +1404,9 @@ Accept            application/ld+json
        -d'
         {
 	     "@context": {
-		               "brandName1": "http://example.org/vehicle/brandName1"
+		               "brandName2": "http://example.org/vehicle/brandName1"
 	      },
-	     "brandName1": {
+	     "brandName2": {
 		                 "type": "Property",
 		                 "value": "BMW"
 	      }
