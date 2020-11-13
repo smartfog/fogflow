@@ -1406,6 +1406,9 @@ Accept            application/ld+json
 	     "@context": {
 		               "brandName2": "http://example.org/vehicle/brandName1"
 	      },
+	      "id": "urn:ngsi-ld:Vehicle:A4580",
+              "type": "Vehicle",
+
 	     "brandName1": {
 		                 "type": "Property",
 		                 "value": "BMW"
@@ -1438,6 +1441,9 @@ Accept            application/ld+json
 	       "@context": {
 		               "brandName1": "http://example.org/vehicle/brandName1"
 	        },
+		"id": "urn:ngsi-ld:Vehicle:A4580",
+	        "type": "Vehicle",
+
 	       "brandName2": {
 		                  "type": "Property",
 		                  "value": "AUDI"
