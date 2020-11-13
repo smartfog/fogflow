@@ -210,7 +210,7 @@ webServer = app.listen(config.webSrvPort, function(){
 });
     
 
-var io = require('socket.io').listen(webServer);
+var io = require('socket.io')(webServer);
 
 io.on('connection', function (client) {
     console.log('a client is connecting');       
