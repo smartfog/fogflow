@@ -1875,7 +1875,6 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				}*/
 
 				// Store Context
-
 				deSerializedEntity["@context"] = context
 
 				if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
@@ -2427,30 +2426,11 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	}
 }
 
-// Store in EntityID - SubID Map
-/*func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRequest) {
-	tb.e2sub_lock.Lock()
-	for _, entities := range subReq.Entities {
-		var eid string
-		if entities.IdPattern != "" {
-			eid = entities.IdPattern
-		} else if entities.ID != "" {
-			eid = entities.ID
-		}
-		tb.entityId2LDSubcriptions[eid] = append(tb.entityId2LDSubcriptions[eid], subReq.Id)
-
-	}
-	tb.e2sub_lock.Unlock()
-}*/
-
 // Store in SubID - SubscriptionPayload Map
 func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
-	//subscription.Subscriber.RequireReliability = true
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
-	// manage a request with idPattern and without id
 	subscription.SetLdIdPattern()
-	//store subscription in map
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
 }
