@@ -6,9 +6,8 @@ var handlers = {};
 //connect to the broker
 var client = new NGSI10Client(config.brokerURL);
 
-//DGraph
-// to interact with designer
-var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
+// to interact with designer for internal fogflow entities
+var clientDes = new NGSI10Client('./internal');
 
 console.log(config.brokerURL);
 

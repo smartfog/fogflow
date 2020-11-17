@@ -28,9 +28,8 @@ var blocks = null;
 // client to interact with IoT Broker
 var client = new NGSI10Client(config.brokerURL);
 
-//DGraph
-//to interact with Designer
-var clientDes = new NGSIDesClient(config.designerIP+':'+config.webSrvPort);
+// to interact with designer for internal fogflow entities
+var clientDes = new NGSI10Client('./internal');
 
 var myToplogyExamples = [
 {
