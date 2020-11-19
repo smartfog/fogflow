@@ -41,9 +41,10 @@ def notifyContext():
 
     if not request.json:
         abort(400)
-    	
+    print(request.json)
+    print(request.headers)	
     objs = readContextElements(request.json)
-
+    
     global counter
     counter = counter + 1
     
@@ -52,7 +53,7 @@ def notifyContext():
     handleNotify(objs)
     
     return jsonify({ 'responseCode': 200 })
-
+    return "Hello"
 
 def element2Object(element):
     ctxObj = {}
@@ -68,6 +69,7 @@ def object2Element(ctxObj):
     ctxElement['type']=ctxObj['type']
     print("object2Element")
     print(ctxObj)
+    print(ctxObj)
     for key in ctxObj:
         if key != "id" and key != "type" and key != "modifiedAt" and key != "createdAt" and key != "observationSpace" and key != "operationSpace" and key != "location" and key != "@context":
             if ctxObj[key].has_key('createdAt'):
@@ -75,18 +77,19 @@ def object2Element(ctxObj):
             if ctxObj[key].has_key('modifiedAt'):
                 ctxObj[key].pop('modifiedAt')
             ctxElement[key] = ctxObj[key]
-
+    print("This is ctxElement")
+    print(ctxElement)
     return ctxElement
 
 
 def readContextElements(data):
 
     ctxObjects = []
-
-    for response in data['contextResponses']:
-        if response['statusCode']['code'] == 200:
-            ctxObj = element2Object(response['contextElement'])
-            ctxObjects.append(ctxObj)
+    print(data['type'])
+    if data['type'] == "Notification" :	
+        for attr in  data['data']:
+	    ctxObj = element2Object(attr)
+	    ctxObjects.append(ctxObj)	
     return ctxObjects
 
 
