@@ -66,14 +66,17 @@ install:
 
 before_script:
     - go get -u golang.org/x/lint/golint
+
+
+script:
+    - cd ../
+
     - cp docker/core/http/config.json  ./discovery/
     - cp docker/core/http/config.json  ./broker/
     - cp docker/core/http/config.json  ./master/
     - cp docker/core/http/config.json  ./worker/
     - cp docker/core/http/config.json  ./designer/
 
-script:
-    - cd ../
     - cd discovery/ 
     - go get
     - go build
