@@ -1,6 +1,3 @@
-//  define global variables or include third-party libraries (notice that the library must be specified in the package.json file as well)
-var speakerID = null;
-
 //
 //  contextEntity: the received entities
 //  publish, query, and subscribe are the callback functions for your own function to interact with the assigned nearby broker

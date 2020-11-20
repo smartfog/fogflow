@@ -1,6 +1,5 @@
-FROM node:alpine
+FROM mhart/alpine-node
 
 WORKDIR /app
 ADD . /app
-
-ENTRYPOINT [ "node", "main.js" ]
+ENTRYPOINT [ "node", "main.js", "-o"]
