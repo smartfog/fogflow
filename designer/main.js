@@ -136,7 +136,7 @@ app.post('/intent', jsonParser, function (req, res) {
 */
 
 //app.use (bodyParser.json());
-app.post('/ngsi10/updateContext', jsonParser, async function (req, res) {
+app.post('/internal/updateContext', jsonParser, async function (req, res) {
     console.log("receive internal update");
 
     var payload = await req.body
