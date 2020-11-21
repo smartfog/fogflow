@@ -18,7 +18,7 @@ brokerIp= "http://localhost:8070"
 
 def test_persistOPerator():
     brokerUrl = brokerIp + "/ngsi10/entity/test011"
-    designerUrl = designerIp + "/intent/updateContext"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
@@ -45,7 +45,7 @@ def test_persistOPerator():
 
 def test_persistFogFunction():
     brokerUrl = brokerIp+ "/ngsi10/entity/test2"
-    designerUrl = designerIp + "/intent/updateContext"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
@@ -72,7 +72,7 @@ def test_persistFogFunction():
 
 def test_persistDockerImage():
     brokerUrl = brokerIp+ "/ngsi10/entity/test3"
-    designerUrl = designerIp + "/intent/updateContext"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
@@ -99,7 +99,7 @@ def test_persistDockerImage():
 
 def test_persistopology():
     brokerUrl = brokerIp + "/ngsi10/entity/test4"
-    designerUrl = designerIp + "/intent/updateContext"
+    designerUrl = designerIp + "/ngsi10/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(
         designerUrl,
