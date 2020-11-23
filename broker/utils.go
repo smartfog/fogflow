@@ -6,9 +6,11 @@ import (
 	"errors"
 	"fmt"
 	. "github.com/smartfog/fogflow/common/ngsi"
+	"github.com/piprate/json-gold/ld"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -419,28 +421,44 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
+
+func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
+        proc := ld.NewJsonLdProcessor()
+        options := ld.NewJsonLdOptions("")
+        compacted, err := proc.Compact(entity, context, options)
+        return compacted, err
+}
+
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string , httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
-	elementRespList := make([]LDContextElementResponse, 0)
-
-	//if IsOrionBroker == true {
-	//        return postOrionV2NotifyContext(ctxElems, URL)
-	//}
-
-	for _, elem := range ldCtxElems {
-		elementResponse := LDContextElementResponse{}
-		elementResponse.LDContextElement = elem
-		elementResponse.StatusCode.Code = 200
-		elementResponse.StatusCode.ReasonPhrase = "OK"
-
-		elementRespList = append(elementRespList, elementResponse)
+	ldCompactedElems :=  make([]map[string]interface{},0)
+	for k, _ := range ldCtxElems { 
+		resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+		ldCompactedElems = append(ldCompactedElems,resolved.(map[string]interface{}))
 	}
+	fmt.Println("reso1:",ldCompactedElems)
+	LdElementList := make([]interface{}, 0)
+	for _ ,ldEle := range ldCompactedElems  {
+		element := make(map[string]interface{})
+		element["id"] = ldEle["id"]
+		element["type"] = ldEle["type"]
+		fmt.Println("running 1")
+		for k , _  := range ldEle {
+			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+			element[k] =ldEle[k] 
+		}
+	}
+		LdElementList = append(LdElementList,element)
+     }
 
 	notifyCtxReq := &LDNotifyContextRequest{
 		SubscriptionId:     subscriptionId,
-		LDContextResponses: elementRespList,
+		Data: 		    LdElementList,
+		Type		 :  "Notification",
+		Id		:   "fogflow:notification",
+		NotifyAt       :   time.Now().String(),
 	}
-
+	fmt.Println(notifyCtxReq)
 	body, err := json.Marshal(notifyCtxReq)
 	if err != nil {
 		return err
@@ -449,6 +467,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Link", "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {

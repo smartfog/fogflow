@@ -1055,10 +1055,18 @@ type LDContextElementResponse struct {
 	StatusCode       StatusCode  `json:"statusCode"`
 }
 
-type LDNotifyContextRequest struct {
+/*type LDNotifyContextRequest struct {
 	SubscriptionId     string                     `json:"subscriptionId",omitemtpy`
 	Originator         string                     `json:"originator",omitemtpy`
 	LDContextResponses []LDContextElementResponse `json:"contextResponses,omitempty"`
+}*/
+
+type LDNotifyContextRequest struct {
+        SubscriptionId     string                     `json:"subscriptionId",omitemtpy`
+        Type         string                            `json:"type",omitemtpy`
+        Id         string                             `json:"id",omitemtpy`
+        Data       []interface{}                             `json:"data,omitempty"`
+        NotifyAt     string                            `json:"notifiedAt,omitempty"`
 }
 
 type LDContextElement struct {
