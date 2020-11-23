@@ -1,6 +1,6 @@
 'use strict';
 
-$(function () {
+$(function() {
 
     // initialize the menu bar
     var handlers = {}
@@ -27,8 +27,7 @@ $(function () {
     var clientDes = new NGSI10Client('./internal');
 
 
-    var myFogFunctionExamples = [
-        {
+    var myFogFunctionExamples = [{
             name: "Convert1",
             topology: { "name": "Convert1", "description": "test", "tasks": [{ "name": "Main", "operator": "converter", "input_streams": [{ "selected_type": "RainSensor", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "RainObservation" }] }] },
             designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "converter", "outputs": ["RainObservation"] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "RainSensor", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] },
@@ -70,12 +69,13 @@ $(function () {
             designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "dummy", "outputs": ["Out"] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "Temperature", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
             intent: { "topology": "Test", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
         },
-/*{
-    name: "Agent",
-    topology: {"name":"Agent","description":"just for a simple test","tasks":[{"name":"Main","operator":"iotagent","input_streams":[{"selected_type":"Worker","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
-    designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"iotagent","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Worker","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
-    intent: {"topology":"Agent","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
-},*/{
+        /*{
+            name: "Agent",
+            topology: {"name":"Agent","description":"just for a simple test","tasks":[{"name":"Main","operator":"iotagent","input_streams":[{"selected_type":"Worker","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
+            designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"iotagent","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Worker","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
+            intent: {"topology":"Agent","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
+        },*/
+        {
             name: "PrivateSiteEstimation",
             topology: { "name": "PrivateSiteEstimation", "description": "to estimate the free parking lots from a private parking site", "tasks": [{ "name": "Estimation", "operator": "privatesite", "input_streams": [{ "selected_type": "PrivateSite", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "Out" }] }] },
             designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 26, "y": -47, "type": "Task", "module": null, "values": { "name": "Estimation", "operator": "privatesite", "outputs": ["Out"] } }, { "id": 2, "x": -302, "y": -87, "type": "EntityStream", "module": null, "values": { "selectedtype": "PrivateSite", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
@@ -99,8 +99,8 @@ $(function () {
     ];
 
 
-    addMenuItem('FogFunction', showFogFunctions);
-    addMenuItem('TaskInstance', showTaskInstances);
+    addMenuItem('FogFunction', 'Fog Function', showFogFunctions);
+    addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
 
     showFogFunctions();
 
@@ -109,15 +109,15 @@ $(function () {
     queryFogFunctions();
 
 
-    $(window).on('hashchange', function () {
+    $(window).on('hashchange', function() {
         var hash = window.location.hash;
 
         selectMenuItem(location.hash.substring(1));
     });
 
-    function addMenuItem(name, func) {
-        handlers[name] = func;
-        $('#menu').append('<li id="' + name + '"><a href="' + '#' + name + '">' + name + '</a></li>');
+    function addMenuItem(id, name, func) {
+        handlers[id] = func;
+        $('#menu').append('<li id="' + id + '"><a href="' + '#' + id + '">' + name + '</a></li>');
     }
 
     function selectMenuItem(name) {
@@ -155,11 +155,11 @@ $(function () {
     function queryFogFunctions() {
         var queryReq = {}
         queryReq.entities = [{ type: 'FogFunction', isPattern: true }];
-        client.queryContext(queryReq).then(function (fogFunctionList) {
+        client.queryContext(queryReq).then(function(fogFunctionList) {
             if (fogFunctionList.length == 0) {
                 initFogFunctionExamples();
             }
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log(error);
             console.log('failed to query fog functions');
         });
@@ -205,15 +205,15 @@ $(function () {
             blocks.importData(CurrentScene);
         }
 
-        blocks.ready(function () {
+        blocks.ready(function() {
             // associate functions to clickable buttons
-            $('#generateFunction').click(function () {
+            $('#generateFunction').click(function() {
                 boardScene2Topology(blocks.export());
             });
-            $('#cleanBoard').click(function () {
+            $('#cleanBoard').click(function() {
                 blocks.clear();
             });
-            $('#saveBoard').click(function () {
+            $('#saveBoard').click(function() {
                 CurrentScene = blocks.export();
             });
         });
@@ -238,7 +238,7 @@ $(function () {
         var queryReq = {}
         queryReq.entities = [{ type: 'Operator', isPattern: true }];
 
-        client.queryContext(queryReq).then(function (operators) {
+        client.queryContext(queryReq).then(function(operators) {
             for (var i = 0; i < operators.length; i++) {
                 var entity = operators[i];
                 var operator = entity.attributes.operator.value;
@@ -246,7 +246,7 @@ $(function () {
             }
 
             // add it into the select list        
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log(error);
             console.log('failed to query context');
         });
@@ -298,10 +298,10 @@ $(function () {
         console.log("=============submit a fog function=============");
         console.log(JSON.stringify(functionCtxObj));
 
-        return clientDes.updateContext(functionCtxObj).then(function (data1) {
+        return clientDes.updateContext(functionCtxObj).then(function(data1) {
             console.log(data1);
             showFogFunctions();
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log('failed to record the created fog function');
         });
     }
@@ -316,9 +316,9 @@ $(function () {
         geoScope.value = "global"
         functionCtxObj.metadata.location = geoScope;
 
-        return clientDes.updateContext(functionCtxObj).then(function (data1) {
+        return clientDes.updateContext(functionCtxObj).then(function(data1) {
             console.log(data1);
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log('failed to record the created fog function');
         });
     }
@@ -435,7 +435,7 @@ $(function () {
 
         $('#content').html(html);
 
-        $("#registerFunction").click(function () {
+        $("#registerFunction").click(function() {
             showFogFunctionEditor();
         });
 
@@ -446,9 +446,9 @@ $(function () {
     function updateFogFunctionList() {
         var queryReq = {}
         queryReq.entities = [{ type: 'FogFunction', isPattern: true }];
-        client.queryContext(queryReq).then(function (functionList) {
+        client.queryContext(queryReq).then(function(functionList) {
             displayFunctionList(functionList);
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log(error);
             console.log('failed to query context');
         });
@@ -464,6 +464,7 @@ $(function () {
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Name</th>';
+        html += '<th>Action</th>';
         html += '<th>Topology</th>';
         html += '<th>Intent</th>';
         html += '</tr></thead>';
@@ -473,11 +474,14 @@ $(function () {
 
             html += '<tr>';
             html += '<td>' + fogfunction.entityId.id;
-            html += '<br><button id="editor-' + fogfunction.entityId.id + '" type="button" class="btn btn-default">editor</button>';
-            html += '<br><button id="delete-' + fogfunction.entityId.id + '" type="button" class="btn btn-default">delete</button>';
             html += '</td>';
 
             html += '<td>' + fogfunction.attributes.name.value + '</td>';
+
+            html += '<td class="singlecolumn">';
+            html += '<button id="editor-' + fogfunction.entityId.id + '" type="button" class="btn btn-primary btn-separator">view</button>';
+            html += '<button id="delete-' + fogfunction.entityId.id + '" type="button" class="btn btn-primary btn-separator">delete</button>';
+            html += '</td>';
 
             html += '<td>' + JSON.stringify(fogfunction.attributes.topology.value) + '</td>';
 
@@ -496,15 +500,15 @@ $(function () {
 
             // association handlers to the buttons
             var editorButton = document.getElementById('editor-' + fogfunction.entityId.id);
-            editorButton.onclick = function (myFogFunction) {
-                return function () {
+            editorButton.onclick = function(myFogFunction) {
+                return function() {
                     openFogFunctionEditor(myFogFunction);
                 };
             }(fogfunction);
 
             var deleteButton = document.getElementById('delete-' + fogfunction.entityId.id);
-            deleteButton.onclick = function (myFogFunction) {
-                return function () {
+            deleteButton.onclick = function(myFogFunction) {
+                return function() {
                     deleteFogFunction(myFogFunction);
                 };
             }(fogfunction);
@@ -522,16 +526,17 @@ $(function () {
         console.log("delete a fog function");
         console.log(functionEntity);
 
-        clientDes.deleteContext(functionEntity).then(function (data) {
+        clientDes.deleteContext(functionEntity).then(function(data) {
             console.log(data);
             showFogFunctions();
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log('failed to delete a fog function');
         });
     }
 
     function uuid() {
-        var uuid = "", i, random;
+        var uuid = "",
+            i, random;
         for (i = 0; i < 32; i++) {
             random = Math.random() * 16 | 0;
             if (i == 8 || i == 12 || i == 16 || i == 20) {
@@ -549,9 +554,9 @@ $(function () {
         var queryReq = {}
         queryReq.entities = [{ type: 'Task', isPattern: true }];
 
-        client.queryContext(queryReq).then(function (taskList) {
+        client.queryContext(queryReq).then(function(taskList) {
             displayTaskList(taskList);
-        }).catch(function (error) {
+        }).catch(function(error) {
             console.log(error);
             console.log('failed to query context');
         });
@@ -603,6 +608,3 @@ $(function () {
 
 
 });
-
-
-

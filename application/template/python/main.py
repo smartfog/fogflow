@@ -1,185 +1,263 @@
 from flask import Flask, jsonify, abort, request, make_response
-import requests 
+import requests
 import json
 import time
 import datetime
 import threading
 import os
+import sys
 
+import function as fogflow
 
-app = Flask(__name__, static_url_path = "")
+app = Flask(__name__, static_url_path="")
 
 # global variables
 brokerURL = ''
 outputs = []
-timer = None
-lock = threading.Lock()
-counter = 0 
+
+input = {}
+
+
 
 @app.errorhandler(400)
 def not_found(error):
-    return make_response(jsonify( { 'error': 'Bad request' } ), 400)
+    return make_response(jsonify({'error': 'Bad request'}), 400)
+
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify( { 'error': 'Not found' } ), 404)
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
 
 @app.route('/admin', methods=['POST'])
-def admin():    
+def admin():
     if not request.json:
         abort(400)
-    
+
     configObjs = request.json
-    handleConfig(configObjs)    
-        
-    return jsonify({ 'responseCode': 200 })
+    handleConfig(configObjs)
+
+    return jsonify({'responseCode': 200})
 
 
-@app.route('/notifyContext', methods = ['POST'])
+@app.route('/notifyContext', methods=['POST'])
 def notifyContext():
-    print "=============notify============="
+    print("=============notify=============")
 
     if not request.json:
         abort(400)
-    	
+
     objs = readContextElements(request.json)
-
-    global counter
-    counter = counter + 1
-    
-    print(objs)
-
     handleNotify(objs)
-    
-    return jsonify({ 'responseCode': 200 })
+
+    return jsonify({'responseCode': 200})
 
 
 def element2Object(element):
     ctxObj = {}
-    
-    ctxObj['entityId'] = element['entityId'];
-    
-    ctxObj['attributes'] = {}  
+
+    ctxObj['entityId'] = element['entityId']
+
+    ctxObj['attributes'] = {}
     if 'attributes' in element:
         for attr in element['attributes']:
-            ctxObj['attributes'][attr['name']] = {'type': attr['type'], 'value': attr['value']}   
-    
+            ctxObj['attributes'][attr['name']] = {
+                'type': attr['type'], 'value': attr['value']}
+
     ctxObj['metadata'] = {}
-    if 'domainMetadata' in element:    
+    if 'domainMetadata' in element:
         for meta in element['domainMetadata']:
-            ctxObj['metadata'][meta['name']] = {'type': meta['type'], 'value': meta['value']}
-    
+            ctxObj['metadata'][meta['name']] = {
+                'type': meta['type'], 'value': meta['value']}
+
     return ctxObj
+
 
 def object2Element(ctxObj):
     ctxElement = {}
-    
-    ctxElement['entityId'] = ctxObj['entityId'];
-    
-    ctxElement['attributes'] = []  
+
+    ctxElement['entityId'] = ctxObj['entityId']
+
+    ctxElement['attributes'] = []
     if 'attributes' in ctxObj:
         for key in ctxObj['attributes']:
             attr = ctxObj['attributes'][key]
-            ctxElement['attributes'].append({'name': key, 'type': attr['type'], 'value': attr['value']})
-    
+            ctxElement['attributes'].append(
+                {'name': key, 'type': attr['type'], 'value': attr['value']})
+
     ctxElement['domainMetadata'] = []
-    if 'metadata' in ctxObj:    
+    if 'metadata' in ctxObj:
         for key in ctxObj['metadata']:
             meta = ctxObj['metadata'][key]
-            ctxElement['domainMetadata'].append({'name': key, 'type': meta['type'], 'value': meta['value']})
-    
+            ctxElement['domainMetadata'].append(
+                {'name': key, 'type': meta['type'], 'value': meta['value']})
+
     return ctxElement
 
+
 def readContextElements(data):
-    print data
+    print(data)
 
     ctxObjects = []
-    
+
     for response in data['contextResponses']:
         if response['statusCode']['code'] == 200:
             ctxObj = element2Object(response['contextElement'])
             ctxObjects.append(ctxObj)
-    
+
     return ctxObjects
+
 
 def handleNotify(contextObjs):
     for ctxObj in contextObjs:
-        processInputStreamData(ctxObj)
+        fogflow.handleEntity(ctxObj, publishResult)
 
-def processInputStreamData(obj):
-    print '===============receive context entity===================='
-    print obj
-    
-    global counter    
-    counter = counter + 1
 
-def handleConfig(configurations):  
+def handleConfig(configurations):
     global brokerURL
-    global num_of_outputs  
-    for config in configurations:        
+    for config in configurations:
         if config['command'] == 'CONNECT_BROKER':
             brokerURL = config['brokerURL']
-        if config['command'] == 'SET_OUTPUTS':
+        elif config['command'] == 'SET_OUTPUTS':
             outputs.append({'id': config['id'], 'type': config['type']})
+        elif config['command'] == 'SET_INPUTS':
+            setInput(config)
+
+def setInput(cmd):
+    global input
     
-def handleTimer():
-    global timer
+    if 'id' in cmd:
+        input['id'] = cmd['id']
 
-    # publish the counting result
-    entity = {}       
-    entity['id'] = "result.01"
-    entity['type'] = "Result"
-    entity['counter'] = counter    
-     
-    publishResult(entity)
-        
-    timer = threading.Timer(10, handleTimer)
-    timer.start()
+    input['type'] = cmd['type']
 
 
-def publishResult(result):
-    resultCtxObj = {}
-        
-    resultCtxObj['entityId'] = {}
-    resultCtxObj['entityId']['id'] = result['id']
-    resultCtxObj['entityId']['type'] = result['type']        
-    resultCtxObj['entityId']['isPattern'] = False    
-    
-    resultCtxObj['attributes'] = {}
-    resultCtxObj['attributes']['counter'] = {'type': 'integer', 'value': result['counter']}
-
-    # publish the real time results as context updates    
-    updateContext(resultCtxObj)
-
-def updateContext(ctxObj):
+def publishResult(ctxObj):
     global brokerURL
     if brokerURL == '':
         return
-        
+
     ctxElement = object2Element(ctxObj)
-    
+
     updateCtxReq = {}
+    
     updateCtxReq['updateAction'] = 'UPDATE'
     updateCtxReq['contextElements'] = []
     updateCtxReq['contextElements'].append(ctxElement)
 
-    headers = {'Accept' : 'application/json', 'Content-Type' : 'application/json'}
-    response = requests.post(brokerURL + '/updateContext', data=json.dumps(updateCtxReq), headers=headers)
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/json'}
+    response = requests.post(brokerURL + '/updateContext',
+                             data=json.dumps(updateCtxReq), 
+                             headers=headers)
     if response.status_code != 200:
-        print 'failed to update context'
-        print response.text
+        print('failed to update context')
+        print(response.text)
 
-                             
-if __name__ == '__main__':
-    handleTimer()    
+def fetchInputByQuery():            
+    ctxQueryReq = {}
+
+    ctxQueryReq['entities'] = []
     
-    myport = int(os.environ['myport'])
+    if id in input:
+        ctxQueryReq['entities'].append({'id': input['id'], 'isPattern': False})
+    else:                
+        ctxQueryReq['entities'].append({'type': input['type'], 'isPattern': True})        
+            
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/json'}
+    response = requests.post(brokerURL + '/queryContext',
+                             data=json.dumps(ctxQueryReq), 
+                             headers=headers)
+
+    if response.status_code != 200:
+        print('failed to query the input data')
+        return []
+    else:
+        jsonResult = response.json()  
+        
+        entities = []
+        
+        for ctxElement in jsonResult['contextResponses']:
+            ctxObj = element2Object(ctxElement['contextElement'])
+            entities.append(ctxObj)
+                    
+        return entities
+
+def requestInputBySubscription():
+    ctxSubReq = {}
+
+    ctxSubReq['entities'] = []
     
-    myCfg = os.environ['adminCfg']
+    if id in input:
+        ctxSubReq['entities'].append({'id': input['id'], 'isPattern': False})
+    else:                
+        ctxSubReq['entities'].append({'type': input['type'], 'isPattern': True})        
+
+    ctxSubReq['reference'] = "http://host.docker.internal:" + os.getenv('myport')
+
+    headers = {'Accept': 'application/json',
+               'Content-Type': 'application/json'}
+    response = requests.post(brokerURL + '/subscribeContext',
+                             data=json.dumps(ctxSubReq), 
+                             headers=headers)
+
+    if response.status_code != 200:
+        print('failed to query the input data')
+    else:
+        print('subscribed to the input data')
+
+
+# continuous execution to handle received notifications
+def notify2execution(): 
+    myport = int(os.getenv('myport'))
+    print("listening on port " + os.getenv('myport'))
+
+    app.run(host='0.0.0.0', port=myport)
+
+
+def runInOperationMode():
+    print("===== OPERATION MODEL========")
+
+    # apply the configuration received from the environmental varible
+    myCfg = os.getenv('adminCfg')
+    
+    print(myCfg)
+    
     adminCfg = json.loads(myCfg)
     handleConfig(adminCfg)
+
+    syncMode = os.getenv('sync') 
+    if syncMode != None and syncMode == 'yes':
+        query2execution()
+    else:
+        notify2execution()
+
+
+# one time execution triggered by query
+def query2execution():      
+    ctxObjects = fetchInputByQuery()
+    handleNotify(ctxObjects)
+
+
+def runInTestMode():
+    print("===== TEST MODEL========")
+
+	#load the configuration
+    with open('config.json') as json_file:
+        config = json.load(json_file) 
+        print(config)
+        
+        handleConfig(config)                
+
+        # trigger the data processing
+        query2execution()
+
+if __name__ == '__main__':
+    parameters = sys.argv
     
-    app.run(host='0.0.0.0', port=myport)
-    
-    timer.cancel()
+    if len(parameters) == 2 and parameters[1] == "-o":
+        runInOperationMode()
+    else:
+        runInTestMode()
     

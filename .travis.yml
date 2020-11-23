@@ -72,6 +72,13 @@ before_script:
 
 script:
     - cd ../
+
+    - cp docker/core/http/config.json  ./discovery/
+    - cp docker/core/http/config.json  ./broker/
+    - cp docker/core/http/config.json  ./master/
+    - cp docker/core/http/config.json  ./worker/
+    - cp docker/core/http/config.json  ./designer/
+
     - cd discovery/ 
     - go get
     - go build

@@ -51,7 +51,7 @@ $(function () {
 
     function showArch() {
         $('#info').html('Elastic IoT Platform with Standard-based Edge Computing');
-        $('#content').html('<img width="80%" height="80%" src="/img/arch.jpg"></img>');
+        $('#content').html('<img width="50%" height="50%" src="/img/arch.jpg"></img>');
     }
 
 
