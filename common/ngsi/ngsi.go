@@ -1062,11 +1062,11 @@ type LDContextElementResponse struct {
 }*/
 
 type LDNotifyContextRequest struct {
-        SubscriptionId     string                     `json:"subscriptionId",omitemtpy`
-        Type         string                            `json:"type",omitemtpy`
-        Id         string                             `json:"id",omitemtpy`
-        Data       []interface{}                             `json:"data,omitempty"`
-        NotifyAt     string                            `json:"notifiedAt,omitempty"`
+	SubscriptionId string        `json:"subscriptionId",omitemtpy`
+	Type           string        `json:"type",omitemtpy`
+	Id             string        `json:"id",omitemtpy`
+	Data           []interface{} `json:"data,omitempty"`
+	NotifyAt       string        `json:"notifiedAt,omitempty"`
 }
 
 type LDContextElement struct {

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	. "github.com/smartfog/fogflow/common/ngsi"
 	"github.com/piprate/json-gold/ld"
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -421,42 +421,41 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
-
 func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
-        proc := ld.NewJsonLdProcessor()
-        options := ld.NewJsonLdOptions("")
-        compacted, err := proc.Compact(entity, context, options)
-        return compacted, err
+	proc := ld.NewJsonLdProcessor()
+	options := ld.NewJsonLdOptions("")
+	compacted, err := proc.Compact(entity, context, options)
+	return compacted, err
 }
 
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string , httpsCfg *HTTPS) error {
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
-	ldCompactedElems :=  make([]map[string]interface{},0)
-	for k, _ := range ldCtxElems { 
+	ldCompactedElems := make([]map[string]interface{}, 0)
+	for k, _ := range ldCtxElems {
 		resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-		ldCompactedElems = append(ldCompactedElems,resolved.(map[string]interface{}))
+		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
 	}
-	fmt.Println("reso1:",ldCompactedElems)
+	fmt.Println("reso1:", ldCompactedElems)
 	LdElementList := make([]interface{}, 0)
-	for _ ,ldEle := range ldCompactedElems  {
+	for _, ldEle := range ldCompactedElems {
 		element := make(map[string]interface{})
 		element["id"] = ldEle["id"]
 		element["type"] = ldEle["type"]
 		fmt.Println("running 1")
-		for k , _  := range ldEle {
+		for k, _ := range ldEle {
 			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-			element[k] =ldEle[k] 
+				element[k] = ldEle[k]
+			}
 		}
+		LdElementList = append(LdElementList, element)
 	}
-		LdElementList = append(LdElementList,element)
-     }
 
 	notifyCtxReq := &LDNotifyContextRequest{
-		SubscriptionId:     subscriptionId,
-		Data: 		    LdElementList,
-		Type		 :  "Notification",
-		Id		:   "fogflow:notification",
-		NotifyAt       :   time.Now().String(),
+		SubscriptionId: subscriptionId,
+		Data:           LdElementList,
+		Type:           "Notification",
+		Id:             "fogflow:notification",
+		NotifyAt:       time.Now().String(),
 	}
 	fmt.Println(notifyCtxReq)
 	body, err := json.Marshal(notifyCtxReq)

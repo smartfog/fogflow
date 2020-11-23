@@ -312,14 +312,14 @@ func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request)
 
 func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json"  || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*"  {
+	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json" || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*" {
 		entity := apisrv.broker.ldGetEntity(eid)
 		if entity != nil {
-			if accept == "application/json" || accept == " "{
-                                w.Header().Set("Content-Type","application/json")
-                        }else {
-                                w.Header().Set("Content-Type","application/ld+json")
-                        }
+			if accept == "application/json" || accept == " " {
+				w.Header().Set("Content-Type", "application/json")
+			} else {
+				w.Header().Set("Content-Type", "application/ld+json")
+			}
 			w.WriteHeader(200)
 			w.WriteJson(entity)
 		} else {

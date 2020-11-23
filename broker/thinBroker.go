@@ -848,8 +848,8 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
-			fmt.Println("elements:",elements)
-			fmt.Println("returnedElement",returnedElement)
+			fmt.Println("elements:", elements)
+			fmt.Println("returnedElement", returnedElement)
 			elements = append(elements, returnedElement)
 		}
 	}
@@ -2387,7 +2387,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
-	fmt.Println("ctxAvailabilityRequest",ctxAvailabilityRequest)
+	fmt.Println("ctxAvailabilityRequest", ctxAvailabilityRequest)
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
@@ -2652,25 +2652,24 @@ func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 	}
 }
 
-
 func (tb *ThinBroker) checkMatcheLdAttr(ctxElemAttrs []string, sid string) bool {
-        tb.ldSubscriptions_lock.RLock()
-        conditionList := tb.ldSubscriptions[sid].WatchedAttributes
-	fmt.Println("conditionList:",conditionList)
-        tb.ldSubscriptions_lock.RUnlock()
-        matchedAtleastOnce := false
-        for _, attrs1 := range ctxElemAttrs {
-                for _, attrs2 := range conditionList {
-                        if attrs1 == attrs2 {
-                                matchedAtleastOnce = true
-                                break
-                        }
-                        if matchedAtleastOnce == true {
-                                break
-                        }
-                }
-        }
-        return matchedAtleastOnce
+	tb.ldSubscriptions_lock.RLock()
+	conditionList := tb.ldSubscriptions[sid].WatchedAttributes
+	fmt.Println("conditionList:", conditionList)
+	tb.ldSubscriptions_lock.RUnlock()
+	matchedAtleastOnce := false
+	for _, attrs1 := range ctxElemAttrs {
+		for _, attrs2 := range conditionList {
+			if attrs1 == attrs2 {
+				matchedAtleastOnce = true
+				break
+			}
+			if matchedAtleastOnce == true {
+				break
+			}
+		}
+	}
+	return matchedAtleastOnce
 }
 
 func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkSelectedAttributes bool) {
@@ -2685,18 +2684,18 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 			subscriberList = append(subscriberList, list...)
 		}
 	}*/
-	ldAttr:= make([]string, 0)
+	ldAttr := make([]string, 0)
 	for k, _ := range ctxElem {
 		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-		ldAttr = append(ldAttr, k)
+			ldAttr = append(ldAttr, k)
 		}
 	}
 	//send this context element to the subscriber
 	for _, sid := range subscriberList {
 		elements := make([]map[string]interface{}, 0)
 		checkCondition := tb.checkMatcheLdAttr(ldAttr, sid)
-		fmt.Println("checkCondition:",checkCondition)
-		if checkSelectedAttributes == true && checkCondition == true{
+		fmt.Println("checkCondition:", checkCondition)
+		if checkSelectedAttributes == true && checkCondition == true {
 			selectedAttributes := make([]string, 0)
 			tb.ldSubscriptions_lock.RLock()
 			if subscription, exist := tb.ldSubscriptions[sid]; exist {
@@ -2708,7 +2707,7 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 			tb.ldEntities_lock.RLock()
 			element := tb.ldEntities[eid]
 			elementMap := element.(map[string]interface{})
-			clonedElement := ldCloneWithSelectedAttributes(elementMap,selectedAttributes)
+			clonedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
 			//element := tb.ldEntities[eid]
 			tb.ldEntities_lock.RUnlock()
 			//elementMap := element.(map[string]interface{})
@@ -2717,7 +2716,7 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 			elements = append(elements, ctxElem)
 		}
 		if checkCondition == true {
-		    go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+			go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
 		}
 	}
 }
