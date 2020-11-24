@@ -112,7 +112,7 @@ script:
     - cd ../
     - cd persistance/
     - pytest -s -v 
-    - echo "Testing Done !!"
+    - echo "Testing Done !!!"
 
 notifications:
     email: false
