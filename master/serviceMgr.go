@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	. "github.com/smartfog/fogflow/common/datamodel"
 	. "github.com/smartfog/fogflow/common/ngsi"
@@ -79,6 +79,23 @@ func (sMgr *ServiceMgr) handleServiceIntent(serviceIntent *ServiceIntent) {
 	INFO.Println("receive a service intent")
 	INFO.Println(serviceIntent)
 
+	sMgr.intentList_lock.Lock()
+	_, existFlag := sMgr.serviceIntentMap[serviceIntent.ID]
+	sMgr.intentList_lock.Unlock()
+
+	if existFlag == true {
+		sMgr.updateExistingServiceIntent(serviceIntent)
+	} else {
+		sMgr.createNewServiceIntent(serviceIntent)
+	}
+}
+
+//
+// to break down the service intent from the service level into the task level
+//
+func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent) {
+	INFO.Println("updating an existing intent")
+
 	var topologyObject = sMgr.master.getTopologyByName(serviceIntent.TopologyName)
 	if topologyObject == nil {
 		ERROR.Println("failed to find the associated topology")
@@ -101,6 +118,62 @@ func (sMgr *ServiceMgr) handleServiceIntent(serviceIntent *ServiceIntent) {
 
 		taskIntent.GeoScope = serviceIntent.GeoScope
 		taskIntent.Priority = serviceIntent.Priority
+		taskIntent.SType = serviceIntent.SType
+		taskIntent.QoS = serviceIntent.QoS
+		taskIntent.ServiceName = serviceIntent.TopologyName
+		taskIntent.TaskObject = task
+
+		INFO.Printf("%+v\n", taskIntent)
+
+		sMgr.master.taskMgr.handleTaskIntent(&taskIntent)
+
+		record := TaskIntentRecord{}
+		record.taskIntent = taskIntent
+		record.site.IsLocalSite = true
+
+		listTaskIntent = append(listTaskIntent, &record)
+	}
+
+	sMgr.intentList_lock.Lock()
+	defer sMgr.intentList_lock.Unlock()
+
+	// to record the task intents for this high level service intent
+	sMgr.service2TaskMap[serviceIntent.ID] = listTaskIntent
+	// record the service intent
+	sMgr.serviceIntentMap[serviceIntent.ID] = serviceIntent
+
+	//sMgr.updateServiceIntentStatus(serviceIntent.ID, "ACTIVATED", "scheduled")
+}
+
+//
+// to break down the service intent from the service level into the task level
+//
+func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
+	INFO.Println("creating a new service intent")
+
+	var topologyObject = sMgr.master.getTopologyByName(serviceIntent.TopologyName)
+	if topologyObject == nil {
+		ERROR.Println("failed to find the associated topology")
+		//sMgr.updateServiceIntentStatus(serviceIntent.ID, "NOT_ACTIVATED", "failed to find the associated topology")
+		return
+	}
+
+	serviceIntent.TopologyObject = topologyObject
+
+	listTaskIntent := make([]*TaskIntentRecord, 0)
+
+	for _, task := range serviceIntent.TopologyObject.Tasks {
+		// to handle the task intent directly
+		taskIntent := TaskIntent{}
+
+		// new random uid
+		u1, _ := uuid.NewV4()
+		rid := u1.String()
+		taskIntent.ID = rid
+
+		taskIntent.GeoScope = serviceIntent.GeoScope
+		taskIntent.Priority = serviceIntent.Priority
+		taskIntent.SType = serviceIntent.SType
 		taskIntent.QoS = serviceIntent.QoS
 		taskIntent.ServiceName = serviceIntent.TopologyName
 		taskIntent.TaskObject = task

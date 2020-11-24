@@ -1,6 +1,6 @@
 {
-    "discoveryURL":"http://host.docker.internal/ngsi9",
-    "myIP": "host.docker.internal",
+    "discoveryURL": "http://192.168.0.59/ngsi9",
+    "myIP": "192.168.0.59",
     "myPort": 8092,
     "location": {
         "latitude": 36.146094,
@@ -8,5 +8,5 @@
     },
     "iconURL": "/img/camera.png",
     "type": "Camera",
-    "id": "02"	
+    "id": "02"
 }

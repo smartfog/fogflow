@@ -188,7 +188,7 @@ function query2execution() {
         try {
             // receive the query result
             let ctxObjects = await fetchInputByQuery();
-
+            np
             // call the customized function to generate the analytics result
             for (var i = 0; i < ctxObjects.length; i++) {
                 fogfunction.handler(ctxObjects[i]);

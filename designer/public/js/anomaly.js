@@ -127,7 +127,7 @@ $(function() {
 
 
     function showTopology() {
-        $('#info').html('processing topology of this IoT service');
+        $('#info').html('IoT service topology');
 
         var html = '';
         html += '<div class="input-prepend">';

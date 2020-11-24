@@ -1,4 +1,4 @@
-const grpc = require('@grpc/grpc-js')
+//const grpc = require('grpc');
 const dgraph = require("dgraph-js");
 
 var request = require('request');
@@ -19,7 +19,7 @@ config.brokerPort = globalConfigFile.broker.http_port
 
 async function newClientStub() {
     console.log(config.HostIp + ":" + config.grpcPort);
-    return new dgraph.DgraphClientStub(config.HostIp + ":" + config.grpcPort, grpc.credentials.createInsecure());
+    return new dgraph.DgraphClientStub(config.HostIp + ":" + config.grpcPort);
 }
 
 // Create a client.
@@ -105,8 +105,7 @@ async function createData(dgraphClient, ctx) {
         mu.setSetJson(ctx);
         const response = await txn.mutate(mu);
         await txn.commit();
-    }
-    finally {
+    } finally {
         await txn.discard();
     }
 }
@@ -124,7 +123,7 @@ async function sendData(contextEle) {
         method: 'post',
         url: 'http://' + config.brokerIp + ':' + config.brokerPort + '/ngsi10/updateContext',
         data: updateCtxReq
-    }).then(function (response) {
+    }).then(function(response) {
         if (response.status == 200) {
             return response.data;
         } else {

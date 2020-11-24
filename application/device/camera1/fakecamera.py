@@ -15,7 +15,8 @@ discoveryURL = 'http://192.168.1.80:8070/ngsi9'
 brokerURL = ''
 profile = {}
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
 
 def signal_handler(signal, frame):
     print('You pressed Ctrl+C!')

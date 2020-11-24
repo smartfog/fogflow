@@ -671,6 +671,59 @@ func (tMgr *TaskMgr) handleTaskIntent(taskIntent *TaskIntent) {
 	INFO.Println("orchestrating task intent")
 	INFO.Println(taskIntent)
 
+	if taskIntent.SType == "SYN" {
+		tMgr.handleSynchronousTaskIntent(taskIntent)
+	} else if taskIntent.SType == "ASYN" {
+		tMgr.handleASynchronousTaskIntent(taskIntent)
+	}
+}
+
+func (tMgr *TaskMgr) handleSynchronousTaskIntent(taskIntent *TaskIntent) {
+	INFO.Println("orchestrating task intent")
+	INFO.Println(taskIntent)
+
+	fogflow := FogFlow{}
+
+	fogflow.Init()
+	fogflow.Intent = taskIntent
+
+	fID := taskIntent.ServiceName + "." + taskIntent.TaskObject.Name
+
+	task := taskIntent.TaskObject
+
+	for _, inputStreamConfig := range task.InputStreams {
+		INFO.Println(inputStreamConfig)
+		subID := tMgr.selector2Subscription(&inputStreamConfig, taskIntent.GeoScope)
+
+		if subID == "" {
+			ERROR.Printf("failed to issue a subscription for this type of input, %+v\r\n", inputStreamConfig)
+			continue
+		}
+
+		subscription := InputSubscription{}
+		subscription.InputSelector = inputStreamConfig
+		subscription.SubID = subID
+		subscription.ReceivedEntityRegistrations = make(map[string]*EntityRegistration)
+
+		fogflow.Subscriptions[subID] = &subscription
+
+		// link this subscriptionId with the fog function name
+		tMgr.subID2FogFunc_lock.Lock()
+		tMgr.subID2FogFunc[subID] = fID
+		tMgr.subID2FogFunc_lock.Unlock()
+	}
+
+	// add this fog function into the function map
+	tMgr.fogFlows_lock.Lock()
+	tMgr.fogFlows[fID] = &fogflow
+	DEBUG.Printf("~~~~~~~ add new flow %+s, %+v ~~~~~~~~~~~~~~~~~\r\n", fID, tMgr.fogFlows)
+	tMgr.fogFlows_lock.Unlock()
+}
+
+func (tMgr *TaskMgr) handleASynchronousTaskIntent(taskIntent *TaskIntent) {
+	INFO.Println("orchestrating task intent")
+	INFO.Println(taskIntent)
+
 	fogflow := FogFlow{}
 
 	fogflow.Init()

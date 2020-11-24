@@ -114,10 +114,15 @@ body {
 
 .singlecolumn {
     overflow: hidden;
-    width: 120px;
-    min-width: 120px;
+    width: 150px;
+    min-width: 150px;
 }
 
 .btn-separator {
     margin-left: 5px;
+}
+
+.hidediv {
+    visibility: hidden;
+    height: 0px;
 }

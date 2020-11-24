@@ -39,8 +39,8 @@ $(function() {
         designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }, { "id": 2, "block1": 3, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 7, "y": -107, "type": "Task", "module": null, "values": { "name": "childfinder", "operator": "facefinder", "outputs": ["ChildFound"] } }, { "id": 2, "x": -292, "y": -161, "type": "EntityStream", "module": null, "values": { "selectedtype": "Camera", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": true } }, { "id": 3, "x": -286, "y": -2, "type": "EntityStream", "module": null, "values": { "selectedtype": "ChildLost", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] }
     }];
 
-    addMenuItem('Topology', 'Topology', showTopologies);
-    addMenuItem('Intent', 'Intent', showIntents);
+    addMenuItem('Topology', 'Service Topology', showTopologies);
+    addMenuItem('Intent', 'Service Intent', showIntents);
     addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
 
     showTopologies();
@@ -399,7 +399,6 @@ $(function() {
 
             html += '<td>' + topology.name + '</td>';
 
-
             html += '<td class="singlecolumn">';
             html += '<button id="editor-' + topology_id + '" type="button" class="btn btn-primary btn-separator">view</button>';
             html += '<button id="delete-' + topology_id + '" type="button" class="btn btn-primary btn-separator">delete</button>';
@@ -471,9 +470,11 @@ $(function() {
 
         html += '<thead><tr>';
         html += '<th>ID</th>';
+        html += '<th>Action</th>';
         html += '<th>Topology</th>';
+        html += '<th>Service Type</th>';
         html += '<th>Priority</th>';
-        html += '<th>QoS</th>';
+        html += '<th>Sevice Level Objective</th>';
         html += '<th>GeoScope</th>';
         //html += '<th>Status</th>';
         //html += '<th>Reason</th>';
@@ -486,11 +487,15 @@ $(function() {
 
             html += '<tr>';
             html += '<td>' + entity.entityId.id;
-            html += '<br><button id="DELETE-' + entity.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
-            html + '</td>';
+            html += '</td>';
+            html += '<td class="singlecolumn">';
+            html += '<button id="UPDATE-' + entity.entityId.id + '" type="button" class="btn btn-primary">Update</button>  ';
+            html += '<button id="DELETE-' + entity.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
+            html += '</td>';
             html += '<td>' + intent.topology + '</td>';
+            html += '<td>' + intent.stype + '</td>';
             html += '<td>' + JSON.stringify(intent.priority) + '</td>';
-            html += '<td>' + intent.qos + '</td>';
+            html += '<td>' + intent.slo + '</td>';
             html += '<td>' + JSON.stringify(intent.geoscope) + '</td>';
             //html += '<td>' + JSON.stringify(entity.metadata.status) + '</td>';                
             //html += '<td>' + JSON.stringify(intent.metadata.reason) + '</td>';                
@@ -511,18 +516,32 @@ $(function() {
                     removeIntent(intentID);
                 };
             }(entity.entityId.id);
+
+            var updateButton = document.getElementById('UPDATE-' + entity.entityId.id);
+            updateButton.onclick = function(intentID) {
+                return function() {
+                    updateIntent(intentID);
+                };
+            }(entity.entityId.id);
         }
     }
 
-
-    function addIntent() {
-        $('#info').html('to specify an intent object in order to run your service');
-
+    function showIntent(intentEntity) {
         var html = '<div id="intentRegistration" class="form-horizontal"><fieldset>';
+
+        html += '<div class="control-group hidediv"><label class="control-label hidediv" for="input01">ID</label>';
+        html += '<div class="controls hidediv"><lable class="hidediv" id="SID">sid</label></div>'
+        html += '</div>';
 
         html += '<div class="control-group"><label class="control-label" for="input01">Topology</label>';
         html += '<div class="controls"><select id="topologyItems"></select></div>'
         html += '</div>';
+
+        html += '<div class="control-group"><label class="control-label">Type</label><div class="controls">';
+        html += '<select id="SType">';
+        html += '<option value="SYN">Synchronous</option>';
+        html += '<option value="ASYN">Asynchronous</option></select>';
+        html += '</div></div>';
 
         html += '<div class="control-group"><label class="control-label">Priority</label><div class="controls">';
         html += '<select id="priorityLevel"><option>low</option><option>middle</option><option>high</option></select>';
@@ -533,7 +552,7 @@ $(function() {
         html += '</div></div>';
 
         html += '<div class="control-group"><label class="control-label">Objective</label><div class="controls">';
-        html += '<select id="QoS">';
+        html += '<select id="SLO">';
         html += '<option value="NONE">None</option>';
         html += '<option value="MAX_THROUGHPUT">Max Throughput</option>';
         html += '<option value="MIN_LATENCY">Min Latency</option>';
@@ -548,7 +567,7 @@ $(function() {
         html += '</div>';
 
         html += '<div class="control-group"><label class="control-label" for="input01"></label>';
-        html += '<div class="controls"><button id="submitIntent" type="button" class="btn btn-primary">Send</button>';
+        html += '<div class="controls"><button id="submitIntent" type="button" class="btn btn-primary">Apply</button>';
         html += '</div></div>';
 
         html += '</fieldset></div>';
@@ -557,6 +576,48 @@ $(function() {
 
         // add all service topologies into the selection list
         listAllTopologies();
+
+        // set the value accordingly
+        if (intentEntity == undefined) {
+            var uid = uuid();
+            var sid = 'ServiceIntent.' + uid;
+
+            $("#SID").text(sid);
+        } else {
+            var sid = intentEntity.entityId.id;
+            $("#SID").text(sid);
+
+            console.log(intentEntity);
+            var intent = intentEntity.attributes["intent"].value;
+            console.log(intent);
+
+            $('#topologyItems').val(intent.topology);
+            $('#SType').val(intent.stype);
+            $('#SLO').val(intent.slo);
+
+            if (intent.priority.exclusive) {
+                $('#resouceUsage').val("exclusive");
+            } else {
+                $('#resouceUsage').val("inclusive");
+            }
+
+            if (intent.priority.level == 0) {
+                $('#priorityLevel').val("low");
+            } else if (intent.priority.level == 50) {
+                $('#priorityLevel').val("middle");
+            } else if (intent.priority.level == 100) {
+                $('#priorityLevel').val("high");
+            }
+
+            if (intent.geoscope.scopeType == "global") {
+                $('#geoscope').val("global");
+            } else {
+                $('#geoscope').val("custom");
+                geoscope = intent.geoscope;
+                showMap();
+            }
+
+        }
 
         // associate functions to clickable buttons
         $('#submitIntent').click(submitIntent);
@@ -574,9 +635,14 @@ $(function() {
     }
 
 
-    function removeIntent(entityID) {
+    function addIntent() {
+        $('#info').html('to specify an intent object in order to run your service');
+        showIntent();
+    }
+
+    function removeIntent(eid) {
         var entityid = {
-            id: entityID,
+            id: eid,
             isPattern: false
         };
 
@@ -587,6 +653,23 @@ $(function() {
         }).catch(function(error) {
             console.log('failed to delete this service intent');
         });
+    }
+
+    function updateIntent(eid) {
+        $('#info').html('to update an existing service intent');
+
+        console.log(eid);
+
+        var queryReq = {}
+        queryReq.entities = [{ id: eid, isPattern: false }];
+
+        client.queryContext(queryReq).then(function(data) {
+            console.log('update this service intent');
+            showIntent(data[0]);
+        }).catch(function(error) {
+            console.log('failed to delete this service intent');
+        });
+
     }
 
 
@@ -626,7 +709,10 @@ $(function() {
         var topology = $('#topologyItems option:selected').val();
         intent.topology = topology;
 
-        var temp1 = $('#PriorityLevel option:selected').val();
+        var sType = $('#SType option:selected').val();
+        intent.stype = sType;
+
+        var temp1 = $('#priorityLevel option:selected').val();
         var priorityLevel = 0;
         switch (temp1) {
             case 'low':
@@ -640,7 +726,7 @@ $(function() {
                 break;
         }
 
-        var temp2 = $('#ResouceUsage option:selected').val();
+        var temp2 = $('#resouceUsage option:selected').val();
         var exclusiveResourceUsage = false;
         if (temp2 == 'exclusive') {
             exclusiveResourceUsage = true;
@@ -651,24 +737,28 @@ $(function() {
             'level': priorityLevel
         };
 
-        var qos = $('#QoS option:selected').val();
-        intent.qos = qos;
+        var slo = $('#SLO option:selected').val();
+        intent.slo = slo;
 
         var scope = $('#geoscope option:selected').val();
 
         var operationScope = {};
         if (scope == 'custom') {
-            operationScope.scopeType = geoscope.type
-            operationScope.scopeValue = geoscope.value
+            operationScope.scopeType = geoscope.type;
+            operationScope.scopeValue = geoscope.value;
+            intent.geoscope = operationScope;
+        } else {
+            operationScope.scopeType = scope;
+            operationScope.scopeValue = scope;
             intent.geoscope = operationScope;
         }
 
         var intentCtxObj = {};
 
-        var uid = uuid();
+        var sid = $("#SID").text();
 
         intentCtxObj.entityId = {
-            id: 'ServiceIntent.' + uid,
+            id: sid,
             type: 'ServiceIntent',
             isPattern: false
         };
@@ -801,6 +891,17 @@ $(function() {
 
             drawnItems.addLayer(layer);
         });
+
+        // if geoscope is already set, display it on the map
+        if (geoscope) {
+            if (geoscope.type == 'circle') {
+                var circle = geoscope.value;
+                L.circle([circle.centerLatitude, circle.centerLongitude], circle.radius).addTo(map);
+            } else if (geoscope.type == 'rectangle') {
+                L.rectangle().addTo(map);
+            }
+        }
+
     }
 
     function removeMap() {
