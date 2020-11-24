@@ -25,9 +25,9 @@ def test_persistOPerator():
         data=json.dumps(
             data.test0),
         headers=headers)
-    print(r.content)
+    #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
-    print(r.content)
+    #print(r.content)
     resp_content = r.content
     resInJson = resp_content.decode('utf8').replace("'", '"')
     resp = json.loads(resInJson)
@@ -52,9 +52,9 @@ def test_persistFogFunction():
         data=json.dumps(
             data.test1),
         headers=headers)
-    print(r.content)
+    #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
-    print(r.content)
+    #print(r.content)
     resp_content = r.content
     resInJson = resp_content.decode('utf8').replace("'", '"')
     resp = json.loads(resInJson)
@@ -79,9 +79,9 @@ def test_persistDockerImage():
         data=json.dumps(
             data.test2),
         headers=headers)
-    print(r.content)
+    #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
-    print(r.content)
+    #print(r.content)
     resp_content = r.content
     resInJson = resp_content.decode('utf8').replace("'", '"')
     resp = json.loads(resInJson)
@@ -106,9 +106,9 @@ def test_persistopology():
         data=json.dumps(
             data.test3),
         headers=headers)
-    print(r.content)
+    #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
-    print(r.content)
+    #print(r.content)
     resp_content = r.content
     resInJson = resp_content.decode('utf8').replace("'", '"')
     resp = json.loads(resInJson)
