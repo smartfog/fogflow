@@ -10,5 +10,5 @@ CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo    -o worke
 docker build -f Dockerfile4Arm -t "fogflow/worker:arm"  .
 
 #build worker for ARMv8
-CGO_ENABLED=0  GOOS=linux GOARCH=arm64 go build  -a -installsuffix cgo    -o worker_arm64
-docker build -f Dockerfile4Armv8 -t "fogflow/worker:arm64"  .
+#CGO_ENABLED=0  GOOS=linux GOARCH=arm64 go build  -a -installsuffix cgo    -o worker_arm64
+#docker build -f Dockerfile4Armv8 -t "fogflow/worker:arm64"  .

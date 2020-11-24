@@ -48,7 +48,9 @@ install:
     - pip install -U pytest
     - sudo apt-get install curl
     - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-    - sudo apt-get install nodejs
+    - curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
+    - source ~/.profile   
+    - nvm install 12.18.1   
     - node -v 
     - npm -v
     - echo 'deb http://www.rabbitmq.com/debian/ testing main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
@@ -98,6 +100,8 @@ script:
     - screen -d -m ./worker
     - cd ../
     - cd designer/
+    - npm install -g npm-check-updates
+    - ncu -u
     - npm install
     - screen -d -m node main.js
     - cd ../
@@ -110,12 +114,9 @@ script:
     - cd v1/
     - pytest -s -v
     - cd ../
-    - cd NGSI-LD/
-    - pytest -s -v
-    - cd ../
     - cd persistance/
     - pytest -s -v 
-    - echo "Testing Done !"
+    - echo "Testing Done !!!"
 
 notifications:
     email: false
