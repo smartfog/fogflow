@@ -691,10 +691,10 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				return
 			} else {
 				fmt.Println(deSerializedEntity)
+				deSerializedEntity["@context"] = context
+				//send the notification to subscriber
+				go tb.LDNotifySubscribers(deSerializedEntity, false)
 			}
-			deSerializedEntity["@context"] = context
-			//send the notification to subscriber
-			go tb.LDNotifySubscribers(deSerializedEntity, false)
 		}
 	} else {
 		rest.Error(w, "Missing Headers or Incorrect Header values!", 400)
