@@ -1,0 +1,3 @@
+[submodule "grafana/prometheus/src/github.com/ant0ine/go-json-rest"]
+	path = grafana/prometheus/src/github.com/ant0ine/go-json-rest
+	url = https://github.com/ant0ine/go-json-rest
