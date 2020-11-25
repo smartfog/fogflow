@@ -1,4 +1,3 @@
-//const grpc = require('grpc');
 const dgraph = require("dgraph-js");
 
 var request = require('request');

@@ -38,9 +38,9 @@ config.brokerURL = './ngsi10';
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 
 config.brokerIp = globalConfigFile.coreservice_ip
-//broker port
+    //broker port
 config.brokerPort = globalConfigFile.broker.http_port
-//designer IP
+    //designer IP
 config.designerIP = globalConfigFile.coreservice_ip
 config.DGraphPort = globalConfigFile.persistent_storage.port
 
@@ -50,7 +50,8 @@ console.log(config);
 dgraph.queryForEntity()
 
 function uuid() {
-    var uuid = "", i, random;
+    var uuid = "",
+        i, random;
     for (i = 0; i < 32; i++) {
         random = Math.random() * 16 | 0;
         if (i == 8 || i == 12 || i == 16 || i == 20) {
@@ -66,7 +67,7 @@ function uuid() {
 var subscriptions = {};
 
 
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
@@ -77,17 +78,17 @@ app.use(express.static(__dirname + '/public', { cache: false }));
 
 // to receive and save uploaded image content
 var storage = multer.diskStorage({
-    destination: function (req, file, callback) {
+    destination: function(req, file, callback) {
         callback(null, './public/photo');
     },
-    filename: function (req, file, callback) {
+    filename: function(req, file, callback) {
         console.log(file.fieldname);
         callback(null, file.fieldname);
     }
 });
 var upload = multer({ storage: storage }).any();
-app.post('/photo', function (req, res) {
-    upload(req, res, function (err) {
+app.post('/photo', function(req, res) {
+    upload(req, res, function(err) {
         if (err) {
             return res.end("Error uploading file.");
         }
@@ -97,7 +98,7 @@ app.post('/photo', function (req, res) {
 
 
 // create a new intent to trigger the corresponding service topology
-app.post('/intent', jsonParser, function (req, res) {
+app.post('/intent', jsonParser, function(req, res) {
     intent = req.body
 
     var intentCtxObj = {};
@@ -118,10 +119,10 @@ app.post('/intent', jsonParser, function (req, res) {
     intentCtxObj.metadata.location = intent.geoscope;
 
     ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL);
-    ngsi10client.updateContext(intentCtxObj).then(function (data) {
+    ngsi10client.updateContext(intentCtxObj).then(function(data) {
         console.log('======create intent======');
         console.log(data);
-    }).catch(function (error) {
+    }).catch(function(error) {
         console.log(error);
         console.log('failed to create intent');
     });
@@ -136,7 +137,7 @@ app.post('/intent', jsonParser, function (req, res) {
 */
 
 //app.use (bodyParser.json());
-app.post('/internal/updateContext', jsonParser, async function (req, res) {
+app.post('/internal/updateContext', jsonParser, async function(req, res) {
     console.log("receive internal update");
 
     var payload = await req.body
@@ -153,7 +154,7 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
 
 
 // to remove an existing intent
-app.delete('/intent', jsonParser, function (req, res) {
+app.delete('/intent', jsonParser, function(req, res) {
     eid = req.body.id
 
     var entityid = {
@@ -162,10 +163,10 @@ app.delete('/intent', jsonParser, function (req, res) {
     };
 
     ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL);
-    ngsi10client.deleteContext(entityid).then(function (data) {
+    ngsi10client.deleteContext(entityid).then(function(data) {
         console.log('======delete intent======');
         console.log(data);
-    }).catch(function (error) {
+    }).catch(function(error) {
         console.log(error);
         console.log('failed to delete intent');
     });
@@ -174,14 +175,14 @@ app.delete('/intent', jsonParser, function (req, res) {
 });
 
 
-app.get('/config.js', function (req, res) {
+app.get('/config.js', function(req, res) {
     res.setHeader('Content-Type', 'application/json');
     var data = 'var config = ' + JSON.stringify(config) + '; '
     res.end(data);
 });
 
 // fetch the requested URL from the edge node within the internal network
-app.get('/proxy', function (req, res) {
+app.get('/proxy', function(req, res) {
     console.log(req.query.url);
 
     if (req.query.url) {
@@ -208,23 +209,24 @@ NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
 
 var webServer;
-webServer = app.listen(config.webSrvPort, function () {
+webServer = app.listen(config.webSrvPort, function() {
     console.log("HTTP-based web server is listening on port ", config.webSrvPort);
 });
 
 
-var io = require('socket.io')();
+//var io = require('socket.io')();
+var io = require('socket.io').listen(webServer);
 
-io.on('connection', function (client) {
+io.on('connection', function(client) {
     console.log('a client is connecting');
-    client.on('subscriptions', function (subList) {
+    client.on('subscriptions', function(subList) {
         console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
             sid = subList[i];
             subscriptions[sid] = client;
         }
     });
-    client.on('disconnect', function () {
+    client.on('disconnect', function() {
         console.log('disconnected');
 
         //remove the subscriptions associated with this socket
@@ -235,5 +237,3 @@ io.on('connection', function (client) {
         }
     });
 });
-
-
