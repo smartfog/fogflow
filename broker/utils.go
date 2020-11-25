@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/piprate/json-gold/ld"
 	. "github.com/smartfog/fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/constants"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -145,7 +146,7 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 	req.Header.Add("Require-Reliability", "true")
-
+	req.Header.Add("Link",DEFAULT_CONTEXT)
 	// add link header
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
