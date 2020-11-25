@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"strings"
 	"time"
@@ -157,7 +156,7 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				}
 			} else if strings.Contains(k, "createdAt") {
 				continue
-			} else { 
+			} else {
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
 					mp := interfaceArray[0].(map[string]interface{})
@@ -364,6 +363,10 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			if fieldValue != nil {
 				Property["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
 			}
+		} else if strings.Contains(propertyField, "createdAt") {
+			continue
+		} else if strings.Contains(propertyField, "modifiedA") {
+			continue
 		} else { // Nested property or relationship
 
 			var typ string
@@ -435,6 +438,10 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 			if fieldValue != nil {
 				Relationship["instanceId"] = sz.getInstanceId(fieldValue.([]interface{}))
 			}
+		} else if strings.Contains(relationshipField, "createdAt") {
+			continue
+		} else if strings.Contains(relationshipField, "modifiedA") {
+			continue
 		} else { // Nested property or relationship
 			var typ string
 			nested := fieldValue.([]interface{})

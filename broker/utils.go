@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/piprate/json-gold/ld"
-	. "github.com/smartfog/fogflow/common/ngsi"
 	. "github.com/smartfog/fogflow/common/constants"
+	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -146,7 +145,7 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 	req.Header.Add("Require-Reliability", "true")
-	req.Header.Add("Link",DEFAULT_CONTEXT)
+	req.Header.Add("Link", DEFAULT_CONTEXT)
 	// add link header
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
@@ -436,13 +435,11 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
 		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
 	}
-	fmt.Println("reso1:", ldCompactedElems)
 	LdElementList := make([]interface{}, 0)
 	for _, ldEle := range ldCompactedElems {
 		element := make(map[string]interface{})
 		element["id"] = ldEle["id"]
 		element["type"] = ldEle["type"]
-		fmt.Println("running 1")
 		for k, _ := range ldEle {
 			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
 				element[k] = ldEle[k]
@@ -458,7 +455,6 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		Id:             "fogflow:notification",
 		NotifyAt:       time.Now().String(),
 	}
-	fmt.Println(notifyCtxReq)
 	body, err := json.Marshal(notifyCtxReq)
 	if err != nil {
 		return err
@@ -549,11 +545,8 @@ func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
 	recCtxEleMap := recCtxEle.(map[string]interface{})
 	currCtxEleMap := currCtxEle.(map[string]interface{})
 	for attr, _ := range recCtxEleMap {
-		fmt.Println("This is key of receive data")
-		fmt.Println(attr)
 		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
 			if isNewLdAttribute(attr, currCtxEleMap) == true {
-				fmt.Println("Return true")
 				return true
 			}
 		}

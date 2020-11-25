@@ -60,6 +60,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
 
 		//NGSI-LD APIs
+		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NotifyLdContext),
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
 		rest.Get("/ngsi-ld/v1/entities", apisrv.GetQueryParamsEntities),

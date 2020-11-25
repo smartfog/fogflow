@@ -671,6 +671,36 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 	}
 }
 
+func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
+	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
+		var context []interface{}
+		context = append(context, DEFAULT_CONTEXT)
+		notifyElement, _ := tb.getStringInterfaceMap(r)
+		notifyElemtData := notifyElement["data"]
+		notifyEleDatamap := notifyElemtData.([]interface{})
+		notifyCtxResp := NotifyContextResponse{}
+		w.WriteJson(&notifyCtxResp)
+		for _, data := range notifyEleDatamap {
+			notifyData := data.(map[string]interface{})
+			notifyData["@context"] = context
+			expand, _ := tb.ExpandData(notifyData)
+			sz := Serializer{}
+			deSerializedEntity, err := sz.DeSerializeEntity(expand)
+			if err != nil {
+				rest.Error(w, err.Error(), 400)
+				return
+			} else {
+				fmt.Println(deSerializedEntity)
+			}
+			deSerializedEntity["@context"] = context
+			//send the notification to subscriber
+			go tb.LDNotifySubscribers(deSerializedEntity, false)
+		}
+	} else {
+		rest.Error(w, "Missing Headers or Incorrect Header values!", 400)
+		return
+	}
+}
 func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 	notifyCtxReq := NotifyContextRequest{}
 	err := r.DecodeJsonPayload(&notifyCtxReq)
@@ -848,8 +878,6 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
-			fmt.Println("elements:", elements)
-			fmt.Println("returnedElement", returnedElement)
 			elements = append(elements, returnedElement)
 		}
 	}
@@ -2387,7 +2415,6 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
-	fmt.Println("ctxAvailabilityRequest", ctxAvailabilityRequest)
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
@@ -2655,7 +2682,6 @@ func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 func (tb *ThinBroker) checkMatcheLdAttr(ctxElemAttrs []string, sid string) bool {
 	tb.ldSubscriptions_lock.RLock()
 	conditionList := tb.ldSubscriptions[sid].WatchedAttributes
-	fmt.Println("conditionList:", conditionList)
 	tb.ldSubscriptions_lock.RUnlock()
 	matchedAtleastOnce := false
 	for _, attrs1 := range ctxElemAttrs {
@@ -2694,7 +2720,6 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 	for _, sid := range subscriberList {
 		elements := make([]map[string]interface{}, 0)
 		checkCondition := tb.checkMatcheLdAttr(ldAttr, sid)
-		fmt.Println("checkCondition:", checkCondition)
 		if checkSelectedAttributes == true && checkCondition == true {
 			selectedAttributes := make([]string, 0)
 			tb.ldSubscriptions_lock.RLock()
