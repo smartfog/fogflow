@@ -96,8 +96,6 @@ script:
 
     - cd ../designer/
     - cat dgraph.js
-    - npm install -g npm-check-updates
-    - ncu -u
     - npm install
     - node main.js
 
