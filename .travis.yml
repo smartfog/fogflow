@@ -82,29 +82,25 @@ script:
 
     - cd discovery/ 
     - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - cat config.json
+    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json    
     - go get; go build
     - screen -d -m ./discovery
 
     - cd ../broker/
     - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - cat config.json
     - go get; go build
     - screen -d -m ./broker
 
     - cd ../master/
     - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - cat config.json
     - go get; go build
     - screen -d -m ./master
 
     - cd ../designer/
     - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - cat config.json
     - npm install
     - screen -d -m node main.js
 
