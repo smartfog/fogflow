@@ -80,42 +80,38 @@ script:
     - cp docker/core/http/config.json  ./designer/
 
     - cd discovery/ 
-    - go get
-    - go build
+    - cat config.json
+    - go get; go build
     - screen -d -m ./discovery
-    - cd ../
-    - cd broker/
-    - go get
-    - go build
+
+    - cd ../broker/
+    - cat config.json
+    - go get; go build
     - screen -d -m ./broker
-    - cd ../
-    - cd master/
-    - go get
-    - go build
+
+    - cd ../master/
+    - cat config.json
+    - go get; go build
     - screen -d -m ./master
-    - cd ../
-    - cd worker/
-    - go get
-    - go build
-    - screen -d -m ./worker
-    - cd ../
-    - cd designer/
+
+    - cd ../designer/
     - npm install -g npm-check-updates
     - ncu -u
     - npm install
     - screen -d -m node main.js
-    - cd ../
-    - cd test/UnitTest/
+
+    - cd ../test/UnitTest/
     - screen -d -m python accumulator.py
-    - cd ../
-    - cd UnitTest/v2/
-    - pytest -s -v 
-    - cd ../
-    - cd v1/
+
+    - cd ../UnitTest/v2/
     - pytest -s -v
-    - cd ../
-    - cd persistance/
+ 
+    - cd ../v1/
+    - pytest -s -v
+
+    - cd ../persistance/
     - pytest -s -v 
+
     - echo "Testing Done !!!"
 
 notifications:
