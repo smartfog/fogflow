@@ -95,6 +95,7 @@ script:
     - screen -d -m ./master
 
     - cd ../designer/
+    - cat main.js
     - npm install -g npm-check-updates
     - ncu -u
     - npm install
