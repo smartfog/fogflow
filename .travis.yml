@@ -50,7 +50,7 @@ install:
     - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
     - curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
     - source ~/.profile   
-    - nvm install 12.18.1   
+    - nvm install 12.19.1   
     - node -v 
     - npm -v
     - echo 'deb http://www.rabbitmq.com/debian/ testing main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
@@ -98,7 +98,7 @@ script:
     - npm install -g npm-check-updates
     - ncu -u
     - npm install
-    - screen -d -m node main.js
+    - node main.js
 
     - cd ../test/UnitTest/
     - screen -d -m python accumulator.py
