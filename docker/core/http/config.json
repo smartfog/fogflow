@@ -1,6 +1,6 @@
 {
-    "coreservice_ip": "127.0.0.1",   
-    "external_hostip": "127.0.0.1",
+    "coreservice_ip": "192.168.0.51",   
+    "external_hostip": "192.168.0.51",
     "internal_hostip": "127.0.0.1", 
     "physical_location":{
         "longitude": 139.709059,
