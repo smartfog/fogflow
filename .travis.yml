@@ -40,6 +40,7 @@ install:
     - sh build    
 
     - sudo apt-get update
+    - sudo apt-get install jq
     - sudo apt-get install python-pip
     - pip -V
     - sudo pip install --upgrade pip
@@ -80,24 +81,28 @@ script:
     - cp docker/core/http/config.json  ./designer/
 
     - cd discovery/ 
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - cat config.json
     - go get; go build
     - screen -d -m ./discovery
 
     - cd ../broker/
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - cat config.json
     - go get; go build
     - screen -d -m ./broker
 
     - cd ../master/
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - cat config.json
     - go get; go build
     - screen -d -m ./master
 
     - cd ../designer/
-    - cat dgraph.js
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - cat config.json
     - npm install
-    - node main.js
+    - screen -d -m node main.js
 
     - cd ../test/UnitTest/
     - screen -d -m python accumulator.py
