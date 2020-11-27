@@ -95,7 +95,7 @@ script:
     - screen -d -m ./master
 
     - cd ../designer/
-    - cat main.js
+    - cat dgraph.js
     - npm install -g npm-check-updates
     - ncu -u
     - npm install
