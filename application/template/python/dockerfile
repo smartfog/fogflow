@@ -2,6 +2,8 @@ FROM python:2.7-alpine
 
 RUN mkdir /task
 ADD main.py /task
+ADD function.py /task
+ADD  config.json /task 
 ADD requirements.txt  /task
 WORKDIR /task
 
