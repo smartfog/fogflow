@@ -1217,70 +1217,6 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 
 
-
-**b. To create entity with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-Accept            application/ld+json
-=============     ======================================
-
-**Request**
-
-.. code-block:: console
-   
-    curl -iX POST \
-     'http://localhost:80/ngsi-ld/v1/entities/' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -d'
-        {
-	          "@context": [{
-		  "Vehicle": "http://example.org/vehicle/Vehicle",
-		  "brandName": "http://example.org/vehicle/brandName",
-		  "speed": "http://example.org/vehicle/speed",
-		  "isParked": {
-			         "@type": "@id",
-			         "@id": "http://example.org/common/isParked"
-		  },
-		  "providedBy": {
-			           "@type": "@id",
-			           "@id": "http://example.org/common/providedBy"
-		   }
-	       }],
-	       "id": "urn:ngsi-ld:Vehicle:A4580",
-	       "type": "Vehicle",
-	       "brandName": {
-		              "type": "Property",
-		              "value": "Mercedes"
-	        },
-	        "isParked": {
-		              "type": "Relationship",
-		              "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
-		              "observedAt": "2017-07-29T12:00:04",
-		              "providedBy": {
-			                      "type": "Relationship",
-			                      "object": "urn:ngsi-ld:Person:Bob"
-		               }
-	         },
-	         "speed": {
-		             "type": "Property",
-		             "value": 80
-	          },
-	          "createdAt": "2017-07-29T12:00:04",
-	          "location": {
-		                "type": "GeoProperty",
-		                "value": {
-			                    "type": "Point",
-			                    "coordinates": [-8.5, 41.2]
-		                 }
-	            } 
-           }'
-
-
 **c.  To create a new NGSI-LD context entity, with context in Link header and request payload is already expanded**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1401,15 +1337,13 @@ Accept            application/ld+json
        'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
        -H 'Accept: application/ld+json' \
+       -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \       
        -d'
         {
-	     "@context": {
-		               "brandName2": "http://example.org/vehicle/brandName1"
-	      },
 	      "id": "urn:ngsi-ld:Vehicle:A4580",
               "type": "Vehicle",
 
-	     "brandName1": {
+	     ""brandName1"": {
 		                 "type": "Property",
 		                 "value": "BMW"
 	      }
@@ -1436,15 +1370,13 @@ Accept            application/ld+json
        'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
        -H 'Accept: application/ld+json' \
+       -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
        -d'
         {
-	       "@context": {
-		               "brandName1": "http://example.org/vehicle/brandName1"
-	        },
 		"id": "urn:ngsi-ld:Vehicle:A4580",
 	        "type": "Vehicle",
 
-	       "brandName2": {
+	       "brandName": {
 		                  "type": "Property",
 		                  "value": "AUDI"
 	        }
