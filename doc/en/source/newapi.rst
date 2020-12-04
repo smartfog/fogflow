@@ -1476,3 +1476,51 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 	 }'
 
 
+
+**b. To retrieve all the subscriptions**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /ngsi-ld/v1/subscriptions**
+
+**Example:**
+
+.. code-block:: console
+
+   curl http://localhost:80/ngsi-ld/subscriptions/ -H 'Accept: application/ld+json'
+
+
+**c. To retrieve a specific subscription based on subscription id**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /ngsi-ld/v1/subscriptions/#sid**
+
+==============   ============================
+Param		 Description
+==============   ============================
+sid              subscription Id
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl http://localhost:80/ngsi-ld/subscriptions/urn:ngsi-ld:Subscription:71
+   
+**d. To delete a specific subscription based on subscription id**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /ngsi-ld/v1/subscriptions/#sid**
+
+==============   ============================
+Param		 Description
+==============   ============================
+sid              subscription Id
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+   curl -iX DELETE http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71
