@@ -1,7 +1,7 @@
 Using NGSI-LD speciifcation implementation 
 ===============================================
 Scorpio integration with FogFLow enable FogFlow task to communicate with scorpio Broker.
-The figure below shows how data will transmit between socrpio broker, FOgFLow broker and FogFlow task.
+The figure below shows how data will transmit between socrpio broker, FogFlow broker and FogFlow task.
 
 .. figure:: figures/scorpioIntegration.png
 
@@ -16,7 +16,13 @@ Integration steps
 
 **There are two type of Itegration**
 
-* when a NGSI-LD device will send some update on scorpio broker then update should be notified to the FogFLow broker . After getting the notification from scorpio broker FogFlow will send this notification to the FogFLow task for furthur analysis. For This integration FogFLow broker will subscribe to the scorpio broker using following request.
+**TYPE 1**
+
+* NGSI-LD device will sends some update to scopio broker.
+* FoFlow Will subscribe to scorpio Broker to get notification for every update.
+* FogFlow Task will subscriber to FogFlow to get notification for furthur analysis.
+
+**Sends subscrioption request to Scorpio Broker**
 
 .. code-block:: console
 
@@ -43,4 +49,33 @@ Integration steps
          }
     }'
 
+**Type 2**
+
+* FogFlow task will publish NGSI-LD to the FogFlow broker.
+* Scorpio broker will subscribe to the FogFlow broker to get the notification form FOgFLow broker.
+
+.. code-block:: console
+
+    curl -iX POST \
+    'http://<FogFlow Broker>/ngsi-ld/v1/subscriptions/' \
+      -H 'Content-Type: application/ld+json' \
+      -H 'Accept: application/ld+json' \
+      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+      -d '
+      {
+         "type": "Subscription",
+         "entities": [{
+                "id" : "urn:ngsi-ld:Vehicle:A13",
+                "type": "Vehicle"
+           }],
+          "watchedAttributes": [],
+          "notification": {
+                 "attributes": [],
+                  "format": "keyValues",
+                 "endpoint": {
+                        "uri": "http://<Scorpio Broker>/notifyContext",
+                        "accept": "application/json"
+                }
+         }
+    }'
 
