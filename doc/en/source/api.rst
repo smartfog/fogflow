@@ -1152,9 +1152,6 @@ The following figure shows a brief overview of how the APIs in current scope wil
 
 .. figure:: figures/ngsild_architecture.png
 
-
-
-
 Entities API
 ------------
 For the purpose of interaction with Fogflow, IOT devices approaches broker with entity creation request where it is resolved as per given context. Broker further forwards the registration request to Fogflow Discovery in correspondence to the created entity.
@@ -1213,75 +1210,9 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 			                 "coordinates": [-8.5, 41.2]
 		               }
 	        }   
-        }' 
-
-
-
-
-**b. To create entity with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-Accept            application/ld+json
-=============     ======================================
-
-**Request**
-
-.. code-block:: console
-   
-    curl -iX POST \
-     'http://localhost:80/ngsi-ld/v1/entities/' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -d'
-        {
-	          "@context": [{
-		  "Vehicle": "http://example.org/vehicle/Vehicle",
-		  "brandName": "http://example.org/vehicle/brandName",
-		  "speed": "http://example.org/vehicle/speed",
-		  "isParked": {
-			         "@type": "@id",
-			         "@id": "http://example.org/common/isParked"
-		  },
-		  "providedBy": {
-			           "@type": "@id",
-			           "@id": "http://example.org/common/providedBy"
-		   }
-	       }],
-	       "id": "urn:ngsi-ld:Vehicle:A4580",
-	       "type": "Vehicle",
-	       "brandName": {
-		              "type": "Property",
-		              "value": "Mercedes"
-	        },
-	        "isParked": {
-		              "type": "Relationship",
-		              "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
-		              "observedAt": "2017-07-29T12:00:04",
-		              "providedBy": {
-			                      "type": "Relationship",
-			                      "object": "urn:ngsi-ld:Person:Bob"
-		               }
-	         },
-	         "speed": {
-		             "type": "Property",
-		             "value": 80
-	          },
-	          "createdAt": "2017-07-29T12:00:04",
-	          "location": {
-		                "type": "GeoProperty",
-		                "value": {
-			                    "type": "Point",
-			                    "coordinates": [-8.5, 41.2]
-		                 }
-	            } 
-           }'
-
-
-**c.  To create a new NGSI-LD context entity, with context in Link header and request payload is already expanded**
+        }'
+	
+**b.  To create a new NGSI-LD context entity, with context in Link header and request payload is already expanded**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ======================================
@@ -1380,8 +1311,7 @@ Accept            application/ld+json
 
         }'
 
-
-**d. To append additional attributes to an existing entity**
+**c. To append additional attributes to an existing entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **POST /ngsi-ld/v1/entities/**
@@ -1401,22 +1331,19 @@ Accept            application/ld+json
        'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
        -H 'Accept: application/ld+json' \
+       -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \       
        -d'
         {
-	     "@context": {
-		               "brandName2": "http://example.org/vehicle/brandName1"
-	      },
 	      "id": "urn:ngsi-ld:Vehicle:A4580",
               "type": "Vehicle",
 
-	     "brandName1": {
+	     ""brandName1"": {
 		                 "type": "Property",
 		                 "value": "BMW"
 	      }
         }'
 
-
-**e. To update specific attributes of an existing entity**
+**d. To update specific attributes of an existing entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **POST /ngsi-ld/v1/entities/**
@@ -1436,21 +1363,20 @@ Accept            application/ld+json
        'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
        -H 'Accept: application/ld+json' \
+       -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
        -d'
         {
-	       "@context": {
-		               "brandName1": "http://example.org/vehicle/brandName1"
-	        },
 		"id": "urn:ngsi-ld:Vehicle:A4580",
 	        "type": "Vehicle",
 
-	       "brandName2": {
+	       "brandName": {
 		                  "type": "Property",
 		                  "value": "AUDI"
 	        }
 	}'
-  
-**g. To delete an NGSI-LD context entity**
+
+
+**e. To delete an NGSI-LD context entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/entities/#eid**
@@ -1468,7 +1394,7 @@ eid              Entity Id
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100  -H 'Content-Type: application/json' -H 'Accept: application/ld+json'
 
 
-**h. To delete an attribute of an NGSI-LD context entity**
+**f. To delete an attribute of an NGSI-LD context entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/entities/#eid/attrs/#attrName**
@@ -1486,8 +1412,7 @@ attrName         Attribute Name
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName1
 
-
-**i. To retrieve a specific entity**
+**g. To retrieve a specific entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/entities/#eid**
@@ -1503,115 +1428,11 @@ eid              Entity Id
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4569
-
-
-**j. To retrieve entities by attributes**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/entities?attrs=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Attriute Value
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?attrs=http://example.org/vehicle/brandName -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
-
-
-
-**k. To retrieve a specific entity by ID and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/entities?id=(value 1)&type=(value 2)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-value 1          Attribute Value of Entity
-Value 2          Type Value of Entity
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4569&type=http://example.org/vehicle/Vehicle
-
-
-**l. To retrieve a specific entity by Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/entities?type=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Type Value
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?type=http://example.org/vehicle/Vehicle
-
-
-**m. To retrieve a specific entity by Type, context in Link Header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET ngsi-ld/v1/entities?type=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Type Value
-==============   ============================
-
-**Header Format**
-
-=============     ===========================================================
-key               Value
-=============     ===========================================================
-Content-Type      application/json
-Accept            application/ld+json
-Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
-                  type="application/ld+json"
-=============     ===========================================================
-
-**Example:**
-
-.. code-block:: console
-
-   curl -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'  http://localhost:80//ngsi-ld/v1/entities?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
-
-
-**n. To retrieve a specific entity by IdPattern and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET : /ngsi-ld/v1/entities?idPattern=(Value 1)&type=(Value 2)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-value 1          idPattern Value of Entity
-Value 2          Type Value of Entity
-==============   ============================ample:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?idPattern=urn:ngsi-ld:Vehicle:A.*&type=http://example.org/vehicle/Vehicle
-
-       
+   
 Subscription API
 -------------------
 
 A new subscription is issued by the subscriber which is enrouted to broker where the details of subscriber is stored for notification purpose. The broker initiate a request to Fogflow Discovery, where this is registered as new subscription and looks for availabltiy of corresponding data. On receiving data is passes the information back to subscribing broker.
-
 
 **a. To create a new Subscription to with context in Link header**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1655,6 +1476,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 	 }'
 
 
+
 **b. To retrieve all the subscriptions**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1683,60 +1505,8 @@ sid              subscription Id
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/subscriptions/urn:ngsi-ld:Subscription:71
-
-
-**d. To update a specific subscription based on subscription id, with context in Link header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**PATCH  /ngsi-ld/v1/subscriptions/#sid**
-
-==============   ============================
-Param		 Description
-==============   ============================
-sid              subscription Id
-==============   ============================
-
-
-**Header Format**
-
-=============     ===========================================================
-key               Value
-=============     ===========================================================
-Content-Type      application/ld+json
-Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
-                  type="application/ld+json"
-=============     ===========================================================
-
-
-**Request**
-
-.. code-block:: console
-
-   curl -iX POST\
-     'http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71' \
-      -H 'Content-Type: application/ld+json' \
-      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-       {
-	 	"id": "urn:ngsi-ld:Subscription:7",
-	 	"type": "Subscription",
-	 	"entities": [{
-	  			"type": "Vehicle"
-	 	  }],
-	 	"watchedAttributes": ["http://example.org/vehicle/brandName2"],
-	        "q":"http://example.org/vehicle/brandName2!=Mercedes",
-	 	"notification": {
-	  	"attributes": ["http://example.org/vehicle/brandName2"],
-	  	"format": "keyValues",
-	  	"endpoint": {
-	   			"uri": "http://my.endpoint.org/notify",
-				"accept": "application/json"
-	  	 }
-	      }
-	  }'
-
-
-**e. To delete a specific subscription based on subscription id**
+   
+**d. To delete a specific subscription based on subscription id**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -1754,4 +1524,3 @@ sid              subscription Id
 .. code-block:: console
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71
-
