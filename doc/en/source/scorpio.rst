@@ -22,7 +22,7 @@ Integration steps
 * FoFlow Will subscribe to scorpio Broker to get notification for every update.
 * FogFlow Task will subscriber to FogFlow to get notification for furthur analysis.
 
-**Sends subscrioption request to Scorpio Broker**
+**Subscrioption request for Scorpio Broker**
 
 .. code-block:: console
 
@@ -48,6 +48,60 @@ Integration steps
                 }
          }
     }'
+
+**Entity create request for Scorpio Broker**
+
+.. code-block:: console
+
+     curl -iX POST \
+    'http://<Scorpio Broker>/ngsi-ld/v1/entities/' \
+     -H 'Content-Type: application/ld+json' \
+     -H 'Accept: application/ld+json' \
+     -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+    -d '
+        {
+         "id": "urn:ngsi-ld:Vehicle:A13",
+         "type": "Vehicle",
+             "brandName": {
+                  "type": "Property",
+                  "value": "BMW",
+                  "observedAt": "2017-07-29T12:00:04"
+                },
+                 "isParked": {
+                   "type": "Relationship",
+                   "object": "urn:ngsi-ld:OffStreetParking:Downtown",
+                   "observedAt": "2017-07-29T12:00:04",
+                    "providedBy": {
+                        "type": "Relationship",
+                        "object": "urn:ngsi-ld:Person:Bob"
+                     },
+        "location": {
+                "type": "GeoProperty",
+                "value": {
+                        "type": "Point",
+                        "coordinates": [-8.5, 41.2]
+                }
+        }
+}'
+
+    
+    
+**Entity update request for Scorpio Broker**
+
+.. code-block:: console
+
+    curl -iX PATCH \
+    'http://<Scorpio Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A13/attrs' \
+      -H 'Content-Type: application/ld+json' \
+      -H 'Accept: application/ld+json' \
+      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+      -d '
+     {
+	"brandName": {
+		"type": "Property",
+        "value" : "BM2"
+	}
+}'
 
 **Type 2**
 
@@ -78,4 +132,3 @@ Integration steps
                 }
          }
     }'
-
