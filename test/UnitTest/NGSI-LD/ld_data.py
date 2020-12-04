@@ -194,22 +194,42 @@ subdata3=\
 # Payload  to append additional attributes to an existing entity 
 subdata4=\
 {
-      "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-       },
+      "id": "urn:ngsi-ld:Vehicle:A100",
+      "type": "Vehicle",
       "brandName1": {
                           "type": "Property",
                           "value": "BMW"
        }
  }
 
+subdata4b=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A500",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "BMW"
+       }
+ }
+
+
+subdata4c=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A3000",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "BMW"
+       }
+ }
+
+
 # Payload  to patch  update specific attributes of an existing entity A100
 subdata5=\
 {
-        "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-         },
-        "brandName1": {
+      "id": "urn:ngsi-ld:Vehicle:A100",
+      "type": "Vehicle",
+      "brandName1": {
                            "type": "Property",
                            "value": "AUDI"
          }
@@ -218,9 +238,6 @@ subdata5=\
 # Payload  to update the value of a specific attribute of an existing entity with wrong payload
 subdata6=\
 {
-        "@context": {
-                         "brandName": "http://example.org/vehicle/brandName"
-         },
          "value": "MARUTI"
   }
 
@@ -501,21 +518,55 @@ subdata13=\
 # Payload to update entity with different header and posting duplicate attribute
 subdata14=\
 {
-      "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-       },
+      "id": "urn:ngsi-ld:Vehicle:A800",
+      "type": "Vehicle",
       "brandName1": {
                           "type": "Property",
                           "value": "MARUTI"
        }
  }
 
+
+
+subdata14b=\
+{
+      "id": "Vehicle:A800",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "MARUTI"
+       }
+ }
+
+
+
+subdata14c=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A700",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "MARUTI"
+       }
+ }
+
+
+subdata14d=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A900",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "MARUTI"
+       }
+ }
+
+
 # Payload to  Update entity with different headers and passing inappropriate payload
 subdata15=\
 {
-        "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-         },
+        "id": "urn:ngsi-ld:Vehicle:A100",
+	"type": "Vehicle",
         "brandName1": {
                           
          }
@@ -753,36 +804,7 @@ subdata23=\
   "timestamp": {
     "start": "2017-11-29T14:53:15"
   },
-  "expires": "2030-11-29T14:53:15",
-"@context": [
-
-                "https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
-    {
-    "Vehicle": "http://example.org/vehicle/Vehicle",
-    "brandName": "http://example.org/vehicle/brandName",
-    "brandName1": "http://example.org/vehicle/brandName1",
-    "speed": "http://example.org/vehicle/speed",
-    "totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-    "reliability": "http://example.org/common/reliability",
-    "OffStreetParking":    "http://example.org/parking/OffStreetParking",    
-    "availableSpotNumber":    "http://example.org/parking/availableSpotNumber",    
-    "isParked": {
-        "@type": "@id",
-        "@id": "http://example.org/common/isParked"
-    },
-    "isNextToBuilding":  {    
-        "@type":  "@id",    
-        "@id":  "http://example.org/common/isNextToBuilding"    
-    },    
-    "providedBy": {    
-        "@type":  "@id",    
-        "@id":  "http://example.org/common/providedBy"    
-    },    
-    "name": "http://example.org/common/name",
-    "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-    "expires":"http://uri.etsi.org/ngsi-ld/expires"
-}
-]
+  "expires": "2030-11-29T14:53:15"
 }
 
 #Payload to create csource registration with missing attributes
@@ -1233,9 +1255,11 @@ subdata40=\
 
 subdata41=\
 {
-	"@context": {
-		"brandName": "brandName"
-	},
-	"value": "BMW1"
+	"id": "urn:ngsi-ld:Vehicle:A4000",
+        "type": "Vehicle",
+	"brandName1": {
+		"type" : "Property",
+		"value": "BMW1"
+	}
 }
 
