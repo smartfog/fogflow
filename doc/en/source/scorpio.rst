@@ -1,12 +1,13 @@
-Using NGSI-LD speciifcation implementation 
+Using NGSI-LD specification implementation 
 ===============================================
-Scorpio integration with FogFLow enable FogFlow task to communicate with scorpio Broker.
-The figure below shows how data will transmit between socrpio broker, FogFlow broker and FogFlow task.
+Scorpio integration with FogFlow enable FogFlow task to communicate with scorpio Broker.
+The figure below shows how data will transmit between scorpio broker, FogFlow broker and FogFlow task.
 
 .. figure:: figures/scorpioIntegration.png
 
 Integration steps
-===============================================
+-----------------------
+
 **Pre-Requisites:**
 
 * Fogflow should be up and running with atleast one node.
@@ -14,15 +15,15 @@ Integration steps
 * Create and trigger NGSI-LD task (`See Document`_).
 .. _`See Document`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html.
 
-**There are two type of Itegration**
+**There are two type of Integration**
 
 **TYPE 1**
 
 * NGSI-LD device will sends some update to scopio broker.
-* FoFlow Will subscribe to scorpio Broker to get notification for every update.
+* FogFlow Will subscribe to scorpio Broker to get notification for every update.
 * FogFlow Task will subscriber to FogFlow to get notification for furthur analysis.
 
-**Subscrioption request for Scorpio Broker**
+**Subscription request for Scorpio Broker**
 
 .. code-block:: console
 
@@ -132,3 +133,4 @@ Integration steps
                 }
          }
     }'
+
