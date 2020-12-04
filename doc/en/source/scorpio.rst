@@ -52,7 +52,7 @@ Integration steps
 **Type 2**
 
 * FogFlow task will publish NGSI-LD to the FogFlow broker.
-* Scorpio broker will subscribe to the FogFlow broker to get the notification form FOgFLow broker.
+* Scorpio broker will subscribe to the FogFlow broker to get the notification form FogFlow broker.
 
 .. code-block:: console
 
