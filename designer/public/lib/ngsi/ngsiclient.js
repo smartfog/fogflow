@@ -179,6 +179,7 @@ var NGSI10Client = (function() {
     return NGSI10Client;
 })();
 
+/*
 //DGraph changes
 
 var NGSIDesClient = (function() {
@@ -237,6 +238,8 @@ var NGSIDesClient = (function() {
     return NGSIDesClient;
 })
 ();
+*/
+
 
 var NGSI9Client = (function() {
     // initialized with the address of IoT Discovery
@@ -299,13 +302,13 @@ var NGSI9Client = (function() {
 // initialize the exported object for this module, both for nodejs and browsers
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
     this.axios = require('axios')    
-    module.exports.NGSIDesClient = NGSIDesClient;
+    //module.exports.NGSIDesClient = NGSIDesClient;
     module.exports.NGSI10Client = NGSI10Client; 
     module.exports.NGSI9Client = NGSI9Client;   
     module.exports.CtxElement2JSONObject = CtxElement2JSONObject;
     module.exports.JSONObject2CtxElement = JSONObject2CtxElement;    
 } else {
-    window.NGSIDesClient = NGSIDesClient;
+    //window.NGSIDesClient = NGSIDesClient;
     window.NGSI10Client = NGSI10Client;  
     window.NGSI9Client = NGSI9Client;
     window.CtxElement2JSONObject = CtxElement2JSONObject;

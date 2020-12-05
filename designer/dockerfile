@@ -1,4 +1,4 @@
-FROM node:11-alpine
+FROM node:10.15.2
 
 WORKDIR /app
 
@@ -10,5 +10,6 @@ RUN npm install
 ADD main.js /app
 ADD dgraph.js /app
 ADD ./public /app/public
+
 
 ENTRYPOINT [ "node", "main.js" ]
