@@ -94,7 +94,7 @@ def readContextElements(data):
 
 
 def handleNotify(contextObjs):
-    fogflow.handleEntity(contextObjs, publishResult)
+    fogflow.handleEntity(contextObjs, publishResult)   
 
 
 def handleConfig(configurations):
@@ -181,6 +181,9 @@ def requestInputBySubscription():
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/ld+json',
                'Link': 'https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld'}
+    if brokerURL.endswith('/ngsi10') == True:
+        brokerURL = brokerURL.rsplit('/', 1)[0]
+
     response = requests.post(brokerURL + '/ngsi-ld/v1/subscriptions/',
                              data=json.dumps(ctxSubReq),
                              headers=headers)
@@ -197,7 +200,7 @@ def notify2execution():
     myport = int(os.getenv('myport'))
     print 'listening on port ' + os.getenv('myport')
 
-    app.run(host='0.0.0.0', port=8888)
+    app.run(host='0.0.0.0', port=myport)
 
 
 def runInOperationMode():
