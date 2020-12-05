@@ -40,6 +40,7 @@ install:
     - sh build    
 
     - sudo apt-get update
+    - sudo apt-get install jq
     - sudo apt-get install python-pip
     - pip -V
     - sudo pip install --upgrade pip
@@ -48,7 +49,9 @@ install:
     - pip install -U pytest
     - sudo apt-get install curl
     - curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-    - sudo apt-get install nodejs
+    - curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash 
+    - source ~/.profile   
+    - nvm install 12.19.1   
     - node -v 
     - npm -v
     - echo 'deb http://www.rabbitmq.com/debian/ testing main' | sudo tee /etc/apt/sources.list.d/rabbitmq.list
@@ -70,45 +73,50 @@ before_script:
 
 script:
     - cd ../
+
+    - cp docker/core/http/config.json  ./discovery/
+    - cp docker/core/http/config.json  ./broker/
+    - cp docker/core/http/config.json  ./master/
+    - cp docker/core/http/config.json  ./worker/
+    - cp docker/core/http/config.json  ./designer/
+
     - cd discovery/ 
-    - go get
-    - go build
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json    
+    - go get; go build
     - screen -d -m ./discovery
-    - cd ../
-    - cd broker/
-    - go get
-    - go build
+
+    - cd ../broker/
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - go get; go build
     - screen -d -m ./broker
-    - cd ../
-    - cd master/
-    - go get
-    - go build
+
+    - cd ../master/
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - go get; go build
     - screen -d -m ./master
-    - cd ../
-    - cd worker/
-    - go get
-    - go build
-    - screen -d -m ./worker
-    - cd ../
-    - cd designer/
+
+    - cd ../designer/
+    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
+    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - npm install
     - screen -d -m node main.js
-    - cd ../
-    - cd test/UnitTest/
+
+    - cd ../test/UnitTest/
     - screen -d -m python accumulator.py
-    - cd ../
-    - cd UnitTest/v2/
-    - pytest -s -v 
-    - cd ../
-    - cd v1/
+
+    - cd ../UnitTest/v2/
     - pytest -s -v
-    - cd ../
-    - cd NGSI-LD/
+ 
+    - cd ../v1/
     - pytest -s -v
-    - cd ../
-    - cd persistance/
+
+    - cd ../persistance/
     - pytest -s -v 
-    - echo "Testing Done !"
+
+    - echo "Testing Done !!!"
 
 notifications:
     email: false
