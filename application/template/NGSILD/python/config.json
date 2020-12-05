@@ -1,8 +1,12 @@
 [{
 	"command": "CONNECT_BROKER",
-	"brokerURL": "http://180.179.214.208:8070"
+	"brokerURL": "http://180.179.214.202:8070" 
 }, {
 	"command": "SET_OUTPUTS",
-	"id": "Stream.ChildFound.01",
+	"id": "urn:ngsi-ld:Stream.ChildFound.01",
+	"type": "ChildFound"
+}, {
+	"command": "SET_INPUTS",
+	"id": "urn:ngsi-ld:Stream.ChildFound.01",
 	"type": "ChildFound"
 }]
