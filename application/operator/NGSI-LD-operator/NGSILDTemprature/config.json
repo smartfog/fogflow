@@ -1,0 +1,12 @@
+[{
+	"command": "CONNECT_BROKER",
+	"brokerURL": "http://180.179.214.202:8070" 
+}, {
+	"command": "SET_OUTPUTS",
+	"id": "urn:ngsi-ld:Stream.ChildFound.01",
+	"type": "ChildFound"
+}, {
+	"command": "SET_INPUTS",
+	"id": "urn:ngsi-ld:Temprature.01",
+	"type": "TestTempratureOperator"
+}]
