@@ -1460,7 +1460,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
       -d '
        {
 		"type": "Subscription",
-		"id"  : "urn:ngsi-ld:Subscription:71"
+		"id"  : "urn:ngsi-ld:Subscription:71",
 		"entities": [{
 				"id": "urn:ngsi-ld:Vehicle:71",
 				"type": "Vehicle"
