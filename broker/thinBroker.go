@@ -690,7 +690,6 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				rest.Error(w, err.Error(), 400)
 				return
 			} else {
-				fmt.Println(deSerializedEntity)
 				deSerializedEntity["@context"] = context
 				//send the notification to subscriber
 				go tb.LDNotifySubscribers(deSerializedEntity, false)
@@ -1890,7 +1889,6 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 
 			// Deserialize the payload here.
 			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-
 			if err != nil {
 				rest.Error(w, err.Error(), 400)
 				return
@@ -1988,7 +1986,6 @@ func (tb *ThinBroker) UpdateLdContext2LocalSite(updateCtxReq map[string]interfac
 	tb.updateLdContextElement(updateCtxReq)
 
 	go tb.LDNotifySubscribers(updateCtxReq, true)
-
 	if hasLdUpdatedMetadata == true {
 		tb.registerLDContextElement(updateCtxReq)
 	}
@@ -2683,6 +2680,9 @@ func (tb *ThinBroker) checkMatcheLdAttr(ctxElemAttrs []string, sid string) bool 
 	tb.ldSubscriptions_lock.RLock()
 	conditionList := tb.ldSubscriptions[sid].WatchedAttributes
 	tb.ldSubscriptions_lock.RUnlock()
+	if len(conditionList) == 0 {
+		return true
+	}
 	matchedAtleastOnce := false
 	for _, attrs1 := range ctxElemAttrs {
 		for _, attrs2 := range conditionList {

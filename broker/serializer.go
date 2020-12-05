@@ -303,7 +303,6 @@ func (sz Serializer) getId(id interface{}) string {
 }
 
 func (sz Serializer) getType(typ []interface{}) string {
-
 	var Type, Type1 string
 	if len(typ) > 0 {
 		Type1 = typ[0].(string)
