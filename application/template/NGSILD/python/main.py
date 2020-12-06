@@ -1,63 +1,63 @@
 from flask import Flask, jsonify, abort, request, make_response
-import requests
+import requests 
 import json
 import time
 import datetime
 import threading
 import os
 
-app = Flask(__name__, static_url_path='')
+
+app = Flask(__name__, static_url_path = "")
 
 # global variables
-
 brokerURL = ''
 outputs = []
 timer = None
 lock = threading.Lock()
-counter = 0
-create = 0
-
+counter = 0 
 
 @app.errorhandler(400)
 def not_found(error):
-    return make_response(jsonify({'error': 'Bad request'}), 400)
-
+    return make_response(jsonify( { 'error': 'Bad request' } ), 400)
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify({'error': 'Not found'}), 404)
-
+    return make_response(jsonify( { 'error': 'Not found' } ), 404)
 
 @app.route('/admin', methods=['POST'])
-def admin():
+def admin():    
     if not request.json:
         abort(400)
-
+    
     configObjs = request.json
-    handleConfig(configObjs)
+    handleConfig(configObjs)    
+        
+    return jsonify({ 'responseCode': 200 })
 
-    return jsonify({'responseCode': 200})
 
-
-@app.route('/notifyContext', methods=['POST'])
+@app.route('/notifyContext', methods = ['POST'])
 def notifyContext():
-    print '=============notify============='
+    print "=============notify============="
+
     if not request.json:
         abort(400)
-
+    print(request.json)
+    print(request.headers)	
     objs = readContextElements(request.json)
+    
     global counter
     counter = counter + 1
-
-    print objs
+    
+    print(objs)
 
     handleNotify(objs)
-
-    return jsonify({'responseCode': 200})
-
+    
+    return jsonify({ 'responseCode': 200 })
+    return "Hello"
 
 def element2Object(element):
     ctxObj = {}
+
     for key in element:
         ctxObj[key] = element[key]
     return ctxObj
@@ -65,20 +65,31 @@ def element2Object(element):
 
 def object2Element(ctxObj):
     ctxElement = {}
-
+    ctxElement['id']=ctxObj['id']
+    ctxElement['type']=ctxObj['type']
+    print("object2Element")
+    print(ctxObj)
+    print(ctxObj)
     for key in ctxObj:
-        ctxElement[key] = ctxObj[key]
+        if key != "id" and key != "type" and key != "modifiedAt" and key != "createdAt" and key != "observationSpace" and key != "operationSpace" and key != "location" and key != "@context":
+            if ctxObj[key].has_key('createdAt'):
+                ctxObj[key].pop('createdAt')
+            if ctxObj[key].has_key('modifiedAt'):
+                ctxObj[key].pop('modifiedAt')
+            ctxElement[key] = ctxObj[key]
+    print("This is ctxElement")
+    print(ctxElement)
     return ctxElement
 
 
 def readContextElements(data):
 
     ctxObjects = []
-
-    for response in data['contextResponses']:
-        if response['statusCode']['code'] == 200:
-            ctxObj = element2Object(response['contextElement'])
-            ctxObjects.append(ctxObj)
+    print(data['type'])
+    if data['type'] == "Notification" :	
+        for attr in  data['data']:
+	    ctxObj = element2Object(attr)
+	    ctxObjects.append(ctxObj)	
     return ctxObjects
 
 
@@ -86,25 +97,22 @@ def handleNotify(contextObjs):
     for ctxObj in contextObjs:
         processInputStreamData(ctxObj)
 
-
 def processInputStreamData(obj):
     print '===============receive context entity===================='
     print obj
-
-    global counter
+    updateContext(obj)    
+    global counter    
     counter = counter + 1
 
-
-def handleConfig(configurations):
+def handleConfig(configurations):  
     global brokerURL
-    global num_of_outputs
-    for config in configurations:
+    global num_of_outputs  
+    for config in configurations:        
         if config['command'] == 'CONNECT_BROKER':
             brokerURL = config['brokerURL']
         if config['command'] == 'SET_OUTPUTS':
             outputs.append({'id': config['id'], 'type': config['type']})
-
-
+    
 def handleTimer():
     global timer
 
@@ -120,41 +128,6 @@ def handleTimer():
     timer.start()
 
 
-# update request on broker
-
-def update(resultCtxObj):
-    global brokerURL
-    if brokerURL.endswith('/ngsi10') == True:
-        brokerURL = brokerURL.rsplit('/', 1)[0]
-    if brokerURL == '':
-        return
-
-    ctxElement = object2Element(resultCtxObj)
-
-    id = ctxElement['id']
-    ctxElement.pop('id')
-    ctxElement.pop('type')
-    headers = {'Accept': 'application/ld+json',
-               'Content-Type': 'application/ld+json'}
-    response = requests.patch(brokerURL + '/ngsi-ld/v1/entities/' + id
-                              + '/attrs', data=json.dumps(ctxElement),
-                              headers=headers)
-    return response.status_code
-
-
-def sendDataToBroker(resultCtxObj):
-    global create
-    if create == 0:
-        response = cretaeRequest(resultCtxObj)
-        if response != 201:
-            print 'failed to send the create request'
-    else:
-        print 'Entity already has been created trying for update request....'
-        response = update(resultCtxObj)
-        if response != 204:
-            print 'failed to send the updte request'
-
-
 def publishResult(result):
     resultCtxObj = {}
     resultCtxObj['id'] = result['id']
@@ -163,14 +136,11 @@ def publishResult(result):
     data['type'] = 'Property'
     data['value'] = result['counter']
     resultCtxObj['count'] = data
-    sendDataToBroker(resultCtxObj)
+    
+    updateContext(resultCtxObj)
 
-
-# create request on broker
-
-def cretaeRequest(ctxObj):
+def updateContext(ctxObj):
     global brokerURL
-    global create
     if brokerURL.endswith('/ngsi10') == True:
         brokerURL = brokerURL.rsplit('/', 1)[0]
     if brokerURL == '':
@@ -184,23 +154,20 @@ def cretaeRequest(ctxObj):
     response = requests.post(brokerURL + '/ngsi-ld/v1/entities/',
                              data=json.dumps(ctxElement),
                              headers=headers)
-    if response.status_code == 201:
-        create = create + 1
-    if response.status_code != 201:
-        create = 1
-    return response.status_code
-
-
+    if response.status_code != 200:
+        print 'failed to update context'
+        print response.text
+                             
 if __name__ == '__main__':
-    handleTimer()
-
+    handleTimer()    
+    
     myport = int(os.environ['myport'])
-
+    
     myCfg = os.environ['adminCfg']
     adminCfg = json.loads(myCfg)
     handleConfig(adminCfg)
-
+    
     app.run(host='0.0.0.0', port=myport)
-
-    # timer.cancel()
-
+    
+   # timer.cancel()
+    

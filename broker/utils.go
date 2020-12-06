@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/piprate/json-gold/ld"
+	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -132,6 +135,44 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptio
 	return nil
 }
 
+func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
+	body, err := json.Marshal(*sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body)) // add NGSILD url
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
+	req.Header.Add("Require-Reliability", "true")
+	req.Header.Add("Link", DEFAULT_CONTEXT)
+	// add link header
+	client := httpsCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	subscribeCtxResp := SubscribeContextResponse{}
+	err = json.Unmarshal(text, &subscribeCtxResp)
+	if err != nil {
+		return "", err
+	}
+
+	if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
+		return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
+	} else {
+		err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
+		return "", err
+	}
+
+}
+
 func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
@@ -176,7 +217,7 @@ func subscriptionProvider(sub *SubscriptionRequest, ProviderURL string, httpsCfg
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", ProviderURL+"/subscriptions", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", ProviderURL+"/v2/subscriptions", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
@@ -380,28 +421,40 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string /*IsOrionBroker bool,*/, httpsCfg *HTTPS) error {
+func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
+	proc := ld.NewJsonLdProcessor()
+	options := ld.NewJsonLdOptions("")
+	compacted, err := proc.Compact(entity, context, options)
+	return compacted, err
+}
+
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
-	elementRespList := make([]LDContextElementResponse, 0)
-
-	//if IsOrionBroker == true {
-	//        return postOrionV2NotifyContext(ctxElems, URL)
-	//}
-
-	for _, elem := range ldCtxElems {
-		elementResponse := LDContextElementResponse{}
-		elementResponse.LDContextElement = elem
-		elementResponse.StatusCode.Code = 200
-		elementResponse.StatusCode.ReasonPhrase = "OK"
-
-		elementRespList = append(elementRespList, elementResponse)
+	ldCompactedElems := make([]map[string]interface{}, 0)
+	for k, _ := range ldCtxElems {
+		resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
+	}
+	LdElementList := make([]interface{}, 0)
+	for _, ldEle := range ldCompactedElems {
+		element := make(map[string]interface{})
+		element["id"] = ldEle["id"]
+		element["type"] = ldEle["type"]
+		for k, _ := range ldEle {
+			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+				element[k] = ldEle[k]
+			}
+		}
+		LdElementList = append(LdElementList, element)
 	}
 
 	notifyCtxReq := &LDNotifyContextRequest{
-		SubscriptionId:     subscriptionId,
-		LDContextResponses: elementRespList,
+		SubscriptionId: subscriptionId,
+		Data:           LdElementList,
+		Type:           "Notification",
+		Id:             "fogflow:notification",
+		NotifyAt:       time.Now().String(),
 	}
-
 	body, err := json.Marshal(notifyCtxReq)
 	if err != nil {
 		return err
@@ -410,6 +463,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Link", "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
@@ -459,4 +513,43 @@ func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttrib
 		}
 		return preparedCopy
 	}
+}
+
+func isNewLdAttribute(name string, currEle map[string]interface{}) bool {
+	for attr, _ := range currEle {
+		if attr == name {
+			return false
+		}
+	}
+
+	return true
+}
+
+func getId(updateCtxEle map[string]interface{}) string {
+	var eid string
+	if _, ok := updateCtxEle["id"]; ok == true {
+		eid = updateCtxEle["id"].(string)
+	} else if _, ok := updateCtxEle["@id"]; ok == true {
+		eid = updateCtxEle["@id"].(string)
+	}
+	return eid
+}
+
+func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
+	if recCtxEle == nil && currCtxEle == nil {
+		return false
+	}
+	if currCtxEle == nil {
+		return true
+	}
+	recCtxEleMap := recCtxEle.(map[string]interface{})
+	currCtxEleMap := currCtxEle.(map[string]interface{})
+	for attr, _ := range recCtxEleMap {
+		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
+			if isNewLdAttribute(attr, currCtxEleMap) == true {
+				return true
+			}
+		}
+	}
+	return false
 }
