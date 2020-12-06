@@ -1334,7 +1334,7 @@ Accept            application/ld+json
        -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \       
        -d'
         {
-	      "id": "urn:ngsi-ld:Vehicle:A4580",
+	      "id": ""urn:ngsi-ld:Vehicle:A100",
               "type": "Vehicle",
 
 	     ""brandName1"": {
@@ -1366,7 +1366,7 @@ Accept            application/ld+json
        -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
        -d'
         {
-		"id": "urn:ngsi-ld:Vehicle:A4580",
+		"id": ""urn:ngsi-ld:Vehicle:A100",
 	        "type": "Vehicle",
 
 	       "brandName": {
@@ -1460,8 +1460,9 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
       -d '
        {
 		"type": "Subscription",
+		"id"  : "urn:ngsi-ld:Subscription:71",
 		"entities": [{
-				"idPattern": ".*",
+				"id": "urn:ngsi-ld:Vehicle:71",
 				"type": "Vehicle"
 		}],
 		"watchedAttributes": ["brandName"],
@@ -1486,7 +1487,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 .. code-block:: console
 
-   curl http://localhost:80/ngsi-ld/subscriptions/ -H 'Accept: application/ld+json'
+   curl http://localhost:80/ngsi-ld/v1/subscriptions/ -H 'Accept: application/ld+json'
 
 
 **c. To retrieve a specific subscription based on subscription id**
@@ -1504,7 +1505,7 @@ sid              subscription Id
 
 .. code-block:: console
 
-   curl http://localhost:80/ngsi-ld/subscriptions/urn:ngsi-ld:Subscription:71
+   curl http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71
    
 **d. To delete a specific subscription based on subscription id**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
