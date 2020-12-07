@@ -44,6 +44,7 @@ type Executor struct {
 
 	taskInstances map[string]*taskContext
 	taskMap_lock  sync.RWMutex
+	//k8spod          *pod
 }
 
 func (e *Executor) Init(cfg *Config, selectedBrokerURL string, httpBrokerURL string) bool {
@@ -78,6 +79,9 @@ func (e *Executor) Init(cfg *Config, selectedBrokerURL string, httpBrokerURL str
 	e.workerCfg = cfg
 	e.brokerURL = selectedBrokerURL
 	e.httpBrokerURL = httpBrokerURL
+
+	fmt.Println("****selectedBrokerURL is*********",selectedBrokerURL)
+	fmt.Println("****httpBrokerURL is *********",httpBrokerURL)
 
 	e.taskInstances = make(map[string]*taskContext)
 	return true
@@ -160,6 +164,8 @@ func (e *Executor) ListContainers() {
 
 func (e *Executor) startContainerWithBridge(dockerImage string, portNum string) (string, error) {
 	// prepare the configuration for a docker container
+
+
 	config := docker.Config{Image: dockerImage}
 	portBindings := map[docker.Port][]docker.PortBinding{
 		"8080/tcp": []docker.PortBinding{docker.PortBinding{HostIP: "0.0.0.0", HostPort: portNum}}}
@@ -198,6 +204,20 @@ func (e *Executor) writeTempFile(fileName string, fileContent string) {
 		ERROR.Println(err)
 	}
 }
+
+/*
+func (e *Executor) startPod(dockerImage string, portNum string) {
+
+//	p:= pod{}
+
+	//start pod
+	e.k8spod.pod(dockerImage, portNum)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(checkpod)
+	//return nil 
+}*/
 
 func (e *Executor) startContainer(dockerImage string, portNum string, functionCode string, taskID string, adminCfg []interface{}, servicePorts []string) (string, error) {
 	// prepare the configuration for a docker container, host mode for the container network
@@ -323,7 +343,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	freePort := strconv.Itoa(e.findFreePortNumber())
 
 	// function code
-	functionCode := task.FunctionCode
+	//functionCode := task.FunctionCode
 
 	// configure the task with its output streams via its admin interface
 	commands := make([]interface{}, 0)
@@ -367,15 +387,22 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	}
 
 	// start a container to run the scheduled task instance
-	containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID, commands, servicePorts)
+	//k8s pod
+	//podId, err := e.startPod(dockerImage, freePort)
+	p := pod{}
+	fmt.Println("*********inside launch task*********")
+	podId, err:= p.pod(dockerImage, freePort)
+
+	//containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID, commands, servicePorts)
 	if err != nil {
 		ERROR.Println(err)
 		return false
 	}
-	INFO.Printf(" task %s  started within container = %s\n", task.ID, containerId)
+	INFO.Printf(" task %s  started within container = %s\n", task.ID, podId)
 
 	taskCtx.ListeningPort = freePort
-	taskCtx.ContainerID = containerId
+//	taskCtx.ContainerID = containerId
+	taskCtx.ContainerID = podId
 
 	// register the service ports of uservices
 	if len(servicePorts) > 0 {
@@ -423,7 +450,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	INFO.Printf("register this task")
 
 	// register this new task entity to IoT Broker
-	e.registerTask(task, freePort, containerId)
+	e.registerTask(task, freePort, podId)
 
 	return true
 }
