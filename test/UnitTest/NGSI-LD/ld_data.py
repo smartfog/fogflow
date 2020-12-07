@@ -1285,3 +1285,18 @@ subdata43=\
         }
 }
 
+subdata44=\
+{
+             "id": "urn:ngsi-ld:Subscription:79",
+             "type": "Subscription",
+             "watchedAttributes": ["brandName"],
+             "notification": {
+                             "attributes": ["brandName"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+      }
+

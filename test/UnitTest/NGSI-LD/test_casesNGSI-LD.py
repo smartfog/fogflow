@@ -1366,4 +1366,17 @@ def test_case78():
                 print("\nNot Validated")
         print(r.status_code)
         assert r.status_code == 200
+
+
+#testCase 79
+'''
+  To test for subscription without entities in Payload
+'''
+def test_case61():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata44),headers=headers)
+        print(r.content)
+        #print(r.status_code)
+        assert r.status_code == 400
 	
