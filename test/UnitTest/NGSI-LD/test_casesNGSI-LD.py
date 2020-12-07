@@ -1382,7 +1382,7 @@ def test_case61():
 
 #testCase 80
 '''
-  To test for subscription without entities in Payload
+  To test for subscription without entities in Payload while post request
 '''
 def test_case61():
         url=brokerIp+"/ngsi-ld/v1/subscriptions/"
