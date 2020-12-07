@@ -550,7 +550,12 @@ func (sz Serializer) getDatasetId(datasetId []interface{}) string {
 
 //INSTANCE_ID
 func (sz Serializer) getInstanceId(instanceId []interface{}) string {
-	return ""
+	var InstanceId string
+        if len(instanceId) > 0 {
+                instanceIdMap := instanceId[0].(map[string]interface{})
+                InstanceId = instanceIdMap["@id"].(string)
+        }
+        return InstanceId
 }
 
 //UNIT_CODE
