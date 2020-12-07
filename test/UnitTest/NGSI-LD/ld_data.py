@@ -1253,6 +1253,7 @@ subdata40=\
  }
 }
 
+# for update request
 subdata41=\
 {
 	"id": "urn:ngsi-ld:Vehicle:A4000",
@@ -1263,6 +1264,7 @@ subdata41=\
 	}
 }
 
+# to test if instance id is fetched or not
 subdata42=\
 {
         "id": "urn:ngsi-ld:Vehicle:C001",
@@ -1274,6 +1276,7 @@ subdata42=\
         }
 }
 
+# to test if datasetId is fetched or not
 subdata43=\
 {
         "id": "urn:ngsi-ld:Vehicle:C002",
@@ -1285,6 +1288,7 @@ subdata43=\
         }
 }
 
+# to test if error is thrown if entities are missing
 subdata44=\
 {
              "id": "urn:ngsi-ld:Subscription:79",
@@ -1299,4 +1303,21 @@ subdata44=\
                                }
              }
       }
+
+# to test that no other type is taken for NGSI-LD subscription other than Subscription
+subdata45=\
+{
+             "id": "urn:ngsi-ld:Subscription:80",
+             "type": "SubscriptionXY",
+             "watchedAttributes": ["brandName"],
+             "notification": {
+                             "attributes": ["brandName"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+      }
+
 
