@@ -85,7 +85,6 @@ def object2Element(ctxObj):
 def readContextElements(data):
 
     ctxObjects = []
-    print data['type']
     if data['type'] == 'Notification':
         for attr in data['data']:
             ctxObj = element2Object(attr)
@@ -129,11 +128,11 @@ def publishResult(ctxObj):
 
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/ld+json',
-               'Link': 'https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld'}
+               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.post(brokerURL + '/ngsi-ld/v1/entities/',
                              data=json.dumps(ctxElement),
                              headers=headers)
-    if response.status_code != 200:
+    if response.status_code != 201:
         print 'failed to update context'
         print response.text
 
@@ -180,7 +179,7 @@ def requestInputBySubscription():
 
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/ld+json',
-               'Link': 'https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld'}
+               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     if brokerURL.endswith('/ngsi10') == True:
         brokerURL = brokerURL.rsplit('/', 1)[0]
 
