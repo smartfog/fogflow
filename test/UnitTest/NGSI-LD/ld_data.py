@@ -1263,3 +1263,40 @@ subdata41=\
 	}
 }
 
+subdata42=\
+{
+        "id": "urn:ngsi-ld:Vehicle:C001",
+        "type": "Vehicle",
+        "brandName1": {
+                "type" : "Property",
+                "value": "BMW1",
+                "instanceId": "instance1"
+        }
+}
+
+subdata43=\
+{
+        "id": "urn:ngsi-ld:Vehicle:C002",
+        "type": "Vehicle",
+        "brandName1": {
+                "type" : "Property",
+                "value": "BMW1",
+                "datasetId": "dataset1"
+        }
+}
+
+subdata44=\
+{
+             "id": "urn:ngsi-ld:Subscription:79",
+             "type": "Subscription",
+             "watchedAttributes": ["brandName"],
+             "notification": {
+                             "attributes": ["brandName"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+      }
+

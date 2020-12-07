@@ -1310,3 +1310,73 @@ def test_case76():
         print(r.content)
         assert r.status_code == 200
 
+# testCase 77
+'''
+  To test if instanceId is fetched while creating entity 
+'''
+def test_case77():
+	# to create entity
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata42),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+        
+	# to fetch and verify instanceId
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:C001"
+        headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp)
+        if resp["brandName1"]["instanceId"]=="instance1":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
+        print(r.status_code)
+        assert r.status_code == 200
+
+
+# testCase 78
+'''
+  To test if datasetId is fetched while creating entity
+'''
+def test_case78():
+        # to create entity
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata43),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+        # to fetch and verify instanceId
+        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:C002"
+        headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp)
+        if resp["brandName1"]["datasetId"]=="dataset1":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
+        print(r.status_code)
+        assert r.status_code == 200
+
+
+#testCase 79
+'''
+  To test for subscription without entities in Payload
+'''
+def test_case61():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata44),headers=headers)
+        print(r.content)
+        #print(r.status_code)
+        assert r.status_code == 400
+	
