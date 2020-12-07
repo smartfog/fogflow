@@ -540,7 +540,12 @@ func (sz Serializer) getProvidedBy(providedBy []interface{}) ProvidedBy {
 
 //DATASET_ID
 func (sz Serializer) getDatasetId(datasetId []interface{}) string {
-	return ""
+	var DatasetId string
+        if len(datasetId) > 0 {
+                datasetIdMap := datasetId[0].(map[string]interface{})
+                DatasetId = datasetIdMap["@id"].(string)
+        }
+        return DatasetId
 }
 
 //INSTANCE_ID
