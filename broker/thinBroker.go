@@ -2369,6 +2369,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					deSerializedSubscription.Subscriber.IsInternal = false
 				}
+				if len(deSerializedSubscription.Entities) == 0 {
+                                        rest.Error(w, "Missing entites and its parameter!", http.StatusBadRequest)
+                                        return
+                                }
 
 				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
 				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
