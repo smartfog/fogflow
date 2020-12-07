@@ -26,6 +26,7 @@ def test_case1():
         print(r.status_code)
         assert r.status_code == 201
 
+
 #testCase 2
 '''
   To test create entity with context in payload
@@ -37,6 +38,7 @@ def test_case2():
         print(r.content)
         print(r.status_code)
         assert r.status_code == 201
+
 
 #testCase 3
 '''
@@ -55,36 +57,36 @@ def test_case3():
   To test to append additional attributes to an existing entity
 '''
 def test_case4():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
-        headers={'Content-Type' : 'application/json'}
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json', 'Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata4),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 204
+        assert r.status_code == 201
 
 
 #testCase 5
 '''
-  To test to patch  update specific attributes of an existing entity A100
+  To test to update specific attributes of an existing entity A100
 '''
 def test_case5():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
-        headers={'Content-Type' : 'application/json'}
-        r=requests.patch(url,data=json.dumps(ld_data.subdata5),headers=headers)
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata5),headers=headers)
         print(r.status_code)
-        assert r.status_code == 204
+        assert r.status_code == 201
 
 #testCase 6
 '''
   To test to update the value of a specific attribute of an existing entity with wrong payload
 '''
 def test_case6():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4580/attrs/brandName"
+        url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json'}
-        r=requests.patch(url,data=json.dumps(ld_data.subdata6),headers=headers)
+        r=requests.post(url,data=json.dumps(ld_data.subdata6),headers=headers)
         print(r.content)
 	print(r.status_code)
-        assert r.status_code == 204
+        assert r.status_code == 400
 
 #testCase 7
 '''
@@ -114,55 +116,55 @@ def test_case8():
   To test Update entity with two  header namely Content Type and Accept header  and posting duplicate attribute
 '''
 def test_case9():
-	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
+	url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 207
+        assert r.status_code == 201
 
 #testCase 10
 '''
-  To test Update entity with wrong id
+  To test Update entity with wrong id format 
 '''
 def test_case10():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A800/attrs"
+        url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
-        r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
+        r=requests.post(url,data=json.dumps(ld_data.subdata14b),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 404
+        assert r.status_code == 400 
 
 #testCase 11
 '''
-  To test Update entity with wrong id and not passing Accept Header
+  To test Update entity with wrong id format and  not passing Accept Header
 '''
 def test_case11():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A800/attrs"
+        url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json'}
-        r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
+        r=requests.post(url,data=json.dumps(ld_data.subdata14b),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 404
+        assert r.status_code == 400
 
 #testCase 12
 '''
   To test Update entity with three  header namely Content-Type, Accept and context Link 
 '''
 def test_case12():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4580/attrs"
-        headers={'Content-Type' : 'application/json'}
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata14),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 204
+        assert r.status_code == 201
 
 #testCase 13
 '''
   To test Update entity with different  headers namely Content-Type, Accept and context Link and passing inappropriate payload
 '''
 def test_case13():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
+        url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata15),headers=headers)
         print(r.content)
@@ -174,23 +176,12 @@ def test_case13():
   To test Update entity without header
 '''
 def test_case14():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
+        url=brokerIp+"/ngsi-ld/v1/entities/"
         r=requests.post(url,data=json.dumps(ld_data.subdata14))
         print(r.content)
         print(r.status_code)
         assert r.status_code == 400
 
-#testCase 15
-'''
-  To test Update entity patch request with different header namely Content-Type, Accept and context Link  and passing inappropriate payload
-'''
-def test_case15():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4580/attrs"
-        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-        r=requests.patch(url,data=json.dumps(ld_data.subdata15),headers=headers) 
-        print(r.content)
-        print(r.status_code)
-        assert r.status_code == 500
 
 #testCase 16
 '''
@@ -204,24 +195,13 @@ def test_case16():
         print(r.content)
         print(r.status_code)
 
-	#update the corresponding entity using patch        
-	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A700/attrs"
+	#update the corresponding entity using post        
+	url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-        r=requests.patch(url,data=json.dumps(ld_data.subdata14),headers=headers)
+        r=requests.post(url,data=json.dumps(ld_data.subdata14c),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 207
-
-#testCase 17
-'''
-  To test Update entity patch request without header
-'''
-def test_case17():
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs"
-        r=requests.patch(url,data=json.dumps(ld_data.subdata14))
-        #print(r.content)
-        #print(r.status_code)
-        assert r.status_code == 400
+        assert r.status_code == 201
 
 #testCase 18
 '''
@@ -235,13 +215,13 @@ def test_case18():
         #print(r.content)
         #print(r.status_code)
 
-	#update the corresponding entity using patch
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A900/attrs"
+	#update the corresponding entity using post
+        url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-        r=requests.patch(url,data=json.dumps(ld_data.subdata14),headers=headers)
+        r=requests.post(url,data=json.dumps(ld_data.subdata14d),headers=headers)
         #print(r.content)
         #print(r.status_code)
-        assert r.status_code == 207
+        assert r.status_code == 201
 
 #testCase 19
 '''
@@ -271,14 +251,14 @@ def test_case20():
         url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata11),headers=headers)
-        #print(r.content)
+        print(r.content)
         #print(r.status_code)
    
 	#to append  the attribute of corresponding entity
-        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A500/attrs"
-        headers={'Content-Type' : 'application/json'}
-        r=requests.post(url,data=json.dumps(ld_data.subdata4),headers=headers)
-        #print(r.content)
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata4b),headers=headers)
+        print(r.content)
         #print(r.status_code)
 	
 	#to delete the attribute of corresponding entity
@@ -499,10 +479,11 @@ def test_case33():
         #print(r.status_code)
         assert r.status_code == 201
 
+'''
 #testCase 34
-'''
+
   To test to  create a new context source registration, with context in request payload
-'''
+
 def test_case34():
         url=brokerIp+"/ngsi-ld/v1/csourceRegistrations/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
@@ -510,6 +491,7 @@ def test_case34():
         #print(r.content)
         #print(r.status_code)
         assert r.status_code == 201
+'''
 
 #testCase 35
 '''
@@ -548,16 +530,16 @@ def test_case37():
 
 #testcase 38
 '''
-  To test get the regiestered source entity on discovery for id = town$
+  To test get the regiestered source entity on discovery for id = urn:ngsi-ld:Vehicle:A666 
 '''
 def test_case38():
-	url=discoveryIp+"/ngsi9/registration/town$"
+	url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A666"
 	r=requests.get(url)
 	resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp["ID"]=="town$":
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A666":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -598,7 +580,7 @@ def test_case39():
 
 #testCase 40
 '''
-  To test update request for registration with wrong payload
+  To test update request for registration with only Id in  payload
 '''
 def test_case40():
 	#create registration 
@@ -635,11 +617,11 @@ def test_case41():
         #print(r.status_code)
         assert r.status_code == 200
 
-
+'''
 #testCase 42
-'''
+
   To test to update an existing context source registration, with context in request payload
-'''
+
 def test_case42():
         url=brokerIp+"/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a4002"
         headers={'Content-Type' : 'application/json'}
@@ -647,12 +629,13 @@ def test_case42():
         #print(r.content)
         #print(r.status_code)
         assert r.status_code == 204
+'''
 
-
+'''
 #testCase 43
-'''
+
   To test to update an existing context source registration with idPattern , with context in request payload regarding one entity
-'''
+
 def test_case43():
         url=brokerIp+"/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3459"
         headers={'Content-Type' : 'application/json'}
@@ -660,20 +643,21 @@ def test_case43():
         #print(r.content)
         #print(r.status_code)
         assert r.status_code == 400
+'''
 
 #testCase 44
 '''
   To test to get a registration by Type
 '''
 def test_case44():
-        url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle"
+        url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp[0]["information"][0]["entities"][0]["type"]=="http://example.org/vehicle/Vehicle":
+        if resp[0]["information"][0]["entities"][0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -705,14 +689,14 @@ def test_case45():
   To test to get a registration by ID and Type
 '''
 def test_case46():
-        url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?id=urn:ngsi-ld:Vehicle:A456&type=http://example.org/vehicle/Vehicle"
+        url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?id=urn:ngsi-ld:Vehicle:A666&type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if resp[0]["information"][0]["entities"][0]["type"]=="http://example.org/vehicle/Vehicle" and resp[0]["information"][0]["entities"][0]["id"]=="urn:ngsi-ld:Vehicle:A456":
+        if resp[0]["information"][0]["entities"][0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle" and resp[0]["information"][0]["entities"][0]["id"]=="urn:ngsi-ld:Vehicle:A666":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -956,7 +940,7 @@ def test_case62():
   To test for ModifiedAt and CreatedAt in Csource Registration
 '''
 def test_case63():
-        url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle"
+        url=brokerIp+"/ngsi-ld/v1/csourceRegistrations?type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
 	#print(r.content)
@@ -964,7 +948,7 @@ def test_case63():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp)
-        if  resp[0]["information"][0]["entities"][0]["type"]=="http://example.org/vehicle/Vehicle":
+        if  resp[0]["information"][0]["entities"][0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -1105,11 +1089,11 @@ def test_case70():
         #print(r.status_code)
         assert r.status_code == 200
 
-
+'''
 #testCase 71
-'''
+
   To test entity creation with different Context Link in Header
-'''
+
 def test_case71():
 	url=brokerIp+"/ngsi-ld/v1/entities/"
 	headers={'Content-Type' : 'application/json','Accept' : 'application/ld+json','Link' : '<{{link}}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'}
@@ -1117,7 +1101,7 @@ def test_case71():
 	#print(r.content)
 	print(r.status_code)
 	assert r.status_code == 201
-
+'''
 
 #testCase 72 
 '''
@@ -1142,12 +1126,13 @@ def test_case72():
         r=requests.post(url,data=json.dumps(ld_data.subdata36),headers=headers)
         print(r.content)
         #print(r.status_code)
-	assert r.status_code == 409
+	assert r.status_code == 201
 
+'''
 #testCase 73
-'''
+
   To test if subscription can be created with context in Payload
-'''
+
 def test_case73():
         url=brokerIp+"/ngsi-ld/v1/subscriptions/"
         headers={'Content-Type' : 'application/ld+json'}
@@ -1169,6 +1154,7 @@ def test_case73():
                 print("\nNot Validated")
         #print(r.status_code)
         assert r.status_code == 200
+'''
 
 #testCase 74
 '''
@@ -1237,7 +1223,7 @@ def test_case75():
         #print(resp["AttributesList"])
         print("\nchecking if brandName1 attribute is present in discovery after deletion")
         if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
-                if "http://example.org/vehicle/brandName1" in resp["AttributesList"]:
+                if "https://uri.etsi.org/ngsi-ld/default-context/brandName1" in resp["AttributesList"]:
                         print("\n-----> brandName1 is existing...!!")
                 else:
                         print("\n-----> brandName1 does not exist yet...!")
@@ -1245,12 +1231,12 @@ def test_case75():
                 print("\nNot Validated")
 
 	#to append an entity with id as urn:ngsi-ld:Vehicle:A3000
-	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A3000/attrs"
-        headers={'Content-Type' : 'application/json'}
-        r=requests.post(url,data=json.dumps(ld_data.subdata4),headers=headers)
+	url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata4c),headers=headers)
         #print(r.content)
         #print(r.status_code)
-        assert r.status_code == 204
+        assert r.status_code == 201
 
 	#to fetch registration of entity from discovery after appending
 	url=discoveryIp+"/ngsi9/registration/urn:ngsi-ld:Vehicle:A3000"
@@ -1261,7 +1247,7 @@ def test_case75():
         #print(resp["AttributesList"])
         print("\nchecking if brandName1 attribute is present in discovery after deletion")
         if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
-                if "http://example.org/vehicle/brandName1" in resp["AttributesList"]:
+                if "https://uri.etsi.org/ngsi-ld/default-context/brandName1" in resp["AttributesList"]:
                         print("\n-----> brandName1 is existing after appending...!!")
                 else:
                         print("\n-----> brandName1 does not exist yet...!")
@@ -1313,9 +1299,9 @@ def test_case76():
         #print(r.status_code)
 
 	#Update entity to fire notification
-	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4000/attrs"
-        headers={'Content-Type' : 'application/json'}
-        r=requests.patch(url,data=json.dumps(ld_data.subdata41),headers=headers)
+	url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata41),headers=headers)
         #print(r.status_code)
         
 	#to validate
@@ -1324,3 +1310,85 @@ def test_case76():
         print(r.content)
         assert r.status_code == 200
 
+# testCase 77
+'''
+  To test if instanceId is fetched while creating entity 
+'''
+def test_case77():
+	# to create entity
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata42),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+        
+	# to fetch and verify instanceId
+	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:C001"
+        headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp)
+        if resp["brandName1"]["instanceId"]=="instance1":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
+        print(r.status_code)
+        assert r.status_code == 200
+
+
+# testCase 78
+'''
+  To test if datasetId is fetched while creating entity
+'''
+def test_case78():
+        # to create entity
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata43),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+        # to fetch and verify instanceId
+        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:C002"
+        headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        #print(r.content)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        #print(resp)
+        if resp["brandName1"]["datasetId"]=="dataset1":
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
+        print(r.status_code)
+        assert r.status_code == 200
+
+
+#testCase 79
+'''
+  To test for subscription without entities in Payload
+'''
+def test_case61():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata44),headers=headers)
+        print(r.content)
+        #print(r.status_code)
+        assert r.status_code == 400
+
+#testCase 80
+'''
+  To test for subscription without entities in Payload while post request
+'''
+def test_case61():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata45),headers=headers)
+        print(r.content)
+        #print(r.status_code)
+        assert r.status_code == 400
+	
