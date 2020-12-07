@@ -1263,3 +1263,25 @@ subdata41=\
 	}
 }
 
+subdata42=\
+{
+        "id": "urn:ngsi-ld:Vehicle:C001",
+        "type": "Vehicle",
+        "brandName1": {
+                "type" : "Property",
+                "value": "BMW1",
+                "instanceId": "instance1"
+        }
+}
+
+subdata43=\
+{
+        "id": "urn:ngsi-ld:Vehicle:C002",
+        "type": "Vehicle",
+        "brandName1": {
+                "type" : "Property",
+                "value": "BMW1",
+                "datasetId": "dataset1"
+        }
+}
+
