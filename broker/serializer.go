@@ -484,8 +484,10 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 
 func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
-	var value interface{}
-	if len(hasValue) > 0 {
+	value := make([]interface{},0)
+	if len(hasValue) == 0 {
+		return value
+	}else if len(hasValue) > 0 {
 		for _, oneValue := range hasValue {
 			if val := oneValue.(map[string]interface{}); val != nil {
 
@@ -494,7 +496,7 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 					Value["Value"] = val["@value"].(interface{})
 					return Value
 				}
-				value = val["@value"].(interface{}) //Value is overwritten, in case of multiple values in payload, value array is never returned..
+				value = append(value,val["@value"].(interface{})) //Value is not  overwritten, in case of multiple values in payload, value array never returned..
 			}
 		}
 	}
