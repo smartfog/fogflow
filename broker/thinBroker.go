@@ -54,10 +54,10 @@ type ThinBroker struct {
 	fiwareData      map[string]*FiwareData
 	fiwareData_lock sync.RWMutex
 	//mapping from entityID to subscriptionID
-	entityId2Subcriptions map[string][]string
-	e2sub_lock            sync.RWMutex
-	ev2sub_lock           sync.RWMutex
-
+	entityId2Subcriptions  map[string][]string
+	e2sub_lock             sync.RWMutex
+	ev2sub_lock            sync.RWMutex
+	LDe2sub_lock           sync.RWMutex
 	entityIdv2Subcriptions map[string][]string
 	e2subv2_lock           sync.RWMutex
 
@@ -77,8 +77,9 @@ type ThinBroker struct {
 	ldSubscriptions      map[string]*LDSubscriptionRequest // to map Subscription Id with LDSubscriptionRequest.
 	ldSubscriptions_lock sync.RWMutex
 
-	tmpNGSIldNotifyCache []string
-	tmpNGSILDNotifyCache map[string]*NotifyContextAvailabilityRequest
+	tmpNGSIldNotifyCache    []string
+	tmpNGSILDNotifyCache    map[string]*NotifyContextAvailabilityRequest
+	entityId2LDSubcriptions map[string][]string
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
@@ -124,6 +125,7 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	tb.ldEntityID2RegistrationID = make(map[string]string)
 	tb.ldSubscriptions = make(map[string]*LDSubscriptionRequest)
 	tb.tmpNGSILDNotifyCache = make(map[string]*NotifyContextAvailabilityRequest)
+	tb.entityId2LDSubcriptions = make(map[string][]string)
 
 	// register itself to the IoT discovery
 	tb.registerMyself()
@@ -669,6 +671,35 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 	}
 }
 
+func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
+	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
+		var context []interface{}
+		context = append(context, DEFAULT_CONTEXT)
+		notifyElement, _ := tb.getStringInterfaceMap(r)
+		notifyElemtData := notifyElement["data"]
+		notifyEleDatamap := notifyElemtData.([]interface{})
+		notifyCtxResp := NotifyContextResponse{}
+		w.WriteJson(&notifyCtxResp)
+		for _, data := range notifyEleDatamap {
+			notifyData := data.(map[string]interface{})
+			notifyData["@context"] = context
+			expand, _ := tb.ExpandData(notifyData)
+			sz := Serializer{}
+			deSerializedEntity, err := sz.DeSerializeEntity(expand)
+			if err != nil {
+				rest.Error(w, err.Error(), 400)
+				return
+			} else {
+				deSerializedEntity["@context"] = context
+				//send the notification to subscriber
+				go tb.LDNotifySubscribers(deSerializedEntity, false)
+			}
+		}
+	} else {
+		rest.Error(w, "Missing Headers or Incorrect Header values!", 400)
+		return
+	}
+}
 func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 	notifyCtxReq := NotifyContextRequest{}
 	err := r.DecodeJsonPayload(&notifyCtxReq)
@@ -783,7 +814,7 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 	}
 }
 
-func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, sid string) {
+/*func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, sid string) {
 	// check if the subscription still exists; if yes, then find out the selected attribute list
 	tb.subscriptions_lock.RLock()
 
@@ -805,8 +836,53 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, 
 		tb.subscriptions_lock.RUnlock()
 		tb.notifyOneSubscriberWithCurrentStatusOfV1(entities, sid, selectedAttributes)
 	}
+}*/
+
+func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, sid string) {
+	elements := make([]ContextElement, 0)
+	// check if the subscription still exists; if yes, then find out the selected attribute list
+	tb.subscriptions_lock.RLock()
+
+	subscription, ok := tb.subscriptions[sid]
+	if ok == false {
+		tb.subscriptions_lock.RUnlock()
+		return
+	}
+	selectedAttributes := subscription.Attributes
+	tb.subscriptions_lock.RUnlock()
+
+	tb.entities_lock.Lock()
+	for _, entity := range entities {
+		if element, exist := tb.entities[entity.ID]; exist {
+			returnedElement := element.CloneWithSelectedAttributes(selectedAttributes)
+			elements = append(elements, *returnedElement)
+		}
+	}
+	tb.entities_lock.Unlock()
+	go tb.sendReliableNotify(elements, sid)
 }
 
+func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId, sid string) {
+	elements := make([]map[string]interface{}, 0)
+	tb.ldSubscriptions_lock.RLock()
+	ldSubscription, oK := tb.ldSubscriptions[sid]
+	if oK == false {
+		tb.ldSubscriptions_lock.RUnlock()
+		return
+	}
+	selectedAttributes := ldSubscription.Notification.Attributes
+	tb.ldSubscriptions_lock.RUnlock()
+	tb.ldEntities_lock.Lock()
+	for _, entity := range entities {
+		if element, exist := tb.ldEntities[entity.ID]; exist {
+			elementMap := element.(map[string]interface{})
+			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
+			elements = append(elements, returnedElement)
+		}
+	}
+	tb.ldEntities_lock.Unlock()
+	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+}
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
 	// Create NGSIv1 Context Element
 	elements := make([]ContextElement, 0)
@@ -1226,6 +1302,36 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 	delete(tb.subscriptions, subID)
 }
 
+func (tb *ThinBroker) NotifyLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
+	notifyLDContextAvailabilityReq := NotifyContextAvailabilityRequest{}
+	err := r.DecodeJsonPayload(&notifyLDContextAvailabilityReq)
+	if err != nil {
+		ERROR.Println(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// send out the response
+	notifyLDContextAvailabilityResp := NotifyContextAvailabilityResponse{}
+	notifyLDContextAvailabilityResp.ResponseCode.Code = 200
+	notifyLDContextAvailabilityResp.ResponseCode.ReasonPhrase = "OK"
+	w.WriteJson(&notifyLDContextAvailabilityResp)
+
+	subID := notifyLDContextAvailabilityReq.SubscriptionId
+
+	//map it to the main subscription
+	tb.subLinks_lock.Lock()
+	mainSubID, exist := tb.availabilitySub2MainSub[subID]
+	if exist == false {
+		DEBUG.Println("put it into the tempCache and handle it later")
+		tb.tmpNGSILDNotifyCache[subID] = &notifyLDContextAvailabilityReq
+	}
+	tb.subLinks_lock.Unlock()
+
+	if exist == true {
+		tb.handleNGSILDNotify(mainSubID, &notifyLDContextAvailabilityReq)
+	}
+}
+
 func (tb *ThinBroker) NotifyContextAvailability(w rest.ResponseWriter, r *rest.Request) {
 	notifyContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyContextAvailabilityReq)
@@ -1286,6 +1392,87 @@ func (tb *ThinBroker) Notifyv2ContextAvailability(w rest.ResponseWriter, r *rest
 	}
 }
 
+//handleNGSILDNotify
+
+func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabilityReq *NotifyContextAvailabilityRequest) {
+	var action string
+	notifyContextAvailabilityReq.ErrorCode.Code = 301
+	switch notifyContextAvailabilityReq.ErrorCode.Code {
+	case 201:
+		action = "CREATE"
+	case 301:
+		action = "UPDATE"
+	case 410:
+		action = "DELETE"
+	}
+
+	INFO.Println(action, " subID ", mainSubID)
+
+	for _, registrationResp := range notifyContextAvailabilityReq.ContextRegistrationResponseList {
+		registration := registrationResp.ContextRegistration
+		for _, eid := range registration.EntityIdList {
+			INFO.Println("===> ", eid, " , ", mainSubID)
+
+			tb.LDe2sub_lock.Lock()
+			if action == "CREATE" {
+				tb.entityId2LDSubcriptions[eid.ID] = append(tb.entityId2LDSubcriptions[eid.ID], mainSubID) // change here
+			} else if action == "DELETE" {
+				subList := tb.entityId2LDSubcriptions[eid.ID] //change here
+				for i, id := range subList {
+					if id == mainSubID {
+						tb.entityId2LDSubcriptions[eid.ID] = append(subList[:i], subList[i+1:]...) // change here
+						break
+					}
+				}
+			} else if action == "UPDATE" {
+				existFlag := false
+				for _, subID := range tb.entityId2LDSubcriptions[eid.ID] { //change here
+					if subID == mainSubID {
+						existFlag = true
+						break
+					}
+				}
+				if existFlag == false {
+					tb.entityId2LDSubcriptions[eid.ID] = append(tb.entityId2LDSubcriptions[eid.ID], mainSubID) //chage here
+				}
+			}
+			tb.LDe2sub_lock.Unlock()
+		}
+
+		INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
+		INFO.Println("TO ngsi10 subscription, ", mainSubID)
+		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
+
+		if registration.ProvidingApplication == tb.MyURL {
+			//for matched entities provided by myself
+			if action == "CREATE" || action == "UPDATE" {
+				tb.notifyOneLDSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
+			}
+		} else {
+			//for matched entities provided by other IoT Brokers
+			newLDSubscription := LDSubscriptionRequest{}
+			newLDSubscription.Entities = registration.EntityIdList
+			newLDSubscription.Notification.Endpoint.URI = tb.MyURL
+			newLDSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
+
+			if action == "CREATE" || action == "UPDATE" {
+				registration.ProvidingApplication = strings.TrimSuffix(registration.ProvidingApplication, "/ngsi10")
+				sid, err := subscriptionLDContextProvider(&newLDSubscription, registration.ProvidingApplication, tb.SecurityCfg)
+				if err == nil {
+					INFO.Println("issue a new subscription ", sid)
+
+					tb.ldSubscriptions_lock.Lock()
+					tb.ldSubscriptions[sid] = &newLDSubscription
+					tb.ldSubscriptions_lock.Unlock()
+
+					tb.subLinks_lock.Lock()
+					tb.main2Other[mainSubID] = append(tb.main2Other[mainSubID], sid)
+					tb.subLinks_lock.Unlock()
+				}
+			}
+		}
+	}
+}
 func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabilityReq *NotifyContextAvailabilityRequest) {
 	var action string
 	notifyContextAvailabilityReq.ErrorCode.Code = 301
@@ -1386,7 +1573,7 @@ func (tb *ThinBroker) handleNGSIV2Notify(mainSubID string, notifyv2ContextAvaila
 		for _, eid := range registration.EntityIdList {
 			INFO.Println("===> ", eid, " , ", mainSubID)
 
-			tb.e2sub_lock.Lock()
+			tb.ev2sub_lock.Lock()
 			if action == "CREATE" {
 				tb.entityIdv2Subcriptions[eid.ID] = append(tb.entityIdv2Subcriptions[eid.ID], mainSubID)
 			} else if action == "DELETE" {
@@ -1409,7 +1596,7 @@ func (tb *ThinBroker) handleNGSIV2Notify(mainSubID string, notifyv2ContextAvaila
 					tb.entityIdv2Subcriptions[eid.ID] = append(tb.entityIdv2Subcriptions[eid.ID], mainSubID)
 				}
 			}
-			tb.e2sub_lock.Unlock()
+			tb.ev2sub_lock.Unlock()
 		}
 
 		INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
@@ -1425,10 +1612,11 @@ func (tb *ThinBroker) handleNGSIV2Notify(mainSubID string, notifyv2ContextAvaila
 			//for matched entities provided by other IoT Brokers
 			newv2Subscription := SubscriptionRequest{}
 			newv2Subscription.Subject.Entities = registration.EntityIdList
-			//  newv2Subscription.Reference = tb.MyURL
+			newv2Subscription.Notification.Http.Url = tb.MyURL
 			newv2Subscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {
+				registration.ProvidingApplication = strings.TrimSuffix(registration.ProvidingApplication, "/ngsi10")
 				sid, err := subscriptionProvider(&newv2Subscription, registration.ProvidingApplication, tb.SecurityCfg)
 				if err == nil {
 					INFO.Println("issue a new subscription ", sid)
@@ -1664,6 +1852,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		var context []interface{}
 		contextInPayload := true
 		//Get Link header if present
+		Link := r.Header.Get("Link")
 		if link := r.Header.Get("Link"); link != "" {
 			contextInPayload = false                    // Context in Link header
 			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
@@ -1681,10 +1870,10 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
 				return
 			}
-			if err.Error() == "AlreadyExists!" {
+			/*if err.Error() == "AlreadyExists!" {
 				rest.Error(w, "AlreadyExists!", 409)
 				return
-			}
+			}*/
 			if err.Error() == "Id can not be nil!" {
 				rest.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -1700,43 +1889,121 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 
 			// Deserialize the payload here.
 			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-
 			if err != nil {
 				rest.Error(w, err.Error(), 400)
 				return
 			} else {
 				//Update createdAt value.
 				deSerializedEntity["createdAt"] = time.Now().String()
-				/*for k, _ := range deSerializedEntity { // considering properties and relationships as attributes
-					if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-						attrMap := deSerializedEntity[k].(map[string]interface{})
-						attrMap["createdAt"] = time.Now().String()
-					}
-				}*/
-
 				// Store Context
-
 				deSerializedEntity["@context"] = context
 
-        if !strings.HasPrefix(deSerializedEntity["id"].(string),"urn:ngsi-ld:") {
+				if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
 					rest.Error(w, "Entity id must contain uri!", 400)
 					return
 				}
-				w.Header().Set("Location","/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
+				w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 				w.WriteHeader(201)
 
-				// Add the resolved entity to tb.ldEntities
-				tb.saveEntity(deSerializedEntity)
-
-				//Register new context element on discovery
-				tb.registerLDContextElement(deSerializedEntity)
-
-				//tb.LDNotifySubscribers(&deSerializedEntity, true)
+				tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 			}
 		}
 	} else {
 		rest.Error(w, "Missing Headers or Incorrect Header values!", 400)
 		return
+	}
+}
+
+func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) error {
+	entity := tb.ldEntities[eid]
+	entityMap := entity.(map[string]interface{})
+	for k, v := range elem {
+		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+			if _, ok := entityMap[k]; ok == true {
+				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
+				attrMap := elem[k].(map[string]interface{})            // to be updated as
+				if strings.Contains(attrMap["type"].(string), "Property") {
+					if attrMap["value"] != nil {
+						entityAttrMap["value"] = attrMap["value"]
+					}
+					if attrMap["observedAt"] != nil {
+						entityAttrMap["observedAt"] = attrMap["observedAt"]
+					}
+					if attrMap["datasetId"] != nil {
+						entityAttrMap["datasetId"] = attrMap["datasetId"]
+					}
+					if attrMap["instanceId"] != nil {
+						entityAttrMap["instanceId"] = attrMap["instanceId"]
+					}
+					if attrMap["unitCode"] != nil {
+						entityAttrMap["unitCode"] = attrMap["unitCode"]
+					}
+				} else if strings.Contains(attrMap["type"].(string), "Relationship") {
+					if attrMap["object"] != nil {
+						entityAttrMap["object"] = attrMap["object"]
+					}
+					if attrMap["providedBy"] != nil {
+						entityAttrMap["providedBy"] = attrMap["providedBy"]
+					}
+					if attrMap["datasetId"] != nil {
+						entityAttrMap["datasetId"] = attrMap["datasetId"]
+					}
+					if attrMap["instanceId"] != nil {
+						entityAttrMap["instanceId"] = attrMap["instanceId"]
+					}
+				}
+				entityAttrMap["modifiedAt"] = time.Now().String()
+				entityMap[k] = entityAttrMap
+			} else {
+				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+
+					entityMap[k] = v
+				}
+			}
+		}
+	}
+	entityMap["modifiedAt"] = time.Now().String()
+	tb.ldEntities[eid] = entityMap
+	return nil
+}
+
+func (tb *ThinBroker) updateLdContextElement(ctxEle map[string]interface{}) {
+	tb.ldEntities_lock.Lock()
+	defer tb.ldEntities_lock.Unlock()
+	eid := getId(ctxEle)
+	if _, exist := tb.ldEntities[eid]; exist {
+		tb.updateCtxElemet(ctxEle, eid)
+	} else {
+		tb.ldEntities[eid] = ctxEle
+	}
+}
+func (tb *ThinBroker) UpdateLdContext2LocalSite(updateCtxReq map[string]interface{}) {
+	tb.ldEntities_lock.Lock()
+	eid := getId(updateCtxReq)
+	hasLdUpdatedMetadata := hasLdUpdatedMetadata(updateCtxReq, tb.ldEntities[eid])
+	tb.ldEntities_lock.Unlock()
+
+	tb.updateLdContextElement(updateCtxReq)
+
+	go tb.LDNotifySubscribers(updateCtxReq, true)
+	if hasLdUpdatedMetadata == true {
+		tb.registerLDContextElement(updateCtxReq)
+	}
+}
+
+func (tb *ThinBroker) UpdateLdContext2RemoteSite(updateCtxReq map[string]interface{}, brokerURL string, link string) {
+	INFO.Println(brokerURL)
+	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
+	client.CreateLDEntityOnRemote(updateCtxReq, link)
+}
+
+func (tb *ThinBroker) handleLdExternalUpdateContext(updateCtxReq map[string]interface{}, link string) {
+	eid := getId(updateCtxReq)
+	brokerURL := tb.queryOwnerOfLDEntity(eid)
+	if brokerURL == tb.myProfile.MyURL {
+		tb.UpdateLdContext2LocalSite(updateCtxReq)
+	} else {
+		tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, link)
 	}
 }
 
@@ -2086,25 +2353,51 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Id = sid
 
 				}
-
-				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
-				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
-				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
-				tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
-				if err :=  tb.createSubscription(&deSerializedSubscription);err != nil {
-                                        rest.Error(w, "Already exist!", 409)
+				if !strings.HasSuffix(deSerializedSubscription.Type,"Subscription") &&  !strings.HasSuffix(deSerializedSubscription.Type, "subscription") {
+                                        rest.Error(w, "Type not allowed!", http.StatusBadRequest)
                                         return
                                 }
-				if err := tb.SubscribeLDContextAvailability(&deSerializedSubscription); err != nil {
-					rest.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
+				// send response
 				w.WriteHeader(http.StatusCreated)
-				//w.WriteJson(deSerializedSubscription.Id)
 				subResp := SubscribeContextResponse{}
 				subResp.SubscribeResponse.SubscriptionId = deSerializedSubscription.Id
 				subResp.SubscribeError.SubscriptionId = deSerializedSubscription.Id
 				w.WriteJson(&subResp)
+
+				if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
+					deSerializedSubscription.Subscriber.IsInternal = true
+				} else {
+					deSerializedSubscription.Subscriber.IsInternal = false
+				}
+				if len(deSerializedSubscription.Entities) == 0 {
+                                        rest.Error(w, "Missing entites and its parameter!", http.StatusBadRequest)
+                                        return
+                                }
+
+				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
+				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
+				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
+				//tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
+
+				if r.Header.Get("Require-Reliability") == "true" {
+					deSerializedSubscription.Subscriber.RequireReliability = true
+					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
+				} else {
+					deSerializedSubscription.Subscriber.RequireReliability = false
+				}
+				// save subscription
+				tb.createSubscription(&deSerializedSubscription)
+				if deSerializedSubscription.Subscriber.IsInternal == true {
+					INFO.Println("internal subscription coming from another broker")
+					for _, entity := range deSerializedSubscription.Entities {
+						tb.LDe2sub_lock.Lock()
+						tb.entityId2LDSubcriptions[entity.ID] = append(tb.entityId2LDSubcriptions[entity.ID], deSerializedSubscription.Id)
+						tb.LDe2sub_lock.Unlock()
+					}
+					tb.notifyOneLDSubscriberWithCurrentStatus(deSerializedSubscription.Entities, deSerializedSubscription.Id)
+				} else {
+					tb.SubscribeLDContextAvailability(&deSerializedSubscription)
+				}
 			}
 		}
 	} else {
@@ -2116,7 +2409,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 // Subscribe to Discovery for context availabiltiy
 func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest) error {
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
-
 	for key, entity := range subReq.Entities {
 		if entity.IdPattern != "" {
 			entity.IsPattern = true
@@ -2125,17 +2417,19 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	}
 	ctxAvailabilityRequest.Entities = subReq.Entities
 	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
-	//copy(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes)
-	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyContextAvailability"
+	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
+	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
-
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
 
 	if AvailabilitySubID != "" {
-		tb.createSubscriptionIdMappings(subReq.Id, AvailabilitySubID)
+		//tb.createSubscriptionIdMappings(subReq.Id, AvailabilitySubID)
 		tb.subLinks_lock.Lock()
+		subID := subReq.Id
+		tb.main2Other[subID] = append(tb.main2Other[subID], AvailabilitySubID)
+		tb.availabilitySub2MainSub[AvailabilitySubID] = subID
 		notifyMessage, alreadyBack := tb.tmpNGSILDNotifyCache[AvailabilitySubID]
 		tb.subLinks_lock.Unlock()
 		if alreadyBack == true {
@@ -2153,48 +2447,13 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	}
 }
 
-// Store in EntityID - SubID Map
-func (tb *ThinBroker) createEntityID2SubscriptionsIDMap(subReq *LDSubscriptionRequest) {
-	tb.e2sub_lock.Lock()
-	for _, entities := range subReq.Entities {
-		var eid string
-		if entities.IdPattern != "" {
-			eid = entities.IdPattern
-		} else if entities.ID != "" {
-			eid = entities.ID
-		}
-		tb.entityId2Subcriptions[eid] = append(tb.entityId2Subcriptions[eid], subReq.Id)
-
-	}
-	tb.e2sub_lock.Unlock()
-}
-
 // Store in SubID - SubscriptionPayload Map
-func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) (error){
-	subscription.Subscriber.RequireReliability = true
+func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
-        if _,exist := tb.ldSubscriptions[subscription.Id]; exist == true {
-                        fmt.Println("Already exists here...!!")
-                        tb.ldSubscriptions_lock.Unlock()
-                        err := errors.New("AlreadyExists!")
-                        fmt.Println("Error: ", err.Error())
-                        return err
-        }else {
+	subscription.SetLdIdPattern()
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
-	}
-	return nil
-}
-
-// Store SubID - AvailabilitySubID Mappings
-func (tb *ThinBroker) createSubscriptionIdMappings(subID string, availabilitySubID string) {
-	tb.subLinks_lock.Lock()
-	tb.main2Other[subID] = append(tb.main2Other[subID], availabilitySubID)
-
-	tb.availabilitySub2MainSub[availabilitySubID] = subID
-
-	tb.subLinks_lock.Unlock()
 }
 
 // Expand the payload
@@ -2232,7 +2491,7 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, cont
 			}
 			ownerURL := tb.queryOwnerOfLDEntity(entityId)
 			if ownerURL == tb.MyURL {
-				tb.ldEntities_lock.RLock()
+				/*tb.ldEntities_lock.RLock()
 				if _, ok := tb.ldEntities[entityId]; ok == true {
 					fmt.Println("Already exists here...!!")
 					tb.ldEntities_lock.RUnlock()
@@ -2240,7 +2499,7 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, cont
 					fmt.Println("Error: ", err.Error())
 					return nil, err
 				}
-				tb.ldEntities_lock.RUnlock()
+				tb.ldEntities_lock.RUnlock()*/
 			}
 			if ownerURL != tb.MyURL {
 				ownerURL = strings.TrimSuffix(ownerURL, "/ngsi10")
@@ -2425,30 +2684,53 @@ func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 	}
 }
 
+func (tb *ThinBroker) checkMatcheLdAttr(ctxElemAttrs []string, sid string) bool {
+	tb.ldSubscriptions_lock.RLock()
+	conditionList := tb.ldSubscriptions[sid].WatchedAttributes
+	tb.ldSubscriptions_lock.RUnlock()
+	if len(conditionList) == 0 {
+		return true
+	}
+	matchedAtleastOnce := false
+	for _, attrs1 := range ctxElemAttrs {
+		for _, attrs2 := range conditionList {
+			if attrs1 == attrs2 {
+				matchedAtleastOnce = true
+				break
+			}
+			if matchedAtleastOnce == true {
+				break
+			}
+		}
+	}
+	return matchedAtleastOnce
+}
+
 func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkSelectedAttributes bool) {
 	eid := ctxElem["id"].(string)
-	tb.e2sub_lock.RLock()
-	defer tb.e2sub_lock.RUnlock()
-	var subscriberList []string
-	if list, ok := tb.entityId2Subcriptions[eid]; ok == true {
-		subscriberList = append(subscriberList, list...)
-	}
-	for k, _ := range tb.entityId2Subcriptions {
+	tb.LDe2sub_lock.RLock()
+	defer tb.LDe2sub_lock.RUnlock()
+	subscriberList := tb.entityId2LDSubcriptions[eid]
+	/*for k, _ := range tb.entityId2LDSubcriptions {
 		matched := tb.matchPattern(k, eid) // (pattern, id) to check if the current eid lies in the pattern given in the key.
 		if matched == true {
 			list := tb.entityId2Subcriptions[k]
 			subscriberList = append(subscriberList, list...)
 		}
+	}*/
+	ldAttr := make([]string, 0)
+	for k, _ := range ctxElem {
+		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+			ldAttr = append(ldAttr, k)
+		}
 	}
 	//send this context element to the subscriber
 	for _, sid := range subscriberList {
 		elements := make([]map[string]interface{}, 0)
-
-		if checkSelectedAttributes == true {
+		checkCondition := tb.checkMatcheLdAttr(ldAttr, sid)
+		if checkSelectedAttributes == true && checkCondition == true {
 			selectedAttributes := make([]string, 0)
-
 			tb.ldSubscriptions_lock.RLock()
-
 			if subscription, exist := tb.ldSubscriptions[sid]; exist {
 				if subscription.Notification.Attributes != nil {
 					selectedAttributes = append(selectedAttributes, subscription.Notification.Attributes...)
@@ -2456,31 +2738,20 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 			}
 			tb.ldSubscriptions_lock.RUnlock()
 			tb.ldEntities_lock.RLock()
-			//element := tb.ldEntities[eid].CloneWithSelectedAttributes(selectedAttributes)
 			element := tb.ldEntities[eid]
-			tb.ldEntities_lock.RUnlock()
 			elementMap := element.(map[string]interface{})
-			elements = append(elements, elementMap)
+			clonedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
+			//element := tb.ldEntities[eid]
+			tb.ldEntities_lock.RUnlock()
+			//elementMap := element.(map[string]interface{})
+			elements = append(elements, clonedElement)
 		} else {
 			elements = append(elements, ctxElem)
 		}
-		go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
-	}
-}
-
-func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfLD(entities []EntityId, sid string, selectedAttributes []string) {
-	// Create NGSI-LD Context Element
-	elements := make([]map[string]interface{}, 0)
-	tb.ldEntities_lock.Lock()
-	for _, entity := range entities {
-		if element, exist := tb.ldEntities[entity.ID]; exist {
-			elementMap := element.(map[string]interface{})
-			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
-			elements = append(elements, returnedElement)
+		if checkCondition == true {
+			go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
 		}
 	}
-	tb.ldEntities_lock.Unlock()
-	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
 }
 
 func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string]interface{}, sid string) {

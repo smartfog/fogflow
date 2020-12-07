@@ -140,9 +140,7 @@ func (sz Serializer) serializeLocationValue(location LDLocationValue) map[string
 func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
 	entity := make(map[string]interface{})
 	for _, val := range expanded {
-
 		stringsMap := val.(map[string]interface{})
-
 		for k, v := range stringsMap {
 			if strings.Contains(k, "id") {
 				if v != nil {
@@ -158,10 +156,7 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				}
 			} else if strings.Contains(k, "createdAt") {
 				continue
-				// } else if strings.Contains(k, "context") {
-				//      entity["@context"] = v
-			} else { // default cases like property, relationship here.
-
+			} else {
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
 					mp := interfaceArray[0].(map[string]interface{})
@@ -308,7 +303,6 @@ func (sz Serializer) getId(id interface{}) string {
 }
 
 func (sz Serializer) getType(typ []interface{}) string {
-
 	var Type, Type1 string
 	if len(typ) > 0 {
 		Type1 = typ[0].(string)
@@ -342,12 +336,12 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
 				if Property["value"] == "nil" || Property["value"] == "" {
 					err := errors.New("Property value can not be nil!")
-                                         return Property, err
-                                        }
-                       }else {
-                                err := errors.New("Property value can not be nil!")
-                                return Property, err
-                        }
+					return Property, err
+				}
+			} else {
+				err := errors.New("Property value can not be nil!")
+				return Property, err
+			}
 		} else if strings.Contains(propertyField, "observedAt") {
 			if fieldValue != nil {
 				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
@@ -368,6 +362,10 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			if fieldValue != nil {
 				Property["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
 			}
+		} else if strings.Contains(propertyField, "createdAt") {
+			continue
+		} else if strings.Contains(propertyField, "modifiedA") {
+			continue
 		} else { // Nested property or relationship
 
 			var typ string
@@ -408,14 +406,14 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 		} else if strings.Contains(relationshipField, "hasObject") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
-				if Relationship["object"] == "nil" || Relationship["object"] == ""{
-                                         err := errors.New("Relationship Object value can not be nil!")
-                                         return Relationship, err
-                                        }
-                       }else {
+				if Relationship["object"] == "nil" || Relationship["object"] == "" {
+					err := errors.New("Relationship Object value can not be nil!")
+					return Relationship, err
+				}
+			} else {
 				err := errors.New("Relationship Object value can not be nil!")
-                                return Relationship, err
-                        }
+				return Relationship, err
+			}
 		} else if strings.Contains(relationshipField, "Object") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getValueFromArray(fieldValue.([]interface{})).(string)
@@ -439,6 +437,10 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 			if fieldValue != nil {
 				Relationship["instanceId"] = sz.getInstanceId(fieldValue.([]interface{}))
 			}
+		} else if strings.Contains(relationshipField, "createdAt") {
+			continue
+		} else if strings.Contains(relationshipField, "modifiedA") {
+			continue
 		} else { // Nested property or relationship
 			var typ string
 			nested := fieldValue.([]interface{})
@@ -475,12 +477,6 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 	var Value interface{}
 	if len(hasValue) > 0 {
 		val := hasValue[0].(map[string]interface{})
-		/*if val["@type"] != nil {
-			Value["Type"] = val["@type"].(string)
-			Value["Value"] = val["@value"].(interface{})
-		} else {
-			Value["Value"] = hasValue[0]
-		}*/
 		Value = val["@value"]
 	}
 	return Value
@@ -488,8 +484,10 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 
 func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
-	var value interface{}
-	if len(hasValue) > 0 {
+	value := make([]interface{},0)
+	if len(hasValue) == 0 {
+		return value
+	}else if len(hasValue) > 0 {
 		for _, oneValue := range hasValue {
 			if val := oneValue.(map[string]interface{}); val != nil {
 
@@ -498,7 +496,7 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 					Value["Value"] = val["@value"].(interface{})
 					return Value
 				}
-				value = val["@value"].(interface{}) //Value is overwritten, in case of multiple values in payload, value array is never returned..
+				value = append(value,val["@value"].(interface{})) //Value is not  overwritten, in case of multiple values in payload, value array never returned..
 			}
 		}
 	}
@@ -518,7 +516,7 @@ func (sz Serializer) getDateAndTimeValue(dateTimeValue []interface{}) string {
 	var DateTimeValue string
 	if len(dateTimeValue) > 0 {
 		observedAtMap := dateTimeValue[0].(map[string]interface{})
-		if strings.Contains(observedAtMap["@value"].(string), "DateTime") {
+		if strings.Contains(observedAtMap["@type"].(string), "DateTime") {
 			DateTimeValue = observedAtMap["@value"].(string)
 		}
 	}
@@ -542,22 +540,32 @@ func (sz Serializer) getProvidedBy(providedBy []interface{}) ProvidedBy {
 
 //DATASET_ID
 func (sz Serializer) getDatasetId(datasetId []interface{}) string {
-	return ""
+	var DatasetId string
+        if len(datasetId) > 0 {
+                datasetIdMap := datasetId[0].(map[string]interface{})
+                DatasetId = datasetIdMap["@id"].(string)
+        }
+        return DatasetId
 }
 
 //INSTANCE_ID
 func (sz Serializer) getInstanceId(instanceId []interface{}) string {
-	return ""
+	var InstanceId string
+        if len(instanceId) > 0 {
+                instanceIdMap := instanceId[0].(map[string]interface{})
+                InstanceId = instanceIdMap["@id"].(string)
+        }
+        return InstanceId
 }
 
 //UNIT_CODE
 func (sz Serializer) getUnitCode(unitCode []interface{}) string {
 	var UnitCode string
-        if len(unitCode) > 0 {
-                unitCodeMap := unitCode[0].(map[string]interface{})
-                UnitCode = unitCodeMap["@value"].(string)
-                 }
-        return UnitCode
+	if len(unitCode) > 0 {
+		unitCodeMap := unitCode[0].(map[string]interface{})
+		UnitCode = unitCodeMap["@value"].(string)
+	}
+	return UnitCode
 }
 
 //LOCATION
@@ -623,8 +631,10 @@ func (sz Serializer) getArrayofCoordinates(coordinates []interface{}) [][]float6
 	var Coordinates [][]float64 //Array contains point coordinates with longitude & latitude values in order
 	for i := 0; i < len(coordinates); i = i + 2 {
 		var coord []float64
-		coord = append(coord, coordinates[i].(float64))
-		coord = append(coord, coordinates[i+1].(float64))
+		fCor := coordinates[i].(map[string]interface{})
+		sCor := coordinates[i+1].(map[string]interface{})
+		coord = append(coord, fCor["@value"].(float64))
+		coord = append(coord, sCor["@value"].(float64))
 		Coordinates = append(Coordinates, coord)
 	}
 	return Coordinates

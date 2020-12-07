@@ -31,6 +31,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Post("/ngsi10/unsubscribeContext", broker.UnsubscribeContext),
 		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
 		rest.Post("/ngsi10/notifyContextAvailabilityv2", broker.Notifyv2ContextAvailability),
+		rest.Post("/ngsi10/notifyLDContextAvailability", broker.NotifyLDContextAvailability),
 		// ngsiv2 API
 		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
 		// api for iot-agent
@@ -59,6 +60,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
 
 		//NGSI-LD APIs
+		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NotifyLdContext),
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
 		rest.Get("/ngsi-ld/v1/entities", apisrv.GetQueryParamsEntities),
@@ -311,14 +313,14 @@ func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request)
 
 func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json"  || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*"  {
+	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json" || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*" {
 		entity := apisrv.broker.ldGetEntity(eid)
 		if entity != nil {
-			if accept == "application/json" || accept == " "{
-                                w.Header().Set("Content-Type","application/json")
-                        }else {
-                                w.Header().Set("Content-Type","application/ld+json")
-                        }
+			if accept == "application/json" || accept == " " {
+				w.Header().Set("Content-Type", "application/json")
+			} else {
+				w.Header().Set("Content-Type", "application/ld+json")
+			}
 			w.WriteHeader(200)
 			w.WriteJson(entity)
 		} else {

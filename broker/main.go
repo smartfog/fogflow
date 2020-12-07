@@ -28,8 +28,8 @@ func main() {
 	config.HTTPS.LoadConfig()
 
 	myID := "Broker." + config.SiteID
-	if (*id) != "0" {
-		myID = myID + "." + (*id)
+	if *id != "0" {
+		myID = myID + "." + *id
 	}
 
 	// check if IoT Discovery is ready
@@ -42,7 +42,7 @@ func main() {
 			INFO.Println(resp.StatusCode)
 		}
 
-		if (err == nil) && (resp.StatusCode == 200) {
+		if err == nil && resp.StatusCode == 200 {
 			break
 		} else {
 			time.Sleep(2 * time.Second)
