@@ -65,6 +65,8 @@ def element2Object(element):
 def object2Element(ctxObj):
 
     ctxElement = {}
+    print("ctxObj")
+    print(ctxObj)
     ctxElement['id'] = ctxObj['id']
     ctxElement['type'] = ctxObj['type']
 
@@ -85,6 +87,7 @@ def object2Element(ctxObj):
 def readContextElements(data):
 
     ctxObjects = []
+    print data['type']
     if data['type'] == 'Notification':
         for attr in data['data']:
             ctxObj = element2Object(attr)
