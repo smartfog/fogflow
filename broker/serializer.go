@@ -484,8 +484,10 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 
 func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
-	var value interface{}
-	if len(hasValue) > 0 {
+	value := make([]interface{},0)
+	if len(hasValue) == 0 {
+		return value
+	}else if len(hasValue) > 0 {
 		for _, oneValue := range hasValue {
 			if val := oneValue.(map[string]interface{}); val != nil {
 
@@ -494,7 +496,7 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 					Value["Value"] = val["@value"].(interface{})
 					return Value
 				}
-				value = val["@value"].(interface{}) //Value is overwritten, in case of multiple values in payload, value array is never returned..
+				value = append(value,val["@value"].(interface{})) //Value is not  overwritten, in case of multiple values in payload, value array never returned..
 			}
 		}
 	}
@@ -514,7 +516,7 @@ func (sz Serializer) getDateAndTimeValue(dateTimeValue []interface{}) string {
 	var DateTimeValue string
 	if len(dateTimeValue) > 0 {
 		observedAtMap := dateTimeValue[0].(map[string]interface{})
-		if strings.Contains(observedAtMap["@value"].(string), "DateTime") {
+		if strings.Contains(observedAtMap["@type"].(string), "DateTime") {
 			DateTimeValue = observedAtMap["@value"].(string)
 		}
 	}
@@ -538,12 +540,22 @@ func (sz Serializer) getProvidedBy(providedBy []interface{}) ProvidedBy {
 
 //DATASET_ID
 func (sz Serializer) getDatasetId(datasetId []interface{}) string {
-	return ""
+	var DatasetId string
+        if len(datasetId) > 0 {
+                datasetIdMap := datasetId[0].(map[string]interface{})
+                DatasetId = datasetIdMap["@id"].(string)
+        }
+        return DatasetId
 }
 
 //INSTANCE_ID
 func (sz Serializer) getInstanceId(instanceId []interface{}) string {
-	return ""
+	var InstanceId string
+        if len(instanceId) > 0 {
+                instanceIdMap := instanceId[0].(map[string]interface{})
+                InstanceId = instanceIdMap["@id"].(string)
+        }
+        return InstanceId
 }
 
 //UNIT_CODE
