@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: cloud-worker
+  name: cloud-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: cloud-worker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: cloud-worker
+    spec:
+      containers:
+      - image: fogflow/worker:3.2
+        imagePullPolicy: ""
+        name: cloud-worker
+        resources: {}
+        volumeMounts:
+        - name: cloud-worker
+          mountPath: /tmp
+          subPath: tmp
+          readOnly: true
+        - name: cloud-worker 
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: cloud-worker
+        configMap:
+            name: resolv-worker-config
+            optional: true

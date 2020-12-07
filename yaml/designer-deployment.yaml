@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: designer
+  name: designer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: designer
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: designer
+    spec:
+      containers:
+      - image: fogflow/designer:3.2
+        imagePullPolicy: ""
+        name: designer
+        ports:
+        - containerPort: 8080
+        - containerPort: 1030
+        resources: {}
+        volumeMounts:
+        - name: config-json
+          mountPath: /app/config.json
+          subPath: config.json
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: config-json
+        configMap:
+            name: resolv-config-json
+            optional: true

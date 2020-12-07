@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: discovery
+  name: discovery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: discovery  
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: discovery
+    spec:
+      containers:
+      - image: fogflow/discovery:3.2
+        imagePullPolicy: ""
+        name: discovery
+        ports:
+        - containerPort: 8090
+        resources: {}
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: config-json
+        configMap:
+            name: resolv-config-json
+            optional: true

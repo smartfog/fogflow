@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: dgraph
+  name: dgraph
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: dgraph
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: dgraph
+    spec:
+      containers:
+      - image: fogflow/dgraph:latest
+        imagePullPolicy: ""
+        name: dgraph
+        ports:
+        - containerPort: 6080
+        - containerPort: 8080
+        - containerPort: 9080
+        - containerPort: 8000
+        resources: {}
+        volumeMounts:
+        - mountPath: /dgraph
+          name: dgraph
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: dgraph
+        persistentVolumeClaim:
+          claimName: dgraph-claim0
+status: {}

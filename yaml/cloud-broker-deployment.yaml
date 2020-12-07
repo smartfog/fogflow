@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: cloud-broker
+  name: cloud-broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: cloud-broker
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: cloud-broker
+    spec:
+      containers:
+      - image: fogflow/broker:3.2
+        imagePullPolicy: ""
+        name: cloud-broker
+        ports:
+        - containerPort: 8070
+        resources: {}
+        volumeMounts:
+        - name: config-json
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: config-json
+        configMap:
+            name: resolv-config-json
+            optional: true

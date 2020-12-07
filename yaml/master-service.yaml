@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: master
+  name: master
+spec:
+  ports:
+  - name: "1060"
+    port: 1060
+    targetPort: 1060
+  selector:
+    io.kompose.service: master
+  externalIPs:
+  - 172.30.76.63
+status:
+  loadBalancer: {}
