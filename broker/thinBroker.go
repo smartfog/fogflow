@@ -2361,7 +2361,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
                                         rest.Error(w, "Missing entites and its parameter!", http.StatusBadRequest)
                                         return
                                 }
-
 				// send response
 				w.WriteHeader(http.StatusCreated)
 				subResp := SubscribeContextResponse{}
