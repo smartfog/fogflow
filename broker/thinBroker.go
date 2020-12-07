@@ -2353,6 +2353,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Id = sid
 
 				}
+				if !strings.HasSuffix(deSerializedSubscription.Type,"Subscription") &&  !strings.HasSuffix(deSerializedSubscription.Type, "subscription") {
+                                        rest.Error(w, "Type not allowed!", http.StatusBadRequest)
+                                        return
+                                }
 				// send response
 				w.WriteHeader(http.StatusCreated)
 				subResp := SubscribeContextResponse{}
