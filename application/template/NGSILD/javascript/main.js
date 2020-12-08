@@ -164,7 +164,7 @@ async function fetchInputByQuery() {
     }).then(function(response) {
         if (response.status == 200) {
             var ctxElements = response.data;
-	    obj = NGSIClient.CtxElement2JSONObject(ctxElements);
+	    var obj = NGSIClient.CtxElement2JSONObject(ctxElements);
             return obj;
         } else {
             return null;
@@ -178,7 +178,8 @@ function query2execution() {
         try {
             // receive the query result
             let ctxObjects = await fetchInputByQuery();
-            np
+            //np
+	    console.log(ctxObjects)
             // call the customized function to generate the analytics result
             for (var i = 0; i < ctxObjects.length; i++) {
                 fogfunction.handler(ctxObjects[i]);
