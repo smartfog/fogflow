@@ -29,6 +29,7 @@ function JSONObject2CtxElement(ctxObj) {
 var NGSI10Client = (function() {
     // initialized with the broker URL
     var NGSI10Client = function(url) {
+	var url = str.substring(0, str.lastIndexOf("/") + 1);
         this.brokerURL = url;
     };
     
