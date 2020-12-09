@@ -8,7 +8,7 @@
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
 	console.log("enter into the user-defined fog function");
-
+	publich(contextEntity)
 	if (contextEntity == null) {
 		return;
 	} 	

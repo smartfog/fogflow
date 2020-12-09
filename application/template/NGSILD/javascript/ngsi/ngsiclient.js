@@ -10,29 +10,19 @@ function CtxElement2JSONObject(e) {
     return jsonObj;
 }    
 
-function JSONObject2CtxElement(ob) {
+function JSONObject2CtxElement(ctxObj) {
     console.log('convert json object to context element') 
-    var contextElement = {};
-    
-    contextElement.entityId = ob.entityId;
-    
-    contextElement.attributes = [];
-    if(ob.attributes) {
-        for( key in ob.attributes ) {
-            attr = ob.attributes[key];
-            contextElement.attributes.push({name: key, type: attr.type, value: attr.value});
-        }
-    }
-    
-    contextElement.domainMetadata = [];
-    if(ob.metadata) {
-        for( key in ob.metadata ) {
-            meta = ob.metadata[key];
-            contextElement.domainMetadata.push({name: key, type: meta.type, value: meta.value});
-        }
-    }    
 
-    return contextElement;
+    var ctxElement = {}
+    ctxElement['id'] = ctxObj['id'] 
+    ctxElement['type'] = ctxObj['type']
+    for (let key in ctxObj) {
+        if ((key != 'id') && (key != 'type') && (key != 'modifiedAt') && (key != 'createdAt') && (key != 'observationSpace') && (key != 'operationSpace') && (key != 'location') && (key != '@context')) {
+	    ctxElement[key] = ctxObj[key]
+	}
+
+    }
+    return ctxElement
 }  
 
     
@@ -44,21 +34,18 @@ var NGSI10Client = (function() {
     
     // update context 
     NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
-        contextElement = JSONObject2CtxElement(ctxObj);
-        
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'UPDATE'
-         
-		console.log(updateCtxReq);
+        updateCtxReq = JSONObject2CtxElement(ctxObj);
+	console.log(updateCtxReq);
 		      
         return axios({
             method: 'post',
-            url: this.brokerURL + '/updateContext',
+            url: this.brokerURL + '/ngsi-ld/v1/entities/',
             data: updateCtxReq
+	    headers = {'Accept': 'application/ld+json',
+               'Content-Type': 'application/ld+json',
+               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         }).then( function(response){
-            if (response.status == 200) {
+            if (response.status == 201) {
                 return response.data;
             } else {
                 return null;
@@ -90,7 +77,7 @@ var NGSI10Client = (function() {
     };    
     
     // query context
-    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {        
+    /*NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {        
         return axios({
             method: 'post',
             url: this.brokerURL + '/queryContext',
@@ -111,16 +98,19 @@ var NGSI10Client = (function() {
                 return null;
             }
         });
-    };    
+    };*/    
         
     // subscribe context
     NGSI10Client.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
         return axios({
             method: 'post',
-            url: this.brokerURL + '/subscribeContext',
+            url: this.brokerURL + '/ngsi-ld/v1/subscriptions/',
             data: subscribeCtxReq
+	    headers = {'Accept': 'application/ld+json',
+               'Content-Type': 'application/ld+json',
+               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         }).then( function(response){
-            if (response.status == 200) {
+            if (response.status == 201) {
                 return response.data.subscribeResponse.subscriptionId;
             } else {
                 return null;
@@ -129,7 +119,7 @@ var NGSI10Client = (function() {
     };    
 
     // unsubscribe context    
-    NGSI10Client.prototype.unsubscribeContext = function unsubscribeContext(sid) {
+    /*NGSI10Client.prototype.unsubscribeContext = function unsubscribeContext(sid) {
         var unsubscribeCtxReq = {};
         unsubscribeCtxReq.subscriptionId = sid;
         
@@ -147,7 +137,7 @@ var NGSI10Client = (function() {
     };        
     
     return NGSI10Client;
-})();
+})();*/
 
 var NGSI9Client = (function() {
     // initialized with the address of IoT Discovery
