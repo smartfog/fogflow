@@ -101,6 +101,18 @@ func element2Object(element map[string]interface{}) map[string]interface{}{
 	return ctxObj
 }
 
+func object2Element(element map[string]interface{}) map[string]interface{} {
+	ctxObject := make(map[string]interface{})
+	ctxObject["id"] = element["id"]
+	ctxObject["type"] = element["type"]
+	for key, _:= range element {
+		if (key != "id") && (key != "type") && (key != "modifiedAt") && (key != "createdAt") && (key != "observationSpace") && (key != "operationSpace") && (key != "location") && (key != "@context") {
+			ctxObject[key] =  element[key]
+		}
+	}
+	return ctxObject
+}
+
 func query2execution() map[string]interface{} {
 	client := NGSILdClient{IoTBrokerURL: brokerURL}
 	//_, err := 
@@ -109,9 +121,7 @@ func query2execution() map[string]interface{} {
 		fmt.Println("failed to update context",err)
 		return nil
 	}
-	
 	ctxObj := element2Object(ctxObjects)
-	fmt.Println(ctxObj)
 	return ctxObj
 }
 
@@ -179,25 +189,30 @@ func setReferenceURL(cmd map[string]interface{}) {
 //
 // publish context entities:
 //
-/*
-func publish(ctxUpdate *ContextObject) {
-	ctxUpdateBuffer = append(ctxUpdateBuffer, ctxUpdate)
+
+func publish(ctxUpdate map[string]interface{}) {
 
 	if brokerURL == "" {
 		fmt.Println("=== broker is not configured for your update")
 		return
 	}
 
-	for _, ctxUpdate := range ctxUpdateBuffer {
+	ctxUpdateEle := object2Element(ctxUpdate)
+	/*for _, ctxUpdate := range ctxUpdateBuffer {
 		ngsi10client := NGSI10Client{IoTBrokerURL: brokerURL}
 		err := ngsi10client.UpdateContextObject(ctxUpdate)
 		if err != nil {
 			fmt.Println(err)
 		}
-	}
+	}*/
 
-	ctxUpdateBuffer = nil
-}*/
+	client := NGSILdClient{IoTBrokerURL: brokerURL}
+	err := client.UpdateLdContext(ctxUpdateEle)
+	if err != nil {
+		fmt.Println(err)
+	}
+	//ctxUpdateBuffer = nil*/
+}
 
 func runInTestMode(runOnce bool) {
 	fmt.Println("=== TEST MODE ====")
@@ -209,11 +224,11 @@ func runInTestMode(runOnce bool) {
 
 	// query the required inputs and trigger the data processing function
 	element := query2execution()
-	
+        	
 	fmt.Println(element)
 }
 
-/*func runInOperationMode() {
+func runInOperationMode() {
 	fmt.Println("=== OPERATION MODE ====")
 
 	syncMode := os.Getenv("sync")
@@ -224,12 +239,12 @@ func runInTestMode(runOnce bool) {
 		// trigger the data processing function to handle the received notification
 		notify2execution()
 	}
-}*/
+}
 
 func main() {
-	//if len(os.Args) == 2 && os.Args[1] == "-o" {
-	//	runInOperationMode()
-	//} else {
+	if len(os.Args) == 2 && os.Args[1] == "-o" {
+		runInOperationMode()
+	} else {
 		runInTestMode(true)
-//	}
+	}
 }
