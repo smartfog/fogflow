@@ -6,16 +6,19 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: nginx
-  name: nginx
+    io.kompose.service: designer
+  name: designer
 spec:
   ports:
-  - name: "80"
-    port: 80
-    targetPort: 80
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  - name: "1030"
+    port: 1030
+    targetPort: 1030
   selector:
-    io.kompose.service: nginx  
+    io.kompose.service: designer
   externalIPs:
-  - 172.30.76.63
+  - 172.30.48.24
 status:
   loadBalancer: {}

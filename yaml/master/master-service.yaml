@@ -16,6 +16,6 @@ spec:
   selector:
     io.kompose.service: master
   externalIPs:
-  - 172.30.76.63
+  - 172.30.48.24
 status:
   loadBalancer: {}

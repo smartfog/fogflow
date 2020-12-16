@@ -6,15 +6,19 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: master
-  name: master
+    io.kompose.service: discovery
+  name: discovery
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      io.kompose.service: master
+      io.kompose.service: discovery  
+  minReadySeconds: 10
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -22,17 +26,17 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: master
+        io.kompose.service: discovery
     spec:
       containers:
-      - image: fogflow/master:3.2
+      - image: fogflow/discovery:3.2
         imagePullPolicy: ""
-        name: master
+        name: discovery
         ports:
-        - containerPort: 1060
+        - containerPort: 8090
         resources: {}
         volumeMounts:
-        - name: config-json
+        - name: config-json       
           mountPath: /config.json
           subPath: config.json
           readOnly: true
@@ -43,4 +47,3 @@ spec:
         configMap:
             name: resolv-config-json
             optional: true
-

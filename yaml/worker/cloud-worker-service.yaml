@@ -6,16 +6,15 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: rabbitmq
-  name: rabbitmq
+    io.kompose.service: cloud-worker
+  name: cloud-worker
 spec:
   ports:
-  - name: "5672"
-    port: 5672
-    targetPort: 5672
+  - name: ""
+    port: 
   selector:
-    io.kompose.service: rabbitmq
+    io.kompose.service: cloud-worker
   externalIPs:
-  - 172.30.76.63
+  - 172.30.48.24
 status:
   loadBalancer: {}

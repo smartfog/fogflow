@@ -9,12 +9,16 @@ metadata:
     io.kompose.service: dgraph
   name: dgraph
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       io.kompose.service: dgraph
+  minReadySeconds: 10
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -41,6 +45,12 @@ spec:
       serviceAccountName: ""
       volumes:
       - name: dgraph
-        persistentVolumeClaim:
-          claimName: dgraph-claim0
-status: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: dgraph
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 5Gi

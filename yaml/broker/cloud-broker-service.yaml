@@ -6,15 +6,16 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: cloud-worker
-  name: cloud-worker
+    io.kompose.service: cloud-broker
+  name: cloud-broker
 spec:
   ports:
-  - name: ""
-    port: 
+  - name: "8070"
+    port: 8070
+    targetPort: 8070
   selector:
-    io.kompose.service: cloud-worker
+    io.kompose.service: cloud-broker
   externalIPs:
-  - 172.30.76.63
+  - 172.30.48.24
 status:
   loadBalancer: {}

@@ -6,19 +6,16 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: designer
-  name: designer
+    io.kompose.service: rabbitmq
+  name: rabbitmq
 spec:
   ports:
-  - name: "8080"
-    port: 8080
-    targetPort: 8080
-  - name: "1030"
-    port: 1030
-    targetPort: 1030
+  - name: "5672"
+    port: 5672
+    targetPort: 5672
   selector:
-    io.kompose.service: designer
+    io.kompose.service: rabbitmq
   externalIPs:
-  - 172.30.76.63
+  - 172.30.48.24
 status:
   loadBalancer: {}

@@ -6,15 +6,19 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: designer
-  name: designer
+    io.kompose.service: cloud-broker
+  name: cloud-broker
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      io.kompose.service: designer
+      io.kompose.service: cloud-broker
+  minReadySeconds: 10    
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -22,20 +26,20 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: designer
+        io.kompose.service: cloud-broker
     spec:
       containers:
-      - image: fogflow/designer:3.2
+      - image: fogflow/broker:3.2
         imagePullPolicy: ""
-        name: designer
+        name: cloud-broker
         ports:
-        - containerPort: 8080
-        - containerPort: 1030
+        - containerPort: 8070
         resources: {}
         volumeMounts:
         - name: config-json
-          mountPath: /app/config.json
+          mountPath: /config.json
           subPath: config.json
+          readOnly: true
       restartPolicy: Always
       serviceAccountName: ""
       volumes:

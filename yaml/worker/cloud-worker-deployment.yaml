@@ -6,15 +6,19 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: discovery
-  name: discovery
+    io.kompose.service: cloud-worker
+  name: cloud-worker
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      io.kompose.service: discovery  
+      io.kompose.service: cloud-worker
+  minReadySeconds: 10    
   strategy:
-    type: Recreate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
       annotations:
@@ -22,24 +26,31 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: discovery
+        io.kompose.service: cloud-worker
     spec:
       containers:
-      - image: fogflow/discovery:3.2
+      - image: fogflow/worker:3.2
         imagePullPolicy: ""
-        name: discovery
-        ports:
-        - containerPort: 8090
+        name: cloud-worker
         resources: {}
         volumeMounts:
-        - name: config-json       
+        - name: cloud-worker
+          mountPath: /tmp
+          subPath: tmp
+          readOnly: true
+        - name: cloud-worker 
           mountPath: /config.json
           subPath: config.json
           readOnly: true
+        - name: dockersock
+          mountPath: "/var/run/docker.sock"  
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
-      - name: config-json
+      - name: cloud-worker
         configMap:
-            name: resolv-config-json
+            name: resolv-worker-config
             optional: true
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock

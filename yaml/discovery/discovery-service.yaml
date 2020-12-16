@@ -6,16 +6,16 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: cloud-broker
-  name: cloud-broker
+    io.kompose.service: discovery
+  name: discovery
 spec:
   ports:
-  - name: "8070"
-    port: 8070
-    targetPort: 8070
+  - name: "8090"
+    port: 8090
+    targetPort: 8090
   selector:
-    io.kompose.service: cloud-broker
+    io.kompose.service: discovery
   externalIPs:
-  - 172.30.76.63
+  - 172.30.48.24
 status:
   loadBalancer: {}
