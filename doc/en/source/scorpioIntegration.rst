@@ -14,10 +14,18 @@ Integration steps
 
 **Pre-Requisites:**
 
-* Fogflow should be up and running with atleast one node.
+* FogFlow should be up and running with atleast one node.
 * Scorpio Broker should be up and running.
-* Create and trigger NGSI-LD task (`See Document`_).
+* Create and trigger topology of two FogFunction (`See Document`_).
+* Create 1-FogFunction that publish update on FogFlow Broker (`Use template`_).
+* Create 2-FogFunction that publish update on Scorpio Broker (`Use operator`_).
+
 .. _`See Document`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html.
+
+.. _`Use template`: https://github.com/smartfog/fogflow/tree/development/application/template/NGSILD/python.
+
+.. _`Use operator`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/NGSILDDemo.
+
 
 **There are two type of Integration**
 
@@ -33,9 +41,9 @@ Integration steps
 
     curl -iX POST \
     'http://<Scorpio Broker>/ngsi-ld/v1/subscriptions/' \
-      -H 'Content-Type: application/ld+json' \
+      -H 'Content-Type: application/json' \
       -H 'Accept: application/ld+json' \
-      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+      -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
       -d '
       {
          "type": "Subscription",
@@ -60,9 +68,9 @@ Integration steps
 
      curl -iX POST \
     'http://<Scorpio Broker>/ngsi-ld/v1/entities/' \
-     -H 'Content-Type: application/ld+json' \
+     -H 'Content-Type: application/json' \
      -H 'Accept: application/ld+json' \
-     -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+     -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
     -d '
         {
          "id": "urn:ngsi-ld:Vehicle:A13",
@@ -79,7 +87,8 @@ Integration steps
                     "providedBy": {
                         "type": "Relationship",
                         "object": "urn:ngsi-ld:Person:Bob"
-                     },
+                     	},
+		}
         "location": {
                 "type": "GeoProperty",
                 "value": {
@@ -87,7 +96,7 @@ Integration steps
                         "coordinates": [-8.5, 41.2]
                 }
         }
-}'
+  }'
 
     
     
@@ -97,46 +106,23 @@ Integration steps
 
     curl -iX PATCH \
     'http://<Scorpio Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A13/attrs' \
-      -H 'Content-Type: application/ld+json' \
+      -H 'Content-Type: application/json' \
       -H 'Accept: application/ld+json' \
-      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+      -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
       -d '
      {
 	"brandName": {
 		"type": "Property",
-        "value" : "BM2"
-	}
-}'
+        	"value" : "BM2"
+      		}
+     }'
 
 **Type 2**
 
-* FogFlow task will publish update on the FogFlow broker.
-* Scorpio broker will subscribe to the FogFlow broker to get the notification form FogFlow broker.
+* 1-FogFlow task will publish update on the FogFlow broker.
+* FogFlow broker will send the notification to 2-FogFunction task.
+* 2-FogFunction will convert the notification into scorpio update and send the update to scorpio broker.
 
-.. code-block:: console
-
-    curl -iX POST \
-    'http://<FogFlow Broker>/ngsi-ld/v1/subscriptions/' \
-      -H 'Content-Type: application/ld+json' \
-      -H 'Accept: application/ld+json' \
-      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-      {
-         "type": "Subscription",
-         "entities": [{
-                "id" : "urn:ngsi-ld:Vehicle:A13",
-                "type": "Vehicle"
-           }],
-          "watchedAttributes": [],
-          "notification": {
-                 "attributes": [],
-                  "format": "keyValues",
-                 "endpoint": {
-                        "uri": "http://<Scorpio Broker>/notifyContext",
-                        "accept": "application/json"
-                }
-         }
-    }'
 
 
 Using NGSI-LD Adapter
