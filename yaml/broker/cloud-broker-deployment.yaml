@@ -34,7 +34,13 @@ spec:
         name: cloud-broker
         ports:
         - containerPort: 8070
-        resources: {}
+        resources: 
+          limits:
+            memory: 3Gi
+            cpu: 2
+          requests:
+            memory: 2Gi
+            cpu: 2
         volumeMounts:
         - name: config-json
           mountPath: /config.json

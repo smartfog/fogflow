@@ -32,7 +32,13 @@ spec:
       - image: fogflow/worker:3.2
         imagePullPolicy: ""
         name: cloud-worker
-        resources: {}
+        resources: 
+          limits:
+            memory: 2Gi
+            cpu: 2
+          requests:
+            memory: 1Gi
+            cpu: 1
         volumeMounts:
         - name: cloud-worker
           mountPath: /tmp

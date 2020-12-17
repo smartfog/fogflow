@@ -34,7 +34,13 @@ spec:
         name: master
         ports:
         - containerPort: 1060
-        resources: {}
+        resources: 
+          limits:
+            memory: 2Gi
+            cpu: 2
+          requests:
+            memory: 2Gi
+            cpu: 2
         volumeMounts:
         - name: config-json
           mountPath: /config.json

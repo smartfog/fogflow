@@ -39,7 +39,13 @@ spec:
         name: rabbitmq
         ports:
         - containerPort: 5672
-        resources: {}
+        resources: 
+          limits:
+            memory: 2Gi
+            cpu: 1
+          requests:
+            memory: 2Gi
+            cpu: 1
       restartPolicy: Always
       serviceAccountName: ""
       volumes: null

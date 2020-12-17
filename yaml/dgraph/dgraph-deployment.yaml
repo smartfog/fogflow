@@ -37,7 +37,13 @@ spec:
         - containerPort: 8080
         - containerPort: 9080
         - containerPort: 8000
-        resources: {}
+        resources:
+          limits:
+            memory: 3Gi
+            cpu: 2
+          requests: 
+            memory: 2Gi
+            cpu: 2
         volumeMounts:
         - mountPath: /dgraph
           name: dgraph
