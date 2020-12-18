@@ -16,9 +16,9 @@ Integration steps
 
 * FogFlow should be up and running with atleast one node.
 * Scorpio Broker should be up and running.
-* Create and trigger topology of two FogFunction (`See Document`_).
-* Create 1-FogFunction that publish update on FogFlow Broker (`Use template`_).
-* Create 2-FogFunction that publish update on Scorpio Broker (`Use operator`_).
+* Create and trigger topology of two FogFunctions (`See Document`_).
+* Create one fog Function (FogFunction-1) that publish update on FogFlow Broker (`Use template`_).
+* Create another fog Function (FogFunction-2) that publish update on Scorpio Broker (`Use operator`_).
 
 .. _`See Document`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html.
 
@@ -27,42 +27,9 @@ Integration steps
 .. _`Use operator`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/NGSILDDemo.
 
 
-**There are two type of Integration**
+**Below are the further steps for integration with Scorpio Broker.**
 
-**TYPE 1**
-
-* NGSI-LD device will sends some update to scopio broker.
-* FogFlow Will subscribe to scorpio Broker to get notification for every update.
-* FogFlow Task will subscriber to FogFlow to get notification for furthur analysis.
-
-**Subscription request for Scorpio Broker**
-
-.. code-block:: console
-
-    curl -iX POST \
-    'http://<Scorpio Broker>/ngsi-ld/v1/subscriptions/' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-      {
-         "type": "Subscription",
-         "entities": [{
-                "id" : "urn:ngsi-ld:Vehicle:A13",
-                "type": "Vehicle"
-           }],
-          "watchedAttributes": ["*"],
-          "notification": {
-                 "attributes": ["*"],
-                  "format": "keyValues",
-                 "endpoint": {
-                        "uri": "http://<FogFLow Broker>/ngsi-ld/v1/notifyContext/",
-                        "accept": "application/json"
-                }
-         }
-    }'
-
-**Entity create request for Scorpio Broker**
+**Create any entity in Scorpio Broker**
 
 .. code-block:: console
 
@@ -98,9 +65,39 @@ Integration steps
         }
   }'
 
-    
-    
-**Entity update request for Scorpio Broker**
+
+
+**FogFlow Will subscribe to scorpio Broker to get notification for every update to above created entity.**
+
+.. code-block:: console
+
+    curl -iX POST \
+    'http://<Scorpio Broker>/ngsi-ld/v1/subscriptions/' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: application/ld+json' \
+      -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+      -d '
+      {
+         "type": "Subscription",
+         "entities": [{
+                "id" : "urn:ngsi-ld:Vehicle:A13",
+                "type": "Vehicle"
+           }],
+          "watchedAttributes": ["*"],
+          "notification": {
+                 "attributes": ["*"],
+                  "format": "keyValues",
+                 "endpoint": {
+                        "uri": "http://<FogFLow Broker>/ngsi-ld/v1/notifyContext/",
+                        "accept": "application/json"
+                }
+         }
+    }'
+
+
+**FogFlow Task will subscriber to FogFlow to get notification for furthur analysis.**
+
+**NGSI-LD device will sends some update to scopio broker**
 
 .. code-block:: console
 
@@ -117,11 +114,13 @@ Integration steps
       		}
      }'
 
-**Type 2**
 
-* 1-FogFlow task will publish update on the FogFlow broker.
-* FogFlow broker will send the notification to 2-FogFunction task.
-* 2-FogFunction will convert the notification into scorpio update and send the update to scorpio broker.
+
+**Following process will occur internally in FogFLow**
+
+* FogFunction-1 task will publish update on the FogFlow broker.
+* FogFlow broker will send the notification to FogFunction-2 task.
+* FogFunction-2 will convert this notification into scorpio update and send that update to scorpio broker.
 
 
 
