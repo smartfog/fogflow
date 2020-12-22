@@ -1,7 +1,7 @@
 {
-    "coreservice_ip": "cloud.fogflow.io",   
-    "external_hostip": "edge1.fogflow.io",         
-    "internal_hostip": "172.17.0.1",  
+    "coreservice_ip": "180.179.214.199",   
+    "external_hostip": "180.179.214.211",         
+    "internal_hostip": "180.179.214.211",  
     "physical_location":{
         "longitude": 138.709059,
         "latitude": 36.692221
@@ -14,7 +14,7 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 80           
+        "http_port": 8090           
     },
     "broker": {
         "http_port": 8060
