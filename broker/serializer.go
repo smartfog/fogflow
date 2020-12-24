@@ -5,7 +5,6 @@ import (
 	. "github.com/smartfog/fogflow/common/ngsi"
 	"strings"
 	"time"
-	"fmt"
 )
 
 type Serializer struct{}
@@ -158,16 +157,10 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 			} else if strings.Contains(k, "createdAt") {
 				continue
 			} else {
-				fmt.Println("This is else part frist")
-				fmt.Println(v)
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
 					mp := interfaceArray[0].(map[string]interface{})
-					fmt.Println("This is mp")
-					fmt.Println(mp)
 					typ := mp["@type"].([]interface{})
-					fmt.Println("typ")
-					fmt.Println(typ)
 					if len(typ) > 0 {
 						if strings.Contains(typ[0].(string), "Property") {
 							property, err := sz.getProperty(mp)
@@ -187,7 +180,6 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 						}
 					}
 				}
-			fmt.Println("this is end of else")
 			}
 		}
 
@@ -333,20 +325,13 @@ func (sz Serializer) getType(typ []interface{}) string {
 func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string]interface{}, error) {
 
 	Property := make(map[string]interface{})
-	fmt.Println("This is property")
-	fmt.Println(Property)
 	for propertyField, fieldValue := range propertyMap {
-		fmt.Println("propertyField  fieldValue")
-		fmt.Println(propertyField)
-		fmt.Println(fieldValue)
 		if strings.Contains(propertyField, "@type") {
 			if fieldValue != nil {
 				Property["type"] = sz.getType(fieldValue.([]interface{}))
 			}
 		} else if strings.Contains(propertyField, "hasValue") {
 			if fieldValue != nil {
-				fmt.Println("The field value is not nil")
-				fmt.Println(fieldValue)
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
 				if Property["value"] == "nil" || Property["value"] == "" {
 					err := errors.New("Property value can not be nil!")
@@ -383,7 +368,6 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 		} else { // Nested property or relationship
 
 			var typ string
-			fmt.Println(fieldValue)
 			nested := fieldValue.([]interface{})
 			for _, val := range nested {
 				mp := val.(map[string]interface{})
@@ -500,14 +484,11 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
 	value := make([]interface{}, 0)
-	fmt.Println("hasValue",len(hasValue))
 	if len(hasValue) == 0 {
 		return value
 	} else if len(hasValue) > 0 {
-		fmt.Println("This is start of else")
 		for _, oneValue := range hasValue {
 			if val := oneValue.(map[string]interface{}); val != nil {
-				fmt.Println("Inside if-----")
 				if val["@type"] != nil {
 					Value["Type"] = val["@type"].(string)
 					Value["Value"] = val["@value"].(interface{})
@@ -518,7 +499,6 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 				} //Value is not  overwritten, in case of multiple values in payload, value array never return
 			}
 		}
-	fmt.Println("This is end of else")
 	}
 	return value
 }
