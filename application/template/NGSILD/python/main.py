@@ -228,20 +228,26 @@ def query2execution():
     handleNotify(ctxObjects)
 
 
-def runInTestMode():
-    print '===== TEST NGSILD MODEL========'
+'''
+        read config File
+'''
+def readConfig():
 
     # load the configuration
-
     with open('config.json') as json_file:
         config = json.load(json_file)
         print config
-
         handleConfig(config)
 
-        # trigger the data processing
+'''
+        Query from FogFlow broker to run the code in test mode
+'''
 
-        query2execution()
+def runInTestMode():
+    print '===== TEST NGSILD MODEL========'
+    readConfig()
+    # trigger the data processing
+    query2execution()
 
 
 if __name__ == '__main__':
