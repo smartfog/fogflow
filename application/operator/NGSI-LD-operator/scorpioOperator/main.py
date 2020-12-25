@@ -107,12 +107,16 @@ def handleConfig(configurations):
 	elif config['command'] == 'scorpio':
 	    setScorpioIp(config)
 
+'''
+	set scorpio broker ip from config.json
+'''
 
 def setScorpioIp(ipCmd):
     global scorpioBrokerURL
     scorpioBrokerURL = ipCmd['scorpioIp']
-    print("This is scorpioIp")
-    print(scorpioIp)
+
+
+
 def setInput(cmd):
     global input
     print 'cmd'
@@ -122,6 +126,7 @@ def setInput(cmd):
 
     input['type'] = cmd['type']
 
+
 '''
 	create request for scorpio broker
 '''
@@ -130,23 +135,36 @@ def createRequest(ctxObj):
     global scorpioBrokerURL
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
+    print("========This is scorpioBrokerURL=====")
+    print(scorpioBrokerURL)
     if scorpioBrokerURL == '':
         return
 
     ctxElement = object2Element(ctxObj)
+    eid = ctxElement['id']
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/json',
                'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.post(scorpioBrokerURL + '/ngsi-ld/v1/entities/',
                              data=json.dumps(ctxElement),
                              headers=headers)
-    if response.status_code != 201:
-        print 'failed to update context'
+
+    print("this is response code")
+    print(response.status_code)
+
+    if response.status_code == 201:
+        print print "======= Successfully created =========="
+    elif response.status_code == 409:
+        fogflow.handleAlreadyCreatedEntity(eid, createRequest, updateRequest, appendRequest)
+    else : 
+	print "=======Failed to publish data on scorpio Broker =========="
         print response.text
+
 
 '''
     update request for scorpio broker
 '''
+
 
 def updateRequest(ctxObj):
     #global brokerURL
@@ -159,7 +177,7 @@ def updateRequest(ctxObj):
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     ctxElement.pop('id')
-    if ctxELement.has_key(id) == True:
+    if ctxElement.has_key(id) == True:
         ctxElement.pop('id')
     if ctxElement.pop('type') == True:
         ctxElement.pop('type')
@@ -170,13 +188,19 @@ def updateRequest(ctxObj):
     response = requests.patch(scorpioBrokerURL + '/ngsi-ld/v1/entities/' + eid + '/attrs',
                              data=json.dumps(ctxElement),
                              headers=headers)
+    print("This is status code")
+    print(response.status_code)
     if response.status_code != 201:
         print 'failed to update context'
         print response.text
+    else :
+	print "=======Successfully updated=========="
+
 
 '''
     append request for scorpio broker
 '''
+
 
 def appendRequest(ctxObj):
     #global brokerURL
@@ -189,7 +213,7 @@ def appendRequest(ctxObj):
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     
-    if ctxELement.has_key(id) == True:
+    if ctxElement.has_key(id) == True:
         ctxElement.pop('id')
     if ctxElement.pop('type') == True:
         ctxElement.pop('type')
@@ -200,9 +224,13 @@ def appendRequest(ctxObj):
     response = requests.post(scorpioBrokerURL + '/ngsi-ld/v1/entities/' + eid + '/attrs',
                              data=json.dumps(ctxElement),
                              headers=headers)
+    print(response.status_code)
     if response.status_code != 201:
         print 'failed to update context'
         print response.text
+    else :
+	print "=======Successfully append=========="
+
 
 '''
 	Query for FogFlow broker
@@ -270,6 +298,7 @@ def requestInputBySubscription():
 # continuous execution to handle received notifications
 
 def notify2execution():
+    setConfig()
     myport = int(os.getenv('myport'))
     print 'listening on port ' + os.getenv('myport')
 
@@ -280,6 +309,8 @@ def runInOperationMode():
     print '===== OPERATION MODEL========'
 
     # apply the configuration received from the environmental varible
+
+    #setConfig()
 
     myCfg = os.getenv('adminCfg')
 
@@ -301,21 +332,29 @@ def query2execution():
     ctxObjects = fetchInputByQuery()
     handleNotify(ctxObjects)
 
+'''
+    read configration file
+'''
+
+def setConfig():
+
+    # load the configuration
+    with open('config.json') as json_file:
+	config = json.load(json_file)
+	print config
+
+    	handleConfig(config)
+    
 
 def runInTestMode():
     print '===== TEST NGSILD MODEL========'
 
     # load the configuration
 
-    with open('config.json') as json_file:
-        config = json.load(json_file)
-        print config
-
-        handleConfig(config)
-
+    setConfig()
         # trigger the data processing
 
-        query2execution()
+    query2execution()
 
 
 if __name__ == '__main__':
