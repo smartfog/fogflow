@@ -139,7 +139,7 @@ def createRequest(ctxObj):
     print(scorpioBrokerURL)
     if scorpioBrokerURL == '':
         return
-
+    print("=================This is create Request============")
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     headers = {'Accept': 'application/ld+json',
@@ -153,7 +153,7 @@ def createRequest(ctxObj):
     print(response.status_code)
 
     if response.status_code == 201:
-        print print "======= Successfully created =========="
+        print  "======= Successfully created =========="
     elif response.status_code == 409:
         fogflow.handleAlreadyCreatedEntity(eid, createRequest, updateRequest, appendRequest)
     else : 
@@ -173,7 +173,7 @@ def updateRequest(ctxObj):
         brokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
         return
-
+    print("=================This is update Request============")
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     ctxElement.pop('id')
@@ -209,7 +209,7 @@ def appendRequest(ctxObj):
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
         return
-
+    print("=================This is append Request============")
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     

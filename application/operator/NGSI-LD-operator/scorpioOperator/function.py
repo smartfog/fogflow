@@ -13,6 +13,8 @@ def handleEntity(ctxObj, create, update, append):
 def handleupdateAppend(currUpdateCtx, create, update, append):    
     appendCtx = {}
     global ctxELement
+    print("============This is ctxELement==============")
+    print(ctxELement)
     eid = currUpdateCtx['id']
     preCtxEle = ctxELement[eid]
     appendCtx['id'] = currUpdateCtx['id']
@@ -22,8 +24,11 @@ def handleupdateAppend(currUpdateCtx, create, update, append):
 	    appendCtx[key] = currUpdateCtx[key]
 	    preCtxEle[key] = currUpdateCtx[key]
     
-    ctxELement[eid] = preCtxEle
-    if len(appendCtx) > 0: 
+    print("==========This is preCtxEle==========")
+    print(preCtxEle)
+    #ctxELement[eid] = preCtxEle
+    if len(appendCtx) > 0:
+        ctxELement[eid] = preCtxEle 
         append(appendCtx)
     update(currUpdateCtx)
     
@@ -43,8 +48,6 @@ def handleScorpioUpdate(ctx, create, update, append):
 def handleAlreadyCreatedEntity(eid, create, update, append):
 	global ctxELement
 	ctxObj = ctxELement[eid]
-	print("ctxObj")
-        print(ctxObj)
 	handleupdateAppend(ctxObj,create, update, append)
         
 
