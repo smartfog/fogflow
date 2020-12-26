@@ -1,9 +1,8 @@
+from threading import * 
 ctxELement = {}
-
 # handle notify Entity
 def handleEntity(ctxObj, create, update, append):
     print('===============Implement losic====================')
-    print(ctxObj)
     for ctx in ctxObj:
 	handleScorpioUpdate(ctx, create, update, append)
 
@@ -13,8 +12,6 @@ def handleEntity(ctxObj, create, update, append):
 def handleupdateAppend(currUpdateCtx, create, update, append):    
     appendCtx = {}
     global ctxELement
-    print("============This is ctxELement==============")
-    print(ctxELement)
     eid = currUpdateCtx['id']
     preCtxEle = ctxELement[eid]
     appendCtx['id'] = currUpdateCtx['id']
@@ -24,13 +21,14 @@ def handleupdateAppend(currUpdateCtx, create, update, append):
 	    appendCtx[key] = currUpdateCtx[key]
 	    preCtxEle[key] = currUpdateCtx[key]
     
-    print("==========This is preCtxEle==========")
-    print(preCtxEle)
-    #ctxELement[eid] = preCtxEle
-    if len(appendCtx) > 0:
+    ctxELement[eid] = preCtxEle
+    if len(appendCtx) > 2:
         ctxELement[eid] = preCtxEle 
         append(appendCtx)
-    update(currUpdateCtx)
+        appendThread = Thread(target = append, args = (appendCtx ,))
+        appendThread.start()
+    updateThread = Thread(target = update, args = (currUpdateCtx ,))
+    updateThread.start()
     
 
 # handle creation of etity on scorpio broker
@@ -42,12 +40,12 @@ def handleScorpioUpdate(ctx, create, update, append):
 	    handleupdateAppend(ctx, create, update, append)
 	else:
 	    ctxELement[eid] = ctx
-	    create(ctx)
+	    createThread = Thread(target = create, args = (ctx ,))
+            createThread.start()
 
 
 def handleAlreadyCreatedEntity(eid, create, update, append):
 	global ctxELement
 	ctxObj = ctxELement[eid]
 	handleupdateAppend(ctxObj,create, update, append)
-        
-
+   

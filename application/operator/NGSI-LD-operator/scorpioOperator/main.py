@@ -42,7 +42,7 @@ def admin():
 @app.route('/notifyContext', methods=['POST'])
 def notifyContext():
     print '=============notify============='
-    print request.json
+    #print request.json
     if not request.json:
         abort(400)
 
@@ -119,8 +119,6 @@ def setScorpioIp(ipCmd):
 
 def setInput(cmd):
     global input
-    print 'cmd'
-    print cmd
     if 'id' in cmd:
         input['id'] = cmd['id']
 
@@ -135,11 +133,8 @@ def createRequest(ctxObj):
     global scorpioBrokerURL
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
-    print("========This is scorpioBrokerURL=====")
-    print(scorpioBrokerURL)
     if scorpioBrokerURL == '':
         return
-    print("=================This is create Request============")
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     headers = {'Accept': 'application/ld+json',
@@ -149,8 +144,6 @@ def createRequest(ctxObj):
                              data=json.dumps(ctxElement),
                              headers=headers)
 
-    print("this is response code")
-    print(response.status_code)
 
     if response.status_code == 201:
         print  "======= Successfully created =========="
@@ -173,24 +166,20 @@ def updateRequest(ctxObj):
         brokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
         return
-    print("=================This is update Request============")
     ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     ctxElement.pop('id')
     if ctxElement.has_key(id) == True:
         ctxElement.pop('id')
-    if ctxElement.pop('type') == True:
+    if ctxElement.has_key('type') == True:
         ctxElement.pop('type')
-    print(ctxElement)
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/json',
                'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.patch(scorpioBrokerURL + '/ngsi-ld/v1/entities/' + eid + '/attrs',
                              data=json.dumps(ctxElement),
                              headers=headers)
-    print("This is status code")
-    print(response.status_code)
-    if response.status_code != 201:
+    if response.status_code != 204:
         print 'failed to update context'
         print response.text
     else :
@@ -209,13 +198,10 @@ def appendRequest(ctxObj):
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
         return
-    print("=================This is append Request============")
-    ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
-    
-    if ctxElement.has_key(id) == True:
+    if ctxElement.has_key('id') == True:
         ctxElement.pop('id')
-    if ctxElement.pop('type') == True:
+    if ctxElement.has_key('type') == True:
         ctxElement.pop('type')
     print(ctxElement)
     headers = {'Accept': 'application/ld+json',
@@ -224,8 +210,7 @@ def appendRequest(ctxObj):
     response = requests.post(scorpioBrokerURL + '/ngsi-ld/v1/entities/' + eid + '/attrs',
                              data=json.dumps(ctxElement),
                              headers=headers)
-    print(response.status_code)
-    if response.status_code != 201:
+    if response.status_code != 204:
         print 'failed to update context'
         print response.text
     else :
