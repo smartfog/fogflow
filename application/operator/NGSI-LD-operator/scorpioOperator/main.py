@@ -80,7 +80,7 @@ def object2Element(ctxObj):
 
     return ctxElement
 
-
+# read notify context Element
 def readContextElements(data):
 
     ctxObjects = []
@@ -90,10 +90,12 @@ def readContextElements(data):
             ctxObjects.append(ctxObj)
     return ctxObjects
 
+# notify handler
 
 def handleNotify(contextObjs):
     fogflow.handleEntity(contextObjs, createRequest, updateRequest, appendRequest)   
 
+# set configration 
 
 def handleConfig(configurations):
     global brokerURL
@@ -330,6 +332,7 @@ def setConfig():
 
     	handleConfig(config)
     
+#run code in test mode
 
 def runInTestMode():
     print '===== TEST NGSILD MODEL========'
@@ -341,6 +344,7 @@ def runInTestMode():
 
     query2execution()
 
+# main handler that run code in test mode and operation mode
 
 if __name__ == '__main__':
     parameters = sys.argv

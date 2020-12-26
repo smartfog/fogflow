@@ -43,6 +43,7 @@ def handleScorpioUpdate(ctx, create, update, append):
 	    createThread = Thread(target = create, args = (ctx ,))
             createThread.start()
 
+# handle  case if entity is already persent on scorpio broker
 
 def handleAlreadyCreatedEntity(eid, create, update, append):
 	global ctxELement
