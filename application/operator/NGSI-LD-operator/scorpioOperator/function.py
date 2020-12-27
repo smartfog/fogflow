@@ -3,8 +3,7 @@ ctxELement = {}
 # handle notify Entity
 def handleEntity(ctxObj, create, update, append):
     print('===============Implement losic====================')
-    for ctx in ctxObj:
-	handleScorpioUpdate(ctx, create, update, append)
+    handleScorpioUpdate(ctx, create, update, append)
 
 
 #handle update and append request for scorpio broker

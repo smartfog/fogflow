@@ -93,7 +93,8 @@ def readContextElements(data):
 # notify handler
 
 def handleNotify(contextObjs):
-    fogflow.handleEntity(contextObjs, createRequest, updateRequest, appendRequest)   
+    for ctx in contextObjs:
+        fogflow.handleEntity(ctx, createRequest, updateRequest, appendRequest)   
 
 # set configration 
 
