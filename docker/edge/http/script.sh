@@ -46,6 +46,11 @@ done
 #cat generate_token.txt
 
 token=`grep "X-Subject-Token" .generate_token.txt | cut -f 2 -d ":" |  sed 's/\r$//g' | tr -d '\n'`
+if [ -z $token ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1 
+fi
+
 echo -----------------------------
 echo IDM token is $token 
 echo -----------------------------
@@ -66,7 +71,10 @@ do
 done
 
 ID=`cat .API_detail.js | tail -1| jq -r '.[] | .[] | .id' | tr -d '\n'`
-
+if [ -z $ID ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1
+fi
 
 #To fetch secret of the Application 
 for connect2 in 1 2 3 
@@ -84,7 +92,10 @@ done
 
 
 SECRET=`cat .accessAPI.txt |  tail -1 |jq . | grep -m 1 "secret" | cut -f 2 -d ":" | sed -e 's/"//g' -e 's/,//g' -e 's/\r$//g' -e 's/ //g' | tr -d '\n'`
-
+if [ -z $SECRET ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1
+fi
 
 #Create access token with Resource Owner Password credentials, received from above step
 echo -----------------------------
@@ -106,6 +117,10 @@ do
 done
 
 Pep_ID=`cat .PEP_Detail.js | tail -1 | jq -r '.pep_proxy.id' | tr -d '\n'`
+if [ -z $Pep_ID ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1
+fi
 
 #To generate PEP PROXY Password
 
@@ -126,7 +141,10 @@ done
 
 
 Pep_password=`cat .PEP_Details.txt | tail -1 | jq . | grep "new_password" | cut -f 2 -d ":" | sed -e 's/"//g' -e 's/,//g' -e 's/\r$//g' -e 's/ //g' | tr -d '/n'`
-
+if [ -z $Pep_password ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1
+fi
 
 echo -----------------------------
 echo PEP PROXY ID is $Pep_ID and PEP PROXY PASSWORD is $Pep_password
@@ -154,13 +172,22 @@ if [ $? -eq 0 ]; then
 done
 
 access=`cat .access_token.txt |jq . | grep "access_token" | cut -d ":" -f2 | sed -e 's/ //g' -e 's/"//g' -e 's/,//g' -e 's/\\n//g' | tr -d '\n'`
+if [ -z $access ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1
+fi
+
 echo -----------------------------
 echo " access token is" $access 
 echo -----------------------------
 
 #To generate Authorization Token
-
 AUTH=`echo -n $ID:$SECRET | base64 | tr -d "\t\r\n"` 
+if [ -z $AUTH ]; then
+   echo "Configure IDM .... Recheck and try again"
+   exit 1
+fi
+
 echo ------------------------------------------
 echo "Authorization : Basic "$AUTH 
 echo ------------------------------------------
