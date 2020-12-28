@@ -62,7 +62,7 @@ def element2Object(element):
 
 
 def object2Element(ctxObj):
-
+    print(ctxObj)
     ctxElement = {}
     ctxElement['id'] = ctxObj['id']
     ctxElement['type'] = ctxObj['type']
@@ -134,6 +134,7 @@ def setInput(cmd):
 
 def createRequest(ctxObj):
     global scorpioBrokerURL
+    #scorpioBrokerURL = "http://180.179.214.211:9090"
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
@@ -165,6 +166,7 @@ def createRequest(ctxObj):
 def updateRequest(ctxObj):
     #global brokerURL
     global scorpioBrokerURL
+    #scorpioBrokerURL = "http://180.179.214.211:9090"
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         brokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
@@ -197,24 +199,26 @@ def updateRequest(ctxObj):
 def appendRequest(ctxObj):
     #global brokerURL
     global scorpioBrokerURL
+    #scorpioBrokerURL = "http://180.179.214.211:9090"
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
         return
+    ctxElement = object2Element(ctxObj)
     eid = ctxElement['id']
     if ctxElement.has_key('id') == True:
         ctxElement.pop('id')
     if ctxElement.has_key('type') == True:
         ctxElement.pop('type')
-    print(ctxElement)
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/json',
                'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.post(scorpioBrokerURL + '/ngsi-ld/v1/entities/' + eid + '/attrs',
                              data=json.dumps(ctxElement),
                              headers=headers)
+    print(response.status_code)
     if response.status_code != 204:
-        print 'failed to update context'
+        print 'failed to append context'
         print response.text
     else :
 	print "=======Successfully append=========="

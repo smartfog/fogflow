@@ -1,9 +1,9 @@
 from threading import * 
 ctxELement = {}
-# handle notify Entity
+
 def handleEntity(ctxObj, create, update, append):
     print('===============Implement losic====================')
-    handleScorpioUpdate(ctx, create, update, append)
+    handleScorpioUpdate(ctxObj, create, update, append)
 
 
 #handle update and append request for scorpio broker
@@ -24,10 +24,7 @@ def handleupdateAppend(currUpdateCtx, create, update, append):
     if len(appendCtx) > 2:
         ctxELement[eid] = preCtxEle 
         append(appendCtx)
-        appendThread = Thread(target = append, args = (appendCtx ,))
-        appendThread.start()
-    updateThread = Thread(target = update, args = (currUpdateCtx ,))
-    updateThread.start()
+    update(currUpdateCtx)
     
 
 # handle creation of etity on scorpio broker
@@ -39,8 +36,7 @@ def handleScorpioUpdate(ctx, create, update, append):
 	    handleupdateAppend(ctx, create, update, append)
 	else:
 	    ctxELement[eid] = ctx
-	    createThread = Thread(target = create, args = (ctx ,))
-            createThread.start()
+            create(ctx)
 
 # handle  case if entity is already persent on scorpio broker
 
