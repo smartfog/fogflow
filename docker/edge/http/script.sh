@@ -34,7 +34,7 @@ do
      \"name\": \"admin@test.com\",
      \"password\": \"1234\"
    }" \
-   "http://$IP_ADDRESS:3000/v1/auth/tokens" > generate_token.txt
+   "http://$IP_ADDRESS:3000/v1/auth/tokens" > .generate_token.txt
   if [ $? -eq 0 ]; then
      break
   else
@@ -45,7 +45,7 @@ done
 
 #cat generate_token.txt
 
-token=`grep "X-Subject-Token" generate_token.txt | cut -f 2 -d ":" |  sed 's/\r$//g' | tr -d '\n'`
+token=`grep "X-Subject-Token" .generate_token.txt | cut -f 2 -d ":" |  sed 's/\r$//g' | tr -d '\n'`
 echo -----------------------------
 echo IDM token is $token 
 echo -----------------------------
@@ -56,7 +56,7 @@ do
   curl --include \
      --request GET \
      --header "X-Auth-token: $token" \
-  "http://$IP_ADDRESS:3000/v1/applications" > API_detail.js
+  "http://$IP_ADDRESS:3000/v1/applications" > .API_detail.js
   if [ $? -eq 0 ]; then
      break
   else
@@ -65,7 +65,7 @@ do
   fi
 done
 
-ID=`cat API_detail.js | tail -1| jq -r '.[] | .[] | .id' | tr -d '\n'`
+ID=`cat .API_detail.js | tail -1| jq -r '.[] | .[] | .id' | tr -d '\n'`
 
 
 #To fetch secret of the Application 
@@ -73,7 +73,7 @@ for connect2 in 1 2 3
 do 
   curl --include \
      --header "X-Auth-token: $token" \
-  "http://$IP_ADDRESS:3000/v1/applications/$ID" > accessAPI.txt
+  "http://$IP_ADDRESS:3000/v1/applications/$ID" > .accessAPI.txt
   if [ $? -eq 0 ]; then
       break
   else
@@ -83,7 +83,7 @@ do
 done
 
 
-SECRET=`cat accessAPI.txt |  tail -1 |jq . | grep -m 1 "secret" | cut -f 2 -d ":" | sed -e 's/"//g' -e 's/,//g' -e 's/\r$//g' -e 's/ //g' | tr -d '\n'`
+SECRET=`cat .accessAPI.txt |  tail -1 |jq . | grep -m 1 "secret" | cut -f 2 -d ":" | sed -e 's/"//g' -e 's/,//g' -e 's/\r$//g' -e 's/ //g' | tr -d '\n'`
 
 
 #Create access token with Resource Owner Password credentials, received from above step
@@ -96,7 +96,7 @@ for connect3 in 1 2 3
 do 
    curl --include \
      --header "X-Auth-token: $token" \
-  "http://$IP_ADDRESS:3000/v1/applications/$ID/pep_proxies" > PEP_Detail.js
+  "http://$IP_ADDRESS:3000/v1/applications/$ID/pep_proxies" > .PEP_Detail.js
    if [ $? -eq 0 ]; then
       break
    else
@@ -105,7 +105,7 @@ do
     fi
 done
 
-Pep_ID=`cat PEP_Detail.js | tail -1 | jq -r '.pep_proxy.id' | tr -d '\n'`
+Pep_ID=`cat .PEP_Detail.js | tail -1 | jq -r '.pep_proxy.id' | tr -d '\n'`
 
 #To generate PEP PROXY Password
 
@@ -115,7 +115,7 @@ do
      --request PATCH \
      --header "Content-Type: application/json" \
      --header "X-Auth-token: $token" \
-  "http://$IP_ADDRESS:3000/v1/applications/$ID/pep_proxies" > PEP_Details.txt 
+  "http://$IP_ADDRESS:3000/v1/applications/$ID/pep_proxies" > .PEP_Details.txt 
   if [ $? -eq 0 ]; then
      break
   else
@@ -125,7 +125,7 @@ do
 done
 
 
-Pep_password=`cat PEP_Details.txt | tail -1 | jq . | grep "new_password" | cut -f 2 -d ":" | sed -e 's/"//g' -e 's/,//g' -e 's/\r$//g' -e 's/ //g' | tr -d '/n'`
+Pep_password=`cat .PEP_Details.txt | tail -1 | jq . | grep "new_password" | cut -f 2 -d ":" | sed -e 's/"//g' -e 's/,//g' -e 's/\r$//g' -e 's/ //g' | tr -d '/n'`
 
 
 echo -----------------------------
@@ -144,7 +144,7 @@ sed -i "s/PEP_PASSWORD.*/PEP_PASSWORD \|\| '${Pep_password}',/" pep-config.js
 
 for connect5 in 1 2 3
 do
-   curl -X POST -H "Authorization: Basic $(echo -n $ID:$SECRET | base64 -w 0)"   -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=password&username=admin@test.com&password=1234" "http://$IP_ADDRESS:3000/oauth2/token" > access_token.txt
+   curl -X POST -H "Authorization: Basic $(echo -n $ID:$SECRET | base64 -w 0)"   -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=password&username=admin@test.com&password=1234" "http://$IP_ADDRESS:3000/oauth2/token" > .access_token.txt
 if [ $? -eq 0 ]; then
      break
   else
@@ -153,7 +153,7 @@ if [ $? -eq 0 ]; then
    fi
 done
 
-access=`cat access_token.txt |jq . | grep "access_token" | cut -d ":" -f2 | sed -e 's/ //g' -e 's/"//g' -e 's/,//g' -e 's/\\n//g' | tr -d '\n'`
+access=`cat .access_token.txt |jq . | grep "access_token" | cut -d ":" -f2 | sed -e 's/ //g' -e 's/"//g' -e 's/,//g' -e 's/\\n//g' | tr -d '\n'`
 echo -----------------------------
 echo " access token is" $access 
 echo -----------------------------
@@ -164,5 +164,5 @@ AUTH=`echo -n $ID:$SECRET | base64 | tr -d "\t\r\n"`
 echo ------------------------------------------
 echo "Authorization : Basic "$AUTH 
 echo ------------------------------------------
-echo "end of script"
-rm -rf access_token.txt generate_token.txt PEP_Details.txt PEP_Detail.js accessAPI.txt API_detail.js 
+echo "end of automated script to configure PEP-Proxy at Edge Node"
+rm -rf .access_token.txt .generate_token.txt .PEP_Details.txt .PEP_Detail.js .accessAPI.txt .API_detail.js 
