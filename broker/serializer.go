@@ -156,6 +156,8 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				}
 			} else if strings.Contains(k, "createdAt") {
 				continue
+			} else if strings.Contains(k, "modifiedAt") {
+				continue
 			} else {
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
