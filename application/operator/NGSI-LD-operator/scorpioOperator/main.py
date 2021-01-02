@@ -38,11 +38,14 @@ def admin():
 
     return jsonify({'responseCode': 200})
 
+'''
+	handle notification recieved by FogFlow Broker
+'''
 
 @app.route('/notifyContext', methods=['POST'])
 def notifyContext():
     print '=============notify============='
-    #print request.json
+    print request.json
     if not request.json:
         abort(400)
 
@@ -134,7 +137,6 @@ def setInput(cmd):
 
 def createRequest(ctxObj):
     global scorpioBrokerURL
-    #scorpioBrokerURL = "http://180.179.214.211:9090"
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
@@ -166,7 +168,6 @@ def createRequest(ctxObj):
 def updateRequest(ctxObj):
     #global brokerURL
     global scorpioBrokerURL
-    #scorpioBrokerURL = "http://180.179.214.211:9090"
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         brokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
@@ -199,7 +200,6 @@ def updateRequest(ctxObj):
 def appendRequest(ctxObj):
     #global brokerURL
     global scorpioBrokerURL
-    #scorpioBrokerURL = "http://180.179.214.211:9090"
     if scorpioBrokerURL.endswith('/ngsi10') == True:
         scorpioBrokerURL = scorpioBrokerURL.rsplit('/', 1)[0]
     if scorpioBrokerURL == '':
