@@ -1,31 +1,29 @@
 *****************************************
-API Walkthrough 
+API ウォークスルー
 *****************************************
 
 FogFlow Discovery API
 ===================================
 
-Look up nearby brokers
+近くのブローカーを探す
 -----------------------------------------------
 
-For any external application or IoT devices, the only interface they need from FogFlow Discovery is to find out a nearby 
-Broker based on its own location. After that, they only need to interact with the assigned nearby Broker. 
+外部アプリケーションまたは IoT デバイスの場合、FogFlow Discovery から必要な唯一のインターフェースは、自身の場所に基づいて近くのブローカーを見つけることです。その後、それらは割り当てられた近くのブローカーと対話する必要があるだけです。
 
 **POST /ngsi9/discoverContextAvailability**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-latitude         latitude of your location
-longitude        latitude of your location
-limit            number of expected brokers
+latitude         場所 (location) の緯度
+longitude        場所 (location)の緯度
+limit            予想されるブローカーの数
 ==============   ===============
 
 
-Please check the following examples. 
+以下の例を確認してください。
 
-.. note:: For the Javascript code example, library ngsiclient.js is needed.
-    Please refer to the code repository at application/device/powerpanel
+.. note:: JavaScript のコード例では、ライブラリ ngsiclient.js が必要です。application/device/powerpanel のコード リポジトリを参照してください。
 
 .. tabs::
 
@@ -88,27 +86,26 @@ FogFlow Broker API
 .. figure:: https://img.shields.io/swagger/valid/2.0/https/raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-expanded.json.svg
   :target: https://app.swaggerhub.com/apis/fogflow/broker/1.0.0
 
-.. note:: Use port 80 for accessing the cloud broker, whereas for edge broker, the default port is 8070.
+.. note:: Cloud Broker へのアクセスにはポート 80 を使用しますが、Edge Broker の場合、デフォルトのポートは 8070 です。
 
 
-Create/update context
+コンテキストの作成/アップデート
 -----------------------------------------------
 
-.. note:: It is the same API to create or update a context entity. 
-    For a context update, if there is no existing entity, a new entity will be created. 
+.. note:: コンテキスト エンティティを作成またはアップデートするのと同じ API です。コンテキスト アップデートの場合、既存のエンティティがない場合は、新しいエンティティが作成されます。
 
 
 **POST /ngsi10/updateContext**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-latitude         latitude of your location
-longitude        latitude of your location
-limit            number of expected brokers
+latitude         場所 (location) の緯度
+longitude        場所 (location)の緯度
+limit            予想されるブローカーの数
 ==============   ===============
 
-Example: 
+例: 
 
 .. tabs::
 
@@ -203,52 +200,52 @@ Example:
         }); 
 
 
-Query Context via GET
+GET を介したコンテキストのクエリ
 -----------------------------------------------
 
 
-Fetch a context entity by ID
+ID でコンテキスト エンティティを取得
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi10/entity/#eid**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-eid              entity ID
+eid              エンティティ ID
 ==============   ===============
 
-Example: 
+例: 
 
 .. code-block:: console 
 
    curl http://localhost:80/ngsi10/entity/Device.temp001
 
-Fetch a specific attribute of a specific context entity
+特定のコンテキスト エンティティの特定の属性を取得
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi10/entity/#eid/#attr**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-eid              entity ID
-attr             specify the attribute name to be fetched
+eid              エンティティ ID
+attr             フェッチする属性名を指定
 ==============   ===============
 
-Example: 
+例: 
 
 .. code-block:: console 
 
    curl http://localhost:80/ngsi10/entity/Device.temp001/temp
 
 
-Check all context entities on a single Broker
+単一のブローカー上のすべてのコンテキスト エンティティを確認
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi10/entity**
 
-Example: 
+例: 
 
 .. code-block:: console 
 
@@ -256,19 +253,19 @@ Example:
 
 
 
-Query context via POST
+POST を介してコンテキストをクエリ
 -----------------------------------------------
 
 **POST /ngsi10/queryContext**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-entityId         specify the entity filter, which can define a specific entity ID, ID pattern, or type
-restriction      a list of scopes and each scope defines a filter based on domain metadata
+entityId         特定のエンティティ ID、ID pattern、またはタイプを定義できるエンティティ フィルターを指定
+restriction      スコープのリストと各スコープは、ドメイン メタデータに基づいてフィルターを定義
 ==============   ===============
 
-query context by the pattern of entity ID
+エンティティ ID のパターンによるコンテキストのクエリ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -298,7 +295,7 @@ query context by the pattern of entity ID
         });          
 
 
-query context by entity type
+エンティティ タイプによるコンテキストのクエリ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -328,7 +325,7 @@ query context by entity type
         });          
 
 
-query context by geo-scope (circle)
+ジオスコープ (geo-scope) によるコンテキストのクエリ (サークル)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -382,7 +379,8 @@ query context by geo-scope (circle)
         });    
 
 
-query context by geo-scope (polygon)
+
+ジオスコープ (geo-scope) によるコンテキストのクエリ (ポリゴン)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -481,11 +479,10 @@ query context by geo-scope (polygon)
         });    
 
 
-query context with the filter of domain metadata values
+ドメイン メタデータ値のフィルターを使用したコンテキストのクエリ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: the conditional statement can be defined only with the domain matadata of your context entities
-    For the time being, it is not supported to filter out entities based on specific attribute values. 
+.. note:: 条件ステートメント (conditional statement) は、コンテキスト エンティティのドメイン メタデータでのみ定義できます。当面は、特定の属性値に基づいてエンティティを除外することはサポートされていません。
 
 .. tabs::
 
@@ -530,7 +527,7 @@ query context with the filter of domain metadata values
         });    
 
 
-query context with multiple filters
+複数のフィルターを使用したコンテキストのクエリ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -590,21 +587,21 @@ query context with multiple filters
         });    
 
 
-Delete context
+コンテキストを削除
 -----------------------------------------------
 
-Delete a specific context entity by ID
+ID で特定のコンテキスト エンティティを削除
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi10/entity/#eid**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-eid              entity ID
+eid              エンティティ ID
 ==============   ===============
 
-Example: 
+例: 
 
 .. code-block:: console 
 
@@ -615,20 +612,20 @@ Example:
 
 
 
-Subscribe context
+コンテキストをサブスクライブ
 -----------------------------------------------
 
 **POST /ngsi10/subscribeContext**
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-entityId         specify the entity filter, which can define a specific entity ID, ID pattern, or type
-restriction      a list of scopes and each scope defines a filter based on domain metadata
-reference        the destination to receive notifications
+entityId         特定のエンティティ ID、ID pattern、またはタイプを定義できるエンティティ フィルターを指定
+restriction      スコープのリストと各スコープは、ドメイン メタデータに基づいてフィルターを定義
+reference        ノーティフィケーションを受信する宛先
 ==============   ===============
 
-subscribe context by the pattern of entity ID
+エンティティ ID のパターンによるコンテキストのサブスクライブ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -661,7 +658,7 @@ subscribe context by the pattern of entity ID
             console.log('failed to subscribe context');
         });
 
-subscribe context by entity type
+エンティティ タイプによるコンテキストのサブスクライブ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -694,7 +691,7 @@ subscribe context by entity type
         });       
 
 
-subscribe context by geo-scope
+ジオスコープ (geo-scope) によるコンテキストのサブスクライブ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -748,11 +745,10 @@ subscribe context by geo-scope
             console.log('failed to subscribe context');
         });   
 
-subscribe context with the filter of domain metadata values
+ドメイン メタデータ値のフィルターを使用してコンテキストをサブスクライブ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note:: the conditional statement can be defined only with the domain matadata of your context entities
-    For the time being, it is not supported to filter out entities based on specific attribute values. 
+.. note:: 条件ステートメント (conditional statement) は、コンテキスト エンティティのドメイン メタデータでのみ定義できます。当面は、特定の属性値に基づいてエンティティを除外することはサポートされていません。
 
 .. tabs::
 
@@ -798,7 +794,7 @@ subscribe context with the filter of domain metadata values
         });      
 
 
-subscribe context with multiple filters
+複数のフィルターでコンテキストをサブスクライブ
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. tabs::
@@ -862,16 +858,16 @@ subscribe context with multiple filters
             console.log('failed to subscribe context');
         });   
 
-Cancel a subscription by subscription ID
+サブスクリプション ID でサブスクリプションをキャンセル
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi10/subscription/#sid**
 
 
 ==============   ===============
-Param            Description
+パラメーター     説明
 ==============   ===============
-sid              the subscription ID created when the subscription is issued
+sid              サブスクリプションの発行時に作成されるサブスクリプション ID
 ==============   ===============
 
 
@@ -880,52 +876,42 @@ curl -iX DELETE http://localhost:80/ngsi10/subscription/#sid
 
 
 
-FogFlow Service Orchestrator API
+FogFlow Service Orchestrator APIs
 =========================================
 
-
-The overall development process of an IoT Service in FogFlow is shown in the following figure. 
-For the development of a fog function, the steps 4 and 5 are combined, which means a default requirement 
-is issued by the FogFlow editor when a fog function is submmited. 
+FogFlow での IoT サービスの全体的な開発プロセスを次の図に示します。フォグ ファンクションの開発では、ステップ4と5が組み合わされます。つまり、フォグ ファンクションがサブミットされると、FogFlow エディターによってデフォルトの要件が発行されます。
 
 
-.. figure:: figures/development_process.png
+.. figure:: ../../en/source/figures/development_process.png
    :width: 100 %
 
 
 
-Implement an operator
+オペレーターを実装
 -----------------------------------------------
 
-Before defining the designed service topology, 
-all operators used in your service topology must be provided by you or the other provider in the FogFlow system. 
+設計されたサービス トポロジーを定義する前に、サービス トポロジーで使用されるすべてのオペレーターは、ユーザーまたは FogFlow システムの他のプロバイダーによって提供される必要があります。
 
 
-* `nodejs-based`_ 
+* `nodejs-based`_  (Node.js ベース)
 
-* `python-based`_ 
+* `python-based`_  (Python ベース)
 
 
 .. _`nodejs-based`: https://github.com/smartfog/fogflow/tree/master/application/template/javascript
 .. _`python-based`: https://github.com/smartfog/fogflow/tree/master/application/template/python
 
 
-.. note:: currently two templates are provided: one for nodejs based Implement and the other for python-based implementation
+.. note:: 現在、2つのテンプレートが提供されています。1つは Node.js ベースの実装用で、もう1つは Python ベースの実装用です。
 
 
 
-Publish the operator
+オペレーターを公開 (Publish the operator)
 -----------------------------------------------
 
-The image of operator can be published to the public docker registry or on private docker registery. 
-If you do not want to use any docker registry, you have to make sure that 
-the docker image of an operator is built on all edge nodes. 
-Currently, when the FogFlow worker receives a command to launch a task instance, 
-it will first search the required docker image from the local storage. If it does not find it, 
-it will start to fetch the required docker image for the docker registry (the public one or any private one, which is up to the 
-configuration of the FogFlow worker). 
+オペレーターのイメージは、パブリック Docker レジストリーまたはプライベート Docker レジストリーに公開できます。Docker レジストリーを使用しない場合は、オペレーターの Docker イメージがすべてのエッジ ノードで構築されていることを確認する必要があります。現在、FogFlow worker は、タスク インスタンスを起動するコマンドを受信すると、最初にローカル ストレージから必要な Docker イメージを検索します。見つからない場合は、Docker レジストリーに必要な Docker イメージ (FogFlow worker の構成に応じたパブリック イメージまたはプライベート イメージ) のフェッチを開始します。
 
-If anyone would like to publish the image, then following docker command can be used. 
+誰かがイメージを公開したい場合は、次の docker コマンドを使用できます。
 
 
 .. code-block:: console   
@@ -933,17 +919,15 @@ If anyone would like to publish the image, then following docker command can be 
 	docker push  [the name of your image]
 
 
-.. note:: this step is done with only docker commands
+.. note:: このステップは、docker コマンドのみで実行されます。
 
 
-Define and register operator
+オペレーターの定義と登録
 -----------------------------------------------
 
-An operator docker image can also be registered by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
+構築された NGSI アップデート メッセージをクラウドにデプロイされた IoT Broker に送信することで、オペレーターの Docker イメージを登録することもできます。
 
-Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, the Javascript-based library is being used to interact with FogFlow IoT Broker. 
-The library can be found from the github code repository (designer/public/lib/ngsi), ngsiclient.js shall be included into the web page. 
+これは、オペレーターの Docker イメージを登録するための JavaScript ベースのコード例です。このコード例では、JavaScript ベースのライブラリを使用してFogFlow IoT Broker とやり取りしています。ライブラリは GitHub コード リポジトリ (designer/public/lib/ngsi) から見つけることができ、ngsiclient.js は Web ページに含まれている必要があります。
 
 
 .. code-block:: javascript
@@ -990,17 +974,14 @@ The library can be found from the github code repository (designer/public/lib/ng
 
 
 
-Define and register your service topology
+サービス トポロジーを定義して登録
 -----------------------------------------------
 
-Usually,service topology can be defined and registered via the FogFlow topology editor. 
-However, it can also be defined and registered with own code. 
+通常、サービス トポロジーは、FogFlow トポロジー エディタを介して定義および登録できます。ただし、独自のコードで定義および登録することもできます。
 
-To register a service topology, A constructed NGSI update message is needed to be send by the code to the IoT Broker deployed in the cloud. 
+サービス トポロジーを登録するには、構築された NGSI アップデート メッセージをコードでクラウドにデプロイされた IoT Broker に送信する必要があります。
 
-Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, the Javascript-based library is used to interact with FogFlow IoT Broker. 
-The library can be found from the github code repository (designer/public/lib/ngsi). An ngsiclient.js must be included into the web page. 
+これは、オペレーターの Docker イメージを登録するための JavaScript ベースのコード例です。このコード例では、JavaScript ベースのライブラリを使用して FogFlow IoT Broker とやり取りします。ライブラリは、GitHub コード リポジトリ (designer/public/lib/ngsi) から見つけることができます。ngsiclient.js を Web ページに含める必要があります。
 
 .. code-block:: javascript
 
@@ -1082,11 +1063,11 @@ The library can be found from the github code repository (designer/public/lib/ng
 
 
 
-Create a requirement entity to trigger the service topology
---------------------------------------------------------------
+サービス トポロジーをトリガーする要件エンティティを作成
+----------------------------------------------------------------------------
 
 
-Here is the Javascript-based code example to trigger a service topology by sending a customized requirement entity to FogFlow. 
+これは、カスタマイズされた要件エンティティ (requirement entity) を FogFlow に送信することによってサービス トポロジーをトリガーする JavaScript ベースのコード例です。
 
 
 .. code-block:: javascript
@@ -1123,11 +1104,11 @@ Here is the Javascript-based code example to trigger a service topology by sendi
 
 
 
-Remove a requirement entity to terminate the service topology
+要件エンティティを削除して、サービス トポロジーを終了
 ---------------------------------------------------------------
 
 
-Here is the Javascript-based code example to terminate a service topology by deleting the requirement entity. 
+これは、要件エンティティ (requirement entity) を削除してサービス トポロジーを終了する JavaScript ベースのコード例です。
 
 
 .. code-block:: javascript
@@ -1143,31 +1124,31 @@ Here is the Javascript-based code example to terminate a service topology by del
     });    
 
 
-NGSI-LD Supported API's
+NGSI-LD でサポートされている APIs
 ============================
 
-The following figure shows a brief overview of how the APIs in current scope will be used to achieve the goal of NGSI-LD API support in FogFlow. The API support includes Entity creation, registration, subscription and notification.
+次の図は、現在のスコープ内の APIs を使用して、FogFlow での NGSI-LD API サポートの目標を達成する方法の概要を示しています。API サポートには、エンティティの作成、登録、サブスクリプション、およびノーティフィケーションが含まれます。
 
 
 
-.. figure:: figures/ngsild_architecture.png
+.. figure:: ../../en/source/figures/ngsild_architecture.png
 
 
 
 
 Entities API
 ------------
-For the purpose of interaction with Fogflow, IOT devices approaches broker with entity creation request where it is resolved as per given context. Broker further forwards the registration request to Fogflow Discovery in correspondence to the created entity.
+FogFlow との対話の目的で、IoT デバイスは、特定のコンテキストに従って解決されるエンティティ作成要求でブローカーにアプローチします。ブローカーはさらに、作成されたエンティティに対応して、登録要求を FogFlow Discovery に転送します。
 
-.. note:: Use port 80 for accessing the cloud broker, whereas for edge broker, the default port is 8070. The localhost is the coreservice IP for the system hosting fogflow. 
+.. note:: Cloud broker へのアクセスにはポート80を使用しますが、Edge broker の場合、デフォルトのポートは8070です。ローカルホストは、FogFlow をホストするシステムのコア サービス IP です。
 
 **POST /ngsi-ld/v1/entities**
 
-**a. To create NGSI-LD context entity, with context in Link in Header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**a. Link ヘッダーにコンテキストがある NGSI-LD コンテキスト エンティティを作成**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ===========================================================
-key               Value
+キー              バリュー
 =============     ===========================================================
 Content-Type      application/json
 Accept            application/ld+json
@@ -1175,7 +1156,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
                   type="application/ld+json"
 =============     ===========================================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1218,17 +1199,17 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 
 
-**b. To create entity with context in request payload**
+**b. リクエスト ペイロードにコンテキストを持つエンティティを作成**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 Accept            application/ld+json
 =============     ======================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
    
@@ -1281,17 +1262,17 @@ Accept            application/ld+json
            }'
 
 
-**c.  To create a new NGSI-LD context entity, with context in Link header and request payload is already expanded**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**c. Link  ヘッダーにコンテキストがあり、リクエスト ペイロードがすでに展開されている新しい NGSI-LD コンテキスト エンティティを作成**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 Accept            application/ld+json
 =============     ======================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1381,18 +1362,18 @@ Accept            application/ld+json
         }'
 
 
-**d. To append additional attributes to an existing entity**
+**d. 既存のエンティティに追加の属性を追加**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **POST /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs**
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 =============     ======================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1411,18 +1392,18 @@ Content-Type      application/json
         }'
 
 
-**e. To update specific attributes of an existing entity**
+**e. 既存のエンティティの特定の属性を更新**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **PATCH /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs**
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 =============     ======================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1440,18 +1421,18 @@ Content-Type      application/json
 	        }
          }'
 
-**f. To update the value of a specific attribute of an existing entity**
+**f. 既存のエンティティの特定の属性の値を更新**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **PATCH /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName**
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 =============     ======================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1467,73 +1448,73 @@ Content-Type      application/json
          }'
 
 
-**g. To delete an NGSI-LD context entity**
+**g. NGSI-LD コンテキスト エンティティを削除**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/entities/#eid**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-eid              Entity Id
+eid              エンティティ ID
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100  -H 'Content-Type: application/json' -H 'Accept: application/ld+json'
 
 
-**h. To delete an attribute of an NGSI-LD context entity**
+**h. NGSI-LD コンテキスト エンティティの属性を削除**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/entities/#eid/attrs/#attrName**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-eid              Entity Id
-attrName         Attribute Name
+eid              エンティティ ID
+attrName         属性名
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName1
 
 
-**i. To retrieve a specific entity**
+**i. 特定のエンティティを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/entities/#eid**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-eid              Entity Id
+eid              エンティティ ID
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4569
 
 
-**j. To retrieve entities by attributes**
+**j. 属性 (attributes) でエンティティを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/entities?attrs=(Value 1)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-Value 1          Attriute Value
+Value 1          属性値
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
@@ -1541,58 +1522,58 @@ Value 1          Attriute Value
 
 
 
-**k. To retrieve a specific entity by ID and Type**
+**k. ID とタイプで特定のエンティティを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/entities?id=(value 1)&type=(value 2)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-value 1          Attribute Value of Entity
-Value 2          Type Value of Entity
+value 1          エンティティの属性値
+Value 2          エンティティのタイプ値
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4569&type=http://example.org/vehicle/Vehicle
 
 
-**l. To retrieve a specific entity by Type**
+**l. タイプ別に特定のエンティティを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/entities?type=(Value 1)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
 Value 1          Type Value
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/v1/entities?type=http://example.org/vehicle/Vehicle
 
 
-**m. To retrieve a specific entity by Type, context in Link Header**
+**m. Link ヘッダーにコンテキストを使用して、タイプ別に特定のエンティティを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET ngsi-ld/v1/entities?type=(Value 1)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
 Value 1          Type Value
 ==============   ============================
 
-**Header Format**
+**ヘッダー フォーマット**
 
 =============     ===========================================================
-key               Value
+キー              バリュー
 =============     ===========================================================
 Content-Type      application/json
 Accept            application/ld+json
@@ -1600,26 +1581,26 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
                   type="application/ld+json"
 =============     ===========================================================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'  http://localhost:80//ngsi-ld/v1/entities?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
 
 
-**n. To retrieve a specific entity by IdPattern and Type**
+**n. IdPattern および、タイプで特定のエンティティを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET : /ngsi-ld/v1/entities?idPattern=(Value 1)&type=(Value 2)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-value 1          idPattern Value of Entity
-Value 2          Type Value of Entity
+value 1          エンティティの idPattern 値
+Value 2          エンティティのタイプ値
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
@@ -1629,15 +1610,15 @@ Value 2          Type Value of Entity
 Csource Registration API
 ---------------------------
 
-When the registration request approaches broker, it stores the registration detail with itself and forwards a request towards discovery. Discovery looks for the subscriber and initiate the process of notifying them, about the availability of data at specific broker.
+レジストレーション リクエストがブローカーに近づくと、ブローカーはレジストレーションの詳細を自身と一緒に保存し、リクエストを FogFlow Discovery に転送します。FogFlow Discovery はサブスクライバーを探し、特定のブローカーでのデータの可用性 (the availability of data) についてサブスクライバーにノーティファイするプロセスを開始します。
 
 **POST /ngsi-ld/v1/csourceRegistrations**
 
-**a. To create a new context source registration, with context in link header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**a. Link ヘッダーにコンテキストを使用して、新しいコンテキスト ソース レジストレーションを作成**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ===========================================================
-key               Value
+キー              バリュー
 =============     ===========================================================
 Content-Type      application/json
 Accept            application/ld+json
@@ -1645,7 +1626,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
                   type="application/ld+json"
 =============     ===========================================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1694,16 +1675,16 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 	}'
 
 
-**b. To create a new context source registration, with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**b. リクエスト ペイロードにコンテキストを使用して、新しいコンテキスト ソース レジストレーションを作成**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 =============     ======================================
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1778,19 +1759,19 @@ Content-Type      application/json
 	}'
 
 
-**c. To update an existing context source registration, with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**c. リクエスト ペイロードのコンテキストを使用して、既存のコンテキスト ソース レジストレーションを更新**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 **PATCH /ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458**
 
 =============     ======================================
-key               Value
+キー              バリュー
 =============     ======================================
 Content-Type      application/json
 =============     ======================================   
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -1867,57 +1848,57 @@ Content-Type      application/json
 	 }'
 
 
-**d. To delete an existing context source registration based on registration id**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**d. レジストレーション ID に基づいて既存のコンテキスト ソース レジストレーションを削除**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:#contRegid**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-contRegid        Context Registration Id
+contRegid        コンテキスト レジストレーション ID
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458
 
 
-**e. To get a registration by Type**
+**e. タイプ別にレジストレーションを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/csourceRegistrations?type=(Value 1)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
 Value 1          Type Value
 ==============   ============================
 
-**Example:** 
+**例:** 
 
 .. code-block:: console
 
    curl -iX GET http://localhost:80/ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
 
 
-**f. To get a registration by Type, context in Link Header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**f. Link ヘッダーにコンテキストを使用して、タイプ別にレジストレーションを取得**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/csourceRegistrations?type=(Value 1)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
 Value 1          Type Value
 ==============   ============================
 
-**Header Format**
+**ヘッダー フォーマット**
 
 =============     ===========================================================
-key               Value
+キー              バリュー
 =============     ===========================================================
 Content-Type      application/json
 Accept            application/ld+json
@@ -1925,44 +1906,44 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
                   type="application/ld+json"
 =============     ===========================================================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
         curl -iX GET  -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' http://localhost:80/ngsi-ld/v1/csourceRegistrations?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
 
-**g. To get a registration by ID and Type**
+**g. ID とタイプでレジストレーションを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/csourceRegistrations?id=(Value 1)&type=(Value 2)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
 Value 1          Registration ID Value of Entity
-Value 2          Type Value of Entity
+Value 2          エンティティのタイプ値
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/v1/csourceRegistrations?id=urn:ngsi-ld:Vehicle:C1234&type=http://example.org/vehicle/Vehicle
 
 
-**h. To get a registration by IdPattern and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**h. IdPattern とタイプでレジストレーションを取得**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/csourceRegistrations?idPattern=(Value 1)&type=(Value 2)**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-Value 1          idPattern Value of Entity
-Value 2          Type Value of Entity
+Value 1          エンティティの idPattern 値
+Value 2          エンティティのタイプ値
 ==============   ============================
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
@@ -1972,25 +1953,25 @@ Value 2          Type Value of Entity
 Subscription API
 -------------------
 
-A new subscription is issued by the subscriber which is enrouted to broker where the details of subscriber is stored for notification purpose. The broker initiate a request to Fogflow Discovery, where this is registered as new subscription and looks for availabltiy of corresponding data. On receiving data is passes the information back to subscribing broker.
+新しいサブスクリプションは、サブスクライバーによって発行され、ブローカーに転送され、そこでサブスクライバーの詳細がノーティフィケーション目的で保存されます。ブローカーは FogFlow Discovery へのリクエストを開始します。ここで、これは新しいサブスクリプションとして登録され、対応するデータの可用性 (availabltiy of corresponding data) を探します。データを受信すると、サブスクライブしているブローカーに情報が返されます。
 
 
-**a. To create a new Subscription to with context in Link header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**a. Link ヘッダーにコンテキストを使用して、新しいサブスクリプションを作成**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **POST /ngsi-ld/v1/subscriptions**
 
-**Header Format**
+**ヘッダー フォーマット**
 
 =============     ===========================================================
-key               Value
+キー              バリュー
 =============     ===========================================================
 Content-Type      application/ld+json
 Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
                   type="application/ld+json"
 =============     ===========================================================
 
-**Request**   
+**リクエスト**   
 
 .. code-block:: console
 
@@ -2017,52 +1998,52 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 	 }'
 
 
-**b. To retrieve all the subscriptions**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**b. すべてのサブスクリプションを取得**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/subscriptions**
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/subscriptions/ -H 'Accept: application/ld+json'
 
 
-**c. To retrieve a specific subscription based on subscription id**
+**c. サブスクリプション ID に基づいて特定のサブスクリプションを取得**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/subscriptions/#sid**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-sid              subscription Id
+sid              サブスクリプション ID
 ==============   ============================	
 
-**Example:** 
+**例:** 
 
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/subscriptions/urn:ngsi-ld:Subscription:71
 
 
-**d. To update a specific subscription based on subscription id, with context in Link header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**d. Link ヘッダーのコンテキストを使用して、サブスクリプション ID に基づいて特定のサブスクリプションを更新**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **PATCH  /ngsi-ld/v1/subscriptions/#sid**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-sid              subscription Id
+sid              サブスクリプション ID
 ==============   ============================
 
 
-**Header Format**
+**ヘッダー フォーマット**
 
 =============     ===========================================================
-key               Value
+キー              バリュー
 =============     ===========================================================
 Content-Type      application/ld+json
 Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
@@ -2070,7 +2051,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 =============     ===========================================================
 
 
-**Request**
+**リクエスト**
 
 .. code-block:: console
 
@@ -2098,22 +2079,21 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 	  }'
 
 
-**e. To delete a specific subscription based on subscription id**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**e. サブスクリプション ID に基づいて特定のサブスクリプションを削除**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 **DELETE /ngsi-ld/v1/subscriptions/#sid**
 
 ==============   ============================
-Param		 Description
+パラメーター     説明
 ==============   ============================
-sid              subscription Id
+sid              サブスクリプション ID
 ==============   ============================
 
 
-**Example:**
+**例:**
 
 .. code-block:: console
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71
-
