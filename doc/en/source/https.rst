@@ -519,13 +519,14 @@ Note: Please save the sensor Id and sensor password for further utilisation
 An example request to generate Auth token for each registered IoT sensor is given below
 
 .. code-bock:: console
-
-  curl -iX POST \
-  'http://<IDM_IP>:3000/oauth2/token' \
-  -H 'Accept: application/json' \
-  -H 'Authorization: Basic <code-generated-from-script>' \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data "username=iot_sensor_02bc0f75-07b5-411a-8792-4381df9a1c7f&password=iot_sensor_277bc253-5a2f-491f-abaa-c7b4e1599d6e&grant_type=password"
+   
+   curl -iX POST \
+   'http://<IDM_IP>:3000/oauth2/token' \
+   -H 'Accept: application/json' \
+   -H 'Authorization: Basic <code-generated-from-script>' \
+   -H 'Content-Type: application/x-www-form-urlencoded' \
+   --data "username=iot_sensor_02bc0f75-07b5-411a-8792-4381df9a1c7f&password=iot_sensor_277bc253-5a2f-491f-abaa-c7b4e1599d6e&grant_type=password"
+ 
 
 Note: Please save the Auth Token for further utilisation
 
