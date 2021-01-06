@@ -444,7 +444,7 @@ Setup components on Edge
 -------------------------
 
 
-FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow edge communication between Iot sensor and edge node, PEP Proxy has been used. In order to create an Auth Token, firstly register an IoT sensor  on Keyrock. So, a script will call with the start of edge node and it will instantiate a PEP Proxy  with the keyrock on behalf of edge node and also setup configuration file for PEP Proxy to work, using the Keyrock APIs. The script will perform following steps:
+FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow edge communication between Iot sensor and edge node, PEP Proxy has been used. In order to create an Auth Token, firstly register an IoT sensor  on Keyrock. So, a script will call with the start of edge node and it will instantiate a PEP Proxy  with the keyrock and also setup configuration file for PEP Proxy to work, using the Keyrock APIs. The script will perform following steps:
 
 **Prerequisite**
 
@@ -520,7 +520,7 @@ An example request to generate Auth token for each registered IoT sensor is give
 
 .. code-bock:: console
 
-   curl -iX POST \
+  curl -iX POST \
   'http://<IDM_IP>:3000/oauth2/token' \
   -H 'Accept: application/json' \
   -H 'Authorization: Basic <code-generated-from-script>' \
