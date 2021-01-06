@@ -227,11 +227,11 @@ FogFlow cloud node flow:
 FogFlow edge node flow:
 
 
-1. On behalf of edge node, one application will be register on keyrock it will be using OAuth credentials. Detail explanation is given in below topics of this tutorial. Click `here`_ to refer.
+1. On behalf of edge node, one instance of PEP Proxy will be pre-registered on keyrock, edge will be using oauth credentials to fetch PEP Proxy  details. Detail explanation is given in below topics of this tutorial. Click `here`_ to refer.
 
 2. After the authentication edge node will be able to communicate with FogFlow cloud node.
 
-3. Any device can register itself or communicate with FogFlow edge node using edge’s OAuth access-token.
+3. Any device can register itself or communicate with FogFlow edge node using  access-token generated on behalf of each IoT sensor registered at Keyrock.
 
 .. _`here`: https://fogflow.readthedocs.io/en/latest/https.html#setup-components-on-edge
 
@@ -444,7 +444,7 @@ Setup components on Edge
 -------------------------
 
 
-FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow cloud-edge communication OAuth Token has been used. In order to create an OAuth Token, first need to register an application on Keyrock. So, a script will call with the start of edge node and it will register an application with the keyrock on behalf of edge node using the Keyrock APIs. The script will perform following steps:
+FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow edge communication between Iot sensor and edge node, PEP Proxy has been used. In order to create an Auth Token, firstly register an IoT sensor  on Keyrock. So, a script will call with the start of edge node and it will instantiate a PEP Proxy  with the keyrock on behalf of edge node and also setup configuration file for PEP Proxy to work, using the Keyrock APIs. The script will perform following steps:
 
 **Prerequisite**
 
@@ -463,15 +463,14 @@ Below scripts need to download for setting up edge node.
 .. code-block:: console    
          
 	#download the deployment scripts
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/script.sh
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/delete.ah
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/oauth_config.js
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/delete_config.js
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/stop.sh 
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/script.sh
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/oauth_config.js
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/pep-config.js
 
         #make them executable
-        chmod +x script.sh start.sh stop.sh delete.sh
+        chmod +x script.sh start.sh stop.sh 
 
 
 Change the IP configuration accordingly
@@ -479,7 +478,7 @@ Change the IP configuration accordingly
 
 Chanage the following things in configuration file:
 
-* Change the oauth_config.js and add IdM IP, Application name, redirect_url and Url for the application that is need to be registered.
+* Change the oauth_config.js and add IdM IP, Edge IP which is needed to fetch configuration settings  for PEP Proxy.
 
 **Start Edge node components**
  
@@ -491,15 +490,46 @@ Chanage the following things in configuration file:
 
 
 
-To secure FogFlow cloud-edge communication OAuth Token has been used. In order to create an OAuth Token, 
+To secure FogFlow edge-IoT device communication Auth Token has been used on behalf of each IoT device. In order to create an Auth Token, 
 
-* An application need to be registered on Keyrock. 
+* An IoT sensor is needed to be registered on Keyrock. 
 
-* A script will call with the start of edge node and it will register an application with the keyrock on behalf of that edge node using the Keyrock APIs. 
+* A script will call with the start of edge node and it will configure PEP Proxy with the keyrock on behalf of that edge node using the Keyrock APIs. 
 
 
-Note: the start.sh script will return API token, Application ID its Secret and the access token on console. Please save these for further use.
+Note: the start.sh script will return  Application ID, Application Secret, PEP Proxy ID, PEP Proxy Secret, Authorization code, IDM Token and the access token on console. Please save these for further use.
 
+register IoT Sensor on Keyrock
+------------------------------
+
+An example request to register IoT sensor is given below 
+
+.. code-block:: console
+
+   curl --include \
+     --request POST \
+     --header "Content-Type: application/json" \
+     --header "X-Auth-token: <token-generated-from-script>" \
+  'http://keyrock/v1/applications/6e396def-3fa9-4ff9-84eb-266c13e93964/iot_agents'
+
+Note: Please save the sensor Id and sensor password for further utilisation
+ 
+.. figure:: figures/keyrock_iot.png
+
+An example request to generate Auth token for each registered IoT sensor is given below
+
+.. code-bock:: console
+
+   curl -iX POST \
+  'http://<IDM_IP>:3000/oauth2/token' \
+  -H 'Accept: application/json' \
+  -H 'Authorization: Basic <code-generated-from-script>' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  --data "username=iot_sensor_02bc0f75-07b5-411a-8792-4381df9a1c7f&password=iot_sensor_277bc253-5a2f-491f-abaa-c7b4e1599d6e&grant_type=password"
+
+Note: Please save the Auth Token for further utilisation
+
+.. figure:: figures/keyrock_token.png
 
 register device on edge node
 ----------------------------
@@ -509,7 +539,7 @@ An example payload of registration device is given below.
 .. code-block:: console
  
 
-     Curl -iX POST 'http://<Application_IP>:<Application_Port>/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token>' -H 'fiware-servicepath: /' -d '
+     Curl -iX POST 'http://<Application_IP>:<Application_Port>/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token-generated-for-IoT-device>' -H 'fiware-servicepath: /' -d '
       {
           "contextRegistrations": [
               {
