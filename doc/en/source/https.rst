@@ -528,7 +528,7 @@ An example request to generate Auth token for each registered IoT sensor is give
      --data "username=iot_sensor_02bc0f75-07b5-411a-8792-4381df9a1c7f&password=iot_sensor_277bc253-5a2f-491f-abaa-c7b4e1599d6e&grant_type=password"
  
 
-Note: Please save the Auth Token for further utilisation
+Note: Please save the Access Token for further utilisation
 
 .. figure:: figures/keyrock_token.png
 
