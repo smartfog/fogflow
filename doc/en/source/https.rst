@@ -571,7 +571,7 @@ An example payload of registration device is given below.
 **Stop Edge node components**
 
 
-* Change the delete_config.js and add Application ID(APP_ID) and IDM token (received while registering application)  for the application that is need to be registered.
+* Use the below script to stop edge components that is broker and worker.
 
 
 .. code-block:: console
