@@ -1,6 +1,9 @@
+#FogFlow worker deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  #FogFlow cloud components will be deployed inside fogflow namespace
+  namespace: fogflow
   annotations:
     kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
@@ -9,16 +12,20 @@ metadata:
     io.kompose.service: cloud-worker
   name: cloud-worker
 spec:
-  replicas: 2
+  #replicas will make sure that 2 pods running all the time for the deployment
+  replicas: 2 
   selector:
     matchLabels:
       io.kompose.service: cloud-worker
-  minReadySeconds: 10    
+  minReadySeconds: 10   
+  #strategy tells about How do want to update the pods? 
   strategy:
     rollingUpdate:
       maxSurge: 1
       maxUnavailable: 0
     type: RollingUpdate
+  # This template field is a regular pod configuration
+  # nested inside the deployment spec
   template:
     metadata:
       annotations:
@@ -32,31 +39,32 @@ spec:
       - image: fogflow/worker:3.2
         imagePullPolicy: ""
         name: cloud-worker
-        resources: 
+        resources:
+          #CPU and memory limits for dgraph deployment 
           limits:
             memory: 2Gi
-            cpu: 2
+            cpu: 1 
           requests:
             memory: 1Gi
             cpu: 1
         volumeMounts:
-        - name: cloud-worker
+        - name: cloud-worker1
           mountPath: /tmp
-          subPath: tmp
           readOnly: true
         - name: cloud-worker 
           mountPath: /config.json
-          subPath: config.json
           readOnly: true
         - name: dockersock
           mountPath: "/var/run/docker.sock"  
       restartPolicy: Always
-      serviceAccountName: ""
+      serviceAccountName: fogflow-dns 
       volumes:
-      - name: cloud-worker
-        configMap:
-            name: resolv-worker-config
-            optional: true
+      - name: cloud-worker 
+        hostPath:
+          path: /home/necuser/fogflow/fogflow/yaml/config.json 
+      - name: cloud-worker1
+        hostPath:
+          path: /tmp
       - name: dockersock
         hostPath:
           path: /var/run/docker.sock
