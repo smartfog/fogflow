@@ -2,7 +2,7 @@ from threading import *
 ctxELement = {}
 
 def handleEntity(ctxObj, create, update, append):
-    #print('===============Implement losic====================')
+    print('===============Implement losic====================')
     handleScorpioUpdate(ctxObj, create, update, append)
 
 
