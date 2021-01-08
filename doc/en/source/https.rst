@@ -364,10 +364,6 @@ Note: Obtain Client ID and Client Secret from Keyrock dashboard under ‘Oauth2 
 
 
 
-.. figure:: figures/detailDescriptionofSampleRequest2.png
-
-
-
 The flow of cloud security implementation can be understand by below figure.
 
 
