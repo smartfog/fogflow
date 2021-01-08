@@ -209,7 +209,7 @@ Terminology
 
 
 
-.. figure:: figures/security_architecture.png
+.. figure:: figures/Security_Architecture.png
 
 
 
@@ -365,14 +365,6 @@ Note: Obtain Client ID and Client Secret from Keyrock dashboard under ‘Oauth2 
 
 
 .. figure:: figures/detailDescriptionofSampleRequest2.png
-
-
-
-Note: IoT sensor ID and Password can be obtained from keyrock dashboard
-
-
-
-.. figure:: figures/responseFromKeyrock.png
 
 
 
