@@ -1,7 +1,7 @@
 {
-    "coreservice_ip": "192.168.0.59",   
-    "external_hostip": "192.168.0.59",
-    "internal_hostip": "192.168.0.59", 
+    "coreservice_ip": "host.docker.internal",   
+    "external_hostip": "host.docker.internal",
+    "internal_hostip": "host.docker.internal", 
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221

@@ -30,24 +30,9 @@ it will be forwarded from the FogFlow system to Orion Context Broker.
 This is because a subscription with Orion Context Broker as the reference URL has been issued.  
 
 
-
-
-
 .. figure:: figures/systemview.png
 
 
-
-
-
-Fogflow system health can be monitored by system monitoring tools Metricbeat, Elasticsearch and Grafana in short EMG. 
-With these tools edges and Fogflow Docker service health can be monitored. 
-Metricbeat deployed on Edge node. Elasticsearch and Grafana on Cloud node.
-
-As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
-
-
-
-.. figure:: figures/Fogflow_System_Monitoring_Architecture.png
 
 
 Here are the prerequisite commands for running FogFlow:
@@ -86,17 +71,13 @@ Download the docker-compose file and the configuration files as below.
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/docker-compose.yml
 
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/config.json
 
 	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
-
-        # the configuration file used by metricbeat
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
-	
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/nginx.conf
 	
 Change the IP configuration accordingly
 -------------------------------------------------------------
@@ -207,56 +188,6 @@ Once you are able to access the FogFlow dashboard, you can see the following web
 
 .. figure:: figures/dashboard.png
 
-
-
-Configure Elasticsearch on Grafana Dashboard
--------------------------------------------------------------
-
-Grafana dashboard can be accessible on web browser to see the current system status via the URL: 
-http://<output.elasticsearch.hosts>:3003/. The default username and password for Grafana login are admin and admin respectively.
-
-
-- After successful login to grafana, click on "Create your first data source" on Home Dashboard to setup the source of data.
-- Select Elasticsearch from Add Data Sourch page. Now you are on page Data Sources/Elasticsearch same as below figure.
-
-
-.. figure:: figures/Elastic_config.png
-
-
-1. Put a name for the Data Source.
-2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include HTTP. 
-3. In Access select Server(default). URL needs to be accessible from the Grafana backend/server.
-4. In Elasticsearch details, put @timestamp for Time field name. Here a default for the time field can be specified with the name of your Elasticsearch index. Use a time pattern for the index name or a wildcard.
-5. Select Elasticsearch Version.
-
-Then click on "Save & Test" button.
-
-
-Set up the Metricbeat
----------------------------------------------
-
-
-- Change the details of Elasticsearch in metricbeat.docker.yml file as below:
-
-
-.. code-block:: json
-
-        name: "<155.54.239.141_cloud>"
-        metricbeat.modules:
-        - module: docker
-          #Docker module parameters that has to be monitored based on user requirement, example as below
-          metricsets: ["cpu","memory","network"]
-          hosts: ["unix:///var/run/docker.sock"]
-          period: 10s
-          enabled: true
-        - module: system
-          #System module parameters that has to be monitored based on user requirement, example as below
-          metricsets: ["cpu","load","memory","network"]
-          period: 10s
-
-        output.elasticsearch:
-          hosts: '155.54.239.141:9200'
-	  
 
 Try out an existing IoT service
 ===========================================================
