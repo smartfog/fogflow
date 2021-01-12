@@ -177,7 +177,9 @@ def handleTimer():
 
 def publishResult(result):
     resultCtxObj = {}
-        
+     
+    print(result)
+       
     #annotate the context with the configured entity id and type
     if len(outputs) < 1:
         return   

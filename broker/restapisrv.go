@@ -4,14 +4,15 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/ant0ine/go-json-rest/rest"
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/ant0ine/go-json-rest/rest"
+	. "github.com/smartfog/fogflow/common/config"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type RestApiSrv struct {
@@ -44,6 +45,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Get("/NGSI9/registration/#rid", apisrv.getRegistration),
 
 		// convenient ngsi10 API
+		rest.Get("/version", apisrv.getVersion),
 		rest.Get("/ngsi10/entity", apisrv.getEntities),
 		rest.Get("/v2/entities", apisrv.getEntities),
 		rest.Get("/ngsi10/entity/#eid", apisrv.getEntity),
@@ -141,6 +143,15 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 func (apisrv *RestApiSrv) Stop() {
 
+}
+
+func (apisrv *RestApiSrv) getVersion(w rest.ResponseWriter, r *rest.Request) {
+	version := make(map[string]string)
+
+	version["version"] = "3.0"
+	version["date"] = "2021-01-31"
+
+	w.WriteJson(version)
 }
 
 func (apisrv *RestApiSrv) getEntities(w rest.ResponseWriter, r *rest.Request) {

@@ -671,11 +671,12 @@ func (tMgr *TaskMgr) handleTaskIntent(taskIntent *TaskIntent) {
 	INFO.Println("orchestrating task intent")
 	INFO.Println(taskIntent)
 
-	if taskIntent.SType == "SYN" {
-		tMgr.handleSynchronousTaskIntent(taskIntent)
-	} else if taskIntent.SType == "ASYN" {
-		tMgr.handleASynchronousTaskIntent(taskIntent)
-	}
+	tMgr.handleASynchronousTaskIntent(taskIntent)
+	// if taskIntent.SType == "SYN" {
+	// 	tMgr.handleSynchronousTaskIntent(taskIntent)
+	// } else if taskIntent.SType == "ASYN" {
+	// 	tMgr.handleASynchronousTaskIntent(taskIntent)
+	// }
 }
 
 func (tMgr *TaskMgr) handleSynchronousTaskIntent(taskIntent *TaskIntent) {

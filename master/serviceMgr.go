@@ -118,7 +118,7 @@ func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent
 
 		taskIntent.GeoScope = serviceIntent.GeoScope
 		taskIntent.Priority = serviceIntent.Priority
-		taskIntent.SType = serviceIntent.SType
+		//taskIntent.SType = serviceIntent.SType
 		taskIntent.QoS = serviceIntent.QoS
 		taskIntent.ServiceName = serviceIntent.TopologyName
 		taskIntent.TaskObject = task
@@ -173,7 +173,7 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 
 		taskIntent.GeoScope = serviceIntent.GeoScope
 		taskIntent.Priority = serviceIntent.Priority
-		taskIntent.SType = serviceIntent.SType
+		//taskIntent.SType = serviceIntent.SType
 		taskIntent.QoS = serviceIntent.QoS
 		taskIntent.ServiceName = serviceIntent.TopologyName
 		taskIntent.TaskObject = task

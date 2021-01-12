@@ -536,13 +536,13 @@ $(function() {
         html += '<div class="control-group"><label class="control-label" for="input01">Topology</label>';
         html += '<div class="controls"><select id="topologyItems"></select></div>'
         html += '</div>';
-
-        html += '<div class="control-group"><label class="control-label">Type</label><div class="controls">';
-        html += '<select id="SType">';
-        html += '<option value="SYN">Synchronous</option>';
-        html += '<option value="ASYN">Asynchronous</option></select>';
-        html += '</div></div>';
-
+        /*
+                html += '<div class="control-group"><label class="control-label">Type</label><div class="controls">';
+                html += '<select id="SType">';
+                html += '<option value="SYN">Synchronous</option>';
+                html += '<option value="ASYN">Asynchronous</option></select>';
+                html += '</div></div>';
+        */
         html += '<div class="control-group"><label class="control-label">Priority</label><div class="controls">';
         html += '<select id="priorityLevel"><option>low</option><option>middle</option><option>high</option></select>';
         html += '</div></div>';
@@ -592,8 +592,8 @@ $(function() {
             console.log(intent);
 
             $('#topologyItems').val(intent.topology);
-            $('#SType').val(intent.stype);
-            $('#SLO').val(intent.slo);
+            //$('#SType').val(intent.stype);
+            $('#SLO').val(intent.qos);
 
             if (intent.priority.exclusive) {
                 $('#resouceUsage').val("exclusive");
@@ -708,10 +708,10 @@ $(function() {
 
         var topology = $('#topologyItems option:selected').val();
         intent.topology = topology;
-
-        var sType = $('#SType option:selected').val();
-        intent.stype = sType;
-
+        /*
+                var sType = $('#SType option:selected').val();
+                intent.stype = sType;
+        */
         var temp1 = $('#priorityLevel option:selected').val();
         var priorityLevel = 0;
         switch (temp1) {
@@ -738,7 +738,7 @@ $(function() {
         };
 
         var slo = $('#SLO option:selected').val();
-        intent.slo = slo;
+        intent.qos = slo;
 
         var scope = $('#geoscope option:selected').val();
 
@@ -898,7 +898,8 @@ $(function() {
                 var circle = geoscope.value;
                 L.circle([circle.centerLatitude, circle.centerLongitude], circle.radius).addTo(map);
             } else if (geoscope.type == 'rectangle') {
-                L.rectangle().addTo(map);
+                var circle = geoscope.value.vertices;
+                L.polygon().addTo(map);
             }
         }
 

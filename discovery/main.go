@@ -54,6 +54,7 @@ func main() {
 
 		// for health check
 		rest.Get("/ngsi9/status", iotDiscovery.getStatus),
+		rest.Get("/ngsi9/broker", iotDiscovery.getBrokerList),
 
 		// hearbeat from active brokers
 		rest.Post("/ngsi9/broker", iotDiscovery.onBrokerHeartbeat),
