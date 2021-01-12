@@ -2,8 +2,8 @@
 Kubernetes Integration
 **********************
 
-The components of FogFlow can be built via source code as well as in docker environment using docker-compose tool. In docker environment each component of FogFlow is running on a single container. Whole FogFlow system will have to re-start in case any single component container goes down and if any single service is overloaded it cannot scale to handle the load.  
-To overcome these issues FogFlow would be migrated to Kubernetes. FogFlow components will be setup in Kubernetes cluster environment based on end user requirement. Kubernetes cluster can be deployed in various configurations:
+The components of FogFlow can be built via source code as well as in docker environment using docker-compose tool. In docker environment each component of FogFlow is running running as single instance. Whole FogFlow system will have to re-start in case any single component container goes down and if any single service is overloaded it cannot scale to handle the load.  
+To overcome these issues FogFlow has migrated to Kubernetes. FogFlow components will be deployed in Kubernetes cluster environment based on end user requirement. Various cluster configuration can be deployed:
 
 1.	Master and Worker on same Node
 2.	Single Master and Single Worker
@@ -12,28 +12,39 @@ To overcome these issues FogFlow would be migrated to Kubernetes. FogFlow compon
 
 
 Along with cluster following features of K8s are implemented in FogFlow:
-1.	 High Availability and Load Balancing.
-2.	 Self-healing.
-3.	 Automated Rollouts & Rollback.
-4.	 Ease the deployment with Helm Support.
 
-Terminologies
-==============
-
-**High-Availability** and Load Balancing is about setting up Kubernetes, along with its supporting components in a way that there is no single point of failure. If the environment setup has multiple applications running on Single containers that container can easily fail. Same as the virtual machines for high availability in Kubernetes multiple replicas of containers can be run.
-Load balancing is efficient in distributing incoming network traffic across a group of backend servers.
- A load balancer is a device that distributes network or application traffic across a cluster of servers. The load balancer has a big role to achieve high availability and performance increase of cluster.
-
+1. **High Availability and Load Balancing**:
+High Availability is about setting up Kubernetes, along with its supporting components in a way that there is no single point of failure. If the environment setup has multiple applications running on Single containers that container can easily fail. Same as the virtual machines for high availability in Kubernetes multiple replicas of containers can be run. Load balancing is efficient in distributing incoming network traffic across a group of backend servers.
+A load balancer is a device that distributes network or application traffic across a cluster of servers. The load balancer has a big role to achieve high availability and performance increase of cluster.
  
-**Self-healing** if any of the pod are deleted manually or a pod got deleted accidentally or restarted. The deployment will make sure that it brings back the pod because Kubernetes has a feature to auto-heal the pods.	
+2. **Self-healing**: if any of the pod are deleted manually or a pod got deleted accidentally or restarted. The deployment will make sure that it brings back the pod because Kubernetes has a feature to auto-heal the pods.
 
- 
-**Automated Rollouts & Rollback Rollouts** can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. It updates cycles previous Pod out and bring newer Pod in incrementally.
+3. **Automated Rollouts & Rollback**: can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. It updates cycles previous Pod out and bring newer Pod in incrementally.
 When any introduced change that breaks production, then there should have a plan to roll back that change Kubernetes and kubectl offer a simple mechanism to roll back changes to resources such as Deployments.
 
-
-**Helm** is a tool that streamlines installing and managing Kubernetes applications. It helps in managing Kubernetes applications. Helm Charts helps to define, install, and upgrade even the most complex Kubernetes application.
+4. **Ease the deployment with Helm Support**: Helm is a tool that streamlines installing and managing Kubernetes applications. It helps in managing Kubernetes applications. Helm Charts helps to define, install, and upgrade even the most complex Kubernetes application.
 FogFlow document would be updated with the functioning details of above features to understand and access the Kubernetes environment well.
+
+
+**Limitation of FogFlow K8s Integration**
+
+Below are few limitations of FogFlow Kubernetes Integration. These limitation will be implemented with FogFlow in Future.
+
+1. Task Instance which FogFlow worker launches are not implemented on Pods. Migration of launching task instances over k8s pods are in future scope of FogFlow OSS.  
+
+2. FogFlow Edge node K8s Support.
+
+3. Security and Network Policy in K8s environment.
+
+4. Taints and Trait
+
+5. Performance Evaluation
+
+6. Other Functionality
+
+
+FogFlow Cloud architecture diagram on Kubernetes
+----------------------------------------------
 
 
 
@@ -42,19 +53,16 @@ FogFlow document would be updated with the functioning details of above features
 
 
 
-How Kubernetes component works:
-------------------------------
-The **API Server** is the main management point of the entire cluster. In short, it processes REST operations, validates them, and updates the corresponding objects in etcd. When user interacts with Kubernetes cluster using the kubectl command-line interface, actually the communication establishes with the master API Server component.
 
-**Etcd** is a distributed, consistent key-value store used for configuration management, service discovery, and coordinating distributed work.
 
-Kubernetes **Controller Manager** is a daemon that embeds the core control loops shipped with Kubernetes. Basically, a controller watches the state of the cluster through the API Server watch feature and, when it gets notified, it makes the necessary changes attempting to move the current state towards the desired state.
+FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Master, Worker, Rabbitmq are distributed in cluster nodes. The communication between FogFlow components and their behaviour are as previous and the worker node will launch task instances on docker container. 
 
-The **Scheduler** watches for unscheduled pods and binds them to nodes via the /binding pod subresource API, according to the availability of the requested resources, quality of service requirements, affinity and anti-affinity specifications, and other constraints. 
 
-**Kubelet** is an agent that runs on each node in the cluster. It makes sure that containers are running in a Pod. Kubelet is a node component run on every node.
 
-**kube-proxy** is a network proxy that runs on each node in the cluster, it maintains network rules on nodes. These network rules allow network communication to Pods from network sessions inside or outside of your cluster.
+Follow the link `here_` to know how Kubernetes component works
+
+.. `here_`: https://kubernetes.io/docs/concepts/overview/components/
+
 
 
 Here are the prerequisite commands for running FogFlow on K8s:
@@ -104,7 +112,7 @@ You need to change the following IP addresses in config.json according to your o
 
 - **coreservice_ip**: it is used by all FogFlow edge nodes to access the core services (e.g., nginx on port 80 and rabbitmq on port 5672) on the FogFlow cloud node; usually this will be the public IP of the FogFlow cloud node.
 - **external_hostip**: for the configuration of the FogFlow cloud node, this is the same as coreservice_ip used by the components (Cloud Worker and Cloud Broker) to access the running FogFlow core services;        
-- **internal_hostip**: this is the IP of your default docker bridge, which is the "docker0" network interface on your Linux host. For the docker engine on Windows or Mac OS, there is no "docker0" network interface; instead, you need to use the special domain name "host.docker.internal".  
+- **internal_hostip**: this is the IP of your default K8s network Interface, which is the "cni0" network interface on your Linux host.
 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
 - **physical_location**: the geo-location of the FogFlow node;
@@ -115,6 +123,7 @@ Change values.yaml file
 ---------------------------
 
 -Change config.json and nginx.conf path in values.yaml as per the environment.
+
 -Change externalIPs as per the environment.
 
 .. code-block:: console
@@ -150,11 +159,11 @@ Change values.yaml file
 Start all Fogflow components with helm
 -------------------------------------------------------------
 
-Execute Helm command outside from FogFlow-chart location to start FogFlow Components.
+Execute Helm command outside from fogflow-chart location to start FogFlow Components.
 
 .. code-block:: console
  
-          helm install . --generate-name
+          helm install ./fogflow-chart --generate-name
 
 
 Validate the setup
