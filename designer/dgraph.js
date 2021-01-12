@@ -1,6 +1,5 @@
 const dgraph = require("dgraph-js");
-const grpc = require("grpc");
-var request = require('request');
+
 var config_fs_name = './config.json';
 var axios = require('axios')
 var fs = require('fs');
@@ -17,7 +16,7 @@ config.brokerPort=globalConfigFile.broker.http_port
 */
 
 async function newClientStub() {
-    return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort, grpc.credentials.createInsecure());
+    return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort);
 }
 
 // Create a client.

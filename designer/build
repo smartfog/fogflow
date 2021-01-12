@@ -2,6 +2,6 @@
 
 docker build -t "fogflow/designer"  .
 
-docker build -f dockerfile4arm -t "fogflow/designer:arm"  .
+#docker build -f dockerfile4arm -t "fogflow/designer:arm"  .
 
 
