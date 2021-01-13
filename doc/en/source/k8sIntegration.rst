@@ -22,13 +22,14 @@ A load balancer is a device that distributes network or application traffic acro
 3. **Automated Rollouts & Rollback**: can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. It updates cycles previous Pod out and bring newer Pod in incrementally.
 When any introduced change that breaks production, then there should have a plan to roll back that change Kubernetes and kubectl offer a simple mechanism to roll back changes to resources such as Deployments.
 
-4. **Ease the deployment with Helm Support**: Helm is a tool that streamlines installing and managing Kubernetes applications. It helps in managing Kubernetes applications. Helm Charts helps to define, install, and upgrade even the most complex Kubernetes application.
+4. **Ease the deployment with Helm Support**: Helm is a tool that streamlines installing and managing Kubernetes applications. It helps in managing Kubernetes applications. 
+Helm Chart helps to define, install, and upgrade even the most complex Kubernetes application.
 FogFlow document would be updated with the functioning details of above features to understand and access the Kubernetes environment well.
 
 
 **Limitation of FogFlow K8s Integration**
 
-Below are few limitations of FogFlow Kubernetes Integration. These limitation will be implemented with FogFlow in Future.
+Below are few limitations of FogFlow Kubernetes Integration. These limitation will be implemented with FogFlow in future.
 
 1. Task Instance which FogFlow worker launches are not implemented on Pods. Migration of launching task instances over k8s pods are in future scope of FogFlow OSS.  
 
@@ -74,9 +75,10 @@ Here are the prerequisite commands for running FogFlow on K8s:
 .. important:: 
 	**please also allow your user to execute the Docker Command without Sudo**
 	
-To install Kubernetes, please refer to `Install Kubernetes`_,
+To install Kubernetes, please refer to `Kubernetes_Official_Site_` or Check alternate `Install Kubernetes`_,
 To install Helm, please refer to `Install Helm`_,
 
+`Kubernetes_Official_Site_`: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 .. _`Install Kubernetes`: https://medium.com/@vishal.sharma./installing-configuring-kubernetes-cluster-on-ubuntu-18-04-lts-hosts-f37b959c8410
 .. _`Install Helm`: https://helm.sh/docs/intro/install/
 
@@ -85,7 +87,6 @@ Deploy FogFlow Cloud Components on K8s Environment
 --------------------------------------------------
 
 FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Master, Worker, Rabbitmq are distributed in cluster nodes. The communication between FogFlow components and their behaviour are as usual and the worker node will launch task instances on docker container. 
-The implementation of task instances launch on k8s pods by FogFlow Worker node are planned in Q4 activities. To implement this Kubernetes client-go interface is used. Based on this interface whenever any task will launch worker will call the interface, with the dockerimage details and available port number interface will create pod for task instance.
 
 
 **Fetch all required scripts**
@@ -122,49 +123,67 @@ You need to change the following IP addresses in config.json according to your o
 Change values.yaml file
 ---------------------------
 
--Change config.json and nginx.conf path in values.yaml as per the environment.
+-Edit namespace as per requirement. Add the no. of replicaCount required.
+
+-Change dgraph, configJson and nginxConf path in values.yaml  file as per the environment hostPath.
 
 -Change externalIPs as per the environment.
 
 .. code-block:: console
 
-      # Default values for fogflow-chart.
-      # This is a YAML-formatted file.
-      # Declare variables to be passed into your templates.
+      #Kubernetes namespace of FogFlow components
+      namespace: default
 
-    ConfigMap:
-    data:
-      config.json: /home/necuser/fogflow/fogflow/yaml/heml/
-      nginx.conf: /home/necuser/fogflow/fogflow/yaml/heml/
+      #replicas will make sure that no. of replicaCount mention in values.yaml
+      # are running all the time for the deployment
+      replicaCount: 1
 
-    serviceAccount:
-     # Specifies whether a service account should be created
-     create: true
-    # Annotations to add to the service account
-     annotations: {}
-    # The name of the service account to use.
-    # If not set and create is true, a name is generated using the fullname template
-      name: ""
+      serviceAccount:
+      # Specifies whether a service account should be created
+        create: true
+      # Annotations to add to the service account
+        annotations: {}
+      # The name of the service account to use.
+      # If not set and create is true, a name is generated using the fullname template
+        name: ""
 
-    service:
-      type: ClusterIP
-      port: 80
+      #hostPath for dgraph volume mount
+      dgraph:
+        hostPath:
+          path: /mnt/dgraph
 
-    Service:
-     spec:
-      externalIPs:
-      - 172.30.48.24
+      #hostPath for config.json
+      configJson:
+        hostPath:
+          path: /home/necuser/fogflow/helm/files/fogflow-chart/config.json
+
+      #hostPath for nginx.conf
+      nginxConf:
+        hostPath:
+          path: /home/necuser/fogflow/fogflow/yaml/nginx.conf
+
+      #External IP to expose cluster
+      Service:
+       spec:
+        externalIPs:
+        - XXX.XX.48.24
 
 	  
-Start all Fogflow components with helm
+Start all Fogflow components with Helm Chart
 -------------------------------------------------------------
 
-Execute Helm command outside from fogflow-chart location to start FogFlow Components.
+Execute Helm command from outside the Helm-Chart folder to start FogFlow Components, here helm-chart name is "fogflow-chart". 
+
+Add "--set" flag with helm install command to pass configuration from command line.
 
 .. code-block:: console
  
-          helm install ./fogflow-chart --generate-name
+          helm install ./fogflow-chart --set externalIPs={XXX.XX.48.24} --generate-name
 
+
+Refer Helm official `link_` for more details
+
+.. `link_`: https://helm.sh/docs/helm/
 
 Validate the setup
 -------------------------------------------------------------
