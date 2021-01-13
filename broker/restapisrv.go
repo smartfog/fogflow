@@ -62,26 +62,35 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
 
 		//NGSI-LD APIs
-		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NotifyLdContext),
+
+		//create and update
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
-		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
-		rest.Get("/ngsi-ld/v1/entities", apisrv.GetQueryParamsEntities),
 		rest.Post("/ngsi-ld/v1/entities/#eid/attrs", broker.LDAppendEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs", broker.LDUpdateEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDUpdateEntityByAttribute),
+
+		//query
+		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
+		rest.Get("/ngsi-ld/v1/entities", apisrv.GetQueryParamsEntities),
+
+		//delete
 		rest.Delete("/ngsi-ld/v1/entities/#eid", apisrv.DeleteLDEntity),
 		rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDDeleteEntityAttribute),
 
-		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
-		rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", broker.UpdateCSourceRegistration),
-		rest.Delete("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.DeleteCSourceRegistration),
-		rest.Get("/ngsi-ld/v1/csourceRegistrations", apisrv.GetQueryParamsRegistrations),
-
+		//subscription
 		rest.Post("/ngsi-ld/v1/subscriptions/", broker.LDCreateSubscription),
 		rest.Get("/ngsi-ld/v1/subscriptions/", broker.GetLDSubscriptions),
 		rest.Get("/ngsi-ld/v1/subscriptions/#sid", apisrv.GetLDSubscription),
 		rest.Patch("/ngsi-ld/v1/subscriptions/#sid", broker.UpdateLDSubscription),
 		rest.Delete("/ngsi-ld/v1/subscriptions/#sid", apisrv.DeleteLDSubscription),
+
+		//notify
+		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NotifyLdContext),
+
+		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
+		rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", broker.UpdateCSourceRegistration),
+		rest.Delete("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.DeleteCSourceRegistration),
+		rest.Get("/ngsi-ld/v1/csourceRegistrations", apisrv.GetQueryParamsRegistrations),
 	)
 	if err != nil {
 		log.Fatal(err)
