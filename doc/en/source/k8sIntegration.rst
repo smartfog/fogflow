@@ -60,9 +60,9 @@ FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Maste
 
 
 
-Follow the link `here_` to know how Kubernetes component works
+Follow the link `here`_ to know how Kubernetes component works
 
-.. `here_`: https://kubernetes.io/docs/concepts/overview/components/
+.. _`here`: https://kubernetes.io/docs/concepts/overview/components/
 
 
 
@@ -75,11 +75,14 @@ Here are the prerequisite commands for running FogFlow on K8s:
 .. important:: 
 	**please also allow your user to execute the Docker Command without Sudo**
 	
-To install Kubernetes, please refer to `Kubernetes_Official_Site_` or Check alternate `Install Kubernetes`_,
-To install Helm, please refer to `Install Helm`_,
+To install Kubernetes, please refer to  `Kubernetes Official Site`_ or Check alternate `Install Kubernetes`_,
 
-`Kubernetes_Official_Site_`: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+To install Helm, please refer `Install Helm`_
+
+.. _`Kubernetes Official Site`: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
 .. _`Install Kubernetes`: https://medium.com/@vishal.sharma./installing-configuring-kubernetes-cluster-on-ubuntu-18-04-lts-hosts-f37b959c8410
+
 .. _`Install Helm`: https://helm.sh/docs/intro/install/
 
 
@@ -135,16 +138,16 @@ Change values.yaml file
       namespace: default
 
       #replicas will make sure that no. of replicaCount mention in values.yaml
-      # are running all the time for the deployment
+      #are running all the time for the deployment
       replicaCount: 1
 
       serviceAccount:
-      # Specifies whether a service account should be created
+      #Specifies whether a service account should be created
         create: true
-      # Annotations to add to the service account
+      #Annotations to add to the service account
         annotations: {}
-      # The name of the service account to use.
-      # If not set and create is true, a name is generated using the fullname template
+      #The name of the service account to use.
+      #If not set and create is true, a name is generated using the fullname template
         name: ""
 
       #hostPath for dgraph volume mount
@@ -183,7 +186,7 @@ Add "--set" flag with helm install command to pass configuration from command li
 
 Refer Helm official `link_` for more details
 
-.. `link_`: https://helm.sh/docs/helm/
+.. _`link`: https://helm.sh/docs/helm/
 
 Validate the setup
 -------------------------------------------------------------
