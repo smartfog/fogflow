@@ -3,11 +3,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   #FogFlow cloud components will be deployed inside fogflow namespace
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "6"
+    "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
     io.kompose.service: rabbitmq
@@ -23,15 +22,14 @@ spec:
   #strategy tells about How do want to update the pods?
   strategy: 
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 25% 
+      maxUnavailable: 25% 
     type: RollingUpdate
    # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
@@ -44,7 +42,7 @@ spec:
         - name: RABBITMQ_DEFAULT_USER
           value: admin
         image: rabbitmq:3
-        imagePullPolicy: ""
+        imagePullPolicy: Always 
         name: rabbitmq
         ports:
         - containerPort: 5672
@@ -77,9 +75,8 @@ status: {}
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
@@ -92,7 +89,5 @@ spec:
     targetPort: 5672
   selector:
     io.kompose.service: rabbitmq
-  externalIPs: {{ .Values.Service.spec.externalIPs }} 
-status:
-  loadBalancer: {}
+  externalIPs:  {{ .Values.Service.spec.externalIPs }}
 

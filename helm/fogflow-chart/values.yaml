@@ -2,6 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+#Kubernetes namespace of FogFlow components 
+namespace: default 
+
+#replicas will make sure that no. of replicaCount mention in values.yaml
+# are running all the time for the deployment
 replicaCount: 1
 
 serviceAccount:
@@ -28,10 +33,6 @@ nginxConf:
   hostPath:
     path: /home/necuser/fogflow/fogflow/yaml/nginx.conf 
 
-service:
-  type: ClusterIP
-  port: 80
-  
 Service:
  spec: 
   externalIPs: 

@@ -2,14 +2,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   name: fogflow-dns
 ---
 #ClusterRole fogflow-dns creation for all components in fogflow namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  namespace: fogflow
+  namespace: {{ .Values.namespace }}
   name: fogflow-dns
 rules:
 - apiGroups: [""]
@@ -23,7 +23,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  namespace: fogflow
+  namespace: {{ .Values.namespace }}
   name: fogflow-dns-viewer
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -32,7 +32,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: fogflow-dns
-  namespace: fogflow 
+  namespace: {{ .Values.namespace }} 
 
 ---
 
@@ -41,9 +41,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   #FogFlow cloud components will be deployed inside fogflow namespace 
-  namespace: fogflow                      
+  namespace: {{ .Values.namespace }}                      
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
     "helm.sh/hook-weight": "1" 
   creationTimestamp: null
@@ -61,15 +60,14 @@ spec:
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 25%  
+      maxUnavailable: 25% 
     type: RollingUpdate
   # This template field is a regular pod configuration 
   # nested inside the deployment spec
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
@@ -77,7 +75,7 @@ spec:
     spec:
       containers:
       - image: fogflow/dgraph:latest
-        imagePullPolicy: ""
+        imagePullPolicy: Always
         name: dgraph
         ports:
         - containerPort: 6080
@@ -124,9 +122,8 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow 
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
@@ -148,7 +145,5 @@ spec:
     targetPort: 8000
   selector:
     io.kompose.service: dgraph
-  externalIPs: {{ .Values.Service.spec.externalIPs }} 
-status:
-  loadBalancer: {}
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
 
