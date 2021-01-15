@@ -590,7 +590,7 @@ def test_case40():
         #print(r.status_code)
         assert r.status_code == 400
 
-#testCase 41
+'''#testCase 41
 '''
   To test for empty payload in csource registration
 '''
@@ -601,7 +601,7 @@ def test_case41():
         #print(r.content)
         #print(r.status_code)
         assert r.status_code == 400
-
+'''
 #testCase 42
 '''
   To test for empty payload in subscription
@@ -669,7 +669,7 @@ def test_case44():
         #print(r.status_code)
         assert r.status_code == 200
 
-#testCase 45
+'''#testCase 45
 '''
   To test for csource registartion with Id pattern
 '''
@@ -680,6 +680,7 @@ def test_case45():
         print(r.content)
         #print(r.status_code)
         assert r.status_code == 400  
+'''
 
 #testCase 46
 '''
