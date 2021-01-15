@@ -231,7 +231,7 @@ Note: Red markers represent IoT Device interaction with cloud and  green markers
      	\"name\": \"admin@test.com\",
      	\"password\": \"1234\"
    	}" \
-   	"http://$IP_ADDRESS:3000/v1/auth/tokens" 
+   	"http://KEYROCK_IP_ADDRESS:3000/v1/auth/tokens" 
 
  
 
