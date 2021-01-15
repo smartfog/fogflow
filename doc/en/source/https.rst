@@ -212,11 +212,46 @@ Terminology
 .. figure:: figures/Security_Architecture.png
 
 
+Note: Red markers represent IoT Device interaction with cloud and  green markers represent IoT Device interaction with Edge Node
 
-Note: In above diagram n ( n is numeric) is used for cloud node and n’ for edge node.
+ 
+
+Flow of Requests as shown in diagram:
+
+Step 1 : User will make a request to IDM using his credentials to generate access token specific for that user. For example:
 
 
-FogFlow cloud node flow:
+.. code-block:: console
+      curl --include \
+        --request POST \
+        --header "Content-Type: application/json" \
+        --data-binary "{
+     \"name\": \"admin@test.com\",
+     \"password\": \"1234\"
+   }" \
+   "http://$IP_ADDRESS:3000/v1/auth/tokens" 
+
+ 
+
+Step 2 : IDM will return an access token to user, based on his credentials in rquest made in previous step.
+
+Step 3 : User shares his access token ( i.e. User Access Token ) to IoT Device.
+
+Step 4 : IoT Device is regstered with IDM using User Access Token as shown in `below`_ topics. As an output, IDM provides an Id and password to IoT Device based on the registration request.
+
+.. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-IoT-Sensor-on-Keyrock
+
+Step 5 : Using the above ID and password for IoT Device (generated in previous request), a request is made to IDM to generate an access token specific for that Device only as shown in `later`_ section.
+
+.. _`later`: https://fogflow.readthedocs.io/en/latest/https.html#register-IoT-Sensor-on-Keyrock
+
+Step 6 : Now, using the above access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
+
+
+Cloud and Edge Interaction with IDM 
+------------------------------------
+
+**FogFlow cloud node flow:**
 
 1. As in architecture diagram, PEP Proxy will register itself on behalf FogFlow Designer first on Keyrock. Detail explanation is given in `below`_ topics of this tutorial.
 
@@ -224,7 +259,8 @@ FogFlow cloud node flow:
 
 .. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#setup-security-components-on-cloud-node
 
-FogFlow edge node flow:
+
+**FogFlow edge node flow:**
 
 
 1. On behalf of edge node, one instance of PEP Proxy will be pre-registered on keyrock, edge will be using oauth credentials to fetch PEP Proxy  details. Detail explanation is given in below topics of this tutorial. Click `here`_ to refer.
@@ -345,6 +381,7 @@ To setup PEP proxy for securing Designer, change the followings inside the pep_c
 
 Restart the PEP Proxy container after above changes.
 
+**Generate Access Token** 
 
 **Step2**: Request Keyrock IDM to generate access-token and refresh token.
 
