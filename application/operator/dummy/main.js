@@ -130,7 +130,7 @@ function publish(ctxUpdate) {
         return
     }
 
-    ngsi10client.updateContext(update).then(function(data) {
+    ngsi10client.updateContext(ctxUpdate).then(function(data) {
         console.log('======send update======');
         console.log(data);
     }).catch(function(error) {
@@ -191,7 +191,7 @@ function query2execution() {
 
             // call the customized function to generate the analytics result
             for (var i = 0; i < ctxObjects.length; i++) {
-                fogfunction.handler(ctxObjects[i]);
+                fogfunction.handler(ctxObjects[i], publish, query, subscribe);
             }
         } catch (e) {
             console.log(e)

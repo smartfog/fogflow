@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+// Query from FogFLow broker to get entity by ID
+
 func queryContext(id string, IoTBrokerURL string) (map[string]interface{}, error) {
 	req, _ := http.NewRequest("GET", IoTBrokerURL+"/ngsi-ld/v1/entities/"+id, nil)
 	req.Header.Add("Content-Type", "application/ld+json")
@@ -31,6 +33,8 @@ func queryContext(id string, IoTBrokerURL string) (map[string]interface{}, error
 	res.Body.Close()
 	return itemsMap, err
 }
+
+// Update request to FogFLow broker
 
 func UpdateLdContext(updateCtx map[string]interface{}, IoTBrokerURL string) error {
 	body, err := json.Marshal(updateCtx)

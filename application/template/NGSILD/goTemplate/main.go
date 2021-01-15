@@ -15,7 +15,7 @@ import (
 	"syscall"
 )
 
-//var ctxUpdateBuffer []*ContextObject
+
 
 var isConfigured = false
 var brokerURL = ""
@@ -46,7 +46,7 @@ func startApp() {
 }
 
 func stopApp() {
-	fmt.Println("clean up the app")
+	fmt.Println("stop and clean up the application")
 }
 
 // handle the commands received from the engine
@@ -69,7 +69,7 @@ func onNotify(w http.ResponseWriter, r *http.Request) {
 		notifyElement, _ := getStringInterfaceMap(r)
 		notifyElemtData := notifyElement["data"]
 		notifyEleDatamap := notifyElemtData.([]interface{})
-		w.WriteHeader(201)
+		w.WriteHeader(200)
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
 			fogfunction(notifyData, publish)
@@ -163,8 +163,6 @@ func object2Element(element map[string]interface{}) map[string]interface{} {
 }
 
 func query2execution() map[string]interface{} {
-	//client := NGSILdClient{IoTBrokerURL: brokerURL}
-	//_, err :=
 	ctxObjects, err := queryContext(inputEntityId, brokerURL)
 	if err != nil {
 		fmt.Println("failed to update context", err)
