@@ -81,7 +81,7 @@ do
     echo "Access token is $access_token"
     echo -------------------------------------
 
-    rm -rf .access.js
+    rm -rf .access.js .iot_device.js
 done
 
 #To create and delete multiple sensors from IDM
