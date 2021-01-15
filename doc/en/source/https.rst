@@ -222,7 +222,9 @@ Note: Red markers represent IoT Device interaction with cloud and  green markers
 
 
 .. code-block:: console
-        curl --include \
+        
+
+	curl --include \
         --request POST \
         --header "Content-Type: application/json" \
         --data-binary "{
@@ -239,11 +241,11 @@ Note: Red markers represent IoT Device interaction with cloud and  green markers
 
 **Step 4** : IoT Device is regstered with IDM using User Access Token as shown in `below`_ topics. As an output, IDM provides an Id and password to IoT Device based on the registration request.
 
-.. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-sensor-on-keyrock
+.. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
 
 **Step 5** : Using the above ID and password for IoT Device (generated in previous request), a request is made to IDM to generate an access token specific for that Device only as shown in `later`_ section.
 
-.. _`later`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-sensor-on-keyrock
+.. _`later`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
 
 **Step 6** : Now, using the above access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
 
@@ -267,7 +269,7 @@ Cloud and Edge Interaction with IDM
 
 2. After the authentication edge node will be able to communicate with FogFlow cloud node.
 
-3. Any device can register itself or communicate with FogFlow edge node using  access-token generated on behalf of each IoT sensor registered at Keyrock.
+3. Any device can register itself or communicate with FogFlow edge node using  access-token generated on behalf of each IoT Device registered at Keyrock.
 
 .. _`here`: https://fogflow.readthedocs.io/en/latest/https.html#setup-components-on-edge
 
@@ -351,7 +353,7 @@ Note:
 Application ID , PEP Proxy Username and PEP Proxy Password will generate by clicking ‘Register PEP Proxy’ button.
 
 
-To setup PEP proxy for securing Designer, change the followings inside the pep_config file. Get PEP Proxy Credentials from Keyrock Dashboard while registering an application. Note that single instance of Wilma will be installed for each application that user wants to secure.
+To setup PEP proxy for securing Designer, change the followings inside the pep_config file. Get PEP Proxy Credentials from Keyrock Dashboard while registering an application. 
 
 
 .. code-block:: console
@@ -469,7 +471,7 @@ Setup components on Edge
 -------------------------
 
 
-FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow edge communication between Iot sensor and edge node, PEP Proxy has been used. In order to create an Auth Token, firstly register an IoT sensor  on Keyrock. So, a script will call with the start of edge node and it will instantiate a PEP Proxy  with the keyrock and also setup configuration file for PEP Proxy to work, using the Keyrock APIs. The script will perform following steps:
+FogFlow edge node mainly contains edge broker and edge worker. To secure FogFlow edge communication between Iot device and edge node, PEP Proxy has been used. In order to create an Auth Token, firstly register an IoT device  on Keyrock. So, a script will call with the start of edge node and it will instantiate a PEP Proxy  with the keyrock and also setup configuration file for PEP Proxy to work, using the Keyrock APIs. The script will perform following steps:
 
 **Prerequisite**
 
@@ -524,10 +526,10 @@ To secure FogFlow edge-IoT device communication Auth Token has been used on beha
 
 Note: the start.sh script will return  Application ID, Application Secret, PEP Proxy ID, PEP Proxy Secret, Authorization code, IDM Token and the access token on console. Please save these for further use.
 
-register IoT Sensor on Keyrock
+Register IoT Device on Keyrock
 ------------------------------
 
-An example request to register IoT sensor is given below 
+An example request to register IoT Device is given below 
 
 .. code-block:: console
 
@@ -537,7 +539,7 @@ An example request to register IoT sensor is given below
      --header "X-Auth-token: <token-generated-from-script>" \
   'http://keyrock/v1/applications/6e396def-3fa9-4ff9-84eb-266c13e93964/iot_agents'
 
-Note: Please save the sensor Id and sensor password for further utilisation
+Note: Please save the device Id and device password for further utilisation
  
 .. figure:: figures/keyrock_iot.png
 
@@ -557,7 +559,7 @@ Note: Please save the Access Token for further utilisation
 
 .. figure:: figures/keyrock_token.png
 
-register device on edge node
+Register Device on Edge Node
 ----------------------------
 
 An example payload of registration device is given below.
@@ -593,7 +595,7 @@ An example payload of registration device is given below.
       }'
 
 
-**Stop Edge node components**
+**Stop Edge Node Components**
 
 
 * Use the below script to stop edge components that is broker and worker.
