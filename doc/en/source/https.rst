@@ -210,10 +210,14 @@ Terminology
 
 
 **Single IoT Device Interaction with FogFlow**
+
+
 .. figure:: figures/architectureDiagram1.png
 
 
 **Multiple IoT Device Interaction with FogFlow**
+
+
 .. figure:: figures/Security_Architecture.png
 
 
