@@ -408,7 +408,7 @@ The flow of cloud security implementation can be understand by below figure.
 
 
 
-.. figure:: figures/architectureDiagram.png
+.. figure:: figures/architectureDiagram1.png
 
 
 
