@@ -209,6 +209,11 @@ Terminology
 
 
 
+**Single IoT Device Interaction with FogFlow**
+.. figure:: figures/architectureDiagram1.png
+
+
+**Multiple IoT Device Interaction with FogFlow**
 .. figure:: figures/Security_Architecture.png
 
 
@@ -218,7 +223,7 @@ Note: Red markers represent IoT Device interaction with cloud and  green markers
 
 **Flow of Requests as shown in diagram:**
 
-**Step 1** : User will make a request to IDM using his credentials to generate access token specific for that user. For example:
+**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For example:
 
 
 .. code-block:: console
@@ -235,19 +240,17 @@ Note: Red markers represent IoT Device interaction with cloud and  green markers
 
  
 
-**Step 2** : IDM will return an access token to user, based on his credentials in rquest made in previous step.
+**Step 2** : IDM will return an user access token in response of request made in first step.
 
 **Step 3** : User shares his access token ( i.e. User Access Token ) to IoT Device.
 
-**Step 4** : IoT Device is regstered with IDM using User Access Token as shown in `below`_ topics. As an output, IDM provides an Id and password to IoT Device based on the registration request.
+**Step 4** : Then IoT devices get registered using the user access token and in response, it gets device credentials(ID and password) as shown in `below`_ topics.
 
 .. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
 
-**Step 5** : Using the above ID and password for IoT Device (generated in previous request), a request is made to IDM to generate an access token specific for that Device only as shown in `later`_ section.
+**Step 5** : IOT Device then make access token request using above device credentials and in response, it gets device access token.
 
-.. _`later`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
-
-**Step 6** : Now, using the above access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
+**Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
 
 
 Cloud and Edge Interaction with IDM 
@@ -408,7 +411,7 @@ The flow of cloud security implementation can be understand by below figure.
 
 
 
-.. figure:: figures/architectureDiagram1.png
+.. figure:: figures/architectureDiagram.png
 
 
 
