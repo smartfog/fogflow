@@ -252,7 +252,7 @@ Note: Red markers represent IoT Device interaction with cloud and  green markers
 
 .. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
 
-**Step 5** : IOT Device then make access token request using above device credentials and in response, it gets device access token.
+**Step 5** : IoT Device then make access token request using above device credentials and in response, it gets device access token.
 
 **Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
 
@@ -526,9 +526,9 @@ Chanage the following things in configuration file:
 
 To secure FogFlow edge-IoT device communication Auth Token has been used on behalf of each IoT device. In order to create an Auth Token, 
 
-* An IoT sensor is needed to be registered on Keyrock. 
+* An IoT device is needed to be registered on Keyrock. 
 
-* A script will call with the start of edge node and it will configure PEP Proxy with the keyrock on behalf of that edge node using the Keyrock APIs. 
+* A script will be called with the start of edge node and it will configure PEP Proxy with keyrock on behalf of that edge node using the Keyrock APIs. 
 
 
 Note: the start.sh script will return  Application ID, Application Secret, PEP Proxy ID, PEP Proxy Secret, Authorization code, IDM Token and the access token on console. Please save these for further use.
