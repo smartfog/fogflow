@@ -156,6 +156,8 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				}
 			} else if strings.Contains(k, "createdAt") {
 				continue
+			} else if strings.Contains(k, "modifiedAt") {
+				continue
 			} else {
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
@@ -163,7 +165,6 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 					typ := mp["@type"].([]interface{})
 					if len(typ) > 0 {
 						if strings.Contains(typ[0].(string), "Property") {
-
 							property, err := sz.getProperty(mp)
 							if err != nil {
 								return entity, err
@@ -484,19 +485,20 @@ func (sz Serializer) getValue(hasValue []interface{}) interface{} {
 
 func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 	Value := make(map[string]interface{})
-	value := make([]interface{},0)
+	value := make([]interface{}, 0)
 	if len(hasValue) == 0 {
 		return value
-	}else if len(hasValue) > 0 {
+	} else if len(hasValue) > 0 {
 		for _, oneValue := range hasValue {
 			if val := oneValue.(map[string]interface{}); val != nil {
-
 				if val["@type"] != nil {
 					Value["Type"] = val["@type"].(string)
 					Value["Value"] = val["@value"].(interface{})
 					return Value
 				}
-				value = append(value,val["@value"].(interface{})) //Value is not  overwritten, in case of multiple values in payload, value array never returned..
+				if val["@value"] != nil {
+					value = append(value, val["@value"].(interface{}))
+				} //Value is not  overwritten, in case of multiple values in payload, value array never return
 			}
 		}
 	}
@@ -541,21 +543,21 @@ func (sz Serializer) getProvidedBy(providedBy []interface{}) ProvidedBy {
 //DATASET_ID
 func (sz Serializer) getDatasetId(datasetId []interface{}) string {
 	var DatasetId string
-        if len(datasetId) > 0 {
-                datasetIdMap := datasetId[0].(map[string]interface{})
-                DatasetId = datasetIdMap["@id"].(string)
-        }
-        return DatasetId
+	if len(datasetId) > 0 {
+		datasetIdMap := datasetId[0].(map[string]interface{})
+		DatasetId = datasetIdMap["@id"].(string)
+	}
+	return DatasetId
 }
 
 //INSTANCE_ID
 func (sz Serializer) getInstanceId(instanceId []interface{}) string {
 	var InstanceId string
-        if len(instanceId) > 0 {
-                instanceIdMap := instanceId[0].(map[string]interface{})
-                InstanceId = instanceIdMap["@id"].(string)
-        }
-        return InstanceId
+	if len(instanceId) > 0 {
+		instanceIdMap := instanceId[0].(map[string]interface{})
+		InstanceId = instanceIdMap["@id"].(string)
+	}
+	return InstanceId
 }
 
 //UNIT_CODE
