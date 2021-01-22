@@ -5,11 +5,13 @@ var config_fs_name = './config.json';
 var axios = require('axios')
 var fs = require('fs');
 const bodyParser = require('body-parser');
+
+
 var globalConfigFile = require(config_fs_name)
 var config = globalConfigFile.designer;
 config.grpcPort = globalConfigFile.persistent_storage.port;
-config.HostIp = globalConfigFile.external_hostip;
-config.brokerIp = globalConfigFile.coreservice_ip
+config.HostIp = globalConfigFile.my_hostip;
+config.brokerIp = globalConfigFile.my_hostip
 config.brokerPort = globalConfigFile.broker.http_port
 
 /*
@@ -250,7 +252,7 @@ process.on('unhandledRejection', (reason, promise) => {
 async function queryForEntity() {
     const dgraphClientStub = await newClientStub();
     const dgraphClient = await newClient(dgraphClientStub);
-    await setSchema(dgraphClient);
+    //await setSchema(dgraphClient);
     await queryData(dgraphClient);
     await dgraphClientStub.close();
 }

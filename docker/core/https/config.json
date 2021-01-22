@@ -1,7 +1,5 @@
 {
-    "coreservice_ip": "cloudnode.fogflow.io",   
-    "external_hostip": "cloudnode.fogflow.io",
-    "internal_hostip": "172.17.0.1", 
+    "my_hostip": "192.168.0.59",
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221

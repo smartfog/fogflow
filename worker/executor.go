@@ -37,16 +37,15 @@ type pullResult struct {
 }
 
 type Executor struct {
-	client        *docker.Client
-	workerCfg     *Config
-	brokerURL     string
-	httpBrokerURL string
+	client    *docker.Client
+	workerCfg *Config
+	brokerURL string
 
 	taskInstances map[string]*taskContext
 	taskMap_lock  sync.RWMutex
 }
 
-func (e *Executor) Init(cfg *Config, selectedBrokerURL string, httpBrokerURL string) bool {
+func (e *Executor) Init(cfg *Config, selectedBrokerURL string) bool {
 	// for Windows
 	if runtime.GOOS == "windows" {
 		endpoint := os.Getenv("DOCKER_HOST")
@@ -77,7 +76,6 @@ func (e *Executor) Init(cfg *Config, selectedBrokerURL string, httpBrokerURL str
 
 	e.workerCfg = cfg
 	e.brokerURL = selectedBrokerURL
-	e.httpBrokerURL = httpBrokerURL
 
 	e.taskInstances = make(map[string]*taskContext)
 	return true
@@ -331,7 +329,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// set broker URL
 	setBrokerCmd := make(map[string]interface{})
 	setBrokerCmd["command"] = "CONNECT_BROKER"
-	setBrokerCmd["brokerURL"] = e.httpBrokerURL
+	setBrokerCmd["brokerURL"] = e.brokerURL
 	commands = append(commands, setBrokerCmd)
 
 	// pass the reference URL to the task so that the task can issue context subscription as well

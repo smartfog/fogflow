@@ -4,6 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/piprate/json-gold/ld"
 	"github.com/satori/go.uuid"
@@ -11,12 +17,6 @@ import (
 	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/datamodel"
 	. "github.com/smartfog/fogflow/common/ngsi"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
 )
 
 type ThinBroker struct {
@@ -83,13 +83,8 @@ type ThinBroker struct {
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
-	if cfg.HTTPS.Enabled == true {
-		tb.MyURL = "https://" + cfg.ExternalIP + ":" + strconv.Itoa(cfg.Broker.HTTPSPort) + "/ngsi10"
-		tb.IoTDiscoveryURL = cfg.GetDiscoveryURL(true)
-	} else {
-		tb.MyURL = "http://" + cfg.ExternalIP + ":" + strconv.Itoa(cfg.Broker.HTTPPort) + "/ngsi10"
-		tb.IoTDiscoveryURL = cfg.GetDiscoveryURL(false)
-	}
+	tb.MyURL = cfg.GetBrokerURL()
+	tb.IoTDiscoveryURL = cfg.GetDiscoveryURL()
 
 	tb.myEntityId = tb.id
 
@@ -503,6 +498,7 @@ func (tb *ThinBroker) UpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		tb.handleInternalUpdateContext(&updateCtxReq)
 	}
+
 	//Southbound feature addition
 	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
 		fs := r.Header.Get("fiware-service")
@@ -2192,14 +2188,14 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Id = sid
 
 				}
-				if !strings.HasSuffix(deSerializedSubscription.Type,"Subscription") &&  !strings.HasSuffix(deSerializedSubscription.Type, "subscription") {
-                                        rest.Error(w, "Type not allowed!", http.StatusBadRequest)
-                                        return
-                                }
+				if !strings.HasSuffix(deSerializedSubscription.Type, "Subscription") && !strings.HasSuffix(deSerializedSubscription.Type, "subscription") {
+					rest.Error(w, "Type not allowed!", http.StatusBadRequest)
+					return
+				}
 				if len(deSerializedSubscription.Entities) == 0 {
-                                        rest.Error(w, "Missing entites and its parameter!", http.StatusBadRequest)
-                                        return
-                                }
+					rest.Error(w, "Missing entites and its parameter!", http.StatusBadRequest)
+					return
+				}
 				// send response
 				w.WriteHeader(http.StatusCreated)
 				subResp := SubscribeContextResponse{}

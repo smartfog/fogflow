@@ -39,16 +39,6 @@ This is because a subscription with Orion Context Broker as the reference URL ha
 
 
 
-Fogflow system health can be monitored by system monitoring tools Metricbeat, Elasticsearch and Grafana in short EMG. 
-With these tools edges and Fogflow Docker service health can be monitored. 
-Metricbeat deployed on Edge node. Elasticsearch and Grafana on Cloud node.
-
-As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
-
-
-
-.. figure:: figures/Fogflow_System_Monitoring_Architecture.png
-
 
 Here are the prerequisite commands for running FogFlow:
 
@@ -112,20 +102,6 @@ You need to change the following IP addresses in config.json according to your o
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
-
-
-Change the IP configuration of elasticsearch and metricbeat accordingly
----------------------------------------------------------------------------
-
-You need to change the following IP addresses in docker-compose.yml according to your own environment.
-
-- **output.elasticsearch.hosts**: it is the host location of elasticsearch on which metricbeat shares data in csv format.
-
-Also need to change the following IP addresses in metricbeat.docker.yml according to your own environment.
-
-- **name**: It is the name given for uniqueness for cloud nodes from egde nodes on grafana metric dashboard. You can mention any name in place of IP address.
-
-- **hosts**: It is the host location of elasticsearh database, where metricbeat is going to share metric data.
 
 
 .. important:: 

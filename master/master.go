@@ -67,7 +67,7 @@ func (master *Master) Start(configuration *Config) {
 	master.cfg = configuration
 
 	master.messageBus = configuration.GetMessageBus()
-	master.discoveryURL = configuration.GetDiscoveryURL(false)
+	master.discoveryURL = configuration.GetDiscoveryURL()
 
 	master.workers = make(map[string]*WorkerProfile)
 
@@ -79,7 +79,7 @@ func (master *Master) Start(configuration *Config) {
 	master.subID2Type = make(map[string]string)
 
 	// communicate with the cloud_broker
-	master.BrokerURL = "http://" + master.cfg.ExternalIP + ":" + strconv.Itoa(master.cfg.Broker.HTTPPort) + "/ngsi10"
+	master.BrokerURL = configuration.GetBrokerURL()
 	INFO.Println("communicate with the cloud broker via ", master.BrokerURL)
 
 	// initialize the manager for both fog function and service topology
@@ -92,7 +92,7 @@ func (master *Master) Start(configuration *Config) {
 	// announce myself to the nearby IoT Broker
 	master.registerMyself()
 
-	master.myURL = "http://" + configuration.InternalIP + ":" + strconv.Itoa(configuration.Master.AgentPort)
+	master.myURL = "http://" + configuration.GetMyAccessibleIP() + ":" + strconv.Itoa(configuration.Master.AgentPort)
 
 	// start the NGSI agent
 	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort, SecurityCfg: master.cfg.HTTPS}
@@ -579,7 +579,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 
 	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
 
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(master.cfg.HTTPS.Enabled), SecurityCfg: &master.cfg.HTTPS}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: &master.cfg.HTTPS}
 	subscriptionId, err := client.SubscribeContextAvailability(availabilitySubscription)
 	if err != nil {
 		ERROR.Println(err)
@@ -590,7 +590,7 @@ func (master *Master) subscribeContextAvailability(availabilitySubscription *Sub
 }
 
 func (master *Master) unsubscribeContextAvailability(sid string) {
-	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(master.cfg.HTTPS.Enabled), SecurityCfg: &master.cfg.HTTPS}
+	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: &master.cfg.HTTPS}
 	err := client.UnsubscribeContextAvailability(sid)
 	if err != nil {
 		ERROR.Println(err)
