@@ -56,6 +56,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     scorpioIntegration.rst
     quantumleapIntegration.rst          
     wirecloudIntegration.rst
+    k8sIntegration.rst
     system_monitoring.rst
     https.rst
    
