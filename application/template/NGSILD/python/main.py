@@ -222,15 +222,12 @@ def runInOperationMode():
     else:
         notify2execution()
 
-def handleNotifyTestMode(contextObj):
-    fogflow.handleEntity(contextObj, publishResult)
-
 
 # one time execution triggered by query
 
 def query2execution():
     ctxObjects = fetchInputByQuery()
-    handleNotifyTestMode(ctxObjects)
+    handleNotify(ctxObjects)
 
 
 '''
