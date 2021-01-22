@@ -154,8 +154,9 @@ def fetchInputByQuery():
         jsonResult = response.json()
 
         ctxObj = element2Object(jsonResult)
-
-        return ctxObj
+	ctxElments = []
+        ctxElments.append(ctxObj)
+        return ctxElments
 
 
 def requestInputBySubscription():
@@ -221,12 +222,15 @@ def runInOperationMode():
     else:
         notify2execution()
 
+def handleNotifyTestMode(contextObj):
+    fogflow.handleEntity(contextObj, publishResult)
+
 
 # one time execution triggered by query
 
 def query2execution():
     ctxObjects = fetchInputByQuery()
-    handleNotify(ctxObjects)
+    handleNotifyTestMode(ctxObjects)
 
 
 '''
