@@ -6,7 +6,7 @@ const fogfunction = require('./function.js');
 
 var fs = require('fs');
 
-var ngsi10client = null;
+var NGSILDclient = null;
 var brokerURL;
 var outputs = [];
 var input = {};
@@ -59,7 +59,7 @@ function handleCmd(commandObj) {
 // connect to the IoT Broker
 function connectBroker(cmd) {
     brokerURL = cmd.brokerURL;
-    ngsi10client = new NGSIClient.NGSI10Client(brokerURL);
+    NGSILDclient = new NGSIClient.NGSILDclient(brokerURL);
     console.log('connected to broker', cmd.brokerURL);
 }
 
@@ -89,12 +89,12 @@ function setOutputs(cmd) {
 // query results from the assigned nearby IoT broker
 //
 function query(queryCtxReq, f) {
-    if (ngsi10client == null) {
+    if (NGSILDclient == null) {
         console.log("=== broker is not configured for your query");
         return
     }
 
-    ngsi10client.queryContext(queryCtxReq).then(f).catch(function(error) {
+    NGSILDclient.queryContext(queryCtxReq).then(f).catch(function(error) {
         console.log('failed to subscribe context');
     });
 }
@@ -103,7 +103,7 @@ function query(queryCtxReq, f) {
 // send subscriptions to IoT broker
 //
 function subscribe(subscribeCtxReq) {
-    if (ngsi10client == null) {
+    if (NGSILDclient == null) {
         console.log("=== broker is not configured for your subscription");
         return
     }
@@ -113,7 +113,7 @@ function subscribe(subscribeCtxReq) {
     console.log("================trigger my own subscription===================");
     console.log(subscribeCtxReq);
 
-    ngsi10client.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
+    NGSILDclient.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
         console.log("subscription id = " + subscriptionId);
         mySubscriptionId = subscriptionId;
     }).catch(function(error) {
@@ -125,12 +125,12 @@ function subscribe(subscribeCtxReq) {
 // publish context entities: 
 //
 function publish(ctxUpdate) {
-    if (ngsi10client == null) {
+    if (NGSILDclient == null) {
         console.log("=== broker is not configured for your update");
         return
     }
 
-    ngsi10client.updateContext(ctxUpdate).then(function(data) {
+    NGSILDclient.updateContext(ctxUpdate).then(function(data) {
         console.log('======send update======');
         console.log(data);
     }).catch(function(error) {
@@ -165,7 +165,7 @@ async function fetchInputByQuery() {
             var ctxElements = response.data;
 	    var obj = NGSIClient.CtxElement2JSONObject(ctxElements);
             var objs = []
-	    objs[0] = obj
+	    objs.push(obj)
             return objs;
         } else {
             return null;

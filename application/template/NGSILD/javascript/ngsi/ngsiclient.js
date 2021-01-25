@@ -26,14 +26,14 @@ function JSONObject2CtxElement(ctxObj) {
 }  
 
     
-var NGSI10Client = (function() {
+var NGSILDclient = (function() {
     // initialized with the broker URL
-    var NGSI10Client = function(url) {
+    var NGSILDclient = function(url) {
         this.brokerURL = url;
     };
     
     // update context 
-    NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
+    NGSILDclient.prototype.updateContext = function updateContext(ctxObj) {
         updateCtxReq = JSONObject2CtxElement(ctxObj) 
 		console.log(updateCtxReq);
 		      
@@ -56,7 +56,7 @@ var NGSI10Client = (function() {
     };
     
     // delete context 
-    NGSI10Client.prototype.deleteContext = function deleteContext(entityId) {
+    NGSILDclient.prototype.deleteContext = function deleteContext(entityId) {
 
         return axios({
             method: 'delete',
@@ -75,7 +75,7 @@ var NGSI10Client = (function() {
     };    
     
     // query context
-    NGSI10Client.prototype.queryContext = function queryContext(id) {        
+    NGSILDclient.prototype.queryContext = function queryContext(id) {        
         return axios({
             method: 'get',
             url: this.brokerURL + '/ngsi-ld/v1/entities/' + id,
@@ -98,7 +98,7 @@ var NGSI10Client = (function() {
     };    
         
     // subscribe context
-    NGSI10Client.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
+    NGSILDclient.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
         return axios({
             method: 'post',
             url:    this.brokerURL + '/ngsi-ld/v1/subscriptions/',
@@ -118,7 +118,7 @@ var NGSI10Client = (function() {
     };    
 
     // unsubscribe context    
-    NGSI10Client.prototype.unsubscribeContext = function unsubscribeContext(sid) {
+    NGSILDclient.prototype.unsubscribeContext = function unsubscribeContext(sid) {
         var unsubscribeCtxReq = {};
         unsubscribeCtxReq.subscriptionId = sid;
         
@@ -135,7 +135,7 @@ var NGSI10Client = (function() {
         });
     };        
     
-    return NGSI10Client;
+    return NGSILDclient;
 })();
 
 var NGSI9Client = (function() {
@@ -199,7 +199,7 @@ var NGSI9Client = (function() {
 // initialize the exported object for this module, both for nodejs and browsers
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
     this.axios = require('axios')    
-    module.exports.NGSI10Client = NGSI10Client; 
+    module.exports.NGSILDclient = NGSILDclient; 
     module.exports.NGSI9Client = NGSI9Client;   
     module.exports.CtxElement2JSONObject = CtxElement2JSONObject;
     module.exports.JSONObject2CtxElement = JSONObject2CtxElement;    
