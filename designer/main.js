@@ -1,6 +1,5 @@
-var request = require('request');
-var express = require('express');
-var multer = require('multer');
+var express =   require('express');
+var multer  =   require('multer');
 var https = require('https');
 const bodyParser = require('body-parser');
 var axios = require('axios')
@@ -179,6 +178,8 @@ app.get('/config.js', function(req, res) {
     res.end(data);
 });
 
+
+/*
 // fetch the requested URL from the edge node within the internal network
 app.get('/proxy', function(req, res) {
     console.log(req.query.url);
@@ -187,6 +188,7 @@ app.get('/proxy', function(req, res) {
         request(req.query.url).pipe(res);
     }
 });
+*/
 
 
 // handle the received results

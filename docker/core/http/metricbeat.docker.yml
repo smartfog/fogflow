@@ -1,4 +1,4 @@
-name: "<Cloud_Public_IP>_cloud"
+name: "fogflow_cloud_node"
 metricbeat.modules:
 - module: docker
   #Docker module parameters that has to be monitored based on user requirement, example as below
@@ -14,6 +14,5 @@ metricbeat.modules:
 #  - add_cloud_metadata: ~
 
 output.elasticsearch:
-  hosts: '<Elasticsearch_Host_IP>:9200'
-#  username: '${ELASTICSEARCH_USERNAME:}'
-#  password: '${ELASTICSEARCH_PASSWORD:}'
+  hosts: 'elasticsearch:9200'
+

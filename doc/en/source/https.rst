@@ -201,7 +201,7 @@ Terminology
 
 **Keyrock**: `Keyrock`_ is the FIWARE component responsible for Identity Management. Keyrock also provide feature to add OAuth2-based authentication and authorization security in order to secure services and applications.
 
-**PEP Proxy Wilma**: `PEP Proxy Wilma`_ is a FIWARE Generic Enabler that enhances the performance of Identity Management. It combines with Keyrock to secure access to endpoints exposed by FIWARE Generic Enablers. Wilma listens for any request, authenticates it from Keyrock and stores it in its cache for a limited period of time. If a new request arrives, Wilma will first check in its cache and if any grant is stored, it will directly authenticate otherwise it will send the request to Keyrock for authentication. 
+**PEP Proxy Wilma**: `PEP Proxy Wilma`_ is a FIWARE Generic Enabler that enhances the performance of Identity Management. It combines with Keyrock to secure access to endpoints exposed by FIWARE Generic Enablers. Wilma listens for any request, authenticates it from Keyrock and stores it in its cache for a limited period of time. If a new request arrives, Wilma will first check in its cache and if any grant is stored, it will directly authenticate otherwise it will send the request to Keyrock for authentication. 
 
 .. _`Keyrock`: https://fiware-idm.readthedocs.io/en/latest/
 .. _`PEP Proxy Wilma`: https://fiware-pep-proxy.readthedocs.io/en/latest/
@@ -218,7 +218,7 @@ Terminology
 **Multiple IoT Device Interaction with FogFlow**
 
 
-.. figure:: figures/Security_Architecture.png
+.. figure:: figures/security_enhancement.png
 
 
 Note: Red markers represent IoT Device interaction with cloud and  green markers represent IoT Device interaction with Edge Node
