@@ -28,7 +28,7 @@ check the FIWARE Catalogue entry for
 
 -   [Background](#background)
 -   [Installation](#installation)
--   [Usage](#usage)
+-   [Tutorial](https://fogflow.readthedocs.io)
 -   [API](#api)
 -   [Testing](#testing)
 -   [Quality Assurance](#quality-assurance)
@@ -82,11 +82,6 @@ motivation, functionalities, and benefits of FogFlow.
 
 The instructions to install FogFlow can be found in the
 [Installation Guide](https://fogflow.readthedocs.io/en/latest/setup.html)
-
-## Usage
-
-Information about how to use FogFlow can be found in the
-[User & Programmers Manual](https://fogflow.readthedocs.io/en/latest/example1.html)
 
 ## API
 

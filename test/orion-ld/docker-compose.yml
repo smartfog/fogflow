@@ -1,0 +1,28 @@
+version: "3.3"
+services:
+  orion:
+      image: fiware/orion-ld
+      hostname: orion
+      container_name: fiware-orion
+      depends_on:
+          - mongo-db
+      ports:
+          - "1026:1026"
+      command: -dbhost mongo-db -logLevel DEBUG
+  
+  mongo-db:
+      image: mongo:3.6
+      hostname: mongo-db
+      container_name: db-mongo
+      expose:
+          - "27017"
+      ports:
+          - "27017:27017"
+      command: --nojournal
+  
+  tutorial:
+      image: fiware/tutorials.ngsi-ld
+      hostname: tutorial
+      container_name: fiware-tutorial
+      expose:
+          - 3000

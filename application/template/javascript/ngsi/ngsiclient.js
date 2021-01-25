@@ -182,8 +182,8 @@ var NGSI9Client = (function() {
         
         discoveryReq.restriction = {
             scopes: [{
-                scopeType: 'nearby',
-                scopeValue: nearby
+                type: 'nearby',
+                value: nearby
             }]
         };
     

@@ -1,7 +1,5 @@
 {
-    "coreservice_ip": "192.168.0.59",   
-    "external_hostip": "192.168.0.59",
-    "internal_hostip": "192.168.0.59", 
+    "my_hostip": "192.168.0.59",
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221

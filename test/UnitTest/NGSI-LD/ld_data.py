@@ -194,22 +194,42 @@ subdata3=\
 # Payload  to append additional attributes to an existing entity 
 subdata4=\
 {
-      "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-       },
+      "id": "urn:ngsi-ld:Vehicle:A100",
+      "type": "Vehicle",
       "brandName1": {
                           "type": "Property",
                           "value": "BMW"
        }
  }
 
+subdata4b=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A500",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "BMW"
+       }
+ }
+
+
+subdata4c=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A3000",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "BMW"
+       }
+ }
+
+
 # Payload  to patch  update specific attributes of an existing entity A100
 subdata5=\
 {
-        "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-         },
-        "brandName1": {
+      "id": "urn:ngsi-ld:Vehicle:A100",
+      "type": "Vehicle",
+      "brandName1": {
                            "type": "Property",
                            "value": "AUDI"
          }
@@ -218,180 +238,7 @@ subdata5=\
 # Payload  to update the value of a specific attribute of an existing entity with wrong payload
 subdata6=\
 {
-        "@context": {
-                         "brandName": "http://example.org/vehicle/brandName"
-         },
          "value": "MARUTI"
-  }
-
-# Payload to create a new context source registration, with context in link header
-subdata7=\
-{
-             "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
-             "type": "ContextSourceRegistration",
-             "name": "NameExample",
-             "description": "DescriptionExample",
-             "information": [
-             {
-                     "entities": [
-                      {
-                             "id": "urn:ngsi-ld:Vehicle:A456",
-                             "type": "Vehicle"
-                      }
-                   ],
-                     "properties": [
-                     "brandName",
-                     "speed"
-                   ],
-                     "relationships": [
-                     "isParked"
-                     ]
-             },
-             {
-                     "entities": [
-                     {
-                             "id": "downtown",
-                             "type": "OffStreetParking"
-                     }
-                   ]
-             }
-            ],
-             "endpoint": "http://127.0.0.1:8888/csource",
-             "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-             "timestamp": {
-                             "start": "2017-11-29T14:53:15"
-                             },
-             "expires": "2030-11-29T14:53:15"
-     }
-
-# Payload to create a new context source registration, with context in request payload
-subdata8=\
-{
-         "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4000",
-         "type": "ContextSourceRegistration",
-         "name": "NameExample",
-         "description": "DescriptionExample",
-         "information": [
-         {
-                 "entities": [
-                  {
-                         "id": "urn:ngsi-ld:Vehicle:A555",
-                         "type": "Vehicle"
-                  }
-                 ],
-                 "properties": [
-                                 "brandName",
-                                 "speed"
-                 ],
-                 "relationships": [
-                                 "isParked"
-                 ]
-         },
-         {
-                 "entities": [
-                  {
-                         "id": "town$",
-                         "type": "OffStreetParking"
-                  }
-                 ]
-         }
-         ],
-         "endpoint": "http://127.0.0.1:8888/csource",
-         "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-         "timestamp": {
-         "start": "2017-11-29T14:53:15"
-         },
-         "expires": "2030-11-29T14:53:15",
-         "@context": [
-
-         "https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",
-         {
-                 "Vehicle": "http://example.org/vehicle/Vehicle",
-                 "brandName": "http://example.org/vehicle/brandName",
-                 "brandName1": "http://example.org/vehicle/brandName1",
-                 "speed": "http://example.org/vehicle/speed",
-                 "totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-                 "reliability": "http://example.org/common/reliability",
-                 "OffStreetParking":  "http://example.org/parking/OffStreetParking",
-                 "availableSpotNumber":  "http://example.org/parking/availableSpotNumber",
-                 "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-                 "isParked": {
-                                 "@type": "@id",
-                                 "@id": "http://example.org/common/isParked"
-                 },
-                 "isNextToBuilding":    {
-                                 "@type":  "@id",
-                                 "@id":  "http://example.org/common/isNextToBuilding"
-                  },
-                 "providedBy":    {
-                                 "@type":  "@id",
-                                 "@id":  "http://example.org/common/providedBy"
-                 },
-                  "name":    "http://example.org/common/name"
-         }
-       ]
- }
-
-# Payload to update an existing context source registration, with context in request payload
-subdata9=\
-{
-         "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
-         "type": "ContextSourceRegistration",
-         "name": "NameExample",
-         "description": "DescriptionExample",
-         "information": [
-         {
-                 "entities": [
-                 {
-                         "id": "urn:ngsi-ld:Vehicle:A456",
-                         "type": "Vehicle"
-                 }
-               ],
-                 "properties": [
-                                 "brandName",
-                                 "speed",
-                                 "brandName1"
-               ],
-                 "relationships": [
-                                 "isParked"
-               ]
-         }
-       ],
-         "endpoint": "http://127.0.0.1:8888/csource",
-         "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-         "timestamp": {
-         "start": "2017-11-29T14:53:15"
-         },
-         "expires": "2030-11-29T14:53:15",
-         "@context": [
-
-                         "https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",
-                         {
-                                 "Vehicle": "http://example.org/vehicle/Vehicle",
-                                 "brandName": "http://example.org/vehicle/brandName",
-                                 "brandName1": "http://example.org/vehicle/brandName1",
-                                 "speed": "http://example.org/vehicle/speed",
-                                 "totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-                                 "reliability": "http://example.org/common/reliability",
-                                 "OffStreetParking":  "http://example.org/parking/OffStreetParking",
-                                 "availableSpotNumber":  "http://example.org/parking/availableSpotNumber",
-                                 "isParked": {
-                                                 "@type": "@id",
-                                                 "@id": "http://example.org/common/isParked"
-                                  },
-                                 "isNextToBuilding":  {
-                                                 "@type": "@id",
-                                                 "@id": "http://example.org/common/isNextToBuilding"
-                                  },
-                                 "providedBy": {
-                                                 "@type":  "@id",
-                                                 "@id":  "http://example.org/common/providedBy"
-                                  },
-                          "name": "http://example.org/common/name",
-                          "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-                          "expires":"http://uri.etsi.org/ngsi-ld/expires"
-                         }
-         ]
   }
 
 # Payload to create a new Subscription to with context in Link header
@@ -501,21 +348,55 @@ subdata13=\
 # Payload to update entity with different header and posting duplicate attribute
 subdata14=\
 {
-      "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-       },
+      "id": "urn:ngsi-ld:Vehicle:A800",
+      "type": "Vehicle",
       "brandName1": {
                           "type": "Property",
                           "value": "MARUTI"
        }
  }
 
+
+
+subdata14b=\
+{
+      "id": "Vehicle:A800",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "MARUTI"
+       }
+ }
+
+
+
+subdata14c=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A700",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "MARUTI"
+       }
+ }
+
+
+subdata14d=\
+{
+      "id": "urn:ngsi-ld:Vehicle:A900",
+      "type": "Vehicle",
+      "brandName1": {
+                          "type": "Property",
+                          "value": "MARUTI"
+       }
+ }
+
+
 # Payload to  Update entity with different headers and passing inappropriate payload
 subdata15=\
 {
-        "@context": {
-                        "brandName1": "http://example.org/vehicle/brandName1"
-         },
+        "id": "urn:ngsi-ld:Vehicle:A100",
+	"type": "Vehicle",
         "brandName1": {
                           
          }
@@ -567,73 +448,7 @@ subdata18=\
      }
 
 
-# Payload to update an existing context source registration which contains idPattern , with context in request payload regarding one entity
-subdata19=\
-{
-  "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
-  "type": "ContextSourceRegistration",
-  "name": "NameExample",
-  "description": "DescriptionExample",
-  "information": [
-    {
-      "entities": [
-        {
-          "id": "urn:ngsi-ld:Vehicle:A456",
-          "type": "Vehicle"
-        }
-      ],
-      
-      "relationships": [
-        "isParked"
-      ]
-    },
-    {
-      "entities": [
-        {
-          "idPattern": "downtown$",
-          "type": "OffStreetParking"
-        }
-      ]
-    }
-  ],
-  "endpoint": "http://127.0.0.1:8888/csource",
-  "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-  "timestamp": {
-    "start": "2017-11-29T14:53:15"
-  },
-  "expires": "2030-11-29T14:53:15",
-"@context": [
-
-                "https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
-    {
-    "Vehicle": "http://example.org/vehicle/Vehicle",
-    "brandName": "http://example.org/vehicle/brandName",
-    "brandName1": "http://example.org/vehicle/brandName1",
-    "speed": "http://example.org/vehicle/speed",
-    "totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-    "reliability": "http://example.org/common/reliability",
-    "OffStreetParking":    "http://example.org/parking/OffStreetParking",    
-    "availableSpotNumber":    "http://example.org/parking/availableSpotNumber",    
-    "isParked": {
-        "@type": "@id",
-        "@id": "http://example.org/common/isParked"
-    },
-    "isNextToBuilding":  {    
-        "@type":  "@id",    
-        "@id":  "http://example.org/common/isNextToBuilding"    
-    },    
-    "providedBy": {    
-        "@type":  "@id",    
-        "@id":  "http://example.org/common/providedBy"    
-    },    
-    "name": "http://example.org/common/name",
-    "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-    "expires":"http://uri.etsi.org/ngsi-ld/expires"
-}
-]
-}
-
-# Payload to update a specific subscription based on subscription id, with context in Link header and different payload
+#Payload to update a specific subscription based on subscription id, with context in Link header and different payload
 subdata20=\
 {
              "id": "urn:ngsi-ld:Subscription:7",
@@ -650,172 +465,6 @@ subdata20=\
               }
            }
        }
-
-# Payload  to create registration  with change in only 2nd  entity in payload
-subdata21=\
-{
-             "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4001",
-             "type": "ContextSourceRegistration",
-             "name": "NameExample",
-             "description": "DescriptionExample",
-             "information": [
-             {
-                     "entities": [
-                      {
-                             "id": "urn:ngsi-ld:Vehicle:A456",
-                             "type": "Vehicle"
-                      }
-                   ],
-                     "properties": [
-                     "brandName",
-                     "speed"
-                   ],
-                     "relationships": [
-                     "isParked"
-                     ]
-             },
-             {
-                     "entities": [
-                     {
-                             "id": "uptown$",
-                             "type": "OffStreetParking"
-                     }
-                   ]
-             }
-            ],
-             "endpoint": "http://127.0.0.1:8888//csource",
-             "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-             "timestamp": {
-                             "start": "2017-11-29T14:53:15"
-                             },
-             "expires": "2030-11-29T14:53:15"
-     }
-
-# Payload to create registration with only 1 entity in payload
-subdata22=\
-{
-             "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4001",
-             "type": "ContextSourceRegistration",
-             "name": "NameExample",
-             "description": "DescriptionExample",
-             "information": [
-             {
-                     "entities": [
-                      {
-                             "id": "urn:ngsi-ld:Vehicle:A666",
-                             "type": "Vehicle"
-                      }
-                   ],
-                     "properties": [
-                     "brandName",
-                     "speed"
-                   ],
-                     "relationships": [
-                     "isParked"
-                     ]
-             }
-            ],
-             "endpoint": "http://127.0.0.1:8888/csource",
-             "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-             "timestamp": {
-                             "start": "2017-11-29T14:53:15"
-                             },
-             "expires": "2030-11-29T14:53:15"
-     }
-
-# Payload  to update the corresponding csource registration using patch method
-subdata23=\
-{
-  "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4001",
-  "type": "ContextSourceRegistration",
-  "name": "NameExample",
-  "description": "DescriptionExample",
-  "information": [
-    {
-      "entities": [
-        {
-          "id": "urn:ngsi-ld:Vehicle:A666",
-          "type": "Vehicle"
-        }
-      ],
-      "properties": [
-        "brandName",
-        "speed",
-        "brandName1"
-      ],
-      "relationships": [
-        "isParked"
-      ]
-    }
-  ],
-  "endpoint": "http://127.0.0.1:8888/csource",
-  "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-  "timestamp": {
-    "start": "2017-11-29T14:53:15"
-  },
-  "expires": "2030-11-29T14:53:15",
-"@context": [
-
-                "https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
-    {
-    "Vehicle": "http://example.org/vehicle/Vehicle",
-    "brandName": "http://example.org/vehicle/brandName",
-    "brandName1": "http://example.org/vehicle/brandName1",
-    "speed": "http://example.org/vehicle/speed",
-    "totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-    "reliability": "http://example.org/common/reliability",
-    "OffStreetParking":    "http://example.org/parking/OffStreetParking",    
-    "availableSpotNumber":    "http://example.org/parking/availableSpotNumber",    
-    "isParked": {
-        "@type": "@id",
-        "@id": "http://example.org/common/isParked"
-    },
-    "isNextToBuilding":  {    
-        "@type":  "@id",    
-        "@id":  "http://example.org/common/isNextToBuilding"    
-    },    
-    "providedBy": {    
-        "@type":  "@id",    
-        "@id":  "http://example.org/common/providedBy"    
-    },    
-    "name": "http://example.org/common/name",
-    "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-    "expires":"http://uri.etsi.org/ngsi-ld/expires"
-}
-]
-}
-
-#Payload to create csource registration with missing attributes
-subdata24=\
-{
-             "id": "urn:ngsi-ld:ContextSourceRegistration:csr1a4002",
-             "type": "ContextSourceRegistration",
-             "name": "NameExample",
-             "description": "DescriptionExample",
-             "information": [
-             {
-                     "entities": [
-                      {
-                             "id": "urn:ngsi-ld:Vehicle:A662",
-                             "type": "Vehicle"
-                      }
-                   ],
-                     "properties": [
-                     "brandName",
-                     "speed"
-                   ],
-                     "relationships": [
-                     "isParked"
-                     ]
-             }
-            ],
-             "endpoint": "http://127.0.0.1:8888/csource",
-             "location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-             "timestamp": {
-                             "start": "2017-11-29T14:53:15"
-                             },
-             "expires": "2030-11-29T14:53:15"
-     }
 
 # Inappropriate payload to perform patch update 
 subdata25=\
@@ -1231,11 +880,69 @@ subdata40=\
  }
 }
 
+# for update request
 subdata41=\
 {
-	"@context": {
-		"brandName": "brandName"
-	},
-	"value": "BMW1"
+	"id": "urn:ngsi-ld:Vehicle:A4000",
+        "type": "Vehicle",
+	"brandName1": {
+		"type" : "Property",
+		"value": "BMW1"
+	}
 }
 
+# to test if instance id is fetched or not
+subdata42=\
+{
+        "id": "urn:ngsi-ld:Vehicle:C001",
+        "type": "Vehicle",
+        "brandName1": {
+                "type" : "Property",
+                "value": "BMW1",
+                "instanceId": "instance1"
+        }
+}
+
+# to test if datasetId is fetched or not
+subdata43=\
+{
+        "id": "urn:ngsi-ld:Vehicle:C002",
+        "type": "Vehicle",
+        "brandName1": {
+                "type" : "Property",
+                "value": "BMW1",
+                "datasetId": "dataset1"
+        }
+}
+
+# to test if error is thrown if entities are missing
+subdata44=\
+{
+             "id": "urn:ngsi-ld:Subscription:79",
+             "type": "Subscription",
+             "watchedAttributes": ["brandName"],
+             "notification": {
+                             "attributes": ["brandName"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+      }
+
+# to test that no other type is taken for NGSI-LD subscription other than Subscription
+subdata45=\
+{
+             "id": "urn:ngsi-ld:Subscription:80",
+             "type": "SubscriptionXY",
+             "watchedAttributes": ["brandName"],
+             "notification": {
+                             "attributes": ["brandName"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+      }

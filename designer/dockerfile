@@ -11,4 +11,5 @@ ADD main.js /app
 ADD dgraph.js /app
 ADD ./public /app/public
 
+
 ENTRYPOINT [ "node", "main.js" ]

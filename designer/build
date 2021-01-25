@@ -2,6 +2,7 @@
 
 docker build -t "fogflow/designer"  .
 
+#it is not possible to build the designer docker image for arm after adding dgraph
 #docker build -f dockerfile4arm -t "fogflow/designer:arm"  .
 
 

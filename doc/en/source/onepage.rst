@@ -34,7 +34,6 @@ This is because a subscription with Orion Context Broker as the reference URL ha
 
 
 
-
 Here are the prerequisite commands for running FogFlow:
 
 1. docker
@@ -72,12 +71,14 @@ Download the docker-compose file and the configuration files as below.
 
 	# the docker-compose file to start all FogFlow components on the cloud node
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/docker-compose.yml
-
+	
 	# the configuration file used by all FogFlow components
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/config.json
-
+	
 	# the configuration file used by the nginx proxy
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/nginx.conf
+
+
 	
 Change the IP configuration accordingly
 -------------------------------------------------------------
@@ -86,40 +87,23 @@ Change the IP configuration accordingly
 
 You need to change the following IP addresses in config.json according to your own environment.
 
-- **coreservice_ip**: it is used by all FogFlow edge nodes to access the core services (e.g., nginx on port 80 and rabbitmq on port 5672) on the FogFlow cloud node; usually this will be the public IP of the FogFlow cloud node.
-- **external_hostip**: for the configuration of the FogFlow cloud node, this is the same as coreservice_ip used by the components (Cloud Worker and Cloud Broker) to access the running FogFlow core services;        
-- **internal_hostip**: this is the IP of your default docker bridge, which is the "docker0" network interface on your Linux host. For the docker engine on Windows or Mac OS, there is no "docker0" network interface; instead, you need to use the special domain name "host.docker.internal".  
-
+- **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this. 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
 
-Change the IP configuration of elasticsearch and metricbeat accordingly
----------------------------------------------------------------------------
-
-You need to change the following IP addresses in docker-compose.yml according to your own environment.
-
-- **output.elasticsearch.hosts**: it is the host location of elasticsearch on which metricbeat shares data in csv format.
-
-Also need to change the following IP addresses in metricbeat.docker.yml according to your own environment.
-
-- **name**: It is the name given for uniqueness for cloud nodes from egde nodes on grafana metric dashboard. You can mention any name in place of IP address.
-
-- **hosts**: It is the host location of elasticsearh database, where metricbeat is going to share metric data.
-
-
 .. important:: 
 
-	please DO NOT use "127.0.0.1" as the IP address of **coreservice_ip** and **external_hostip**, because they will be used by a 
+	please DO NOT use "127.0.0.1" as the IP address of **my_hostip**, because it is only accessible to a 
 	running task inside a docker container. 
 	
-	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 
-	80 and 5672 for TCP
+	**Firewall rules:** to make your FogFlow web portal accessible, the following ports 80 and 5672 over TCP must be open. 
 
 	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
-	to replace coreservice_ip, external_hostip, and internal_hostip in the configuration file
+	as my_hostip in the configuration file
 
+	If you need to change the port number(s), please make sure the change is consistence in all these three configuration files. 
 
 
 Start all Fogflow components 
@@ -151,18 +135,14 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 	docker ps -a
 	
-	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                 NAMES
-	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                       fogflow_nginx_1
-	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                 fogflow_cloud_worker_1
-	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                               fogflow_master_1
-	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp       fogflow_designer_1
-	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                               fogflow_cloud_broker_1
-	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp     fogflow_rabbitmq_1
-	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                               fogflow_discovery_1
-        399958d8d88a      grafana/grafana:6.5.0   "/run.sh"                29 seconds ago      Up 27 seconds       0.0.0.0:3003->3000/tcp                               fogflow_grafana_1
-        9f99315a1a1d      fogflow/elasticsearch:7.5.1 "/usr/local/bin/dock…" 32 seconds ago    Up 29 seconds       0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp       fogflow_elasticsearch_1
-        57eac616a67e      fogflow/metricbeat:7.6.0 "/usr/local/bin/dock…"   32 seconds ago     Up 29 seconds                                                                  fogflow_metricbeat_1
-
+	795e6afe2857   nginx:latest            "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
+	33aa34869968   fogflow/worker:3.2      "/worker"                About a minute ago   Up About a minute                                                                                                    fogflow_cloud_worker_1
+	e4055b5cdfe5   fogflow/master:3.2      "/master"                About a minute ago   Up About a minute   0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
+	cdf8d4068959   fogflow/designer:3.2    "node main.js"           About a minute ago   Up About a minute   0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
+	56daf7f078a1   fogflow/broker:3.2      "/broker"                About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
+	51901ce6ee5f   fogflow/discovery:3.2   "/discovery"             About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
+	51eff4975621   dgraph/standalone       "/run.sh"                About a minute ago   Up About a minute   0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
+	eb31cd255fde   rabbitmq:3              "docker-entrypoint.s…"   About a minute ago   Up About a minute   4369/tcp, 5671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                           fogflow_rabbitmq_1
 
 .. important:: 
 
@@ -250,7 +230,7 @@ Send a curl request to the FogFlow broker for entity update:
 
 	
 	curl -iX POST \
-		  'http://coreservice_ip/ngsi10/updateContext' \
+		  'http://my_hostip/ngsi10/updateContext' \
 		  -H 'Content-Type: application/json' \
 		  -d '
 		{
@@ -300,82 +280,5 @@ Check if a Stream is created under "Stream" in System Management.**
 .. figure:: figures/fog-function-streams.png
 
 
-
-Integrate FogFlow with Orion Broker
-======================================
-
-
-Start Up Orion
--------------------------------------------------------------
-
-You may follow the orion docs to set up a Orion Context Broker instance from here: `Installing Orion`.
-
-.. _`Installing Orion`: https://fiware-orion.readthedocs.io/en/master/admin/install/index.html
-
-
-You may also setup Orion on docker using below commands.(docker is required this method)
-Note: Orion container has a dependency on MongoDB database.
-
-**Prerequisite:** Docker should be installed.
-
-First launch MongoDB container using below command:
-
-.. code-block:: console    
-
-	sudo docker run --name mongodb -d mongo:3.4
-
-
-And then run Orion with this command
-
-.. code-block:: console    
-
-	sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
-
-
-Check that everything works with
-
-.. code-block:: console    
-
-	curl http://<Orion IP>:1026/version
-
-Note: Allow port 1026 in firewall for public access.
-
-
-
-Issue a subscription to forward the generated result to Orion Context Broker
-----------------------------------------------------------------------------------
-
-Use the following curl request to subscribe Fogflow Broker to FIWARE Orion:
-
-.. code-block:: console    
-
-	curl -iX POST \
-	  'http://coreservice_ip/ngsi10/subscribeContext' \
-	  -H 'Content-Type: application/json'  \
-	  -H 'Destination: orion-broker'  \
-	  -d '
-	{
-	  "entities": [
-	    {
-	      "id": ".*",
-	      "type": "Result",
-	      "isPattern": true
-	    }
-	  ],
-	  "reference": "http://<Orion IP>:1026/v2/op/notify"
-	}'
-
-
-Please note that this subscription request does not use any restrictions and attributes, it is a general subscription request based of entity type.
-
-
-Query the result from Orion Context Broker
--------------------------------------------------------------
-
-Visit the following URL in your browser and search for the desired context entities:
-
-.. code-block:: console    
-
-	curl http://<Orion IP>:1026/v2/entities/
 
 

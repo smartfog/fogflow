@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	. "github.com/smartfog/fogflow/common/datamodel"
 	. "github.com/smartfog/fogflow/common/ngsi"
@@ -39,10 +40,9 @@ func (r *RegistryConfiguration) IsConfigured() bool {
 }
 
 type Config struct {
-	WebPortalIP   string           `json:"webportal_ip"`
 	CoreSerivceIP string           `json:"coreservice_ip"`
-	ExternalIP    string           `json:"external_hostip"`
-	InternalIP    string           `json:"internal_hostip"`
+	ExternalIP    string           `json:"external_ip"`
+	InternalIP    string           `json:"my_hostip"`
 	Location      PhysicalLocation `json:"physical_location"`
 	SiteID        string           `json:"site_id"`
 	Logging       struct {
@@ -83,30 +83,60 @@ type Config struct {
 	} `json:"prometheus"`
 }
 
+func (c *Config) GetDiscoveryURL() string {
+	protocol := "http"
+	port := c.Discovery.HTTPPort
+	if c.HTTPS.Enabled == true {
+		protocol = "https"
+		port = c.Discovery.HTTPSPort
+	}
+
+	hostip := c.InternalIP
+	if c.CoreSerivceIP != "" {
+		hostip = c.CoreSerivceIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d/ngsi9", protocol, hostip, port)
+}
+
+func (c *Config) GetBrokerURL4Task() string {
+	return "http://" + c.InternalIP + ":" + strconv.Itoa(c.Broker.HTTPPort) + "/ngsi10"
+}
+
+func (c *Config) GetBrokerURL() string {
+	protocol := "http"
+	port := c.Broker.HTTPPort
+	if c.HTTPS.Enabled == true {
+		protocol = "https"
+		port = c.Broker.HTTPSPort
+	}
+
+	hostip := c.InternalIP
+	if c.ExternalIP != "" {
+		hostip = c.ExternalIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d/ngsi10", protocol, hostip, port)
+}
+
+func (c *Config) GetMyAccessibleIP() string {
+	return c.InternalIP
+}
+
+func (c *Config) GetMessageBus() string {
+	hostip := c.InternalIP
+	if c.CoreSerivceIP != "" {
+		hostip = c.CoreSerivceIP
+	}
+
+	messageBus := fmt.Sprintf("amqp://%s:%s@%s:%d/", c.RabbitMQ.Username, c.RabbitMQ.Password, hostip, c.RabbitMQ.Port)
+	return messageBus
+}
+
 var logTargets map[string]io.Writer = map[string]io.Writer{
 	"stdout":  os.Stdout,
 	"stderr":  os.Stderr,
 	"discard": ioutil.Discard,
-}
-
-func (c *Config) GetDiscoveryURL(flag4HTTPS bool) string {
-	if flag4HTTPS == false {
-		discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.HTTPPort)
-		return discoveryURL
-	}
-
-	if c.HTTPS.Enabled == true {
-		discoveryURL := fmt.Sprintf("https://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.HTTPSPort)
-		return discoveryURL
-	} else {
-		discoveryURL := fmt.Sprintf("http://%s:%d/ngsi9", c.CoreSerivceIP, c.Discovery.HTTPPort)
-		return discoveryURL
-	}
-}
-
-func (c *Config) GetMessageBus() string {
-	messageBus := fmt.Sprintf("amqp://%s:%s@%s:%d/", c.RabbitMQ.Username, c.RabbitMQ.Password, c.CoreSerivceIP, c.RabbitMQ.Port)
-	return messageBus
 }
 
 func (c *Config) SetLogTargets() {

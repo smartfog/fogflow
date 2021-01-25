@@ -1152,16 +1152,13 @@ The following figure shows a brief overview of how the APIs in current scope wil
 
 .. figure:: figures/ngsild_architecture.png
 
-
-
-
 Entities API
 ------------
 For the purpose of interaction with Fogflow, IOT devices approaches broker with entity creation request where it is resolved as per given context. Broker further forwards the registration request to Fogflow Discovery in correspondence to the created entity.
 
 .. note:: Use port 80 for accessing the cloud broker, whereas for edge broker, the default port is 8070. The localhost is the coreservice IP for the system hosting fogflow. 
 
-**POST /ngsi-ld/v1/entities**
+**POST /ngsi-ld/v1/entities/**
 
 **a. To create NGSI-LD context entity, with context in Link in Header**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1213,75 +1210,9 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 			                 "coordinates": [-8.5, 41.2]
 		               }
 	        }   
-        }' 
-
-
-
-
-**b. To create entity with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-Accept            application/ld+json
-=============     ======================================
-
-**Request**
-
-.. code-block:: console
-   
-    curl -iX POST \
-     'http://localhost:80/ngsi-ld/v1/entities/' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -d'
-        {
-	          "@context": [{
-		  "Vehicle": "http://example.org/vehicle/Vehicle",
-		  "brandName": "http://example.org/vehicle/brandName",
-		  "speed": "http://example.org/vehicle/speed",
-		  "isParked": {
-			         "@type": "@id",
-			         "@id": "http://example.org/common/isParked"
-		  },
-		  "providedBy": {
-			           "@type": "@id",
-			           "@id": "http://example.org/common/providedBy"
-		   }
-	       }],
-	       "id": "urn:ngsi-ld:Vehicle:A4580",
-	       "type": "Vehicle",
-	       "brandName": {
-		              "type": "Property",
-		              "value": "Mercedes"
-	        },
-	        "isParked": {
-		              "type": "Relationship",
-		              "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
-		              "observedAt": "2017-07-29T12:00:04",
-		              "providedBy": {
-			                      "type": "Relationship",
-			                      "object": "urn:ngsi-ld:Person:Bob"
-		               }
-	         },
-	         "speed": {
-		             "type": "Property",
-		             "value": 80
-	          },
-	          "createdAt": "2017-07-29T12:00:04",
-	          "location": {
-		                "type": "GeoProperty",
-		                "value": {
-			                    "type": "Point",
-			                    "coordinates": [-8.5, 41.2]
-		                 }
-	            } 
-           }'
-
-
-**c.  To create a new NGSI-LD context entity, with context in Link header and request payload is already expanded**
+        }'
+	
+**b.  To create a new NGSI-LD context entity, with context in Link header and request payload is already expanded**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 =============     ======================================
@@ -1380,16 +1311,16 @@ Accept            application/ld+json
 
         }'
 
-
-**d. To append additional attributes to an existing entity**
+**c. To append additional attributes to an existing entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**POST /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs**
+**POST /ngsi-ld/v1/entities/**
 
 =============     ======================================
 key               Value
 =============     ======================================
 Content-Type      application/json
+Accept            application/ld+json
 =============     ======================================
 
 **Request**
@@ -1397,77 +1328,55 @@ Content-Type      application/json
 .. code-block:: console
 
        curl -iX POST \
-       'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs' \
+       'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
+       -H 'Accept: application/ld+json' \
+       -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \       
        -d'
         {
-	     "@context": {
-		               "brandName1": "http://example.org/vehicle/brandName1"
-	      },
-	     "brandName1": {
+	      "id": ""urn:ngsi-ld:Vehicle:A100",
+              "type": "Vehicle",
+
+	     ""brandName1"": {
 		                 "type": "Property",
 		                 "value": "BMW"
 	      }
         }'
 
-
-**e. To update specific attributes of an existing entity**
+**d. To update specific attributes of an existing entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**PATCH /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs**
+**POST /ngsi-ld/v1/entities/**
 
 =============     ======================================
 key               Value
 =============     ======================================
 Content-Type      application/json
+Accept            application/ld+json
 =============     ======================================
 
 **Request**
 
 .. code-block:: console
 
-        curl -iX PATCH \
-       'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs' \
+        curl -iX POST \
+       'http://localhost:80/ngsi-ld/v1/entities/' \
        -H 'Content-Type: application/json' \
+       -H 'Accept: application/ld+json' \
+       -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
        -d'
         {
-	       "@context": {
-		               "brandName1": "http://example.org/vehicle/brandName1"
-	        },
-	       "brandName1": {
+		"id": ""urn:ngsi-ld:Vehicle:A100",
+	        "type": "Vehicle",
+
+	       "brandName": {
 		                  "type": "Property",
 		                  "value": "AUDI"
 	        }
-         }'
-
-**f. To update the value of a specific attribute of an existing entity**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**PATCH /ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName**
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-=============     ======================================
-
-**Request**
-
-.. code-block:: console
-
-        curl -iX PATCH \
-       'http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName' \
-       -H 'Content-Type: application/json' \
-       -d'
-        {
-	       "@context": {
-		                "brandName1": "http://example.org/vehicle/brandName1"
-	        },
-	        "value": "BMW"
-         }'
+	}'
 
 
-**g. To delete an NGSI-LD context entity**
+**e. To delete an NGSI-LD context entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/entities/#eid**
@@ -1485,7 +1394,7 @@ eid              Entity Id
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100  -H 'Content-Type: application/json' -H 'Accept: application/ld+json'
 
 
-**h. To delete an attribute of an NGSI-LD context entity**
+**f. To delete an attribute of an NGSI-LD context entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **DELETE /ngsi-ld/v1/entities/#eid/attrs/#attrName**
@@ -1503,8 +1412,7 @@ attrName         Attribute Name
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A100/attrs/brandName1
 
-
-**i. To retrieve a specific entity**
+**g. To retrieve a specific entity**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **GET /ngsi-ld/v1/entities/#eid**
@@ -1520,460 +1428,11 @@ eid              Entity Id
 .. code-block:: console
 
    curl http://localhost:80/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A4569
-
-
-**j. To retrieve entities by attributes**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/entities?attrs=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Attriute Value
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?attrs=http://example.org/vehicle/brandName -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
-
-
-
-**k. To retrieve a specific entity by ID and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/entities?id=(value 1)&type=(value 2)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-value 1          Attribute Value of Entity
-Value 2          Type Value of Entity
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4569&type=http://example.org/vehicle/Vehicle
-
-
-**l. To retrieve a specific entity by Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/entities?type=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Type Value
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?type=http://example.org/vehicle/Vehicle
-
-
-**m. To retrieve a specific entity by Type, context in Link Header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET ngsi-ld/v1/entities?type=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Type Value
-==============   ============================
-
-**Header Format**
-
-=============     ===========================================================
-key               Value
-=============     ===========================================================
-Content-Type      application/json
-Accept            application/ld+json
-Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
-                  type="application/ld+json"
-=============     ===========================================================
-
-**Example:**
-
-.. code-block:: console
-
-   curl -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'  http://localhost:80//ngsi-ld/v1/entities?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
-
-
-**n. To retrieve a specific entity by IdPattern and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET : /ngsi-ld/v1/entities?idPattern=(Value 1)&type=(Value 2)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-value 1          idPattern Value of Entity
-Value 2          Type Value of Entity
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/entities?idPattern=urn:ngsi-ld:Vehicle:A.*&type=http://example.org/vehicle/Vehicle
-
-
-Csource Registration API
----------------------------
-
-When the registration request approaches broker, it stores the registration detail with itself and forwards a request towards discovery. Discovery looks for the subscriber and initiate the process of notifying them, about the availability of data at specific broker.
-
-**POST /ngsi-ld/v1/csourceRegistrations**
-
-**a. To create a new context source registration, with context in link header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-=============     ===========================================================
-key               Value
-=============     ===========================================================
-Content-Type      application/json
-Accept            application/ld+json
-Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
-                  type="application/ld+json"
-=============     ===========================================================
-
-**Request**
-
-.. code-block:: console
-
-   curl -iX POST\
-     'http://localhost:80/ngsi-ld/v1/csourceRegistrations' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-	{
-  		"id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3459",
-  		"type": "ContextSourceRegistration",
-  		"name": "NameExample",
-  		"description": "DescriptionExample",
-  		"information": [
-    		{
-      			"entities": [
-       			 {
-          			"id": "urn:ngsi-ld:Vehicle:A456",
-          			"type": "Vehicle"
-        		 }
-                      ],
-      			"properties": [
-        		"brandName",
-        		"speed"
-      		      ],
-      			"relationships": [
-        		"isParked"
-      			]
-    		},
-    		{
-      			"entities": [
-        		{
-          			"idPattern": ".*downtown$",
-          			"type": "OffStreetParking"
-        		}
-      		      ]
-    		}
-  	       ],
-  		"endpoint": "http://my.csource.org:1026",
-  		"location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-  		"timestamp": {
-    				"start": "2017-11-29T14:53:15"
-  				},
-  		"expires": "2030-11-29T14:53:15"
-	}'
-
-
-**b. To create a new context source registration, with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-=============     ======================================
-
-**Request**
-
-.. code-block:: console
-
-        curl -iX POST \
-       'http://localhost:80/ngsi-ld/v1/csourceRegistrations' \
-       -H 'Content-Type: application/json' \
-       -d'
-	{
-  		"id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3458",
-  		"type": "ContextSourceRegistration",
-  		"name": "NameExample",
-  		"description": "DescriptionExample",
-  		"information": [
-    		{
-      			"entities": [
-        		 {
-          			"id": "urn:ngsi-ld:Vehicle:A456",
-          			"type": "Vehicle"
-        		 }
-      			],
-      			"properties": [
-        				"brandName",
-        				"speed"
-      			],
-      			"relationships": [
-        				"isParked"
-      			]
-    		},
-    		{
-      			"entities": [
-        		 {
-          			"idPattern": ".*downtown$",
-          			"type": "OffStreetParking"
-        		 }
-      			]
-    		}
-  		],
-  		"endpoint": "http://my.csource.org:1026",
-  		"location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-  		"timestamp": {
-    		"start": "2017-11-29T14:53:15"
-  		},
-  		"expires": "2030-11-29T14:53:15",
-		"@context": [
-
-		"https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
-    		{
-    			"Vehicle": "http://example.org/vehicle/Vehicle",
-    			"brandName": "http://example.org/vehicle/brandName",
-    			"brandName1": "http://example.org/vehicle/brandName1",
-    			"speed": "http://example.org/vehicle/speed",
-    			"totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-    			"reliability": "http://example.org/common/reliability",
-    			"OffStreetParking":  "http://example.org/parking/OffStreetParking",    
-    			"availableSpotNumber":  "http://example.org/parking/availableSpotNumber",
-     			"timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-    			"isParked": {
-        				"@type": "@id",
-        				"@id": "http://example.org/common/isParked"
-    			},
-    			"isNextToBuilding":    {    
-        				"@type":  "@id",    
-        				"@id":  "http://example.org/common/isNextToBuilding"    
-   			 },    
-    			"providedBy":    {    
-        				"@type":  "@id",    
-       					"@id":  "http://example.org/common/providedBy"    
-    			},    
-   			 "name":    "http://example.org/common/name"    
-		}
-              ]
-	}'
-
-
-**c. To update an existing context source registration, with context in request payload**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-
-**PATCH /ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458**
-
-=============     ======================================
-key               Value
-=============     ======================================
-Content-Type      application/json
-=============     ======================================   
-
-**Request**
-
-.. code-block:: console
-
-        curl -iX PATCH \
-       'http://localhost:80/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458' \
-       -H 'Content-Type: application/json' \
-       -d'
-	{
-  		"id": "urn:ngsi-ld:ContextSourceRegistration:csr1a3458",
-  		"type": "ContextSourceRegistration",
-  		"name": "NameExample",
-  		"description": "DescriptionExample",
-  		"information": [
-    		{
-      			"entities": [
-        		{
-          			"id": "urn:ngsi-ld:Vehicle:A456",
-          			"type": "Vehicle"
-        		}
-      		      ],
-      			"properties": [
-        				"brandName",
-        				"speed",
-        				"brandName1"
-      		      ],
-      			"relationships": [
-        				"isParked"
-      		      ]
-    		},
-    		{
-      			"entities": [
-        		{
-          			"idPattern": ".*downtown$",
-          			"type": "OffStreetParking"
-        		}
-      		      ]
-    		}
-  	      ],
-  		"endpoint": "http://my.csource.org:1026",
-  		"location": "{ \"type\": \"Point\", \"coordinates\": [-8.5, 41.2] }",
-  		"timestamp": {
-    		"start": "2017-11-29T14:53:15"
-  		},
-  		"expires": "2030-11-29T14:53:15",
-		"@context": [
-
-                		"https://forge.etsi.org/gitlab/NGSI-LD/NGSI-LD/raw/master/coreContext/ngsi-ld-core-context.jsonld",    
-    				{
-    					"Vehicle": "http://example.org/vehicle/Vehicle",
-    					"brandName": "http://example.org/vehicle/brandName",
-    					"brandName1": "http://example.org/vehicle/brandName1",
-    					"speed": "http://example.org/vehicle/speed",
-    					"totalSpotNumber": "http://example.org/parking/totalSpotNumber",
-    					"reliability": "http://example.org/common/reliability",
-    					"OffStreetParking":  "http://example.org/parking/OffStreetParking",    
-    					"availableSpotNumber":  "http://example.org/parking/availableSpotNumber",    
-    					"isParked": {
-        						"@type": "@id",
-        						"@id": "http://example.org/common/isParked"
-    					 },
-    					"isNextToBuilding":  {    
-        						"@type": "@id",    
-        						"@id": "http://example.org/common/isNextToBuilding"    
-    					 },    
-    					"providedBy": {    
-        						"@type":  "@id",    
-        						"@id":  "http://example.org/common/providedBy"    
-    					 },    
-    				 "name": "http://example.org/common/name",
-    				 "timestamp": "http://uri.etsi.org/ngsi-ld/timestamp",
-    				 "expires":"http://uri.etsi.org/ngsi-ld/expires"
-				}
-		]
-	 }'
-
-
-**d. To delete an existing context source registration based on registration id**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**DELETE /ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:#contRegid**
-
-==============   ============================
-Param		 Description
-==============   ============================
-contRegid        Context Registration Id
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl -iX DELETE http://localhost:80/ngsi-ld/v1/csourceRegistrations/urn:ngsi-ld:ContextSourceRegistration:csr1a3458
-
-
-**e. To get a registration by Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/csourceRegistrations?type=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Type Value
-==============   ============================
-
-**Example:** 
-
-.. code-block:: console
-
-   curl -iX GET http://localhost:80/ngsi-ld/v1/csourceRegistrations?type=http://example.org/vehicle/Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
-
-
-**f. To get a registration by Type, context in Link Header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/csourceRegistrations?type=(Value 1)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Type Value
-==============   ============================
-
-**Header Format**
-
-=============     ===========================================================
-key               Value
-=============     ===========================================================
-Content-Type      application/json
-Accept            application/ld+json
-Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
-                  type="application/ld+json"
-=============     ===========================================================
-
-**Example:**
-
-.. code-block:: console
-
-        curl -iX GET  -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' http://localhost:80/ngsi-ld/v1/csourceRegistrations?type=Vehicle -H 'Content-Type: application/ld+json' -H 'Accept: application/ld+json'
-
-**g. To get a registration by ID and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/csourceRegistrations?id=(Value 1)&type=(Value 2)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          Registration ID Value of Entity
-Value 2          Type Value of Entity
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/csourceRegistrations?id=urn:ngsi-ld:Vehicle:C1234&type=http://example.org/vehicle/Vehicle
-
-
-**h. To get a registration by IdPattern and Type**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**GET /ngsi-ld/v1/csourceRegistrations?idPattern=(Value 1)&type=(Value 2)**
-
-==============   ============================
-Param		 Description
-==============   ============================
-Value 1          idPattern Value of Entity
-Value 2          Type Value of Entity
-==============   ============================
-
-**Example:**
-
-.. code-block:: console
-
-   curl http://localhost:80/ngsi-ld/v1/csourceRegistrations?idPattern=urn:ngsi-ld:Vehicle:C.*&type=http://example.org/vehicle/Vehicle
-
-
+   
 Subscription API
 -------------------
 
 A new subscription is issued by the subscriber which is enrouted to broker where the details of subscriber is stored for notification purpose. The broker initiate a request to Fogflow Discovery, where this is registered as new subscription and looks for availabltiy of corresponding data. On receiving data is passes the information back to subscribing broker.
-
 
 **a. To create a new Subscription to with context in Link header**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -2001,8 +1460,9 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
       -d '
        {
 		"type": "Subscription",
+		"id"  : "urn:ngsi-ld:Subscription:71",
 		"entities": [{
-				"idPattern": ".*",
+				"id": "urn:ngsi-ld:Vehicle:71",
 				"type": "Vehicle"
 		}],
 		"watchedAttributes": ["brandName"],
@@ -2017,6 +1477,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 	 }'
 
 
+
 **b. To retrieve all the subscriptions**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -2026,7 +1487,7 @@ Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-
 
 .. code-block:: console
 
-   curl http://localhost:80/ngsi-ld/subscriptions/ -H 'Accept: application/ld+json'
+   curl http://localhost:80/ngsi-ld/v1/subscriptions/ -H 'Accept: application/ld+json'
 
 
 **c. To retrieve a specific subscription based on subscription id**
@@ -2044,61 +1505,9 @@ sid              subscription Id
 
 .. code-block:: console
 
-   curl http://localhost:80/ngsi-ld/subscriptions/urn:ngsi-ld:Subscription:71
-
-
-**d. To update a specific subscription based on subscription id, with context in Link header**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-**PATCH  /ngsi-ld/v1/subscriptions/#sid**
-
-==============   ============================
-Param		 Description
-==============   ============================
-sid              subscription Id
-==============   ============================
-
-
-**Header Format**
-
-=============     ===========================================================
-key               Value
-=============     ===========================================================
-Content-Type      application/ld+json
-Link              <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; 
-                  type="application/ld+json"
-=============     ===========================================================
-
-
-**Request**
-
-.. code-block:: console
-
-   curl -iX POST\
-     'http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71' \
-      -H 'Content-Type: application/ld+json' \
-      -H 'Link: <{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-       {
-	 	"id": "urn:ngsi-ld:Subscription:7",
-	 	"type": "Subscription",
-	 	"entities": [{
-	  			"type": "Vehicle"
-	 	  }],
-	 	"watchedAttributes": ["http://example.org/vehicle/brandName2"],
-	        "q":"http://example.org/vehicle/brandName2!=Mercedes",
-	 	"notification": {
-	  	"attributes": ["http://example.org/vehicle/brandName2"],
-	  	"format": "keyValues",
-	  	"endpoint": {
-	   			"uri": "http://my.endpoint.org/notify",
-				"accept": "application/json"
-	  	 }
-	      }
-	  }'
-
-
-**e. To delete a specific subscription based on subscription id**
+   curl http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71
+   
+**d. To delete a specific subscription based on subscription id**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
@@ -2116,4 +1525,3 @@ sid              subscription Id
 .. code-block:: console
 
    curl -iX DELETE http://localhost:80/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:71
-

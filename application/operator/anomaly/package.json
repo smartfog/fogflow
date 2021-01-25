@@ -1,7 +1,7 @@
 {
-    "name": "docker_anomaly",
+    "name": "fogfunction",
     "version": "1.0.0",
-    "description": "dockerized task for anomaly detection",
+    "description": "template to create your own fog function",
     "author": "Bin Cheng<bin.cheng@neclab.eu>",
     "main": "main.js",
     "scripts": {
