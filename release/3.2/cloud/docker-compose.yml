@@ -1,7 +1,7 @@
 version: "3.5"
 services:     
     designer:
-        image: fogflow/designer
+        image: fogflow/designer:3.2
         volumes:
             - ./config.json:/app/config.json
         ports:
@@ -14,7 +14,7 @@ services:
         restart: always
             
     discovery:
-        image: fogflow/discovery
+        image: fogflow/discovery:3.2
         volumes:
             - ./config.json:/config.json                        
         ports:
@@ -24,7 +24,7 @@ services:
         restart: always
 
     master:
-        image: fogflow/master
+        image: fogflow/master:3.2
         volumes:
             - ./config.json:/config.json                                   
         links:
@@ -39,7 +39,7 @@ services:
         restart: always 
         
     cloud_broker:
-        image: fogflow/broker
+        image: fogflow/broker:3.2
         volumes:
             - ./config.json:/config.json 
         ports:
@@ -50,7 +50,7 @@ services:
         restart: always     
                                         
     cloud_worker:
-        image: fogflow/worker
+        image: fogflow/worker:3.2
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                            
@@ -90,35 +90,3 @@ services:
             - 8082:8080
             - 9082:9080
             - 8000:8000
-
-    elasticsearch:
-        image: fogflow/elasticsearch:latest
-        ports:
-          - "9200:9200"
-          - "9300:9300"
-        environment:
-          - discovery.type=single-node
-    
-    metricbeat:
-        image: fogflow/metricbeat:latest
-        user: root
-        volumes:
-          - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml
-          - /var/run/docker.sock:/var/run/docker.sock
-          - /sys/fs/cgroup:/hostfs/sys/fs/cgroup
-          - /proc:/hostfs/proc
-          - /:/hostfs
-        environment:
-          - output.elasticsearch.hosts= ["elasticsearch:9200"]
-    
-    grafana:
-        image: grafana/grafana:6.5.0
-        links:
-          - elasticsearch
-        environment:
-          - GF_SECURITY_ADMIN_PASSWORD=admin
-        depends_on:
-          - elasticsearch
-        ports:
-          - "3003:3000"
-        restart: always

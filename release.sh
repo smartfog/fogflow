@@ -20,3 +20,4 @@ if [ $# -gt 0 ]; then
     docker push fogflow/designer:${VERSION}
 fi 
 
+

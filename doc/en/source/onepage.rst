@@ -30,13 +30,7 @@ it will be forwarded from the FogFlow system to Orion Context Broker.
 This is because a subscription with Orion Context Broker as the reference URL has been issued.  
 
 
-
-
-
 .. figure:: figures/systemview.png
-
-
-
 
 
 
@@ -84,7 +78,7 @@ Download the docker-compose file and the configuration files as below.
 	# the configuration file used by the nginx proxy
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/nginx.conf
 
-	
+
 	
 Change the IP configuration accordingly
 -------------------------------------------------------------
@@ -173,8 +167,6 @@ Once you are able to access the FogFlow dashboard, you can see the following web
 
 
 .. figure:: figures/dashboard.png
-
-
 
 
 Try out an existing IoT service

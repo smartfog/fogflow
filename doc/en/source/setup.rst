@@ -40,17 +40,14 @@ Download the docker-compose file and the configuration files as below.
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/docker-compose.yml
 
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/config.json
 
 	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/nginx.conf
 	
-	# the configuration file used by metricbeat
-    wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
-
 
 Change the IP configuration accordingly
 ---------------------------------------------
@@ -302,7 +299,7 @@ You can use the default setting for a simple test, but you need to change the fo
         
 - **coreservice_ip**: please refer to the configuration of the cloud part. This is the accessible address of your FogFlow core services running in the cloud node;
 - **external_hostip**: this is the external IP address, accessible for the cloud broker. It is useful when your edge node is behind NAT;
-- **internal_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host.
+- **my_hostip** is the IP of your default docker bridge, which is the "docker0" network interface on your host.
 - **site_id** is the user-defined ID for the edge Node. Broker and Worker IDs on that node will be formed according to this Site ID.
 - **container_autoremove** is used to configure that the container associated with a task will be removed once its processing is complete.
 - **start_actual_task** configures the Fogflow worker to include all those activities that are required to start or terminate a task or maintain a running task along with task configurations instead of performing the minimal effort. It is recommended to keep it true.
@@ -314,7 +311,7 @@ You can use the default setting for a simple test, but you need to change the fo
     { 
         "coreservice_ip": "155.54.239.141", 
         "external_hostip": "35.234.116.177", 
-        "internal_hostip": "172.17.0.1", 
+        "my_hostip": "172.17.0.1", 
         
 	
 	"site_id": "002",
