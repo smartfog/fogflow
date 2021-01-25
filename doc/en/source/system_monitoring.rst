@@ -13,6 +13,29 @@ As illustrated by the following picture, in order to set up FogFlow System Monit
 .. figure:: figures/Fogflow_System_Monitoring_Architecture.png
 
 
+Set up all FogFlow components on a single machine
+===========================================================
+
+
+Fetch all required scripts
+-------------------------------------------------------------
+
+Download the docker-compose file and the configuration files as below.
+
+.. code-block:: console    
+
+	# the docker-compose file to start all FogFlow components on the cloud node
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
+
+	# the configuration file used by all FogFlow components
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
+
+	# the configuration file used by the nginx proxy
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
+
+        # the configuration file used by metricbeat
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
+
 
 Change the IP configuration of elasticsearch and metricbeat accordingly
 ---------------------------------------------------------------------------

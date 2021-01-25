@@ -84,8 +84,6 @@ Download the docker-compose file and the configuration files as below.
 	# the configuration file used by the nginx proxy
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
 
-        # the configuration file used by metricbeat
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
 	
 	
 Change the IP configuration accordingly
