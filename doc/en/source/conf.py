@@ -46,7 +46,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'FogFlow'
-copyright = u'2018, NEC'
+copyright = u'2021, NEC'
 author = u'Bin Cheng'
 
 # The version info for the project you're documenting, acts as replacement for

@@ -102,3 +102,55 @@ Here are some basic Grafana visualization dashboard setting examples to monitor 
 2. Click on Visualization select Graph from drop down , Draw Modes (Lines), Mode Options(Fill:1,Fill Gradient:0,Line Width:2).
    Axes- Left Y(Unit:bytes, Scale:linear), Right Y(Unit:short, Scale:linear), X-Axis(Mode:Time).
    Legend- Options(Show, As Table, To the right), Values(Avg, Max).
+
+
+
+
+Configure Elasticsearch on Grafana Dashboard
+-------------------------------------------------------------
+
+Grafana dashboard can be accessible on web browser to see the current system status via the URL: 
+http://<output.elasticsearch.hosts>:3003/. The default username and password for Grafana login are admin and admin respectively.
+
+
+- After successful login to grafana, click on "Create your first data source" on Home Dashboard to setup the source of data.
+- Select Elasticsearch from Add Data Sourch page. Now you are on page Data Sources/Elasticsearch same as below figure.
+
+
+.. figure:: figures/Elastic_config.png
+
+
+1. Put a name for the Data Source.
+2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include HTTP. 
+3. In Access select Server(default). URL needs to be accessible from the Grafana backend/server.
+4. In Elasticsearch details, put @timestamp for Time field name. Here a default for the time field can be specified with the name of your Elasticsearch index. Use a time pattern for the index name or a wildcard.
+5. Select Elasticsearch Version.
+
+Then click on "Save & Test" button.
+
+
+Set up the Metricbeat
+---------------------------------------------
+
+
+- Change the details of Elasticsearch in metricbeat.docker.yml file as below:
+
+
+.. code-block:: json
+
+        name: "<155.54.239.141_cloud>"
+        metricbeat.modules:
+        - module: docker
+          #Docker module parameters that has to be monitored based on user requirement, example as below
+          metricsets: ["cpu","memory","network"]
+          hosts: ["unix:///var/run/docker.sock"]
+          period: 10s
+          enabled: true
+        - module: system
+          #System module parameters that has to be monitored based on user requirement, example as below
+          metricsets: ["cpu","load","memory","network"]
+          period: 10s
+
+        output.elasticsearch:
+          hosts: '155.54.239.141:9200'
+	  

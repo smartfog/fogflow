@@ -49,7 +49,7 @@ Download the docker-compose file and the configuration files as below.
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
 	
 	# the configuration file used by metricbeat
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
+    wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
 
 
 Change the IP configuration accordingly
@@ -58,10 +58,8 @@ Change the IP configuration accordingly
 
 You need to change the following IP addresses in config.json according to your own environment.
 
-- **coreservice_ip**: it is used by all FogFlow edge nodes to access the core services (e.g., nginx on port 80 and rabbitmq on port 5672) on the FogFlow cloud node; usually this will be the public IP of the FogFlow cloud node.
-- **external_hostip**: for the configuration of the FogFlow cloud node, this is the same as coreservice_ip used by the components (Cloud Worker and Cloud Broker) to access the running FogFlow core services;        
-- **internal_hostip**: this is the IP of your default docker bridge, which is the "docker0" network interface on your Linux host. For the docker engine on Windows or Mac OS, there is no "docker0" network interface; instead, you need to use the special domain name "host.docker.internal".  
 
+- **my_hostip**: the IP of the FogFlow cloud node and this IP address should be accessible to the FogFlow edge node. Please DO NOT use "127.0.0.1" for this. 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
@@ -83,7 +81,7 @@ Also need to change the following IP addresses in metricbeat.docker.yml accordin
 
 .. important:: 
 
-	please DO NOT use "127.0.0.1" as the IP address of **coreservice_ip** and **external_hostip**, because they will be used by a running task inside a docker container. 
+	please DO NOT use "127.0.0.1" as the IP address of **my_hostip** , because they will be used by a running task inside a docker container. 
 	
 	**Firewall rules:** to make your FogFlow web portal accessible via the external_ip; the following ports must be open as well: 80 and 5672 for TCP
 

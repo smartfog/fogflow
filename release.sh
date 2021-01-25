@@ -1,5 +1,5 @@
 # build the images of all FogFlow core components
-./build.sh
+#./build.sh
 
 if [ $# -gt 0 ]; then
     VERSION=$1
@@ -12,11 +12,9 @@ if [ $# -gt 0 ]; then
     docker image tag fogflow/worker:latest fogflow/worker:${VERSION}
 
     # publish images to the docker hub
-    docker publish fogflow/discovery:${VERSION}
-    docker publish fogflow/broker:${VERSION}
-    docker publish fogflow/master:${VERSION}
-    docker publish fogflow/worker:${VERSION}
+    docker push fogflow/discovery:${VERSION}
+    docker push fogflow/broker:${VERSION}
+    docker push fogflow/master:${VERSION}
+    docker push fogflow/worker:${VERSION}
 fi 
-
-
 
