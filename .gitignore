@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 .exe~
 .doctree
 .pickle
@@ -7,13 +6,7 @@
 .AppleDouble
 .LSOverride
 ._*
-=======
-*.exe~
-*.doctree
-*.pickle
-*.exe
 .DS_store
->>>>>>> d3699d456eba869f805a9008f19d97745842e216
 node_modules
 doc/en/_build/
 doc/en/source/figures/~$figures.pptx
