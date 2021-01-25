@@ -1,0 +1,124 @@
+version: "3.5"
+services:     
+    designer:
+        image: fogflow/designer
+        volumes:
+            - ./config.json:/app/config.json
+        ports:
+            - 8080:8080
+            - 1030:1030
+        depends_on: 
+            - discovery
+            - cloud_broker
+            - dgraph
+        restart: always
+            
+    discovery:
+        image: fogflow/discovery
+        volumes:
+            - ./config.json:/config.json                        
+        ports:
+            - 8090:8090
+        depends_on:
+            - dgraph
+        restart: always
+
+    master:
+        image: fogflow/master
+        volumes:
+            - ./config.json:/config.json                                   
+        links:
+            - rabbitmq        
+        ports:
+            - 1060:1060 
+        depends_on: 
+            - rabbitmq
+            - discovery
+            - cloud_broker
+            - dgraph     
+        restart: always 
+        
+    cloud_broker:
+        image: fogflow/broker
+        volumes:
+            - ./config.json:/config.json 
+        ports:
+            - 8070:8070
+        depends_on: 
+            - discovery
+            - dgraph
+        restart: always     
+                                        
+    cloud_worker:
+        image: fogflow/worker
+        volumes:
+            - /tmp:/tmp        
+            - ./config.json:/config.json                            
+            - /var/run/docker.sock:/var/run/docker.sock      
+        depends_on: 
+            - cloud_broker
+            - rabbitmq
+        restart: always
+                                        
+    rabbitmq:
+        image: rabbitmq:3
+        ports:
+            - 5672:5672
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=mypass   
+        restart: always
+        
+    nginx: 
+        image: nginx:latest
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+        ports:
+            - 80:80
+        depends_on: 
+            - discovery    
+            - cloud_broker
+            - designer
+        restart: always
+
+    dgraph:                                   
+        image: dgraph/standalone
+        volumes:
+            - ./dgraph:/dgraph           
+        ports:
+            - 6080:6080
+            - 8082:8080
+            - 9082:9080
+            - 8000:8000
+
+    elasticsearch:
+        image: fogflow/elasticsearch:latest
+        ports:
+          - "9200:9200"
+          - "9300:9300"
+        environment:
+          - discovery.type=single-node
+    
+    metricbeat:
+        image: fogflow/metricbeat:latest
+        user: root
+        volumes:
+          - ./metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml
+          - /var/run/docker.sock:/var/run/docker.sock
+          - /sys/fs/cgroup:/hostfs/sys/fs/cgroup
+          - /proc:/hostfs/proc
+          - /:/hostfs
+        environment:
+          - output.elasticsearch.hosts= ["elasticsearch:9200"]
+    
+    grafana:
+        image: grafana/grafana:6.5.0
+        links:
+          - elasticsearch
+        environment:
+          - GF_SECURITY_ADMIN_PASSWORD=admin
+        depends_on:
+          - elasticsearch
+        ports:
+          - "3003:3000"
+        restart: always
