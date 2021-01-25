@@ -2,30 +2,52 @@
 
 function CtxElement2JSONObject(e) {
     var jsonObj = {};
-    for (var ctxElement in e ) {
-        jsonObj[ctxElement] = e[ctxElement]
-    }     
-    return jsonObj;
-} 
+    jsonObj.entityId = e.entityId;
 
-function JSONObject2CtxElement(ctxObj) {
-    console.log('convert json object to context element') 
-    var ctxElement = {};
-    
-    ctxElement['id'] = ctxObj['id']
-    ctxElement['type'] = ctxObj['type']
-    
-    for( key in ctxObj) {
-	if( key != 'id' && key != 'type' && key != 'modifiedAt' \
-            && key != 'createdAt' && key != 'observationSpace' \
-            && key != 'operationSpace' && key != 'location' && key \
-            != '@context') {
-            ctxElement[key] = ctxObj[key]
-	}
+    jsonObj.attributes = {}    
+    for(var i=0; e.attributes && i<e.attributes.length; i++) {
+        var attr = e.attributes[i];
+        jsonObj.attributes[attr.name] = {
+            type: attr.type, 
+            value: attr.value
+        };
     }
     
-    return ctxElement
-	
+    jsonObj.metadata = {}
+    for(var i=0; e.domainMetadata && i<e.domainMetadata.length; i++) {
+        var meta = e.domainMetadata[i];
+        jsonObj.metadata[meta.name] = {
+            type: meta.type,
+            value: meta.value
+        };
+    }
+    
+    return jsonObj;
+}    
+
+function JSONObject2CtxElement(ob) {
+    console.log('convert json object to context element') 
+    var contextElement = {};
+    
+    contextElement.entityId = ob.entityId;
+    
+    contextElement.attributes = [];
+    if(ob.attributes) {
+        for( key in ob.attributes ) {
+            attr = ob.attributes[key];
+            contextElement.attributes.push({name: key, type: attr.type, value: attr.value});
+        }
+    }
+    
+    contextElement.domainMetadata = [];
+    if(ob.metadata) {
+        for( key in ob.metadata ) {
+            meta = ob.metadata[key];
+            contextElement.domainMetadata.push({name: key, type: meta.type, value: meta.value});
+        }
+    }    
+
+    return contextElement;
 }  
 
     
