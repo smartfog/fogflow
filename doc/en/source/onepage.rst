@@ -107,7 +107,7 @@ You need to change the following IP addresses in config.json according to your o
 	**Firewall rules:** to make your FogFlow web portal accessible, the following ports 80 and 5672 over TCP must be open. 
 
 	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
-	to replace coreservice_ip, external_hostip, and internal_hostip in the configuration file
+	as my_hostip in the configuration file
 
 	If you need to change the port number(s), please make sure the change is consistence in all these three configuration files. 
 
@@ -141,15 +141,14 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 	docker ps -a
 	
-	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                 NAMES
-	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                       fogflow_nginx_1
-	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                 fogflow_cloud_worker_1
-	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                               fogflow_master_1
-	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp       fogflow_designer_1
-	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                               fogflow_cloud_broker_1
-	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp     fogflow_rabbitmq_1
-	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                               fogflow_discovery_1
-
+	795e6afe2857   nginx:latest            "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
+	33aa34869968   fogflow/worker:3.2      "/worker"                About a minute ago   Up About a minute                                                                                                    fogflow_cloud_worker_1
+	e4055b5cdfe5   fogflow/master:3.2      "/master"                About a minute ago   Up About a minute   0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
+	cdf8d4068959   fogflow/designer:3.2    "node main.js"           About a minute ago   Up About a minute   0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
+	56daf7f078a1   fogflow/broker:3.2      "/broker"                About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
+	51901ce6ee5f   fogflow/discovery:3.2   "/discovery"             About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
+	51eff4975621   dgraph/standalone       "/run.sh"                About a minute ago   Up About a minute   0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
+	eb31cd255fde   rabbitmq:3              "docker-entrypoint.s…"   About a minute ago   Up About a minute   4369/tcp, 5671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                           fogflow_rabbitmq_1
 
 .. important:: 
 
@@ -239,7 +238,7 @@ Send a curl request to the FogFlow broker for entity update:
 
 	
 	curl -iX POST \
-		  'http://coreservice_ip/ngsi10/updateContext' \
+		  'http://my_hostip/ngsi10/updateContext' \
 		  -H 'Content-Type: application/json' \
 		  -d '
 		{

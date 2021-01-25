@@ -10,11 +10,13 @@ if [ $# -gt 0 ]; then
     docker image tag fogflow/broker:latest fogflow/broker:${VERSION}
     docker image tag fogflow/master:latest fogflow/master:${VERSION}
     docker image tag fogflow/worker:latest fogflow/worker:${VERSION}
+    docker image tag fogflow/designer:latest fogflow/designer:${VERSION}
 
     # publish images to the docker hub
     docker push fogflow/discovery:${VERSION}
     docker push fogflow/broker:${VERSION}
     docker push fogflow/master:${VERSION}
     docker push fogflow/worker:${VERSION}
+    docker push fogflow/designer:${VERSION}
 fi 
 

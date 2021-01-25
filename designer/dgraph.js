@@ -18,12 +18,7 @@ config.brokerPort = globalConfigFile.broker.http_port
 */
 
 async function newClientStub() {
-<<<<<<< HEAD
-    console.log(config.HostIp + ":" + config.grpcPort);
-    return new dgraph.DgraphClientStub(config.HostIp + ":" + config.grpcPort);
-=======
     return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort);
->>>>>>> master
 }
 
 // Create a client.
