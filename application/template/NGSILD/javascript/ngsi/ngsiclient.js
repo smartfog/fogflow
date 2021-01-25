@@ -16,10 +16,7 @@ function JSONObject2CtxElement(ctxObj) {
     ctxElement['type'] = ctxObj['type']
     
     for( key in ctxObj) {
-	if( key != 'id' && key != 'type' && key != 'modifiedAt' \
-            && key != 'createdAt' && key != 'observationSpace' \
-            && key != 'operationSpace' && key != 'location' && key \
-            != '@context') {
+	if( key != 'id' && key != 'type' && key != 'modifiedAt' && key != 'createdAt' && key != 'observationSpace' && key != 'operationSpace' && key != 'location' && key != '@context') {
             ctxElement[key] = ctxObj[key]
 	}
     }
@@ -37,18 +34,17 @@ var NGSI10Client = (function() {
     
     // update context 
     NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
-        contextElement = JSONObject2CtxElement(ctxObj);
-        
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'UPDATE'
-         
+        updateCtxReq = JSONObject2CtxElement(ctxObj) 
 		console.log(updateCtxReq);
 		      
         return axios({
             method: 'post',
-            url: this.brokerURL + '/updateContext',
+            url: this.brokerURL + '/ngsi-ld/v1/entities/',
+	    headers: {
+    		'content-type': 'application/json',
+   		'Accept': 'application/ld+json',
+		'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+  },
             data: updateCtxReq
         }).then( function(response){
             if (response.status == 200) {
@@ -61,20 +57,16 @@ var NGSI10Client = (function() {
     
     // delete context 
     NGSI10Client.prototype.deleteContext = function deleteContext(entityId) {
-        var contextElement = {};
-        contextElement.entityId = entityId
-        
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'DELETE'
-        
+
         return axios({
-            method: 'post',
-            url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            method: 'delete',
+	    headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+            },
+            url: this.brokerURL + '/ngsi-ld/v1/entities/' + entityId
         }).then( function(response){
-            if (response.status == 200) {
+            if (response.status == 204) {
                 return response.data;
             } else {
                 return null;
@@ -83,22 +75,21 @@ var NGSI10Client = (function() {
     };    
     
     // query context
-    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {        
+    NGSI10Client.prototype.queryContext = function queryContext(id) {        
         return axios({
-            method: 'post',
-            url: this.brokerURL + '/queryContext',
-            data: queryCtxReq
+            method: 'get',
+            url: this.brokerURL + '/ngsi-ld/v1/entities/' + id,
+	          headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+  },
+            //data: queryCtxReq
         }).then( function(response){
             //console.log(response);
             if (response.status == 200) {
                 var objectList = [];
-                var ctxElements = response.data.contextResponses;
-                for(var i=0; ctxElements && i<ctxElements.length; i++){                    
-                    //console.log('===========context element=======');
-                    //console.log(ctxElements[i].contextElement)
-                    var obj = CtxElement2JSONObject(ctxElements[i].contextElement);
-                    objectList.push(obj);
-                }
+                var ctxElements = response.data;
+		objectList.push(ctxElements)
                 return objectList;
             } else {
                 return null;
@@ -110,7 +101,12 @@ var NGSI10Client = (function() {
     NGSI10Client.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
         return axios({
             method: 'post',
-            url: this.brokerURL + '/subscribeContext',
+            url:    this.brokerURL + '/ngsi-ld/v1/subscriptions/',
+	        headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+                'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+  },
             data: subscribeCtxReq
         }).then( function(response){
             if (response.status == 200) {
