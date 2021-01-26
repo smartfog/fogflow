@@ -29,6 +29,10 @@ function JSONObject2CtxElement(ctxObj) {
 var NGSILDclient = (function() {
     // initialized with the broker URL
     var NGSILDclient = function(url) {
+	if (url.includes('ngsi10')) {
+		 url = url.substring(0, url.lastIndexOf("/") );
+	}
+	console.log(url)
         this.brokerURL = url;
     };
     
@@ -43,7 +47,7 @@ var NGSILDclient = (function() {
 	    headers: {
     		'content-type': 'application/json',
    		'Accept': 'application/ld+json',
-		'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+		'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
   },
             data: updateCtxReq
         }).then( function(response){
@@ -105,7 +109,7 @@ var NGSILDclient = (function() {
 	        headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
-                'Link': '{{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+                'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
   },
             data: subscribeCtxReq
         }).then( function(response){

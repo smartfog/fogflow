@@ -8,31 +8,14 @@ var http = require('http'),
 	notifyHandler,
 	adminHandler;
 
-
 function CtxElement2JSONObject(e) {
     var jsonObj = {};
-    jsonObj.entityId = e.entityId;
-
-    jsonObj.attributes = {}    
-    for(var i=0; e.attributes && i<e.attributes.length; i++) {
-        var attr = e.attributes[i];
-        jsonObj.attributes[attr.name] = {
-            type: attr.type, 
-            value: attr.value
-        };
+    for (var ctxElement in e ) {
+        jsonObj[ctxElement] = e[ctxElement]
     }
-    
-    jsonObj.metadata = {}
-    for(var i=0; e.domainMetadata && i<e.domainMetadata.length; i++) {
-        var meta = e.domainMetadata[i];
-        jsonObj.metadata[meta.name] = {
-            type: meta.type,
-            value: meta.value
-        };
-    }
-    
     return jsonObj;
-}    
+}
+
 
 function ensureType(req, res, next) {
     if (req.is('json')) {
@@ -87,16 +70,13 @@ function setAdminHandler(newHandler) {
 
 function readContextElements(body) {
 	var ctxObjects = [];
-	
-	for(var i = 0; i < body.contextResponses.length; i++){
-		var response = body.contextResponses[i];
-		if(response.statusCode.code == '200'){		       
-			var flexObj = CtxElement2JSONObject(response.contextElement);
-			ctxObjects.push(flexObj);
-		}
+	if (body['type'] =  'Notification') {
+            for (attr in body['data']){
+		ctxObj = element2Object(attr)
+                ctxObjects.push(ctxObj)
+	    }
 	}
-
-	return ctxObjects;
+	return ctxObjects
 }
 
 function handleNotify(req, res, next) {

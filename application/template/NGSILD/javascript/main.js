@@ -108,7 +108,7 @@ function subscribe(subscribeCtxReq) {
         return
     }
 
-    subscribeCtxReq.reference = myReferenceURL;
+    subscribeCtxReq.notification.endpoint.uri = myReferenceURL;
 
     console.log("================trigger my own subscription===================");
     console.log(subscribeCtxReq);

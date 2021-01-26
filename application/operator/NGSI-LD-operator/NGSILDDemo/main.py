@@ -129,7 +129,7 @@ def publishResult(ctxObj):
 
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/ld+json',
-               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+               'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.post(brokerURL + '/ngsi-ld/v1/entities/',
                              data=json.dumps(ctxElement),
                              headers=headers)
@@ -181,7 +181,7 @@ def requestInputBySubscription():
 
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/ld+json',
-               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+               'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     if brokerURL.endswith('/ngsi10') == True:
         brokerURL = brokerURL.rsplit('/', 1)[0]
 
