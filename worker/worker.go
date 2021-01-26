@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"runtime"
-	"strconv"
 	"sync"
 	"time"
 
@@ -24,7 +23,7 @@ type Worker struct {
 
 	cfg               *Config
 	selectedBrokerURL string
-	httpBrokerURL     string
+	//httpBrokerURL     string
 
 	profile WorkerProfile
 }
@@ -48,8 +47,7 @@ func (w *Worker) Start(config *Config) bool {
 	cfg.DefaultQueue = w.id
 	cfg.BindingKeys = []string{w.id + ".*"}
 
-	w.httpBrokerURL = "http://" + config.InternalIP + ":" + strconv.Itoa(config.Broker.HTTPPort) + "/ngsi10"
-	w.selectedBrokerURL = w.httpBrokerURL
+	w.selectedBrokerURL = config.GetBrokerURL()
 
 	INFO.Println("communicating with the broker ", w.selectedBrokerURL)
 
@@ -66,7 +64,7 @@ func (w *Worker) Start(config *Config) bool {
 
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	w.executor.Init(w.cfg, w.selectedBrokerURL, w.httpBrokerURL)
+	w.executor.Init(w.cfg, w.selectedBrokerURL)
 
 	// create the communicator with the broker info and topics
 	w.communicator = NewCommunicator(&cfg)

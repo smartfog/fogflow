@@ -65,6 +65,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		//create and update
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
+
 		rest.Post("/ngsi-ld/v1/entities/#eid/attrs", broker.LDAppendEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs", broker.LDUpdateEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDUpdateEntityByAttribute),
@@ -86,11 +87,6 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		//notify
 		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NotifyLdContext),
-
-		rest.Post("/ngsi-ld/v1/csourceRegistrations/", broker.RegisterCSource),
-		rest.Patch("/ngsi-ld/v1/csourceRegistrations/#rid", broker.UpdateCSourceRegistration),
-		rest.Delete("/ngsi-ld/v1/csourceRegistrations/#rid", apisrv.DeleteCSourceRegistration),
-		rest.Get("/ngsi-ld/v1/csourceRegistrations", apisrv.GetQueryParamsRegistrations),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -439,87 +435,6 @@ func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.
 	} else {
 		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
 		return
-	}
-}
-
-// To get query parameters from CSource Registration Query Requests
-func (apisrv *RestApiSrv) GetQueryParamsRegistrations(w rest.ResponseWriter, r *rest.Request) {
-	queryValues := r.URL.Query()
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" && accept == "application/ld+json" {
-		if typ, ok := queryValues["type"]; ok == true {
-			if typ[0] == "" {
-				rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-				return
-			}
-			if eid, ok := queryValues["id"]; ok == true {
-				if len(queryValues) > 2 {
-					rest.Error(w, "Query parameters other than id and type are not supported in this request!", 400)
-					return
-				}
-				if eid[0] == "" {
-					rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-					return
-				}
-				registrations := apisrv.broker.getCSourceRegByIdAndType(eid, typ)
-				if len(registrations) > 0 {
-					w.WriteHeader(200)
-					w.WriteJson(registrations)
-				} else {
-					w.WriteHeader(404)
-				}
-				return
-			}
-			if idPattern, ok := queryValues["idPattern"]; ok == true {
-				if len(queryValues) > 2 {
-					rest.Error(w, "Query parameters other than idPattern and type are not supported in this request!", 400)
-					return
-				}
-				if idPattern[0] == "" {
-					rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-					return
-				}
-				registrations := apisrv.broker.getCSourceRegByIdPatternAndType(idPattern, typ)
-				if len(registrations) > 0 {
-					w.WriteHeader(200)
-					w.WriteJson(registrations)
-				} else {
-					w.WriteHeader(404)
-				}
-				return
-			}
-			if len(queryValues) > 1 {
-				rest.Error(w, "Query parameters other than type are not supported in this request!", 400)
-				return
-			}
-			link := r.Header.Get("Link")
-			registrations, err := apisrv.broker.getCSourceRegByType(typ, link)
-			if err != nil {
-				rest.Error(w, "Internal Server Error!", http.StatusInternalServerError)
-				return
-			} else {
-				if len(registrations) > 0 {
-					w.WriteHeader(200)
-					w.WriteJson(registrations)
-				} else {
-					w.WriteHeader(404)
-				}
-				return
-			}
-		} else {
-			rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-		}
-	} else {
-		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
-	}
-}
-
-func (apisrv *RestApiSrv) DeleteCSourceRegistration(w rest.ResponseWriter, r *rest.Request) {
-	rid := r.PathParam("rid")
-	err := apisrv.broker.deleteCSourceRegistration(rid)
-	if err != nil {
-		w.WriteHeader(404)
-	} else {
-		w.WriteHeader(204)
 	}
 }
 

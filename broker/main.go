@@ -35,7 +35,7 @@ func main() {
 	// check if IoT Discovery is ready
 	for {
 		httpClient := config.HTTPS.GetHTTPClient()
-		resp, err := httpClient.Get(config.GetDiscoveryURL(true) + "/status")
+		resp, err := httpClient.Get(config.GetDiscoveryURL() + "/status")
 		if err != nil {
 			ERROR.Println(err)
 		} else {

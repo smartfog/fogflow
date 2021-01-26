@@ -2,6 +2,32 @@
 Integrate FogFlow with Scorpio Broker
 *****************************************
 
+
+Scenario
+===============================================
+
+
+.. figure:: figures/fogflow-scorpio.png
+
+
+How to set up FogFlow and Scorpio
+===============================================
+
+
+
+How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
+================================================================================================
+
+
+
+
+How to validate the entire workflow
+================================================================================================
+
+
+
+
+
 Using NGSI-LD specification implementation 
 ===============================================
 Scorpio integration with FogFlow enable FogFlow task to communicate with scorpio Broker.

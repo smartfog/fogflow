@@ -1,6 +1,5 @@
-var request = require('request');
-var express = require('express');
-var multer = require('multer');
+var express =   require('express');
+var multer  =   require('multer');
 var https = require('https');
 const bodyParser = require('body-parser');
 var axios = require('axios')
@@ -24,25 +23,23 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 var config = globalConfigFile.designer;
 
 // get the URL of the cloud broker
-var cloudBrokerURL = "http://" + globalConfigFile.external_hostip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
-config.agentIP = globalConfigFile.external_hostip;
+var cloudBrokerURL = "http://" + globalConfigFile.my_hostip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
+
+config.agentIP = globalConfigFile.my_hostip;
 config.agentPort = globalConfigFile.designer.agentPort;
 
-// set the agent IP address from the environment variable
-config.agentIP = globalConfigFile.external_hostip;
-config.agentPort = globalConfigFile.designer.agentPort;
 
 config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';
 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 
-config.brokerIp = globalConfigFile.coreservice_ip
+//config.brokerIp = globalConfigFile.coreservice_ip
     //broker port
-config.brokerPort = globalConfigFile.broker.http_port
+//config.brokerPort = globalConfigFile.broker.http_port
     //designer IP
-config.designerIP = globalConfigFile.coreservice_ip
-config.DGraphPort = globalConfigFile.persistent_storage.port
+//config.designerIP = globalConfigFile.coreservice_ip
+//config.DGraphPort = globalConfigFile.persistent_storage.port
 
 
 console.log(config);
@@ -143,7 +140,7 @@ app.post('/internal/updateContext', jsonParser, async function(req, res) {
     var payload = await req.body
     var response = await axios({
         method: 'post',
-        url: 'http://' + config.brokerIp + ':' + config.brokerPort + '/ngsi10/updateContext',
+        url: cloudBrokerURL + '/updateContext',
         data: payload
     })
     if (response.status == 200) {
@@ -181,6 +178,8 @@ app.get('/config.js', function(req, res) {
     res.end(data);
 });
 
+
+/*
 // fetch the requested URL from the edge node within the internal network
 app.get('/proxy', function(req, res) {
     console.log(req.query.url);
@@ -189,6 +188,7 @@ app.get('/proxy', function(req, res) {
         request(req.query.url).pipe(res);
     }
 });
+*/
 
 
 // handle the received results

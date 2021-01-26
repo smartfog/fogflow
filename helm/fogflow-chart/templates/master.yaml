@@ -1,0 +1,94 @@
+#Master deployment and service configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  #FogFlow cloud components will be deployed inside fogflow namespace
+  namespace: {{ .Values.namespace }}
+  annotations:
+    kompose.version: 1.21.0 (992df58d8)
+    "helm.sh/hook-weight": "7"
+  creationTimestamp: null
+  labels:
+    io.kompose.service: master
+  name: master
+spec:
+  #replicas will make sure that no. of replicaCount mention in values.yaml
+  # are running all the time for the deployment
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      io.kompose.service: master
+  minReadySeconds: 10
+  #strategy tells about How do want to update the pods?
+  strategy:
+    rollingUpdate:
+      maxSurge: 25% 
+      maxUnavailable: 25% 
+    type: RollingUpdate
+  # This template field is a regular pod configuration
+  # nested inside the deployment spec
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: master
+    spec:
+      containers:
+      - image: fogflow/master:3.2
+        imagePullPolicy: Always 
+        name: master
+        ports:
+        - containerPort: 1060
+        #readiness and liveness to check pod's Health
+        readinessProbe:
+          tcpSocket:
+            port: 1060
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 1060
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+         #CPU and memory limits for FogFlow master deployment 
+          limits:
+            memory: 2Gi
+            cpu: 1 
+          requests:
+            memory: 2Gi
+            cpu: 1 
+        volumeMounts:
+        - name: config-json
+          mountPath: /config.json
+          readOnly: true
+      restartPolicy: Always
+      serviceAccountName: fogflow-dns 
+      volumes:
+      - name: config-json
+        hostPath:
+          path: {{ .Values.configJson.hostPath.path }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.namespace }} 
+  annotations:
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: master
+  name: master
+spec:
+  ports:
+  - name: "1060"
+    port: 1060
+    targetPort: 1060
+  selector:
+    io.kompose.service: master
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
+

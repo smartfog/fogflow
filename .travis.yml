@@ -74,33 +74,25 @@ before_script:
 script:
     - cd ../
 
-    - cp docker/core/http/config.json  ./discovery/
-    - cp docker/core/http/config.json  ./broker/
-    - cp docker/core/http/config.json  ./master/
-    - cp docker/core/http/config.json  ./worker/
-    - cp docker/core/http/config.json  ./designer/
+    - cp release/validation/config.json  ./discovery/
+    - cp release/validation/config.json  ./broker/
+    - cp release/validation/config.json  ./master/
+    - cp release/validation/config.json  ./worker/
+    - cp release/validation/config.json  ./designer/
 
     - cd discovery/ 
-    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json    
     - go get; go build
     - screen -d -m ./discovery
 
     - cd ../broker/
-    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - go get; go build
     - screen -d -m ./broker
 
     - cd ../master/
-    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - go get; go build
     - screen -d -m ./master
 
     - cd ../designer/
-    - jq '.coreservice_ip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
-    - jq '.external_hostip = "127.0.0.1"' config.json > tmp.$$.json && mv tmp.$$.json config.json
     - npm install
     - screen -d -m node main.js
 
