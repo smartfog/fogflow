@@ -45,7 +45,7 @@ func UpdateLdContext(updateCtx map[string]interface{}, IoTBrokerURL string) erro
 	req, err := http.NewRequest("POST", IoTBrokerURL+"/ngsi-ld/v1/entities/", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
-	req.Header.Add("Link", "<{{link}}>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	res, err := http.DefaultClient.Do(req)
 	if res != nil {
 		defer res.Body.Close()

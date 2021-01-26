@@ -93,7 +93,8 @@ def readContextElements(data):
 
 
 def handleNotify(contextObjs):
-    fogflow.handleEntity(contextObjs, publishResult)   
+    for ctx in contextObjs:
+        fogflow.handleEntity(ctx, publishResult)
 
 
 def handleConfig(configurations):
@@ -127,8 +128,8 @@ def publishResult(ctxObj):
     ctxElement = object2Element(ctxObj)
 
     headers = {'Accept': 'application/ld+json',
-               'Content-Type': 'application/ld+json',
-               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+               'Content-Type': 'application/json',
+               'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.post(brokerURL + '/ngsi-ld/v1/entities/',
                              data=json.dumps(ctxElement),
                              headers=headers)
@@ -142,7 +143,7 @@ def fetchInputByQuery():
 
     ctxQueryReq['entities'] = []
     headers = {'Accept': 'application/ld+json',
-               'Content-Type': 'application/ld+json'}
+               'Content-Type': 'application/json'}
     response = requests.get(brokerURL + '/ngsi-ld/v1/entities/'
                             + input['id'], headers=headers)
 
@@ -153,8 +154,9 @@ def fetchInputByQuery():
         jsonResult = response.json()
 
         ctxObj = element2Object(jsonResult)
-
-        return ctxObj
+	ctxElments = []
+        ctxElments.append(ctxObj)
+        return ctxElments
 
 
 def requestInputBySubscription():
@@ -179,7 +181,7 @@ def requestInputBySubscription():
 
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/ld+json',
-               'Link': '<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+               'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     if brokerURL.endswith('/ngsi10') == True:
         brokerURL = brokerURL.rsplit('/', 1)[0]
 
