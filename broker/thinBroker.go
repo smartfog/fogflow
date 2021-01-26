@@ -1850,7 +1850,6 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
 		var context []interface{}
-		fmt.Println("This is create request")
 		contextInPayload := true
 		//Get Link header if present
 		Link := r.Header.Get("Link")
