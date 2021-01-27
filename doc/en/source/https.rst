@@ -209,50 +209,48 @@ Terminology
 
 
 
-**Single IoT Device Interaction with FogFlow**
+**IoT Device Interaction with FogFlow**
 
 
 .. figure:: figures/architectureDiagram1.png
 
 
-**Multiple IoT Device Interaction with FogFlow**
-
-
-.. figure:: figures/security_enhancement.png
-
-
-Note: Red markers represent IoT Device interaction with cloud and  green markers represent IoT Device interaction with Edge Node
-
- 
 
 **Flow of Requests as shown in diagram:**
 
-**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For example:
+**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For this, user can use the script along with his username and password.
 
 
 .. code-block:: console
-        
 
-	curl --include \
-        --request POST \
-        --header "Content-Type: application/json" \
-        --data-binary "{
-     	\"name\": \"admin@test.com\",
-     	\"password\": \"1234\"
-   	}" \
-   	"http://KEYROCK_IP_ADDRESS:3000/v1/auth/tokens" 
 
- 
+        ./user_token_generation.sh admin@test.com 1234
 
-**Step 2** : IDM will return an user access token in response of request made in first step.
 
-**Step 3** : User shares his access token ( i.e. User Access Token ) to IoT Device.
+Note: For example, in above snippet username is "admin@test.com" and password is "1234"
 
-**Step 4** : Then IoT devices get registered using the user access token and in response, it gets device credentials(ID and password) as shown in `below`_ topics.
+**Step 2** : Script will return an user access token as shown below.
 
-.. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
 
-**Step 5** : IoT Device then make access token request using above device credentials and in response, it gets device access token.
+.. figure:: figures/user_token.png
+
+
+**Step 3** : User shares his access token ( i.e. User Access Token ) with IoT Device.
+
+**Step 4** : Then IoT devices get registered using the user access token passed as an argument to a script.
+
+.. code-block:: console
+
+
+        ./device_token_generation.sh f9ffa629-9aff-4c98-ac57-1caa2917fed2
+
+Note: For example, in above snippet "f9ffa629-9aff-4c98-ac57-1caa2917fed2" is the user access token.
+
+**Step 5** : Script will return device access token and device credentials(ID and password) as shown below.
+
+
+.. figure:: figures/device_token.png
+
 
 **Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
 
