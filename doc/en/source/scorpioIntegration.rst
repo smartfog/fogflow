@@ -1,5 +1,5 @@
 *****************************************
-Integrate FogFlow with Scorpio Broker
+Integrate FogFlow with Other NGSI-LD Broker
 *****************************************
 
 
@@ -13,6 +13,43 @@ Scenario
 How to set up FogFlow and Scorpio
 ===============================================
 
+Prerequisite for all System
+------------------------------------------------
+
+Here are the prerequisite commands for starting all system :
+
+1. docker
+
+2. docker-compose
+
+For ubuntu system, you need to install docker-ce and docker-compose.
+
+To install Docker CE, please refer to `Install Docker CE`_, required version > 18.03.1-ce;
+
+.. important:: 
+	**please also allow your user to execute the Docker Command without Sudo**
+
+
+To install Docker Compose, please refer to `Install Docker Compose`_, 
+required version 18.03.1-ce, required version > 2.4.2
+
+.. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+.. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
+
+Setup FogFlow System
+------------------------------------------------
+* To install FogFlow System, please refer  `FogFlow installation Document`_, 
+
+Setup Other NGSI-LD Broker
+------------------------------------------------
+* To install Orion Broker, please refer to `Docker Compose file For Orion-Broker`_, 
+* To install Scorpio Broker, please refer to `Docker Compose file For Scorpio Broker`_, 
+* To install  stellio-context-broker-ld, please refer to `Docker Compose file For stellio-context-broker`_, 
+
+.. _`Docker Compose file For Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
+.. _`Docker Compose file For Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
+.. _`Docker Compose file For stellio-context-broker`: https://github.com/smartfog/fogflow/tree/development/test/stellio-context-broker-ld
+.. _`FogFlow installation Document`: https://fogflow.readthedocs.io/en/latest/setup.html
 
 
 How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
