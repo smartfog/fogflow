@@ -42,13 +42,13 @@ Setup FogFlow System
 
 Setup Other NGSI-LD Broker
 ------------------------------------------------
-* To install Orion Broker, please refer to `Docker Compose file For Orion-Broker`_, 
-* To install Scorpio Broker, please refer to `Docker Compose file For Scorpio Broker`_, 
-* To install  stellio-context-broker-ld, please refer to `Docker Compose file For stellio-context-broker`_, 
+* To install Orion Broker, please refer to `Docker Compose file for Orion-Broker`_, 
+* To install Scorpio Broker, please refer to `Docker Compose file for Scorpio Broker`_, 
+* To install  stellio-context-broker-ld, please refer to `Docker Compose file for Stellio-context-broker`_, 
 
-.. _`Docker Compose file For Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
-.. _`Docker Compose file For Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
-.. _`Docker Compose file For stellio-context-broker`: https://github.com/smartfog/fogflow/tree/development/test/stellio-context-broker-ld
+.. _`Docker Compose file for Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
+.. _`Docker Compose file for Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
+.. _`Docker Compose file for Stellio-context-broker`: https://github.com/smartfog/fogflow/tree/development/test/stellio-context-broker-ld
 .. _`FogFlow installation Document`: https://fogflow.readthedocs.io/en/latest/setup.html
 
 
