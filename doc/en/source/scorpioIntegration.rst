@@ -71,6 +71,12 @@ Step to Prepare FogFunction2
 
 
 .. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
+How to validate the entire workflow
+================================================================================================
+
+* Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using configration script. Before using the Configration script we have need to change config.json as shown in the following figure . 
+ 
+ .. figure:: figures/ScorpioIntegrationConfig1.png
 
 **Step-2** Send create and update request to the NGSI-LD Broker.
 
@@ -136,15 +142,6 @@ Step to Prepare FogFunction2
  		}
  	}'
 
-
-
-
-How to validate the entire workflow
-================================================================================================
-
-* Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using configration script. Before using the Configration script we have need to change config.json as shown in the following figure . 
- 
- .. figure:: figures/ScorpioIntegrationConfig1.png
 
 Using NGSI-LD specification implementation 
 ===============================================
