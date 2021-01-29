@@ -74,9 +74,11 @@ Step to Prepare FogFunction2
 How to validate the entire workflow
 ================================================================================================
 
-**Step-1** Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using configration script. Before using the Configration script we have need to change config.json as shown in the following figure . 
+**Step-1** Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using  `configration script`_. Before using the  we have need to change config.json as shown in the following figure . 
  
  .. figure:: figures/ScorpioIntegrationConfig1.png
+
+.. _`configration script`: https://github.com/smartfog/fogflow/tree/development/test/ConfigrationScript
 
 **Step-2** Send create and update request to the NGSI-LD Broker.
 
@@ -142,6 +144,12 @@ How to validate the entire workflow
  		}
  	}'
 
+
+**Step-3** Update on NGSI-LD Broker will send a notification on FogFlow Broker. 
+
+**Step-4** FogFlow Broker forword the above notification on FogFunction1. FogFunction1 sends update request to the FogFlow Broker again  after applying all the defind analystics in FogFunction2.
+
+**Step-5** FogFlow Broker sends the notification to the FogFunction2 . NGSI-LD data format and forwards it to the NGSI-LD  Broker.
 
 Using NGSI-LD specification implementation 
 ===============================================
