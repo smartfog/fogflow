@@ -55,7 +55,22 @@ Setup Other NGSI-LD Broker
 How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
 ================================================================================================
 
+**FogFlow uses two FogFunction for the above integration**
 
+**FogFunction1** : FogFunction1 do all the analytics on data and publish the analytics data on FogFlow broker.
+
+**FogFunction2** : FogFunction-2 convert NGSI-LD notification into NGSI-LD update and send that update to NGSI-LD broker.
+
+Step to Prepare FogFunction2
+--------------------------------------------------------------------------------------------------
+
+* Clone `FogFunction2`_ from FogFLow repository.
+* Change config.json for related NGSI-LD broker.  
+
+.. figure:: figures/ScorpioIntegrationConfig.png
+
+
+.. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
 
 
 How to validate the entire workflow
