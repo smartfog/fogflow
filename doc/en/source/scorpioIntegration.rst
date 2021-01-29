@@ -72,6 +72,72 @@ Step to Prepare FogFunction2
 
 .. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
 
+**Step-2** Send create and update request to the NGSI-LD Broker.
+
+* Create request to the NGSI-LD Broker
+
+.. code-block:: console
+
+	curl -iX POST \
+  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/' \
+   	-H 'Content-Type: application/json' \
+   	-H 'Accept: application/ld+json' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+  	-d '
+	{
+ 		"id": "urn:ngsi-ld:Vehicle:A191",
+ 		"type": "Vehicle",
+ 		"isParked": {
+ 			"type": "Relationship",
+ 			"object": "urn:ngsi-ld:OffStreetParking:Downtown",
+ 			"providedBy": {
+ 				"type": "Relationship",
+ 				"object": "urn:ngsi-ld:Person:Bob"
+ 			}
+ 		},
+
+ 		"brandName": {
+ 			"type": "Property",
+ 			"value": "BMW"
+ 		}
+ 	}'
+	
+* Update request to NGSI-LD Broker
+
+.. code-block:: console
+
+	curl -iX PATCH \
+  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A191'/attrs \
+   	-H 'Content-Type: application/json' \
+   	-H 'Accept: application/ld+json' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+  	-d '
+	{
+ 		"brandName": {
+ 			"type": "Property",
+ 			"value": "Audi"
+ 		}
+ 	}'
+
+* Append request to NGSI-LD Broker
+
+.. code-block:: console
+
+	curl -iX POST \
+  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A191'/attrs \
+   	-H 'Content-Type: application/json' \
+   	-H 'Accept: application/ld+json' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+  	-d '
+	{
+ 		"brandName1": {
+ 			"type": "Property",
+ 			"value": "BMW1"
+ 		}
+ 	}'
+
+
+
 
 How to validate the entire workflow
 ================================================================================================
