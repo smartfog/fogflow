@@ -38,14 +38,14 @@ required version 18.03.1-ce, required version > 2.4.2
 
 Setup FogFlow System
 ------------------------------------------------
-* To setup FogFlow on single machine, please refer  `Single Machine`_, 
-* To setup FogFlow on single machine, please refer  `Multiple Edge`_,
+* To setup FogFlow on single machine, please refer  `Single Machine`_.
+* To setup FogFlow on single machine, please refer  `Multiple Edge`_.
 
 Setup Other NGSI-LD Broker
 ------------------------------------------------
-* To install Orion Broker, please refer to `Docker Compose file for Orion-Broker`_, 
-* To install Scorpio Broker, please refer to `Docker Compose file for Scorpio Broker`_, 
-* To install  stellio-context-broker-ld, please refer to `Docker Compose file for Stellio-context-broker`_, 
+* To install Orion Broker, please refer to `Docker Compose file for Orion-Broker`_. 
+* To install Scorpio Broker, please refer to `Docker Compose file for Scorpio Broker`_. 
+* To install  stellio-context-broker-ld, please refer to `Docker Compose file for Stellio-context-broker`_.
 
 .. _`Docker Compose file for Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
 .. _`Docker Compose file for Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
@@ -57,7 +57,6 @@ Setup Other NGSI-LD Broker
 How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
 ================================================================================================
 
-**FogFlow uses two FogFunction for the above integration**
 
 FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
 --------------------------------------------------------------------------------------------------
@@ -72,7 +71,7 @@ Prepare FogFunction1
 
 * clone `Template`_ from FogFlow repository and define their own losic in it. There are three template written three different language python, javascript, and GoLanguage. 
 
-* create docker image by running build file by using command **./build**.
+* Create docker image by running build file by using command **./build**.
 
 
 
