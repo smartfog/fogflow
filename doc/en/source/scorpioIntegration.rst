@@ -69,11 +69,12 @@ FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Brok
 Prepare FogFunction1
 --------------------------------------------------------------------------------------------------
 
-* clone `Template`_ from FogFlow repository and define their own losic in it. There are three template written three different language python, javascript, and GoLanguage. 
+* Clone `Template`_ from FogFlow repository and define their own losic in it. There are three template written three different language python, javascript, and GoLanguage. 
 
 * Create docker image by running build file by using command **./build**.
 
-
+Register FOgFunction1
+--------------------------------------------------------------------------------------------------
 
 Register FogFuction1
 ------------------------------------------------------------------------------------------------------
@@ -85,7 +86,7 @@ Register FogFuction1
 
 
 .. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
-.. _`Template`: https://fogflow.readthedocs.io/en/latest/core_concept.html
+.. _`Template`: https://github.com/smartfog/fogflow/tree/development/application/template/NGSILD
 
 .. _`FogFunction`: https://fogflow.readthedocs.io/en/latest/core_concept.html
 
