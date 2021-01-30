@@ -59,12 +59,25 @@ How to prepare and register an NGSI-LD based fog function for processing NGSI-LD
 
 **FogFlow uses two FogFunction for the above integration**
 
+FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
+--------------------------------------------------------------------------------------------------
+.. `FogFunction`_: https://fogflow.readthedocs.io/en/latest/core_concept.html
+
 **FogFunction1** : FogFunction1 do all the analytics on data and publish the analytics data on FogFlow broker.
 
 **FogFunction2** : FogFunction-2 convert NGSI-LD notification into NGSI-LD update and send that update to NGSI-LD broker.
 
-Step to Prepare FogFunction2
+Prepare FogFunction1
 --------------------------------------------------------------------------------------------------
+
+* clone `Template`_ from FogFlow repository and define their own losic in it. There are three template written three different language python, javascript, and GoLanguage. 
+
+* create docker image by running build file by using command **./build**.
+
+
+
+Register FogFuction1
+------------------------------------------------------------------------------------------------------
 
 * Clone `FogFunction2`_ from FogFLow repository.
 * Change config.json for related NGSI-LD broker.  
@@ -73,6 +86,10 @@ Step to Prepare FogFunction2
 
 
 .. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
+.. _`Template`: https://fogflow.readthedocs.io/en/latest/core_concept.html
+
+.. _`FogFunction`: https://fogflow.readthedocs.io/en/latest/core_concept.html
+
 How to validate the entire workflow
 ================================================================================================
 
