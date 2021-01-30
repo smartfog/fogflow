@@ -7,7 +7,7 @@ Scenario
 ===============================================
 
 
-.. figure:: figures/fogflow-scorpio.png
+.. figure:: figures/fogflow-scorpio1.png
 
 
 How to set up FogFlow and Scorpio
