@@ -38,7 +38,8 @@ required version 18.03.1-ce, required version > 2.4.2
 
 Setup FogFlow System
 ------------------------------------------------
-* To install FogFlow System, please refer  `FogFlow installation Document`_, 
+* To setup FogFlow on single machine, please refer  `Single Machine`_, 
+* To setup FogFlow on single machine, please refer  `Multiple Edge`_,
 
 Setup Other NGSI-LD Broker
 ------------------------------------------------
@@ -49,7 +50,8 @@ Setup Other NGSI-LD Broker
 .. _`Docker Compose file for Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
 .. _`Docker Compose file for Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
 .. _`Docker Compose file for Stellio-context-broker`: https://github.com/smartfog/fogflow/tree/development/test/stellio-context-broker-ld
-.. _`FogFlow installation Document`: https://fogflow.readthedocs.io/en/latest/setup.html
+.. _`Single Machine`: https://fogflow.readthedocs.io/en/latest/onepage.html
+.. _`Multiple Edge`: https://fogflow.readthedocs.io/en/latest/setup.html
 
 
 How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
