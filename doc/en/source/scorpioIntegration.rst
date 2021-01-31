@@ -178,9 +178,9 @@ How to validate the entire workflow
 
 **Step-3** Update on NGSI-LD Broker will send a notification on FogFlow Broker. 
 
-**Step-4** FogFlow Broker forword the above notification on FogFunction1. FogFunction1 sends update request to the FogFlow Broker again  after applying all the defind analystics in FogFunction2.
+**Step-4** FogFlow Broker forword the above notification on FogFunction1. FogFunction1 sends update request to the FogFlow Broker again  after applying all the defind analystics in FogFunction1.
 
-**Step-5** FogFlow Broker sends the notification to the FogFunction2 . NGSI-LD data format and forwards it to the NGSI-LD  Broker.
+**Step-5** FogFlow Broker sends the notification to the FogFunction2 . FogFunction2 convert the notification in NGSI-LD data format and forwards it to the NGSI-LD  Broker.
 
 Using NGSI-LD specification implementation 
 ===============================================
