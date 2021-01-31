@@ -105,7 +105,7 @@ Register FogFuction2
 How to validate the entire workflow
 ================================================================================================
 
-**Step-1** Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using  `configration script`_. Before using the  we have need to change config.json as shown in the following figure . 
+**Step-1** Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using  `configration script`_. Before using the  configration script we have need to change config.json as shown in the following figure . 
  
  .. figure:: figures/ScorpioIntegrationConfig1.png
 
