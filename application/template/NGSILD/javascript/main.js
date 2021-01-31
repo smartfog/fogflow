@@ -195,8 +195,7 @@ function query2execution() {
 function notify2execution() {
     // get the listening port number from the environment variables given by the FogFlow edge worker
     var myport = process.env.myport;
-
-    // set up the NGSI agent to listen on 
+    //set up the NGSI agent to listen on 
     NGSIAgent.setNotifyHandler(handleNotify);
     NGSIAgent.setAdminHandler(handleAdmin);
     NGSIAgent.start(myport, startApp);
@@ -215,6 +214,7 @@ function runInOperationMode() {
 
     // apply the configuration
     var adminCfg = process.env.adminCfg;
+    console.log(adminCfg)
     console.log("handle the initial admin configuration", adminCfg)
     try {
         const commands = JSON.parse(adminCfg)
