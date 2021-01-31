@@ -70,10 +70,13 @@ function setAdminHandler(newHandler) {
 
 function readContextElements(body) {
 	var ctxObjects = [];
-	if (body['type'] =  'Notification') {
-            for (attr in body['data']){
-		ctxObj = element2Object(attr)
-                ctxObjects.push(ctxObj)
+	if (body["type"] ==  "Notification") {
+            var NotificationData = body["data"]
+            var len = NotificationData.length
+            for ( var i=0; i < len; i++) {
+                var ctxObjEle = NotificationData[i]
+		var ctxObj = CtxElement2JSONObject(ctxObjEle)
+                ctxObjects.push(ctxObj);
 	    }
 	}
 	return ctxObjects
@@ -81,7 +84,7 @@ function readContextElements(body) {
 
 function handleNotify(req, res, next) {
 	if (notifyHandler) {
-        logger.debug('Handling notification from [%s]', req.get('host'));		
+        //logger.debug('Handling notification from [%s]', req.get('host'));		
 		var ctxs = readContextElements(req.body);
 		notifyHandler(req, ctxs, res);		
         next();

@@ -1,5 +1,5 @@
 *****************************************
-Integrate FogFlow with Scorpio Broker
+Integrate FogFlow with Other NGSI-LD Broker
 *****************************************
 
 
@@ -7,26 +7,180 @@ Scenario
 ===============================================
 
 
-.. figure:: figures/fogflow-scorpio.png
+.. figure:: figures/fogflow-scorpio1.png
 
 
 How to set up FogFlow and Scorpio
 ===============================================
 
+Prerequisite for all System
+------------------------------------------------
+
+Here are the prerequisite commands for starting all system :
+
+1. docker
+
+2. docker-compose
+
+For ubuntu system, you need to install docker-ce and docker-compose.
+
+To install Docker CE, please refer to `Install Docker CE`_, required version > 18.03.1-ce;
+
+.. important:: 
+	**please also allow your user to execute the Docker Command without Sudo**
+
+
+To install Docker Compose, please refer to `Install Docker Compose`_, 
+required version 18.03.1-ce, required version > 2.4.2
+
+.. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
+.. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
+
+Setup FogFlow System
+------------------------------------------------
+* To setup FogFlow on single machine, please refer  `Single Machine`_.
+* To setup FogFlow on single machine, please refer  `Multiple Edge`_.
+
+Setup Other NGSI-LD Broker
+------------------------------------------------
+* To install Orion Broker, please refer to `Docker Compose file for Orion-Broker`_. 
+* To install Scorpio Broker, please refer to `Docker Compose file for Scorpio Broker`_. 
+* To install  stellio-context-broker-ld, please refer to `Docker Compose file for Stellio-context-broker`_.
+
+.. _`Docker Compose file for Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
+.. _`Docker Compose file for Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
+.. _`Docker Compose file for Stellio-context-broker`: https://github.com/smartfog/fogflow/tree/development/test/stellio-context-broker-ld
+.. _`Single Machine`: https://fogflow.readthedocs.io/en/latest/onepage.html
+.. _`Multiple Edge`: https://fogflow.readthedocs.io/en/latest/setup.html
 
 
 How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
 ================================================================================================
 
 
+FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
+--------------------------------------------------------------------------------------------------
 
+FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
+--------------------------------------------------------------------------------------------------
+.. `FogFunction`_: https://fogflow.readthedocs.io/en/latest/core_concept.html
+
+**FogFunction1** : FogFunction1 do all the analytics on data and publish the analytics data on FogFlow broker.
+
+**FogFunction2** : FogFunction-2 convert NGSI-LD notification into NGSI-LD update and send that update to NGSI-LD broker.
+
+Prepare FogFunction1
+--------------------------------------------------------------------------------------------------
+
+* Clone `Template`_ from FogFlow repository and define their own losic in it. There are three template written three different language python, javascript, and GoLanguage. 
+
+* Create docker image by running build file by using command **./build**.
+
+Register FogFuction1
+------------------------------------------------------------------------------------------------------
+
+* For register FogFunction1 please refer `Link`_.
+
+Prepare FogFunction2
+--------------------------------------------------------------------------------------------------
+
+* Clone `FogFunction2`_ from FogFLow repository.
+* Change config.json for NGSILDBroekrURL. In the following figure given NGSILDBroekrURL is combination of ip and port of scorpio Broker.
+
+.. figure:: figures/ScorpioIntegrationConfig.png
+
+* Create docker image by running build file by using command **./build**.
+
+
+Register FogFuction2
+------------------------------------------------------------------------------------------------------
+* For register FogFunction2 please refer `Link`_.
+
+.. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
+.. _`Template`: https://github.com/smartfog/fogflow/tree/development/application/template/NGSILD
+
+.. _`FogFunction`: https://fogflow.readthedocs.io/en/latest/core_concept.html
+.. _`Link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
 How to validate the entire workflow
 ================================================================================================
 
+**Step-1** Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using  `configration script`_. Before using the  configration script we have need to change config.json as shown in the following figure . 
+ 
+ .. figure:: figures/ScorpioIntegrationConfig1.png
+
+.. _`configration script`: https://github.com/smartfog/fogflow/tree/development/test/ConfigrationScript
+
+**Step-2** Send create and update request to the NGSI-LD Broker.
+
+* Create request to the NGSI-LD Broker
+
+.. code-block:: console
+
+	curl -iX POST \
+  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/' \
+   	-H 'Content-Type: application/json' \
+   	-H 'Accept: application/ld+json' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+  	-d '
+	{
+ 		"id": "urn:ngsi-ld:Vehicle:A191",
+ 		"type": "Vehicle",
+ 		"isParked": {
+ 			"type": "Relationship",
+ 			"object": "urn:ngsi-ld:OffStreetParking:Downtown",
+ 			"providedBy": {
+ 				"type": "Relationship",
+ 				"object": "urn:ngsi-ld:Person:Bob"
+ 			}
+ 		},
+
+ 		"brandName": {
+ 			"type": "Property",
+ 			"value": "BMW"
+ 		}
+ 	}'
+	
+* Update request to NGSI-LD Broker
+
+.. code-block:: console
+
+	curl -iX PATCH \
+  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A191'/attrs \
+   	-H 'Content-Type: application/json' \
+   	-H 'Accept: application/ld+json' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+  	-d '
+	{
+ 		"brandName": {
+ 			"type": "Property",
+ 			"value": "Audi"
+ 		}
+ 	}'
+
+* Append request to NGSI-LD Broker
+
+.. code-block:: console
+
+	curl -iX POST \
+  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A191'/attrs \
+   	-H 'Content-Type: application/json' \
+   	-H 'Accept: application/ld+json' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+  	-d '
+	{
+ 		"brandName1": {
+ 			"type": "Property",
+ 			"value": "BMW1"
+ 		}
+ 	}'
 
 
+**Step-3** Update on NGSI-LD Broker will send a notification on FogFlow Broker. 
 
+**Step-4** FogFlow Broker forword the above notification on FogFunction1. FogFunction1 sends update request to the FogFlow Broker again  after applying all the defind analystics in FogFunction1.
+
+**Step-5** FogFlow Broker sends the notification to the FogFunction2 . FogFunction2 convert the notification in NGSI-LD data format and forwards it to the NGSI-LD  Broker.
 
 Using NGSI-LD specification implementation 
 ===============================================
