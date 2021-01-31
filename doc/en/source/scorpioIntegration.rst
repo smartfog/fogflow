@@ -60,6 +60,9 @@ How to prepare and register an NGSI-LD based fog function for processing NGSI-LD
 
 FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
 --------------------------------------------------------------------------------------------------
+
+FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
+--------------------------------------------------------------------------------------------------
 .. `FogFunction`_: https://fogflow.readthedocs.io/en/latest/core_concept.html
 
 **FogFunction1** : FogFunction1 do all the analytics on data and publish the analytics data on FogFlow broker.
@@ -73,22 +76,31 @@ Prepare FogFunction1
 
 * Create docker image by running build file by using command **./build**.
 
-Register FOgFunction1
---------------------------------------------------------------------------------------------------
-
 Register FogFuction1
 ------------------------------------------------------------------------------------------------------
 
+* For register FogFunction1 please refer `Link`_.
+
+Prepare FogFunction2
+--------------------------------------------------------------------------------------------------
+
 * Clone `FogFunction2`_ from FogFLow repository.
-* Change config.json for related NGSI-LD broker.  
+* Change config.json for NGSILDBroekrURL. In the following figure given NGSILDBroekrURL is combination of ip and port of scorpio Broker.
 
 .. figure:: figures/ScorpioIntegrationConfig.png
 
+* Create docker image by running build file by using command **./build**.
+
+
+Register FogFuction2
+------------------------------------------------------------------------------------------------------
+* For register FogFunction2 please refer `Link`_.
 
 .. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
 .. _`Template`: https://github.com/smartfog/fogflow/tree/development/application/template/NGSILD
 
 .. _`FogFunction`: https://fogflow.readthedocs.io/en/latest/core_concept.html
+.. _`Link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
 How to validate the entire workflow
 ================================================================================================
