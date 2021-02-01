@@ -57,7 +57,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=${ENVIRONMENT}
     ports:
-      - 8080:8080
+      - 8880:8080
   entity-service:
     container_name: stellio-entity-service
     image: stellio/stellio-entity-service:${STELLIO_DOCKER_TAG}
