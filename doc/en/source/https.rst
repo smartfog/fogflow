@@ -207,6 +207,14 @@ Terminology
 .. _`PEP Proxy Wilma`: https://fiware-pep-proxy.readthedocs.io/en/latest/
 
 
+Security Architecture
+------------------------
+
+
+.. figure:: figures/Integrated_Security.png
+
+
+
 Cloud and Edge Interaction with IDM 
 ------------------------------------
 
