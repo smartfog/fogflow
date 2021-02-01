@@ -50,7 +50,7 @@ async function setSchema(dgraphClient) {
             longitude: float .
             name: string .
             type: string .
-	    value: string . 
+	    	value: string . 
     `;
     const op = new dgraph.Operation();
     op.setSchema(schema);

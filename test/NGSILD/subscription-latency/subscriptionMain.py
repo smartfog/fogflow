@@ -102,9 +102,12 @@ def subscribe():
 if __name__ == '__main__':
      #run app
     setConfig()
-    #runApp()
-    sid = subscribe()
+    
+    #sid = subscribe()
+    
     #update(noOfRequest)
+
+    runApp()
     
      
 
