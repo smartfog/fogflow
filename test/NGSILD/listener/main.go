@@ -47,7 +47,7 @@ func main() {
 }
 
 func onTimer() {
-	fmt.Println("timer")
+	//fmt.Println("timer")
 	if current_num != previous_num {
 		fmt.Printf("total =  %d, throughput = %d \r\n", current_num, current_num-previous_num)
 	}
@@ -55,14 +55,13 @@ func onTimer() {
 	previous_num = current_num
 }
 
-type publishContextFunc func(ctxObj map[string]interface{})
+// to deal with the received notification messages
 
-// publish update on FogFlow broker
+func fogfunction(ctxObj map[string]interface{}) error {
+	for k, v := range ctxObj {
+		fmt.Printf("%s\t%+v\n", k, v)
+	}
 
-func fogfunction(ctxObj map[string]interface{}, publish publishContextFunc) error {
-	fmt.Println(ctxObj)
-	//============== publish data  ==============
-	publish(ctxObj)
 	return nil
 }
 
@@ -102,12 +101,18 @@ func onNotify(w http.ResponseWriter, r *http.Request) {
 		//var context []interface{}
 		//context = append(context, DEFAULT_CONTEXT)
 		notifyElement, _ := getStringInterfaceMap(r)
+
+		fmt.Println("+v\n", notifyElement)
+
 		notifyElemtData := notifyElement["data"]
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		w.WriteHeader(200)
+
+		fmt.Println("=======================\r\n")
+
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
-			fmt.Println(notifyData)
+			fogfunction(notifyData)
 		}
 	}
 }

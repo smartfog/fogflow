@@ -3,487 +3,180 @@ Integrate FogFlow with Other NGSI-LD Broker
 *****************************************
 
 
-Scenario
-===============================================
+This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
+on top of the raw data captured in the NGSI-LD brokers, such as Scorpio, Orion-LD, and Stellio. 
+The following diagram shows a simple example of how to do this in details, mainly including
+three aspects with 8 steps
 
-
-.. figure:: figures/fogflow-scorpio1.png
-
-
-How to set up FogFlow and Scorpio
-===============================================
-
-Prerequisite for all System
-------------------------------------------------
-
-Here are the prerequisite commands for starting all system :
-
-1. docker
-
-2. docker-compose
-
-For ubuntu system, you need to install docker-ce and docker-compose.
-
-To install Docker CE, please refer to `Install Docker CE`_, required version > 18.03.1-ce;
-
-.. important:: 
-	**please also allow your user to execute the Docker Command without Sudo**
-
-
-To install Docker Compose, please refer to `Install Docker Compose`_, 
-required version 18.03.1-ce, required version > 2.4.2
-
-.. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
-.. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
-
-Setup FogFlow System
-------------------------------------------------
-* To setup FogFlow on single machine, please refer  `Single Machine`_.
-* To setup FogFlow on single machine, please refer  `Multiple Edge`_.
-
-Setup Other NGSI-LD Broker
-------------------------------------------------
-* To install Orion Broker, please refer to `Docker Compose file for Orion-Broker`_. 
-* To install Scorpio Broker, please refer to `Docker Compose file for Scorpio Broker`_. 
-* To install  stellio-context-broker-ld, please refer to `Docker Compose file for Stellio-context-broker`_.
-
-.. _`Docker Compose file for Orion-Broker`: https://github.com/smartfog/fogflow/tree/development/test/orion-ld
-.. _`Docker Compose file for Scorpio Broker`: https://github.com/smartfog/fogflow/tree/development/test/scorpio
-.. _`Docker Compose file for Stellio-context-broker`: https://github.com/smartfog/fogflow/tree/development/test/stellio-context-broker-ld
-.. _`Single Machine`: https://fogflow.readthedocs.io/en/latest/onepage.html
-.. _`Multiple Edge`: https://fogflow.readthedocs.io/en/latest/setup.html
-
-
-How to prepare and register an NGSI-LD based fog function for processing NGSI-LD data
-================================================================================================
-
-
-FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
---------------------------------------------------------------------------------------------------
-
-FogFlow uses two `FogFunction`_ for integration between FogFlow and NGSI-LD Broker
---------------------------------------------------------------------------------------------------
-.. `FogFunction`_: https://fogflow.readthedocs.io/en/latest/core_concept.html
-
-**FogFunction1** : FogFunction1 do all the analytics on data and publish the analytics data on FogFlow broker.
-
-**FogFunction2** : FogFunction-2 convert NGSI-LD notification into NGSI-LD update and send that update to NGSI-LD broker.
-
-Prepare FogFunction1
---------------------------------------------------------------------------------------------------
-
-* Clone `Template`_ from FogFlow repository and define their own losic in it. There are three template written three different language python, javascript, and GoLanguage. 
-
-* Create docker image by running build file by using command **./build**.
-
-Register FogFuction1
-------------------------------------------------------------------------------------------------------
-
-* For register FogFunction1 please refer `Link`_.
-
-Prepare FogFunction2
---------------------------------------------------------------------------------------------------
-
-* Clone `FogFunction2`_ from FogFLow repository.
-* Change config.json for NGSILDBroekrURL. In the following figure given NGSILDBroekrURL is combination of ip and port of scorpio Broker.
-
-.. figure:: figures/ScorpioIntegrationConfig.png
-
-* Create docker image by running build file by using command **./build**.
-
-
-Register FogFuction2
-------------------------------------------------------------------------------------------------------
-* For register FogFunction2 please refer `Link`_.
-
-.. _`FogFunction2`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/scorpioOperator
-.. _`Template`: https://github.com/smartfog/fogflow/tree/development/application/template/NGSILD
-
-.. _`FogFunction`: https://fogflow.readthedocs.io/en/latest/core_concept.html
-.. _`Link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
-
-How to validate the entire workflow
-================================================================================================
-
-**Step-1** Send subscription request  to the NGSI-LD broker and trigger FogFunction2 by using  `configration script`_. Before using the  configration script we have need to change config.json as shown in the following figure . 
+* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-3**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 4**)
+* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 5-8**)
  
- .. figure:: figures/ScorpioIntegrationConfig1.png
 
-.. _`configration script`: https://github.com/smartfog/fogflow/tree/development/test/ConfigrationScript
+.. figure:: figures/fogflow-ngsild-broker.png
 
-**Step-2** Send create and update request to the NGSI-LD Broker.
 
-* Create request to the NGSI-LD Broker
+Before looking into the detailed steps, please set up a FogFlow system and 
+an NGSI-LD broker according to the following information. 
+
+First, please refer  `FogFlow on a Single Machine`_ to set up a FogFlow system on a single host machine 
+
+.. _`FogFlow on a Single Machine`: https://fogflow.readthedocs.io/en/latest/onepage.html
+
+In terms of the NGSI-LD broker, we have different choices: Scorpio, Orion-LD, Stellio. 
+Here we take Orion-LD as a concrete example to show the detailed steps. 
+Please refer to the following steps to set up a Orion-LD broker on the same host machine. 
+The integration with the other brokers (e.g., Scorpio, Stellio) will require some small changes to the port number 
+in the requests and also the configuration files. 
 
 .. code-block:: console
 
-	curl -iX POST \
-  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/' \
-   	-H 'Content-Type: application/json' \
-   	-H 'Accept: application/ld+json' \
-   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-  	-d '
-	{
- 		"id": "urn:ngsi-ld:Vehicle:A191",
- 		"type": "Vehicle",
- 		"isParked": {
- 			"type": "Relationship",
- 			"object": "urn:ngsi-ld:OffStreetParking:Downtown",
- 			"providedBy": {
- 				"type": "Relationship",
- 				"object": "urn:ngsi-ld:Person:Bob"
- 			}
- 		},
-
- 		"brandName": {
- 			"type": "Property",
- 			"value": "BMW"
- 		}
- 	}'
+	# fetch the docker-compose file 
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/test/orion-ld/docker-compose.yml
 	
-* Update request to NGSI-LD Broker
+	# start the orion-ld broker
+	docker-compose pull
+	docker-Compose up -d 
+
+Before you start the following steps, please check if your Orion-LD broker and FogFlow system is running properly. 
+
+# check if the orion-ld broker is running
 
 .. code-block:: console
 
-	curl -iX PATCH \
-  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A191'/attrs \
-   	-H 'Content-Type: application/json' \
-   	-H 'Accept: application/ld+json' \
-   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-  	-d '
-	{
- 		"brandName": {
- 			"type": "Property",
- 			"value": "Audi"
- 		}
- 	}'
+	curl localhost:1026/ngsi-ld/ex/v1/version
 
-* Append request to NGSI-LD Broker
+# check if the FogFlow system is running properly
+	
+	open the FogFlow dashboard from your browser
 
-.. code-block:: console
+
+
+How to Fetch data from Orion-LD to FogFlow 
+================================================================
+
+
+Step 1: issue a subscription to Orion-LD 
+
+
+.. code-block:: console    
 
 	curl -iX POST \
-  	'http://<NGSI-LD Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A191'/attrs \
-   	-H 'Content-Type: application/json' \
-   	-H 'Accept: application/ld+json' \
-   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-  	-d '
+		  'http://localhost:1026/ngsi-ld/v1/subscriptions' \
+		  -H 'Content-Type: application/json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -d ' {
+             	"type": "Subscription",
+             	"entities": [{
+                   "type": "Vehicle"
+             	}],
+             	"notification": {
+                   "format": "keyValues",
+                   "endpoint": {
+                       "uri": "http://192.168.0.59:8070/ngsi-ld/v1/notifyContext/",
+                       "accept": "application/ld+json"
+             	    }
+            	}
+ 			}'
+
+
+Step 2: send an entity update to Orion-LD 
+
+
+.. code-block:: console    
+
+	
+	curl --location --request POST 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert?options=update' \
+	--header 'Content-Type: application/json' \
+	--header 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	--data-raw '[
 	{
- 		"brandName1": {
- 			"type": "Property",
- 			"value": "BMW1"
- 		}
- 	}'
-
-
-**Step-3** Update on NGSI-LD Broker will send a notification on FogFlow Broker. 
-
-**Step-4** FogFlow Broker forword the above notification on FogFunction1. FogFunction1 sends update request to the FogFlow Broker again  after applying all the defind analystics in FogFunction1.
-
-**Step-5** FogFlow Broker sends the notification to the FogFunction2 . FogFunction2 convert the notification in NGSI-LD data format and forwards it to the NGSI-LD  Broker.
-
-Using NGSI-LD specification implementation 
-===============================================
-Scorpio integration with FogFlow enable FogFlow task to communicate with scorpio Broker.
-The figure below shows how data will transmit between scorpio broker, FogFlow broker and FogFlow task.
-
-.. figure:: figures/scorpioIntegration.png
-
-Integration steps
------------------------
-
-**Pre-Requisites:**
-
-* FogFlow should be up and running with atleast one node.
-* Scorpio Broker should be up and running.
-* Create and trigger topology of two FogFunctions (`See Document`_).
-* Create one fog Function (FogFunction-1) that publish update on FogFlow Broker (`Use template`_).
-* Create another fog Function (FogFunction-2) that publish update on Scorpio Broker (`Use operator`_).
-
-.. _`See Document`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html.
-
-.. _`Use template`: https://github.com/smartfog/fogflow/tree/development/application/template/NGSILD/python.
-
-.. _`Use operator`: https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/NGSILDDemo.
+	   "id": "urn:ngsi-ld:Vehicle:A106",
+	   "type": "Vehicle",
+	   "brandName": {
+	                  "type": "Property",
+	                  "value": "Mercedes"
+	    },
+	    "isParked": {
+	                  "type": "Relationship",
+	                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+	                  "providedBy": {
+	                                  "type": "Relationship",
+	                                  "object": "urn:ngsi-ld:Person:Bob"
+	                   }
+	     },
+	     "speed": {
+	                "type": "Property",
+	                "value": 120
+	      },
+	     "location": {
+	                    "type": "GeoProperty",
+	                    "value": {
+	                              "type": "Point",
+	                              "coordinates": [-8.5, 41.2]
+	                    }
+	     }
+	}
+	]'
 
-
-**Below are the further steps for integration with Scorpio Broker.**
 
-**Create any entity in Scorpio Broker**
 
-.. code-block:: console
+Step 3: check if FogFlow receives the subscribed entity 
 
-     curl -iX POST \
-    'http://<Scorpio Broker>/ngsi-ld/v1/entities/' \
-     -H 'Content-Type: application/json' \
-     -H 'Accept: application/ld+json' \
-     -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-    -d '
-        {
-         "id": "urn:ngsi-ld:Vehicle:A13",
-         "type": "Vehicle",
-             "brandName": {
-                  "type": "Property",
-                  "value": "BMW",
-                  "observedAt": "2017-07-29T12:00:04"
-                },
-                 "isParked": {
-                   "type": "Relationship",
-                   "object": "urn:ngsi-ld:OffStreetParking:Downtown",
-                   "observedAt": "2017-07-29T12:00:04",
-                    "providedBy": {
-                        "type": "Relationship",
-                        "object": "urn:ngsi-ld:Person:Bob"
-                     	},
-		}
-        "location": {
-                "type": "GeoProperty",
-                "value": {
-                        "type": "Point",
-                        "coordinates": [-8.5, 41.2]
-                }
-        }
-  }'
 
+please prepare the CURL command to query the "Vehicle" entities from  FogFlow thinBroker. 
 
 
-**FogFlow Will subscribe to scorpio Broker to get notification for every update to above created entity.**
+.. code-block:: console    
 
-.. code-block:: console
+	curl -iX GET \
+		  'http://localhost:8070/ngsi-ld/v1/entities?type=Vehicle' \
+		  -H 'Content-Type: application/ld+json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
-    curl -iX POST \
-    'http://<Scorpio Broker>/ngsi-ld/v1/subscriptions/' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-      {
-         "type": "Subscription",
-         "entities": [{
-                "id" : "urn:ngsi-ld:Vehicle:A13",
-                "type": "Vehicle"
-           }],
-          "watchedAttributes": ["*"],
-          "notification": {
-                 "attributes": ["*"],
-                  "format": "keyValues",
-                 "endpoint": {
-                        "uri": "http://<FogFLow Broker>/ngsi-ld/v1/notifyContext/",
-                        "accept": "application/json"
-                }
-         }
-    }'
 
 
-**FogFlow Task will subscriber to FogFlow to get notification for furthur analysis.**
+How to Program and Apply a Data Analytics Function 
+================================================================
 
-**NGSI-LD device will sends some update to scopio broker**
+Step 4: apply fogfunction1 to do some customized data analytics
 
-.. code-block:: console
 
-    curl -iX PATCH \
-    'http://<Scorpio Broker>/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A13/attrs' \
-      -H 'Content-Type: application/json' \
-      -H 'Accept: application/ld+json' \
-      -H 'Link: {{https://json-ld.org/contexts/person.jsonld}}; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-      -d '
-     {
-	"brandName": {
-		"type": "Property",
-        	"value" : "BM2"
-      		}
-     }'
+please change the code at "/application/operator/alert" to do some simple analysis, 
+for example, generate an alert message when the speed of vehile is greater than some threshold. 
 
 
+How to Push the Generated Result back to the NGSI-LD broker 
+=========================================================================
 
-**Following process will occur internally in FogFLow**
+please register fogfunction2 by default, including its operator, docker image, and fog function. 
+Put them into the initialization list of the designer. 
 
-* FogFunction-1 task will publish update on the FogFlow broker.
-* FogFlow broker will send the notification to FogFunction-2 task.
-* FogFunction-2 will convert this notification into scorpio update and send that update to scorpio broker.
 
+Step 5: send a update message to trigger fogfunction2
 
 
-Using NGSI-LD Adapter
-===============================================
+.. code-block:: console    
 
+	#please write the curl message to trigger fogfunction2
 
-NGSI-LD Adapter is built to enable FogFlow Ecosystem to provide Linked Data to the users. `Scorpio Broker`_ being the first reference implementation of NGSI-LD Specification, is being used here for receiving the Linked-Data from Fogflow.
 
-.. _`Scorpio Broker`: https://scorpio.readthedocs.io/en/latest/
+Step 6: check if fogfunction2 is created
 
-The figure below shows how NGSI-LD Adapter works in transforming the NGSIv1 data from Fogflow into NGSI-LD data to Scorpio Broker.
 
-.. figure:: figures/ngsi-ld-adapter.png
+explain where the users can check if the fogfunction2 is triggered. 
 
-1. User sends a subscription request to the adapter. 
-2. The adapter then forwards this request to the Fogflow broker, to subscribe itself for the Context Data specified in its request.
-3. Context data update is received at Fogflow broker.
-4. Adapter receives notification from the Fogflow broker for the subscribed data.
-5. Adapter converts the received data into NGSI-LD data format and forwards it to the Scorpio broker. 
 
+Step 7: check if Orion-LD has received the forwarded results
 
-Running NGSI-LD Adapter
----------------------------
 
-**Pre-Requisites:**
+.. code-block:: console    
 
-* Fogflow should be up and running with atleast one node.
-* Scorpio broker should be up and running.
+	curl -iX GET \
+		  'http://localhost:8070/ngsi-ld/v1/entities?type=Alert' \
+		  -H 'Content-Type: application/ld+json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
-NGSI-LD Adapter can be run under Fogflow ecosystem using Fogflow Dashboard as given below. 
-
-**Register an Operator:** Go to "Operator" in Operator Registry on Fogflow Dashboard. Register a new Operator with a Parameter Element as given below.
-   
-   Name: service_port ; Value: 8888
-   
-   (Is is assumed that the user has already gone through "REGISTER YOUR TASK OPERATORS" in `this`_ tutorial.)
-
-.. _`this`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
-   
-**Register a Docker Image:** Go to "DockerImage" in Operator Registry and register an image fogflow/ngsildadapter:latest. Associate it with the above operator by choosing the operator from DropDown. Users can also build their image for NGSI-LD-Adapter by editing and running `build`_ file.
-
-.. _`build`: https://github.com/smartfog/fogflow/blob/document-update/application/operator/NGSI-LD-Adapter/build
-
-**Register a Fog Function** as shown in the figure below. In "SelectedType", provide the Entity Type (say "LD") of the Context Data that will be used to trigger this Fog Function. Choose the operator registered in Step#1 as the operator in Fog Function.
-
-.. figure:: figures/fogfunction_ngsi-ld-adapter.png
-
-
-**Trigger the Fog Function** by sending an update request to Fogflow Broker with the Entity Type as "LD" (or whatever is specified in Step#3 as the SelectedType). It should include fogflowIP and ngbIP in the attributes along with location metadata. Example request is given below:
-
-.. code-block:: console
-
-    curl -iX POST \
-      'http://<Fogflow-Broker-IP>:8070/ngsi10/updateContext' \
-      -H 'Content-Type: application/json' \
-      -d '
-      {
-        "contextElements": [
-        {
-            "entityId": {
-            "id": "LD001",
-            "type": "LD",
-            "isPattern": false
-            },
-            "attributes": [
-                 {
-                     "name": "fogflowIP",
-                     "type": "string",
-                     "value": "<IP>"
-                 },
-                 {
-                     "name": "ngbIP",
-                     "type": "string",
-                     "value": "<IP>"
-                 }
-             ],
-             "domainMetadata": [
-                 {
-                     "name": "location",
-                     "type": "point",
-                     "value": {
-                                  "latitude": 52,
-                                  "longitude": 67
-                     }
-                 }
-             ]
-        }
-        ],
-        "updateAction": "UPDATE"
-       }'
-
-
-NGSI-LD-Adapter task will be created and it will be listening on port 8888. Users can list it in the tasks running on either the cloud node or the edge node, whichever is nearest to the location provided in the metadata of the above request. 
-
-
-How to use  NGSI-LD Adapter
------------------------------
-
-To use the NGSI-LD-Adapter for context data transformation, follow the below steps.
-
-
-**Send subscription request** to LD-Adapter, it will forward the same request to Fogflow Broker. This is because the access to Fogflow broker will not be available directly to the user. Examle Subscription request is given below:
-
-.. code-block:: console
-
-    curl -iX POST \
-      'http://<LD-Adapter-Host-IP>:8888/subscribeContext' \
-      -H 'Content-Type: application/json' \
-      -d '
-    {
-      "entities": [
-        {
-          "id": "Temperature.*",
-          "type": "Temperature",
-          "isPattern": true
-        }
-      ],
-      "attributes": [
-        "temp"
-      ],
-      "restriction": {
-        "scopes": [
-          {
-            "scopeType": "circle",
-            "scopeValue": {
-              "centerLatitude": 49.406393,
-              "centerLongitude": 8.684208,
-              "radius": 2000
-            }
-          }
-        ]
-      },
-      "reference": "http://<LD-Adapter-Host-IP>:8888"
-    }'
-
-
-**Send update request** to Fogflow Broker with an entity of type and attributes defined in the above subscription. An example request is given below:
-
-.. code-block:: console
-
-    curl -iX POST \
-      'http://<Fogflow-Broker-IP>:8070/ngsi10/updateContext' \
-      -H 'Content-Type: application/json' \
-      -d '
-      {
-        "contextElements": [
-          {
-            "entityId": {
-              "id": "Temperature001",
-              "type": "Temperature",
-              "isPattern": false
-            },
-            "attributes": [
-              {
-                "name": "temp",
-                "type": "float",
-                "value": 34
-              }
-            ],
-            "domainMetadata": [
-              {
-              "name": "location",
-              "type": "point",
-              "value": {
-                "latitude": 49.406393,
-                "longitude": 8.684208
-                }
-              }
-             ]
-          }
-        ],
-        "updateAction": "UPDATE"
-      }'
-
-
-Check if the entity in NGSI-LD format has been updated on Scorpio Broker by visiting URL:  http://<Scorpio-Broker-IP:Port>/ngsi-ld/v1/entities?type=http://example.org/Temperature
-
-Following code block shows the trasformed context data.
-
-.. code-block:: console
-
-    {"@context": ["https://schema.lab.fiware.org/ld/context", "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
-    {"Temperature": "http://example.org/Temperature", "temp": "http://example.org/temp"}], "type": "Temperature", 
-    "id": "urn:ngsi-ld:Temperature001", "temp": {"type": "Property", "value": 34}, "location": {"type": "GeoProperty", 
-    "value": "{\"type\": \"point\", \"coordinates\": [49.406393, 8.684208]}"}}
