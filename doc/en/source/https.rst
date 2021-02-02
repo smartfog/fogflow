@@ -207,52 +207,12 @@ Terminology
 .. _`PEP Proxy Wilma`: https://fiware-pep-proxy.readthedocs.io/en/latest/
 
 
+Security Architecture
+------------------------
 
 
-**IoT Device Interaction with FogFlow**
+.. figure:: figures/Integrated_Security.png
 
-
-.. figure:: figures/architectureDiagram1.png
-
-
-
-**Flow of Requests as shown in diagram:**
-
-**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For this, user can use the script along with his username and password.
-
-
-.. code-block:: console
-
-
-        ./user_token_generation.sh admin@test.com 1234
-
-
-Note: For example, in above snippet username is "admin@test.com" and password is "1234"
-
-**Step 2** : Script will return an user access token as shown below.
-
-
-.. figure:: figures/user_token.png
-
-
-**Step 3** : User shares his access token ( i.e. User Access Token ) with IoT Device.
-
-**Step 4** : Then IoT devices get registered using the user access token passed as an argument to a script.
-
-.. code-block:: console
-
-
-        ./device_token_generation.sh f9ffa629-9aff-4c98-ac57-1caa2917fed2
-
-Note: For example, in above snippet "f9ffa629-9aff-4c98-ac57-1caa2917fed2" is the user access token.
-
-**Step 5** : Script will return device access token and device credentials(ID and password) as shown below.
-
-
-.. figure:: figures/device_token.png
-
-
-**Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
 
 
 Cloud and Edge Interaction with IDM 
@@ -388,14 +348,14 @@ To setup PEP proxy for securing Designer, change the followings inside the pep_c
 
 Restart the PEP Proxy container after above changes.
 
-**Generate Access Token** 
+**Generate Application  Access Token** 
 
-**Step2**: Request Keyrock IDM to generate access-token and refresh token.
+**Step2**: Request Keyrock IDM to generate application access-token and refresh token.
 
 
 1. Set the HTTP request Header, payload and Authorization field as per below screen shots.
 
-2. Click “Send” Button to get access-token.
+2. Click “Send” Button to get application access-token.
 
 
 
@@ -420,17 +380,15 @@ The flow of cloud security implementation can be understand by below figure.
 
 Below are some points related to above architecture diagram:
 
-1. Access-token should be already known to user.
+1. Registered a PEP Proxy for designer as an application in Keyrock.
 
-2. For an application designer register a pep proxy to keyrock.
+2. Keyrock will send access-token to pep.
 
-3. Keyrock will send access-token to pep.
+3. Using that token user will send create entity request to designer.
 
-4. Using that token user will send create entity request to designer.
+4. Designer will send token to keyrock to authenticate.
 
-5. Designer will send token to keyrock to authenticate.
-
-6. Entity creation request will transfer to FogFlow.
+5. Entity creation request will transfer to FogFlow.
 
 
 
@@ -531,8 +489,56 @@ To secure FogFlow edge-IoT device communication Auth Token has been used on beha
 
 Note: the start.sh script will return  Application ID, Application Secret, PEP Proxy ID, PEP Proxy Secret, Authorization code, IDM Token and the access token on console. Please save these for further use.
 
-Register IoT Device on Keyrock
-------------------------------
+
+**IoT Device Interaction with FogFlow**
+
+
+.. figure:: figures/architectureDiagram1.png
+
+
+
+**Flow of Requests as shown in diagram:**
+
+**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For this, user can use the script along with his username and password.
+
+
+.. code-block:: console
+
+
+        ./user_token_generation.sh admin@test.com 1234
+
+
+Note: For example, in above snippet admin username is "admin@test.com" and password is "1234"
+
+**Step 2** : Script will return an user access token as shown below.
+
+
+.. figure:: figures/user_token.png
+
+
+**Step 3** : User shares his access token ( i.e. User Access Token ) with IoT Device.
+
+**Step 4** : Then IoT devices get registered using the user access token passed as an argument to a script.
+
+.. code-block:: console
+
+
+        ./device_token_generation.sh f9ffa629-9aff-4c98-ac57-1caa2917fed2
+
+Note: For example, in above snippet "f9ffa629-9aff-4c98-ac57-1caa2917fed2" is the user access token.
+
+**Step 5** : Script will return device access token and device credentials(ID and password) as shown below.
+
+
+.. figure:: figures/device_token.png
+
+
+**Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
+
+
+
+Register IoT Device on Keyrock Using curl request
+---------------------------------------------------
 
 An example request to register IoT Device is given below 
 
@@ -564,8 +570,8 @@ Note: Please save the Access Token for further utilisation
 
 .. figure:: figures/keyrock_token.png
 
-Register Device on Edge Node
-----------------------------
+Register Device on Edge Node using curl request
+-----------------------------------------------------
 
 An example payload of registration device is given below.
 
