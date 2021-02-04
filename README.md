@@ -3,7 +3,7 @@
 [![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/processing.svg)](https://www.fiware.org/developers/catalogue/)
 [![License: BSD-4-Clause](https://img.shields.io/badge/license-BSD%204%20Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
 [![Docker Status](https://img.shields.io/docker/pulls/fogflow/discovery.svg)](https://hub.docker.com/r/fogflow)
-[![Support badge](https://nexus.lab.fiware.org/repository/raw/public/badges/stackoverflow/fogflow.svg)](https://stackoverflow.com/search?q=%5Bfiware%5D%20fogflow)
+[![Support badge](https://img.shields.io/badge/tag-fiware--fogflow-orange.svg?logo=stackoverflow)](https://stackoverflow.com/search?q=%5Bfiware%5D%20fogflow)
 <br>
 [![Documentation badge](https://img.shields.io/readthedocs/fogflow.svg)](http://fogflow.readthedocs.org/en/latest/)
 ![Status](https://nexus.lab.fiware.org/repository/raw/public/static/badges/statuses/fogflow.svg)
@@ -20,6 +20,7 @@ This project is part of [FIWARE](https://www.fiware.org/). For more information
 check the FIWARE Catalogue entry for
 [Processing](https://github.com/Fiware/catalogue/tree/master/processing).
 
+-   このドキュメントは[日本語](README.ja.md)でもご覧いただけます。
 
 | :books: [Documentation](https://fogflow.rtfd.io/) | :mortar_board: [Academy](https://fiware-academy.readthedocs.io/en/latest/processing/fogflow) |:whale: [Docker Hub](https://hub.docker.com/r/fogflow) | :dart: [Roadmap](https://github.com/smartfog/fogflow/blob/master/doc/roadmap.md) |
 | --- | --- | --- | --- |
