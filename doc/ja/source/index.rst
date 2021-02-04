@@ -53,6 +53,7 @@ FogFlowは、次のようなさまざまなコンテキスト (**context**) に�
     scorpioIntegration.rst
     quantumleapIntegration.rst          
     wirecloudIntegration.rst
+    k8sIntegration.rst
     system_monitoring.rst
     https.rst
    
@@ -67,7 +68,6 @@ FogFlowは、次のようなさまざまなコンテキスト (**context**) に�
     api.rst
     build.rst
     test.rst
-    roadmap.rst
 
 .. toctree::
     :maxdepth: 1
