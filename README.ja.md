@@ -21,7 +21,7 @@ FIWARE Catalogue エントリの
 [Processing](https://github.com/Fiware/catalogue/tree/master/processing)
 を確認してください 。
 
-| :books: [ドキュメント](https://fogflow.rtfd.io/) | :mortar_board: [Academy](https://fiware-academy.readthedocs.io/en/latest/processing/fogflow) |:whale: [Docker Hub](https://hub.docker.com/r/fogflow) | :dart: [ロードマップ](https://github.com/smartfog/fogflow/blob/master/doc/roadmap.ja.md) |
+| :books: [ドキュメント](https://fogflow.readthedocs.io/ja/latest/) | :mortar_board: [Academy](https://fiware-academy.readthedocs.io/en/latest/processing/fogflow) |:whale: [Docker Hub](https://hub.docker.com/r/fogflow) | :dart: [ロードマップ](https://github.com/smartfog/fogflow/blob/master/doc/roadmap.ja.md) |
 | --- | --- | --- | --- |
 
 ## コンテンツ
