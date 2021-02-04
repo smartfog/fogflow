@@ -14,14 +14,6 @@
 .. figure:: ../../en/source/figures/systemview.png
 
 
-FogFlow システムの状態は、システム監視ツールの Metricbeat、Elasticsearch、Grafana、つまり EMG によって監視できます。これらのツールを使用すると、エッジとFogFlow Docker サービスの状態を監視できます。エッジ ノードにデプロイされた Metricbeat。クラウド ノードにデプロイされた Elasticsearch と Grafana。
-
-次の図に示すように、FogFlow システム監視ツールをセットアップしてシステム リソースの使用状況を監視するため。
-
-
-.. figure:: ../../en/source/figures/Fogflow_System_Monitoring_Architecture.png
-
-
 FogFlow を実行するための前提条件のコマンドは次のとおりです:
 
 1. docker
@@ -59,16 +51,13 @@ Docker Compose をインストールするには、`Install Docker Compose`_ を
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/docker-compose.yml
 
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/config.json
 
 	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
-
-        # the configuration file used by metricbeat
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/nginx.conf
 	
 	
 IP構成を変更
@@ -76,41 +65,21 @@ IP構成を変更
 
 ご使用の環境に応じて、config.json で以下の IP アドレスを変更する必要があります。
 
-- **coreservice_ip**: すべての FogFlow エッジ ノードが FogFlow クラウド ノードのコア サービス (ポート80 の nginx やポート 5672 の rabbitmq など) にアクセスするために使用します。通常、これは FogFlow クラウド ノードのパブリック IP になります。
-
-- **external_hostip**: FogFlow クラウド ノードの構成の場合、これは、実行中の FogFlow コア サービスにアクセスするためにコンポーネント (Cloud Worker および Cloud Broker) によって使用される coreservice_ip と同じです。
-
-- **internal_hostip**: これはデフォルトの Docker ブリッジの IP であり、Linux ホストの "docker0" ネットワーク インターフェースです。Windows または MacOS のDocker エンジンの場合、"docker0" ネットワークインターフェイスはありません。代わりに、特別なドメイン名 "host.docker.internal" を使用する必要があります。
-
+- **my_hostip **：これはホストマシンの IP であり、ホストマシンの Web ブラウザと Docker コンテナの両方からアクセスできる必要があります。これには "127.0.0.1" を使用しないでください。
 - **site_id**: 各 FogFlow ノード (クラウド ノードまたはエッジ ノード) は、システム内で自身を識別するために一意の文字列ベースの ID を持っている必要があります。
-
 - **physical_location**: FogFlow ノードの地理的位置。
-
 - **worker.capacity**: FogFlow ノードが呼び出すことができる Docker コンテナーの最大数を意味します。
-
-
-Elasticsearch と Metricbeat の IP 構成を変更
----------------------------------------------------------------------------
-
-ご使用の環境に応じて、docker-compose.yml の次の IP アドレスを変更する必要があります。
-
-- **output.elasticsearch.hosts**: metricbeat が csv 形式でデータを共有する elasticsearch のホストの場所です。
-
-また、ご使用の環境に応じて、metricbeat.docker.yml の次の IP アドレスを変更する必要があります。
-
-- **name**: Grafana metric ダッシュボードのエッジ ノードからのクラウド ノードの一意性に付けられた名前です。IP アドレスの代わりに任意の名前を指定できます。
-
-- **hosts**: elasticsearh データベースのホストの場所であり、metricbeat がメトリックデータを共有します。
 
 
 .. important:: 
 
-        **coreservice_ip** および **external_hostip** の IP アドレスとして "127.0.0.1" を使用しないでください。これらは Docker コンテナー内で実行中のタスクによって使用されるためです。
+       "127.0.0.1" を **my_hostip** の IP アドレスとして使用しないでください。これは、Docker コンテナ内で実行中のタスクにのみアクセスできるためです。
 	
-	**Firewall rules:** external_ip を介して FogFlow Web ポータルにアクセスできるようにします。次のポートも開いている必要があります: TCP の場合は80 および 5672
+	**Firewall rules:** FogFlow Web ポータルにアクセスできるようにするには、TCP を介した次のポート 80 および 5672 が開いている必要があります。
 
-	**Mac Users:** Macbook で FogFlow をテストする場合は、Docker デスクトップをインストールし、"host.docker.internal" を使用して構成ファイルの coreservice_ip、external_hostip、internal_hostip を置き換えてください。
+	**Mac Users:** Macbook で FogFlow をテストする場合は、Docker デスクトップをインストールし、構成ファイルの my_hostip として "host.docker.internal" も使用してください。
 
+        ポート番号を変更する必要がある場合は、変更がこれら3つの構成ファイルすべてで一貫していることを確認してください。
 
 
 すべての FogFlow コンポーネントを起動
@@ -143,16 +112,14 @@ FogFlow クラウド ノードが正しく開始されているかどうかを�
 	docker ps -a
 	
 	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                 NAMES
-	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                       fogflow_nginx_1
-	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                 fogflow_cloud_worker_1
-	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                               fogflow_master_1
-	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp       fogflow_designer_1
-	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                               fogflow_cloud_broker_1
-	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp     fogflow_rabbitmq_1
-	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                               fogflow_discovery_1
-        399958d8d88a      grafana/grafana:6.5.0   "/run.sh"                29 seconds ago      Up 27 seconds       0.0.0.0:3003->3000/tcp                               fogflow_grafana_1
-        9f99315a1a1d      fogflow/elasticsearch:7.5.1 "/usr/local/bin/dock…" 32 seconds ago    Up 29 seconds       0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp       fogflow_elasticsearch_1
-        57eac616a67e      fogflow/metricbeat:7.6.0 "/usr/local/bin/dock…"   32 seconds ago     Up 29 seconds                                                                  fogflow_metricbeat_1
+	795e6afe2857   nginx:latest            "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
+	33aa34869968   fogflow/worker:3.2      "/worker"                About a minute ago   Up About a minute                                                                                                    fogflow_cloud_worker_1
+	e4055b5cdfe5   fogflow/master:3.2      "/master"                About a minute ago   Up About a minute   0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
+	cdf8d4068959   fogflow/designer:3.2    "node main.js"           About a minute ago   Up About a minute   0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
+	56daf7f078a1   fogflow/broker:3.2      "/broker"                About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
+	51901ce6ee5f   fogflow/discovery:3.2   "/discovery"             About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
+	51eff4975621   dgraph/standalone       "/run.sh"                About a minute ago   Up About a minute   0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
+	eb31cd255fde   rabbitmq:3              "docker-entrypoint.s…"   About a minute ago   Up About a minute   4369/tcp, 5671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                           fogflow_rabbitmq_1
 
 
 .. important:: 
@@ -177,55 +144,6 @@ FogFlow ダッシュボードにアクセスできるようになると、次の
 .. figure:: ../../en/source/figures/dashboard.png
 
 
-
-Grafana ダッシュボードで Elasticsearch を構成
--------------------------------------------------------------
-
-Grafana ダッシュボードは Web ブラウザーからアクセスでき、URL: http://<output.elasticsearch.hosts>:3003/ を介して現在のシステム ステータスを確認できます。Grafana ログインのデフォルトのユーザー名とパスワードは、それぞれ admin と admin です。
-
-
-- Grafana に正常にログインしたら、ホームダッシュボードの "Create your first data source" をクリックして、データソースを設定します。
-
-- Add Data Sourch ページから Elasticsearch を選択します。これで、下の図と同じページの Data Sources/Elasticsearch が表示されます。
-
-
-.. figure:: ../../en/source/figures/Elastic_config.png
-
-
-1. データソースに名前を付けます。
-2. HTTP の詳細で、elasticsearch とポートの URL に言及します。URL には HTTP を含める必要があります。
-3. Access で Server(default) を選択します。URL は、Grafana バックエンド/サーバーからアクセスできる必要があります。
-4. Elasticsearch の詳細で、Time フィールド名に @timestamp を入力します。ここで、時間フィールドのデフォルトを Elasticsearch インデックスの名前で指定できます。インデックス名またはワイルドカードには時間パターンを使用します。
-5. Elasticsearch バージョンを選択します。
-
-次に、"Save & Test" ボタンをクリックします。
-
-
-Metricbeat を設定
----------------------------------------------
-
-
-- 以下のように、metricbeat.docker.yml ファイルの Elasticsearch の詳細を変更します:
-
-
-.. code-block:: json
-
-        name: "<155.54.239.141_cloud>"
-        metricbeat.modules:
-        - module: docker
-          #Docker module parameters that has to be monitored based on user requirement, example as below
-          metricsets: ["cpu","memory","network"]
-          hosts: ["unix:///var/run/docker.sock"]
-          period: 10s
-          enabled: true
-        - module: system
-          #System module parameters that has to be monitored based on user requirement, example as below
-          metricsets: ["cpu","load","memory","network"]
-          period: 10s
-
-        output.elasticsearch:
-          hosts: '155.54.239.141:9200'
-	  
 
 既存の IoT サービスを試す
 ===========================================================
@@ -284,7 +202,7 @@ IoT デバイスをシミュレートしてフォグ ファンクションをト
 
 	
 	curl -iX POST \
-		  'http://coreservice_ip/ngsi10/updateContext' \
+		  'http://my_hostip/ngsi10/updateContext' \
 		  -H 'Content-Type: application/json' \
 		  -d '
 		{
@@ -332,81 +250,3 @@ IoT デバイスをシミュレートしてフォグ ファンクションをト
 システム管理の "Stream" の下にストリームが作成されているかどうかを確認します。
 
 .. figure:: ../../en/source/figures/fog-function-streams.png
-
-
-
-FogFlow を OrionBroker と統合
-======================================
-
-
-Orion を起動
--------------------------------------------------------------
-
-Orion のドキュメントに従って、Orion Context Broker インスタンスをここからセットアップできます: `Installing Orion`.
-
-.. _`Installing Orion`: https://fiware-orion.readthedocs.io/en/master/admin/install/index.html
-
-
-以下のコマンドを使用して、Docker で Orion をセットアップすることもできます (docker はこの方法で必要です) 注意: Orion コンテナーは MongoDB データベースに依存しています。
-
-**前提条件:** Docker がインストールされている必要があります。
-
-最初に、以下のコマンドを使用して MongoDB コンテナーを起動します:
-
-.. code-block:: console    
-
-	sudo docker run --name mongodb -d mongo:3.4
-
-
-そして、このコマンドで Orion を実行します。
-
-.. code-block:: console    
-
-	sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
-
-
-すべてが動作することを確認します。
-
-.. code-block:: console    
-
-	curl http://<Orion IP>:1026/version
-
-注意: パブリック アクセスのためにファイアウォールのポート 1026 を許可します。
-
-
-
-サブスクリプションを発行して、生成された結果を Orion Context Broker に転送
-----------------------------------------------------------------------------------
-
-次の curl リクエストを使用して、FogFlow Broker を FIWARE Orion にサブスクライブします:
-
-.. code-block:: console    
-
-	curl -iX POST \
-	  'http://coreservice_ip/ngsi10/subscribeContext' \
-	  -H 'Content-Type: application/json'  \
-	  -H 'Destination: orion-broker'  \
-	  -d '
-	{
-	  "entities": [
-	    {
-	      "id": ".*",
-	      "type": "Result",
-	      "isPattern": true
-	    }
-	  ],
-	  "reference": "http://<Orion IP>:1026/v2/op/notify"
-	}'
-
-
-このサブスクリプション リクエストは制限や属性を使用せず、エンティティ タイプに基づく一般的なサブスクリプション リクエストであることに注意してください。
-
-
-Orion Context Broker から結果をクエリ
--------------------------------------------------------------
-
-ブラウザで次の URL にアクセスし、目的のコンテキスト エンティティを検索します:
-
-.. code-block:: console    
-
-	curl http://<Orion IP>:1026/v2/entities/

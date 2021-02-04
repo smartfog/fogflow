@@ -198,16 +198,18 @@ ID 管理 (IdM) は、いくつかの認証トークンを確立された ID に
 .. _`PEP Proxy Wilma`: https://fiware-pep-proxy.readthedocs.io/en/latest/
 
 
+セキュリティ アーキテクチャ
+------------------------
+
+.. figure:: ../../en/source/figures/Integrated_Security.png
 
 
-.. figure:: ../../en/source/figures/security_architecture.png
+
+IDMとのクラウドとエッジの相互作用
+------------------------------------
 
 
-
-注意：上の図では、n (n は数値) がクラウド ノードに使用され、n がエッジ ノードに使用されています。
-
-
-FogFlow クラウド ノード フロー:
+**FogFlow クラウド ノード フロー:**
 
 1. アーキテクチャ図のように、PEP Proxy は FogFlow Designer に代わって最初に Keyrock に登録します。詳細な説明は、このチュートリアルの以下 (`below`_) のトピックに記載されています。
 
@@ -215,13 +217,13 @@ FogFlow クラウド ノード フロー:
 
 .. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#setup-security-components-on-cloud-node
 
-FogFlow エッジ ノードフロー:
+**FogFlow エッジ ノードフロー:**
 
-1. エッジ ノードに代わって、1つのアプリケーションが Keyrock に登録され、OAuth 資格情報を使用します。詳細な説明は、このチュートリアルの以下のトピックに記載されています。ここをクリックして参照してください。
+1. エッジノードに代わって、PEP Procy の1つのインスタンスが Keyrock に事前登録され、エッジは oauth 資格情報を使用して PEP Proxy の詳細をフェッチします。詳細な説明>は、このチュートリアルの以下のトピックに記載されています。ここ `here`_ をクリックして参照してください
 
 2. 認証後、エッジ ノードは FogFlow クラウド ノードと通信できるようになります。
 
-3. どのデバイスも、エッジの OAuth アクセス トークンを使用して、自身を登録したり、FogFlow エッジ ノードと通信したりできます。
+3. すべてのデバイスは、Keyrock に登録されている各 IoT デバイスに代わって生成されたアクセス トークンを使用して、自身を登録するか、FogFlow エッジノードと通信できます
 
 .. _`here`: https://fogflow.readthedocs.io/en/latest/https.html#setup-components-on-edge
 
@@ -303,7 +305,7 @@ Keyrock (http://180.179.214.135:3000/idm/) アカウントにユーザー資格�
 
 注意: Application ID、PEP Proxy のユーザー名、および PEP Proxy のパスワードは、‘Register PEP Proxy’ ボタンをクリックすると生成されます。
 
-Designer を保護するために PEP Proxy を設定するには、pep_config ファイル内で以下を変更します。アプリケーションの登録中に、Keyrock ダッシュボードから PEP Proxy 資格情報を取得します。Wilma の単一インスタンスは、ユーザーが保護したいアプリケーションごとにインストールされることに注意してください。
+Designer を保護するために PEP Proxy を設定するには、pep_config ファイル内で以下を変更します。アプリケーションの登録中に、Keyrock ダッシュボードから PEP Proxy 資格情報を取得します。
 
 
 .. code-block:: console
@@ -333,13 +335,15 @@ Designer を保護するために PEP Proxy を設定するには、pep_config �
 
 上記の変更後、PEP Proxy コンテナーを再起動します。
 
+**Application Access Tokenを生成**
 
-**ステップ2**: Keyrock IDM に、access-token と refresh token を生成するように要求します。
+
+**ステップ2**: Keyrock IDM に、アプリケーション アクセス トークン と リフレッシュ トークンを生成するように要求します。
 
 
 1. 以下のスクリーンショットに従って、HTTP リクエストのヘッダー、ペイロード、および承認フィールドを設定します。
 
-2. "Send" ボタンをクリックして、アクセス トークンを取得します。
+2. "Send" ボタンをクリックして、application access-token を取得します。
 
 
 
@@ -349,18 +353,6 @@ Designer を保護するために PEP Proxy を設定するには、pep_config �
 
 
 注意: ‘Oauth2 Credentials’ の下の Keyrock ダッシュボードから Client ID および Client Secret を取得します。
-
-
-
-.. figure:: ../../en/source/figures/detailDescriptionofSampleRequest2.png
-
-
-
-注意: IoT センサー ID とパスワードは Keyrock ダッシュボードから取得できます。
-
-
-
-.. figure:: ../../en/source/figures/responseFromKeyrock.png
 
 
 
@@ -376,18 +368,15 @@ Designer を保護するために PEP Proxy を設定するには、pep_config �
 
 以下は、上記のアーキテクチャ図に関連するいくつかのポイントです:
 
-1. Access-token は、ユーザーにすでに認識されている必要があります。
+1. Keyrock のアプリケーションとしてデザイナー用の PEP Proxy を登録します。
 
-2. アプリケーション設計者は、PEP Proxy を Keyrock に登録します。
+2. Keyrock はアクセス トークンを PEP Proxy に送信します。
 
-3. Keyrock は Access-token をPEP Proxy に送信します。
+3. そのトークンを使用して、ユーザーはエンティティの作成リクエストをデザイナーに送信します。
 
-4. そのトークンを使用すると、ユーザーはエンティティの作成リクエストをデザイナーに送信します。
+4. Designer は認証のためにトークンを Keyrock に送信します。
 
-5. Designer は認証のためにトークンを Keyrock に送信します。
-
-6. エンティティ作成リクエストは FogFlow に転送されます。
-
+5. エンティティ作成リクエストは FogFlow に転送されます。
 
 
 **token_access を使用したエンティティ登録**
@@ -431,7 +420,7 @@ Designer を保護するために PEP Proxy を設定するには、pep_config �
 Edge でコンポーネントをセットアップ
 -----------------------------------
 
-FogFlow エッジ ノードには、主に Edge Broker と Edge Wroker が含まれます。FogFlow クラウド エッジ通信を保護するために、OAuth トークンが使用されています。OAuth トークンを作成するには、最初に Keyrock にアプリケーションを登録する必要があります。そのため、スクリプトはエッジ ノードの開始時に呼び出し、Keyrock API を使用してエッジ ノードに代わってアプリケーションを Keyrock に登録します。スクリプトは次の手順を実行します。
+FogFlow エッジノードには、主にエッジ ブローカーとエッジ ワーカーが含まれます。Iot デバイスとエッジノード間の FogFlow エッジ通信を保護するために、PEP Proxy が使用されています。Auth Token を作成するには、最初に IoT デバイスを Keyrock に登録します。そのため、スクリプトはエッジノードの開始時に呼び出し、Keyrock を使用してPEP Proxy をインスタンス化し、Keyrock API を使用して PEP Proxy が機能するように構成ファイルをセットアップします。スクリプトは次の手順を実行します。
 
 
 **前提条件**
@@ -451,15 +440,14 @@ FogFlow エッジ ノードには、主に Edge Broker と Edge Wroker が含ま
 .. code-block:: console    
          
 	#download the deployment scripts
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/script.sh
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/delete.ah
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/oauth_config.js
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/delete_config.js
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/stop.sh 
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/script.sh
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/oauth_config.js
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/edge/http/pep-config.js
 
         #make them executable
-        chmod +x script.sh start.sh stop.sh delete.sh
+        chmod +x script.sh start.sh stop.sh
 
 
 IP構成を変更
@@ -467,7 +455,7 @@ IP構成を変更
 
 構成ファイルで次のものを変更します:
 
-* oauth_config.js を変更し、登録する必要のあるアプリケーションの IdM IP、アプリケーション名、redirect_url、および URL を追加します。
+* oauth_config.js を変更し、PEP Proxy の構成設定を取得するために必要な IdM IP、エッジ IP を追加します
 
 **エッジ ノード コンポーネントを開始**
  
@@ -478,25 +466,104 @@ IP構成を変更
       ./start.sh 
 
 
+FogFlow edge-IoT デバイスを保護するために、通信 認証トークンが各 IoT デバイスに代わって使用されています。認証トークンを作成するには、
 
-FogFlow クラウド エッジ通信を保護するために、OAuth トークンが使用されています。OAuth トークンを作成するには、
+* KeyrockにIoTデバイスを登録する必要があります
 
-* Keyrock にアプリケーションを登録する必要があります。
+* スクリプトはエッジ ノードの開始時に呼び出され、Keyrock API を使用してそのエッジ ノードに代わって Keyrock で PEP Proxy を構成します
 
-* スクリプトはエッジ ノードの開始時に呼び出し、Keyrock API を使用してそのエッジ ノードに代わってアプリケーションを Keyrock に登録します。
-
-注意: start.sh スクリプトは、API token、Application ID、Secret、およびコンソール上のアクセス トークンを返します。今後の使用のためにこれらを保存してください。
+Note: start.sh スクリプトは、Application ID, Application Secret, PEP Proxy ID, PEP Proxy Secret, Authorization code, IDM Token およびコンソール上の Access token を返します。今後の使用のためにこれらを保存してください。
 
 
-エッジ ノードにデバイスを登録
------------------------------
+**FogFlow との IoT デバイスの相互作用**
+
+
+.. figure:: figures/architectureDiagram1.png
+
+
+
+**図に示すリクエストのフロー:**
+
+**ステップ 1** : ユーザーは自分の資格情報を使用して IDMに リクエストを送信し、そのユーザーに固有の ユーザー アクセス トークン (User Access Token) を生成します。このために、ユーザーは自分のユーザー名とパスワードとともにスクリプトを使用できます。
+
+
+.. code-block:: console
+
+
+        ./user_token_generation.sh admin@test.com 1234
+
+
+Note: たとえば、上記のスニペットでは、管理者のユーザー名は "admin@test.com"、パスワードは "1234" です
+
+**ステップ 2** : スクリプトは、以下に示すようにユーザー アクセス トークンを返します
+
+
+.. figure:: figures/user_token.png
+
+
+**ステップ 3** : ユーザーは自分のアクセス トークン (つまり、ユーザー アクセス トークン) を IoT デバイスと共有します
+
+**ステップ 4** : 次に、スクリプトへの引数として渡された ユーザー アクセス トークンを使用して IoT デバイスが登録されます
+
+.. code-block:: console
+
+
+        ./device_token_generation.sh f9ffa629-9aff-4c98-ac57-1caa2917fed2
+
+Note: たとえば、上記のスニペットでは、"f9ffa629-9aff-4c98-ac57-1caa2917fed2" がユーザーアクセストークンです
+
+**ステップ 5** : スクリプトは、以下に示すように、デバイス アクセス トークンとデバイス資格情報 (ID とパスワード) を返します
+
+.. figure:: figures/device_token.png
+
+
+**ステップ  6** : これで、上記のデバイス アクセス トークンを使用して、IoT デバイスは PEP Proxy ポートに Fogflow 固有のリクエストを行うことでエッジノードと対話できます
+
+
+
+curl リクエストを使用して Keyrock に IoT デバイスを登録
+------------------------------------------------------
+
+IoT デバイスを登録するリクエストの例を以下に示します
+
+.. code-block:: console
+
+   curl --include \
+     --request POST \
+     --header "Content-Type: application/json" \
+     --header "X-Auth-token: <token-generated-from-script>" \
+  'http://keyrock/v1/applications/6e396def-3fa9-4ff9-84eb-266c13e93964/iot_agents'
+
+Note: 後で利用するために、デバイス ID とデバイス パスワードを保存してください
+
+.. figure:: figures/keyrock_iot.png
+
+登録された IoT センサーごとに認証トークンを生成するリクエストの例を以下に示します。
+
+.. code-block:: console
+
+    curl -iX POST \
+     'http://<IDM_IP>:3000/oauth2/token' \
+     -H 'Accept: application/json' \
+     -H 'Authorization: Basic <code-generated-from-script>' \
+     -H 'Content-Type: application/x-www-form-urlencoded' \
+     --data "username=iot_sensor_02bc0f75-07b5-411a-8792-4381df9a1c7f&password=iot_sensor_277bc253-5a2f-491f-abaa-c7b4e1599d6e&grant_type=password"
+
+
+Note: 後で利用するために、アクセス トークンを保存してください
+
+.. figure:: figures/keyrock_token.png
+
+
+curl リクエストを使用してエッジ ノードにデバイスを登録
+------------------------------------------------------
 
 登録デバイスのペイロードの例を以下に示します。
 
 .. code-block:: console
  
 
-     Curl -iX POST 'http://<Application_IP>:<Application_Port>/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token>' -H 'fiware-servicepath: /' -d '
+     Curl -iX POST 'http://<Application_IP>:<Application_Port>/NGSI9/registerContext' -H 'Content-Type: application/json' -H 'fiware-service: openiot' -H 'X-Auth-token: <token-generated-for-IoT-device>' -H 'fiware-servicepath: /' -d '
       {
           "contextRegistrations": [
               {
@@ -526,8 +593,7 @@ FogFlow クラウド エッジ通信を保護するために、OAuth トーク�
 
 **エッジ ノード コンポーネントの停止**
 
-
-* delete_config.js を変更し、登録が必要なアプリケーションの Application ID (APP_ID) と IDM token (アプリケーションの登録中に受信) を追加します。
+* 以下のスクリプトを使用して、ブローカーおよびワーカーであるエッジ コンポーネントを停止します
 
 
 .. code-block:: console

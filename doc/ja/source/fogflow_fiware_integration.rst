@@ -7,9 +7,83 @@ FogFlow は、FIWARE エコシステムの公式 Generic Enabler (GE) として�
 次の図に示すように、FogFlow は、他の FIWARE GEs と相互作用して、次の2つのレイヤーで FIWARE ベースの IoT プラットフォームを強化できます。
 上位層では、FogFlow は次の2つの方法で標準化された NGSI インターフェースを介して Orion Context Broker と相互作用できます。
 
+Orion Broker とFogFlow を統合
+======================================
 
-目的地としての Orion Context Broker
----------------------------------------
+
+Orion を起動
+-------------------------------------------------------------
+
+Orion のドキュメントに従って、Orion Context Broker インスタンスをここからセットアップできます: `Installing Orion`.
+
+.. _`Installing Orion`: https://fiware-orion.readthedocs.io/en/master/admin/install/index.html
+
+
+以下のコマンドを使用して、Docker で Orion をセットアップすることもできます (Docker はこの方法で必要です)
+注: Orion コンテナーは MongoDB データベースに依存しています。
+
+**前提条件:** Docker がインストールされている必要があります
+
+最初に、以下のコマンドを使用して MongoDB コンテナーを起動します:
+
+.. code-block:: console    
+
+	sudo docker run --name mongodb -d mongo:3.4
+
+
+そして、このコマンドで Orion を実行します:
+
+.. code-block:: console    
+
+	sudo docker run -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
+
+
+すべてが動作することを確認します:
+
+.. code-block:: console    
+
+	curl http://<Orion IP>:1026/version
+
+
+Note: パブリックアクセスのためにファイアウォールのポート 1026 を許可します。
+
+
+
+サブスクリプションを発行して、生成された結果を Orion Context Broker に転送
+----------------------------------------------------------------------------------
+
+次の curl リクエストを使用して、Fogflow Broker を FIWARE Orion にサブスクライブします:
+
+.. code-block:: console    
+
+	curl -iX POST \
+	  'http://coreservice_ip/ngsi10/subscribeContext' \
+	  -H 'Content-Type: application/json'  \
+	  -H 'Destination: orion-broker'  \
+	  -d '
+	{
+	  "entities": [
+	    {
+	      "id": ".*",
+	      "type": "Result",
+	      "isPattern": true
+	    }
+	  ],
+	  "reference": "http://<Orion IP>:1026/v2/op/notify"
+	}'
+
+このサブスクリプション リクエストは制限や属性を使用せず、エンティティ タイプに基づく一般的なサブスクリプション リクエストであることに注意してください。
+
+
+Orion Context Broker から結果をクエリ
+-------------------------------------------------------------
+
+ブラウザで次の URL にアクセスし、目的のコンテキストエンティティを検索します:
+
+.. code-block:: console    
+
+	curl http://<Orion IP>:1026/v2/entities/
+
 
 最初の方法は、Orion Context Broker を FogFlow IoT サービスによって生成されるコンテキスト情報の宛先と見なすことです。この場合、NGSI サブスクリプションは、外部アプリケーションまたは FogFlow ダッシュボードによって発行され、要求されたコンテキスト更新を指定された Orion Context Broker に転送するように FogFlow に要求する必要があります。
 
