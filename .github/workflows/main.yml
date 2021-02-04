@@ -1,0 +1,56 @@
+name: CI/CD Status
+
+on: [push,pull_request]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.15
+        
+    - name: Docker Build Job
+      run: |
+        export GOBIN=/home/runner/go/bin
+        docker --version
+        echo "build discovery"
+        cd discovery
+        pwd
+        sh build
+
+        echo "build broker"
+        cd ../broker
+        pwd
+        sh build
+
+        echo "build worker"
+        cd ../worker
+        pwd
+        sh build
+
+        echo "build master"
+        cd ../master
+        pwd
+        sh build
+    
+        echo "build designer"
+        cd ../master
+        pwd
+        sh build
+        
+    - name: Setting Up Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install jq
+        sudo apt-get install python-pip
+        pip -V
+        sudo pip install --upgrade pip
+        pip install Flask
+        pip install requests
+        pip install -U pytest
+        sudo apt-get install curl
