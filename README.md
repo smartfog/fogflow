@@ -1,5 +1,6 @@
 # FogFlow
 
+![CI/CD Status](https://github.com/smartfog/fogflow/workflows/CI/CD%20Status/badge.svg?branch=development)
 [![FIWARE Security](https://nexus.lab.fiware.org/static/badges/chapters/processing.svg)](https://www.fiware.org/developers/catalogue/)
 [![License: BSD-4-Clause](https://img.shields.io/badge/license-BSD%204%20Clause-blue.svg)](https://spdx.org/licenses/BSD-4-Clause.html)
 [![Docker Status](https://img.shields.io/docker/pulls/fogflow/discovery.svg)](https://hub.docker.com/r/fogflow)
