@@ -54,3 +54,60 @@ jobs:
         pip install requests
         pip install -U pytest
         sudo apt-get install curl
+        
+    - name: Launching Docker containers
+      run: |
+        sudo docker run  -it -d -p 8082:8080 -p 9082:9080 -p 8000:8000 -v ~/dgraph:/dgraph fogflow/dgraph:latest
+        sudo docker run  -it -d --name mongodb -d mongo:3.4
+        sudo docker run  -it -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
+        docker ps -a 
+        
+        
+    - name: Building Fogflow Components
+      run: |  
+        export GOBIN=/home/runner/go/bin
+        ls
+        cd discovery/
+        go get; go build;
+        ls
+        cd ../broker/
+        go get; go build;
+        ls
+        cd ../designer/
+        npm install 
+        
+    - name: Running Test Cases
+      run: |
+        export PATH=/home/runner/.local/bin:$PATH
+        ls 
+        cp release/validation/config.json  discovery/
+        cp release/validation/config.json  broker/
+        cp release/validation/config.json  master/
+        cp release/validation/config.json  worker/
+        cp release/validation/config.json  designer/
+      
+        cd discovery/ 
+        screen -d -m ./discovery
+
+        cd ../broker/
+        screen -d -m ./broker
+
+        cd ../designer/
+        screen -d -m node main.js
+
+        cd ../test/UnitTest/
+        screen -d -m python accumulator.py
+
+        cd ../UnitTest/v2/
+        pytest -s -v
+ 
+        cd ../v1/
+        pytest -s -v
+
+        cd ../NGSI-LD/
+        pytest -s -v 
+
+        cd ../persistance/
+        pytest -s -v 
+
+        echo "Testing Done !!!"
