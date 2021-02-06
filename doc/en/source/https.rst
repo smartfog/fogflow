@@ -403,7 +403,7 @@ To setup PEP proxy for securing Designer, change the followings inside the pep_c
         };
 
 
-Note: PEP_PORT should be changed by user as per need. PEP_PROXY_IDM_HOST and PEP_PROXY_IDM_PORT should match with above setup for IdM, that means PEP_PROXY_IDM_HOST should be the IP where IdM is working and PEP_PROXY_IDM_PORT be the one, on which IdM is listening. PEP_PROXY_APP_HOST is the IP of cloud node where designer is running and PEP_PROXY_APP_PORT be the one where designer is listening. PEP_PROXY_APP_ID, PEP_PROXY_USERNAME and PEP_PASSWORD is retrived from the register application as shown in above image.
+Note: PEP_PORT should be changed by user as per need. PEP_PROXY_IDM_HOST and PEP_PROXY_IDM_PORT should match with above setup for IdM, that means PEP_PROXY_IDM_HOST should be the IP where IdM is working and PEP_PROXY_IDM_PORT be the one, on which IdM is listening. PEP_PROXY_APP_HOST is the IP of cloud node where designer is running and PEP_PROXY_APP_PORT be the one where designer is listening. PEP_PROXY_APP_ID, PEP_PROXY_USERNAME and PEP_PASSWORD is retrived from the registered application as shown in above image.
 
 
 - Now start the PEP Proxy container, as shown below
