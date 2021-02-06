@@ -324,24 +324,28 @@ For accessig above dashboard, user needs to login with his credentials i.e. user
 
 
 - Now enter details as below 
+	
+.. code-block:: console
+
 	Name : (Provided by user)
         Description : (Provided by User)	
         Url : (Cloud Node's Designer IP for eg: http://180.179.214.215 where "180.179.214.215" is the IP for woking cloud node) 
         Callback Url : ( in case of designer as an application it would be http://180.179.214.215/index.html )
 	
-   click on Next button.
+  
+click on Next button.
 
 
 .. figure:: figures/idm_register2.png
 
 
-- If user wants to add image icon for his application he can do by uploading it. Click Next button after that.
+- If user wants to add image icon for his application he can do that by uploading it. Click Next button after that.
 
 
 .. figure:: figures/idm_register3.png	
 
 
-- Again click Next button to finish the registration.
+- Again click Save button to finish the registration.
 
 
 .. figure:: figures/idm_register4.png
@@ -402,12 +406,12 @@ To setup PEP proxy for securing Designer, change the followings inside the pep_c
 Note: PEP_PORT should be changed by user as per need. PEP_PROXY_IDM_HOST and PEP_PROXY_IDM_PORT should match with above setup for IdM, that means PEP_PROXY_IDM_HOST should be the IP where IdM is working and PEP_PROXY_IDM_PORT be the one, on which IdM is listening. PEP_PROXY_APP_HOST is the IP of cloud node where designer is running and PEP_PROXY_APP_PORT be the one where designer is listening. PEP_PROXY_APP_ID, PEP_PROXY_USERNAME and PEP_PASSWORD is retrived from the register application as shown in above image.
 
 
-- start the PEP Proxy container now, as shown below
+- Now start the PEP Proxy container, as shown below
 
 
 .. code-block:: console
 
-	docker-compose -f docker-compose.pep.yml
+	docker-compose -f docker-compose.pep.yml up -d
 
 	// To check the status of conatiner, use
 	docker ps -a
