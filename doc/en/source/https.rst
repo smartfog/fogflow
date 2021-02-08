@@ -239,21 +239,24 @@ Cloud and Edge Interaction with IDM
 .. _`here`: https://fogflow.readthedocs.io/en/latest/https.html#setup-components-on-edge
 
 
-Installation
-------------------
+Installation of Security Components on Cloud
+----------------------------------------------
 
 
 .. code-block:: console
 
 
-        # the docker-compose file to start security components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.idm.yml
+        # the docker-compose file to start Identity Manager on the cloud node  
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/docker-compose.idm.yml
 
 	# the configuration file used by IdM
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/idm_config.js
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/idm_config.js
 
-        # the configuration file used by PEP Proxy
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/pep_config.js
+        # the docker-compose file to start PEP Proxy (Wilma) on the cloud node
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/docker-compose.pep.yml
+
+	# the configuration file used by PEP Proxy
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/pep_config.js
 
 
 
@@ -262,28 +265,38 @@ Change the IP configuration accordingly
 
 Configuration file need to be modified at the following places with IP addresses  according to user own environment.
 
-- Change PEP Proxy host-port and container port in docker-compose.idm.yml file.
-
-- Change the IdM config file at following places as per the environment.
+- Change the IdM config file (idm_config.js) at following places as per the environment.
 
 
 .. code-block:: console
 
         
         config.port = 3000;
-        config.host = "http://<IdM IP>:" + config.port;
+        config.host = '<IdM_IP>';   // eg; config.host = '180.179.214.215';
 
-        config.database = {
-            host: "localhost",
-            password: "idm",
-            username: "root",
-            database: "idm",
-            dialect: "mysql",
-            port: undefined
-        };
+Note: IdM_IP denotes the IP of cloud node in this case, if IdM instance is to be set on platform other than cloud; user must provide IP of that platform.
+
+- If user wants to setup database according to their need, they can do so by changing following places in idm_config.js as per environment. For default usage, do not change below mentioned configuration in idm_config.js.
 
 
-Start all Security components:
+.. code-block:: console
+
+
+	// Database info
+	config.database = {
+  	host: 'localhost',
+  	password: 'idm',
+  	username: 'root',
+  	database: 'idm',
+  	dialect: 'mysql',
+  	port: undefined
+	};
+
+
+Start Security Components on Cloud Node
+-----------------------------------------
+
+**Start Identity Manager**
 
 .. code-block:: console
 
@@ -293,14 +306,58 @@ Start all Security components:
          docker ps -a
 	 
 
-
-Setup security components on Cloud node
--------------------------------------------------
-
-Below are the steps that need to be done to setup communication between IdM components.
+Note: IdM dashboard can be accessed on the http://<Idm_Ip>:3000 (for eg. http://180.179.214.215:3000) on browser.
 
 
-**Step1**: Authenticate PEP Proxy itself with Keyrock Identity Management.
+**Register Application with IdM**
+
+For accessig above dashboard, user needs to login with his credentials i.e. username and password. By default user can use admin credentialswhich are "admin@test.com" and "1234". After login, the below screen would appear.  
+
+
+.. figure:: figures/idm_dashboard.png
+
+
+- Now to register application, click on register tab under application heading.
+
+
+.. figure:: figures/idm_register1.png
+
+
+- Now enter details as below 
+	
+.. code-block:: console
+
+	Name : (Provided by user)
+        Description : (Provided by User)	
+        Url : (Cloud Node's Designer IP for eg: http://180.179.214.215 where "180.179.214.215" is the IP for woking cloud node) 
+        Callback Url : ( in case of designer as an application it would be http://180.179.214.215/index.html )
+	
+  
+click on Next button.
+
+
+.. figure:: figures/idm_register2.png
+
+
+- If user wants to add image icon for his application he can do that by uploading it. Click Next button after that.
+
+
+.. figure:: figures/idm_register3.png	
+
+
+- Again click Save button to finish the registration.
+
+
+.. figure:: figures/idm_register4.png
+
+
+Start PEP Proxy (Wilma) on Cloud node
+---------------------------------------
+
+Below are the steps that need to be done to setup communication between IdM and PEP Proxy.
+
+
+-  Authenticate PEP Proxy itself with Keyrock Identity Management.
 
 
 
@@ -311,7 +368,7 @@ Below are the steps that need to be done to setup communication between IdM comp
 Login to Keyrock (http://180.179.214.135:3000/idm/)  account with user credentials i.e. Email and Password. 
     For Example: admin@test.com and 1234.
     
-After Login, Click “Applications” then ”FogFLow PEP”.
+After Login, Click “Applications” then select the registered Application.
 Click “PEP Proxy” link to get Application ID , PEP Proxy Username and PEP Proxy Password.
 
 Note: 
@@ -346,11 +403,25 @@ To setup PEP proxy for securing Designer, change the followings inside the pep_c
         };
 
 
-Restart the PEP Proxy container after above changes.
+Note: PEP_PORT should be changed by user as per need. PEP_PROXY_IDM_HOST and PEP_PROXY_IDM_PORT should match with above setup for IdM, that means PEP_PROXY_IDM_HOST should be the IP where IdM is working and PEP_PROXY_IDM_PORT be the one, on which IdM is listening. PEP_PROXY_APP_HOST is the IP of cloud node where designer is running and PEP_PROXY_APP_PORT be the one where designer is listening. PEP_PROXY_APP_ID, PEP_PROXY_USERNAME and PEP_PASSWORD is retrived from the registered application as shown in above image.
 
-**Generate Application  Access Token** 
 
-**Step2**: Request Keyrock IDM to generate application access-token and refresh token.
+- Now start the PEP Proxy container, as shown below
+
+
+.. code-block:: console
+
+	docker-compose -f docker-compose.pep.yml up -d
+
+	// To check the status of conatiner, use
+	docker ps -a
+
+
+
+Generate Application  Access Token 
+------------------------------------
+
+Request Keyrock IDM to generate application access-token and refresh token.
 
 
 1. Set the HTTP request Header, payload and Authorization field as per below screen shots.
