@@ -435,10 +435,37 @@ Request Keyrock IDM to generate application access-token and refresh token.
 
 
 
-Note: Obtain Client ID and Client Secret from Keyrock dashboard under ‘Oauth2 Credentials’
+Note: Above request is sent using POSTMAN Application. User can obtain Client ID and Client Secret from Keyrock dashboard. To retrieve Client ID and Client Secret, click on registered application and  under ‘Oauth2 Credentials’, user can find Client ID and Client Secret.
 
 
 
+.. figure:: figures/Client_ID_Secret.png
+
+
+
+ **Above request can be made using curl, as shown below**
+
+Note: The Authorization code can be generated using below command.
+        echo -n Client_ID:Client_SECRET | base64 | tr -d " \\t\\n\\r"
+
+
+.. code-block:: console
+
+
+   curl --request POST '<IdM_IP>:3000/oauth2/token/' \
+   --header 'Authorization: Basic YzNlZGU1NTUtOTIyOC00YjhlLTllNTktZTAxZWQ0Y2VhNDFjOmU4OWRlNzBlLTU3M2QtNDBhYS1hNjljLWVhZDYwNGFkYTAyYw==' \
+   --header 'Content-Type: application/x-www-form-urlencoded' \
+   --data-urlencode 'grant_type=password' \
+   --data-urlencode 'username=admin@test.com' \
+   --data-urlencode 'password=1234'
+
+
+- The request can be made in either of the above two mentioned ways. The result will provide access token.
+
+
+.. figure:: figures/access_token_curl.png
+
+ 
 The flow of cloud security implementation can be understand by below figure.
 
 
