@@ -1,0 +1,43 @@
+version: "2"
+
+networks:
+    idm_network:
+        driver: bridge
+        ipam:
+            config:
+                - subnet: 172.18.1.0/24
+                  gateway: 172.18.1.1
+
+volumes:
+    vol-mysql:
+
+services:
+    mysql:
+        image: mysql/mysql-server:5.7.21
+        ports:
+            - "3306:3306"
+        networks:
+            idm_network:
+                ipv4_address: 172.18.1.5
+        volumes:
+            - vol-mysql:/var/lib/mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=idm
+            - MYSQL_ROOT_HOST=172.18.1.6
+
+    fiware-idm:
+        image: fiware/idm:7.9.0
+        ports:
+            - "3000:3000"
+            - "443:443"
+        depends_on:
+            - mysql
+        networks:
+            idm_network:
+                ipv4_address: 172.18.1.6
+        environment:
+            - IDM_DB_HOST=mysql
+        volumes:
+          - ./idm_config.js:/opt/fiware-idm/config.js        
+
+

@@ -207,54 +207,12 @@ Terminology
 .. _`PEP Proxy Wilma`: https://fiware-pep-proxy.readthedocs.io/en/latest/
 
 
+Security Architecture
+------------------------
 
 
-**Single IoT Device Interaction with FogFlow**
+.. figure:: figures/Integrated_Security.png
 
-
-.. figure:: figures/architectureDiagram1.png
-
-
-**Multiple IoT Device Interaction with FogFlow**
-
-
-.. figure:: figures/security_enhancement.png
-
-
-Note: Red markers represent IoT Device interaction with cloud and  green markers represent IoT Device interaction with Edge Node
-
- 
-
-**Flow of Requests as shown in diagram:**
-
-**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For example:
-
-
-.. code-block:: console
-        
-
-	curl --include \
-        --request POST \
-        --header "Content-Type: application/json" \
-        --data-binary "{
-     	\"name\": \"admin@test.com\",
-     	\"password\": \"1234\"
-   	}" \
-   	"http://KEYROCK_IP_ADDRESS:3000/v1/auth/tokens" 
-
- 
-
-**Step 2** : IDM will return an user access token in response of request made in first step.
-
-**Step 3** : User shares his access token ( i.e. User Access Token ) to IoT Device.
-
-**Step 4** : Then IoT devices get registered using the user access token and in response, it gets device credentials(ID and password) as shown in `below`_ topics.
-
-.. _`below`: https://fogflow.readthedocs.io/en/latest/https.html#register-iot-device-on-keyrock
-
-**Step 5** : IoT Device then make access token request using above device credentials and in response, it gets device access token.
-
-**Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
 
 
 Cloud and Edge Interaction with IDM 
@@ -281,21 +239,24 @@ Cloud and Edge Interaction with IDM
 .. _`here`: https://fogflow.readthedocs.io/en/latest/https.html#setup-components-on-edge
 
 
-Installation
-------------------
+Installation of Security Components on Cloud
+----------------------------------------------
 
 
 .. code-block:: console
 
 
-        # the docker-compose file to start security components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.idm.yml
+        # the docker-compose file to start Identity Manager on the cloud node  
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/docker-compose.idm.yml
 
 	# the configuration file used by IdM
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/idm_config.js
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/idm_config.js
 
-        # the configuration file used by PEP Proxy
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/pep_config.js
+        # the docker-compose file to start PEP Proxy (Wilma) on the cloud node
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/docker-compose.pep.yml
+
+	# the configuration file used by PEP Proxy
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/docker/core/http/security_setup/pep_config.js
 
 
 
@@ -304,28 +265,38 @@ Change the IP configuration accordingly
 
 Configuration file need to be modified at the following places with IP addresses  according to user own environment.
 
-- Change PEP Proxy host-port and container port in docker-compose.idm.yml file.
-
-- Change the IdM config file at following places as per the environment.
+- Change the IdM config file (idm_config.js) at following places as per the environment.
 
 
 .. code-block:: console
 
         
         config.port = 3000;
-        config.host = "http://<IdM IP>:" + config.port;
+        config.host = '<IdM_IP>';   // eg; config.host = '180.179.214.215';
 
-        config.database = {
-            host: "localhost",
-            password: "idm",
-            username: "root",
-            database: "idm",
-            dialect: "mysql",
-            port: undefined
-        };
+Note: IdM_IP denotes the IP of cloud node in this case, if IdM instance is to be set on platform other than cloud; user must provide IP of that platform.
+
+- If user wants to setup database according to their need, they can do so by changing following places in idm_config.js as per environment. For default usage, do not change below mentioned configuration in idm_config.js.
 
 
-Start all Security components:
+.. code-block:: console
+
+
+	// Database info
+	config.database = {
+  	host: 'localhost',
+  	password: 'idm',
+  	username: 'root',
+  	database: 'idm',
+  	dialect: 'mysql',
+  	port: undefined
+	};
+
+
+Start Security Components on Cloud Node
+-----------------------------------------
+
+**Start Identity Manager**
 
 .. code-block:: console
 
@@ -335,14 +306,58 @@ Start all Security components:
          docker ps -a
 	 
 
-
-Setup security components on Cloud node
--------------------------------------------------
-
-Below are the steps that need to be done to setup communication between IdM components.
+Note: IdM dashboard can be accessed on the http://<Idm_Ip>:3000 (for eg. http://180.179.214.215:3000) on browser.
 
 
-**Step1**: Authenticate PEP Proxy itself with Keyrock Identity Management.
+**Register Application with IdM**
+
+For accessig above dashboard, user needs to login with his credentials i.e. username and password. By default user can use admin credentialswhich are "admin@test.com" and "1234". After login, the below screen would appear.  
+
+
+.. figure:: figures/idm_dashboard.png
+
+
+- Now to register application, click on register tab under application heading.
+
+
+.. figure:: figures/idm_register1.png
+
+
+- Now enter details as below 
+	
+.. code-block:: console
+
+	Name : (Provided by user)
+        Description : (Provided by User)	
+        Url : (Cloud Node's Designer IP for eg: http://180.179.214.215 where "180.179.214.215" is the IP for woking cloud node) 
+        Callback Url : ( in case of designer as an application it would be http://180.179.214.215/index.html )
+	
+  
+click on Next button.
+
+
+.. figure:: figures/idm_register2.png
+
+
+- If user wants to add image icon for his application he can do that by uploading it. Click Next button after that.
+
+
+.. figure:: figures/idm_register3.png	
+
+
+- Again click Save button to finish the registration.
+
+
+.. figure:: figures/idm_register4.png
+
+
+Start PEP Proxy (Wilma) on Cloud node
+---------------------------------------
+
+Below are the steps that need to be done to setup communication between IdM and PEP Proxy.
+
+
+-  Authenticate PEP Proxy itself with Keyrock Identity Management.
 
 
 
@@ -353,7 +368,7 @@ Below are the steps that need to be done to setup communication between IdM comp
 Login to Keyrock (http://180.179.214.135:3000/idm/)  account with user credentials i.e. Email and Password. 
     For Example: admin@test.com and 1234.
     
-After Login, Click “Applications” then ”FogFLow PEP”.
+After Login, Click “Applications” then select the registered Application.
 Click “PEP Proxy” link to get Application ID , PEP Proxy Username and PEP Proxy Password.
 
 Note: 
@@ -388,16 +403,30 @@ To setup PEP proxy for securing Designer, change the followings inside the pep_c
         };
 
 
-Restart the PEP Proxy container after above changes.
+Note: PEP_PORT should be changed by user as per need. PEP_PROXY_IDM_HOST and PEP_PROXY_IDM_PORT should match with above setup for IdM, that means PEP_PROXY_IDM_HOST should be the IP where IdM is working and PEP_PROXY_IDM_PORT be the one, on which IdM is listening. PEP_PROXY_APP_HOST is the IP of cloud node where designer is running and PEP_PROXY_APP_PORT be the one where designer is listening. PEP_PROXY_APP_ID, PEP_PROXY_USERNAME and PEP_PASSWORD is retrived from the registered application as shown in above image.
 
-**Generate Access Token** 
 
-**Step2**: Request Keyrock IDM to generate access-token and refresh token.
+- Now start the PEP Proxy container, as shown below
+
+
+.. code-block:: console
+
+	docker-compose -f docker-compose.pep.yml up -d
+
+	// To check the status of conatiner, use
+	docker ps -a
+
+
+
+Generate Application  Access Token 
+------------------------------------
+
+Request Keyrock IDM to generate application access-token and refresh token.
 
 
 1. Set the HTTP request Header, payload and Authorization field as per below screen shots.
 
-2. Click “Send” Button to get access-token.
+2. Click “Send” Button to get application access-token.
 
 
 
@@ -406,10 +435,37 @@ Restart the PEP Proxy container after above changes.
 
 
 
-Note: Obtain Client ID and Client Secret from Keyrock dashboard under ‘Oauth2 Credentials’
+Note: Above request is sent using POSTMAN Application. User can obtain Client ID and Client Secret from Keyrock dashboard. To retrieve Client ID and Client Secret, click on registered application and  under ‘Oauth2 Credentials’, user can find Client ID and Client Secret.
 
 
 
+.. figure:: figures/Client_ID_Secret.png
+
+
+
+ **Above request can be made using curl, as shown below**
+
+Note: The Authorization code can be generated using below command.
+        echo -n Client_ID:Client_SECRET | base64 | tr -d " \\t\\n\\r"
+
+
+.. code-block:: console
+
+
+   curl --request POST '<IdM_IP>:3000/oauth2/token/' \
+   --header 'Authorization: Basic YzNlZGU1NTUtOTIyOC00YjhlLTllNTktZTAxZWQ0Y2VhNDFjOmU4OWRlNzBlLTU3M2QtNDBhYS1hNjljLWVhZDYwNGFkYTAyYw==' \
+   --header 'Content-Type: application/x-www-form-urlencoded' \
+   --data-urlencode 'grant_type=password' \
+   --data-urlencode 'username=admin@test.com' \
+   --data-urlencode 'password=1234'
+
+
+- The request can be made in either of the above two mentioned ways. The result will provide access token.
+
+
+.. figure:: figures/access_token_curl.png
+
+ 
 The flow of cloud security implementation can be understand by below figure.
 
 
@@ -422,17 +478,15 @@ The flow of cloud security implementation can be understand by below figure.
 
 Below are some points related to above architecture diagram:
 
-1. Access-token should be already known to user.
+1. Registered a PEP Proxy for designer as an application in Keyrock.
 
-2. For an application designer register a pep proxy to keyrock.
+2. Keyrock will send access-token to pep.
 
-3. Keyrock will send access-token to pep.
+3. Using that token user will send create entity request to designer.
 
-4. Using that token user will send create entity request to designer.
+4. Designer will send token to keyrock to authenticate.
 
-5. Designer will send token to keyrock to authenticate.
-
-6. Entity creation request will transfer to FogFlow.
+5. Entity creation request will transfer to FogFlow.
 
 
 
@@ -533,8 +587,56 @@ To secure FogFlow edge-IoT device communication Auth Token has been used on beha
 
 Note: the start.sh script will return  Application ID, Application Secret, PEP Proxy ID, PEP Proxy Secret, Authorization code, IDM Token and the access token on console. Please save these for further use.
 
-Register IoT Device on Keyrock
-------------------------------
+
+**IoT Device Interaction with FogFlow**
+
+
+.. figure:: figures/architectureDiagram1.png
+
+
+
+**Flow of Requests as shown in diagram:**
+
+**Step 1** : User will make a request to IDM using his credentials to generate  user access token specific for that user. For this, user can use the script along with his username and password.
+
+
+.. code-block:: console
+
+
+        ./user_token_generation.sh admin@test.com 1234
+
+
+Note: For example, in above snippet admin username is "admin@test.com" and password is "1234"
+
+**Step 2** : Script will return an user access token as shown below.
+
+
+.. figure:: figures/user_token.png
+
+
+**Step 3** : User shares his access token ( i.e. User Access Token ) with IoT Device.
+
+**Step 4** : Then IoT devices get registered using the user access token passed as an argument to a script.
+
+.. code-block:: console
+
+
+        ./device_token_generation.sh f9ffa629-9aff-4c98-ac57-1caa2917fed2
+
+Note: For example, in above snippet "f9ffa629-9aff-4c98-ac57-1caa2917fed2" is the user access token.
+
+**Step 5** : Script will return device access token and device credentials(ID and password) as shown below.
+
+
+.. figure:: figures/device_token.png
+
+
+**Step 6** : Now, using the above device access token, the IoT Device can interact with Edge node via making Fogflow specific requests to PEP Proxy port.
+
+
+
+Register IoT Device on Keyrock Using curl request
+---------------------------------------------------
 
 An example request to register IoT Device is given below 
 
@@ -566,8 +668,8 @@ Note: Please save the Access Token for further utilisation
 
 .. figure:: figures/keyrock_token.png
 
-Register Device on Edge Node
-----------------------------
+Register Device on Edge Node using curl request
+-----------------------------------------------------
 
 An example payload of registration device is given below.
 

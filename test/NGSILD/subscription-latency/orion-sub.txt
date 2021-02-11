@@ -1,0 +1,5 @@
+http://192.168.1.102:8070/ngsi10/subscribeContext
+
+Destination: orion-broker
+
+{"entities":[{"type":"PowerPanel","isPattern":true}],"reference":"http://localhost:1026/v1"}

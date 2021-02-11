@@ -1,0 +1,106 @@
+version: '3.5'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.4.1
+    container_name: stellio-zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    image: confluentinc/cp-kafka:5.4.1
+    container_name: stellio-kafka
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_BROKER_ID: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+  neo4j:
+    image: neo4j:4.0
+    container_name: stellio-neo4j
+    volumes:
+      - stellio-neo4j-storage:/data
+    environment:
+      - NEO4J_dbms_allow__upgrade=${NEO4J_ALLOW_UPGRADE}
+      - NEO4J_dbms_default__database=${NEO4J_DEFAULT_DATABASE}
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD}
+      - "NEO4J_dbms_security_procedures_unrestricted=apoc.*"
+      - "NEO4J_dbms_security_procedures_whitelist=apoc.*"
+      - NEO4JLABS_PLUGINS=["apoc"]
+    ports:
+      - 7474:7474
+      - 7687:7687
+  postgres:
+    image: stellio/stellio-timescale-postgis:1.7.2-pg11
+    container_name: stellio-postgres
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - "POSTGRES_MULTIPLE_DATABASES=${STELLIO_SEARCH_DB_DATABASE},${STELLIO_SEARCH_DB_USER},${STELLIO_SEARCH_DB_PASSWORD}: ${STELLIO_SUBSCRIPTION_DB_DATABASE},${STELLIO_SUBSCRIPTION_DB_USER},${STELLIO_SUBSCRIPTION_DB_PASSWORD}"
+      # not sure it is really necessary but it does not break anything ...
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    volumes:
+      - stellio-postgres-storage:/var/lib/postgresql/data
+  api-gateway:
+    container_name: stellio-api-gateway
+    image: stellio/stellio-api-gateway:${STELLIO_DOCKER_TAG}
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT}
+    ports:
+      - 8880:8080
+  entity-service:
+    container_name: stellio-entity-service
+    image: stellio/stellio-entity-service:${STELLIO_DOCKER_TAG}
+    environment:
+      - SPRING_DATA_NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT}
+      - APPLICATION_AUTHENTICATION_ENABLED=${STELLIO_AUTHENTICATION_ENABLED}
+    ports:
+      - 8082:8082
+    depends_on:
+      - neo4j
+      - kafka
+  search-service:
+    container_name: stellio-search-service
+    image: stellio/stellio-search-service:${STELLIO_DOCKER_TAG}
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT}
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres/${STELLIO_SEARCH_DB_DATABASE}
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres/${STELLIO_SEARCH_DB_DATABASE}
+      - SPRING_R2DBC_USERNAME=${STELLIO_SEARCH_DB_USER}
+      - SPRING_R2DBC_PASSWORD=${STELLIO_SEARCH_DB_PASSWORD}
+      - APPLICATION_AUTHENTICATION_ENABLED=${STELLIO_AUTHENTICATION_ENABLED}
+    ports:
+      - 8083:8083
+    depends_on:
+      - postgres
+      - kafka
+  subscription-service:
+    container_name: stellio-subscription-service
+    image: stellio/stellio-subscription-service:${STELLIO_DOCKER_TAG}
+    environment:
+      - SPRING_PROFILES_ACTIVE=${ENVIRONMENT}
+      - SPRING_R2DBC_URL=r2dbc:postgresql://postgres/${STELLIO_SUBSCRIPTION_DB_DATABASE}
+      - SPRING_FLYWAY_URL=jdbc:postgresql://postgres/${STELLIO_SUBSCRIPTION_DB_DATABASE}
+      - SPRING_R2DBC_USERNAME=${STELLIO_SUBSCRIPTION_DB_USER}
+      - SPRING_R2DBC_PASSWORD=${STELLIO_SUBSCRIPTION_DB_PASSWORD}
+      - APPLICATION_AUTHENTICATION_ENABLED=${STELLIO_AUTHENTICATION_ENABLED}
+    ports:
+      - 8084:8084
+    depends_on:
+      - postgres
+      - kafka
+
+volumes:
+  stellio-neo4j-storage:
+  stellio-postgres-storage:

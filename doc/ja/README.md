@@ -1,7 +1,7 @@
-# FogFlow Documentation
+# FogFlowドキュメント
 
-To compile the documentation, run the following commands from this directory.
-Note that Ray must be installed first.
+ドキュメントをコンパイルするには、このディレクトリから次のコマンドを実行します。
+Rayを最初にインストールする必要があることに注意してください。
 
 ```
 pip install -r requirements.txt
@@ -9,7 +9,7 @@ make html
 open _build/html/index.html
 ```
 
-To test if there are any build errors with the documentation, do the following.
+ドキュメントにビルドエラーがあるかどうかをテストするには、次の手順を実行します。
 
 ```
 sphinx-build -W -b html -d _build/doctrees source _build/html

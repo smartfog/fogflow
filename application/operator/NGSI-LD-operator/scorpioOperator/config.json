@@ -10,7 +10,7 @@
 	"id": "urn:ngsi-ld:Stream.ChildFound.01",
 	"type": "ChildFound"
 }, {
-	"command": "scorpio",
-	"scorpioIp": "http://180.179.214.211:9090"
+	"command": "NGSILD",
+	"NGSILDBrokerURL": "http://180.179.214.211:9090"
 }
 ]

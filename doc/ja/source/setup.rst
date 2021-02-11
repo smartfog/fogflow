@@ -38,28 +38,22 @@ FogFlow クラウド ノードを起動
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/docker-compose.yml
 
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/config.json
 
 	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/nginx.conf
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2/cloud/nginx.conf
 	
-	# the configuration file used by metricbeat
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/metricbeat.docker.yml
-
 
 IP 構成を変更
 ---------------------------------------------
 
 ご使用の環境に応じて、config.json で以下の IP アドレスを変更する必要があります。
 
-- **coreservice_ip**: すべての FogFlow エッジ ノードが FogFlow クラウド ノードのコア サービス (ポート80 の nginx やポート 5672 の rabbitmq など) にアクセスするために使用します。通常、これは FogFlow クラウド ノードのパブリック IP になります。
 
-- **external_hostip**: FogFlow クラウド ノードの構成の場合、これは、実行中の FogFlow コア サービスにアクセスするためにコンポーネント (Cloud Worker および Cloud Broker) によって使用される coreservice_ip と同じです。
-
-- **internal_hostip**: これはデフォルトの Docker ブリッジの IP であり、Linux ホストの "docker0" ネットワーク インターフェースです。Windows または MacOS のDocker エンジンの場合、"docker0" ネットワークインターフェイスはありません。代わりに、特別なドメイン名 "host.docker.internal" を使用する必要があります。
+- **my_hostip**: FogFlow クラウド ノードの IP とこの IP アドレスは、FogFlow エッジ ノードからアクセス可能である必要があります。これには "127.0.0.1" を使用しないでください。
 
 - **site_id**: 各 FogFlow ノード (クラウド ノードまたはエッジ ノード) は、システム内で自身を識別するために一意の文字列ベースの ID を持っている必要があります。
 
@@ -84,7 +78,7 @@ Elasticsearch と Metricbeat の IP 構成を変更
 
 .. important:: 
 
-        **coreservice_ip** および **external_hostip** の IP アドレスとして "127.0.0.1" を使用しないでください。これらは Docker コンテナー内で実行中のタスクによって使用されるためです。
+        **my_hostip** の IP アドレスとして "127.0.0.1" を使用しないでください。これらは Docker コンテナ内で実行中のタスクによって使用されます。
 	
 	**Firewall rules:** external_ip を介して FogFlow Web ポータルにアクセスできるようにします。次のポートも開いている必要があります: TCP の場合は80 および 5672
 
@@ -298,7 +292,7 @@ Docker CE と Docker Compose をインストールするには、Respberry Pi �
         
 - **coreservice_ip**: クラウド ノードで実行されている FogFlow コア サービスのアクセス可能な IP アドレスです。 クラウド部分の構成を参照してください。
 - **external_hostip**: これは外部 IP アドレスであり、Cloud Broker がアクセスできます。エッジ ノードが NAT の背後にある場合に役立ちます。
-- **internal_hostip**: デフォルトの Docker ブリッジの IP であり、ホストの "docker0" ネットワークインターフェイスです。
+- **my_hostip** は、デフォルトの Docker ブリッジの IP であり、ホストの "docker0" ネットワーク インターフェイスです。
 - **site_id**: エッジ ノードのユーザー定義 ID です。そのノードの Broekr IDs とWorker IDs は、この Site ID に従って形成されます。
 - **container_autoremove**: タスクに関連付けられたコンテナーが、その処理が完了すると削除されるように構成するために使用されます。
 - **start_actual_task**: 最小限の労力を実行する代わりに、タスクの開始または終了、または実行中のタスクの維持に必要なすべてのアクティビティをタスク構成とともに含めるように FogFlow Worker を構成します。True に保つことをお勧めします。
@@ -310,7 +304,7 @@ Docker CE と Docker Compose をインストールするには、Respberry Pi �
     { 
         "coreservice_ip": "155.54.239.141", 
         "external_hostip": "35.234.116.177", 
-        "internal_hostip": "172.17.0.1", 
+        "my_hostip": "172.17.0.1", 
         
 	
 	"site_id": "002",

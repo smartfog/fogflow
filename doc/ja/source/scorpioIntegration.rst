@@ -1,182 +1,169 @@
 *****************************************
-FogFlow を Scorpio Broker と統合
+FogFlow を NGSI-LD Broker と統合
 *****************************************
 
-NGSI-LD アダプターは、FogFlow エコシステムがリンクト データをユーザーに提供できるように構築されています。`Scorpio Broker`_  は、NGSI-LD 仕様の最初のリファレンス実装で、FogFlow からリンクト データを受信するためにここで使用されています。
+チュートリアルでは、FogFlow を高度なデータ分析フレームワークとして利用して、Scorpio、Orion-LD、Stellio などの NGSI-LD Broker
+でキャプチャされた生データに加えてオンデマンド データ分析を可能にする方法を紹介します。次の図は、これを行う方法の簡単な例を
+詳細に示しています。主に、8つのステップを持つ3つの側面が含まれています。
+
+* NGSI-LD Broker から FogFlow システムに生データをフェッチする方法 (**ステップ1-3**)
+* FogFlow のサーバーレス機能を使用してカスタマイズされたデータ分析を行う方法 (**ステップ4**)
+* 生成された分析結果を NGSI-LD Broker にプッシュして、さらに共有する方法 (**ステップ5-8**)
+
+.. figure:: ../../en/source/figures/fogflow-ngsild-broker.png
 
 
-.. _`Scorpio Broker`: https://scorpio.readthedocs.io/en/latest/
+詳細な手順を検討する前に、以下の情報に従って FogFlow システムとNGSI-LD Broker をセットアップしてください。
 
-次の図は、FogFlow からの NGSIv1 データを Scorpio Broker への NGSI-LD  データに変換する際に NGSI-LD アダプターがどのように機能するかを示しています。
+まず、`FogFlow on a Single Machine`_ を参照 して、単一のホストマシン上に FogFlow システムをセットアップしてください。
 
-.. figure:: ../../en/source/figures/ngsi-ld-adapter.png
-
-1. ユーザーがサブスクリプション要求をアダプターに送信します。
-2. 次に、アダプターはこの要求を FogFlow Broker に転送して、要求で指定されたコンテキスト データをサブスクライブします。
-3. コンテキスト データの更新は FogFlow Broker で受信されます。
-4. アダプターは、サブスクライブされたデータについて FogFlow Broker から通知を受け取ります。
-5. アダプターは、受信したデータを NGSI-LD データ形式に変換し、Scorpio Broker に転送します。
-
-
-NGSI-LD アダプターの実行
-===============================================
-
-**前提条件:**
-
-* FogFlow は、少なくとも1つのノードで稼働している必要があります。
-* Scorpio Broker が稼働している必要があります。
-
-NGSI-LD アダプターは、以下に示すように FogFlow ダッシュボードを使用して FogFlow エコシステムで実行できます。
-
-**オペレーターの登録:** FogFlow ダッシュボードのオペレーター レジストリーの "Operator" に移動します。以下に示すように、パラメーター要素を使用して新しいオペレーターを登録します。
-   
-   Name: service_port ; Value: 8888
-   
-   (この(`this`_) チュートリアルでは、ユーザーがすでに "REGISTER YOUR TASK OPERATORS" を完了していることを前提としています。)
-
-.. _`this`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
-   
-**Docker イメージの登録:** オペレーター レジストリーの "DockerImage" に移動し、イメージ fogflow/ngsildadapter:latest を登録します。ドロップダウンからオペレーターを選択して、上記のオペレーターに関連付けます。ユーザーは、 `build`_ ファイルを編集して実行することにより、NGSI-LD アダプターのイメージをビルドすることもできます。
-
-.. _`build`: https://github.com/smartfog/fogflow/blob/document-update/application/operator/NGSI-LD-Adapter/build
-
-次の図に示すように、**フォグ ファンクションを登録** します。"SelectedType" で、このフォグ ファンクションをトリガーするために使用されるコンテキスト データのエンティティ タイプ ("LD" など) を指定します。ステップ#1 で登録したオペレーターをフォグ ファンクションのオペレーターとして選択します。
-
-.. figure:: ../../en/source/figures/fogfunction_ngsi-ld-adapter.png
-
-エンティティ タイプが "LD" (またはステップ#3で SelectedType として指定されているもの) として FogFlow Broker にアップデート要求を送信することにより、**フォグ ファンクションをトリガー** します。ロケーション メタデータとともに、属性に fogflowIP と ngbIP を含める必要があります。リクエストの例を以下に示します:
+NGSI-LD Broker に関しては、Scorpio、Orion-LD、Stellio のさまざまな選択肢があります。ここでは、詳細な手順を示す具体的な例として
+Orion-LD を取り上げます。同じホストマシンに Orion-LD ブローカーをセットアップするには、次の手順を参照してください。
+他のブローカー (Scorpio、Stellio など)との統合では、リクエストのポート番号と構成ファイルを少し変更する必要があります。
 
 .. code-block:: console
 
-    curl -iX POST \
-      'http://<Fogflow-Broker-IP>:8070/ngsi10/updateContext' \
-      -H 'Content-Type: application/json' \
-      -d '
-      {
-        "contextElements": [
-        {
-            "entityId": {
-            "id": "LD001",
-            "type": "LD",
-            "isPattern": false
-            },
-            "attributes": [
-                 {
-                     "name": "fogflowIP",
-                     "type": "string",
-                     "value": "<IP>"
-                 },
-                 {
-                     "name": "ngbIP",
-                     "type": "string",
-                     "value": "<IP>"
-                 }
-             ],
-             "domainMetadata": [
-                 {
-                     "name": "location",
-                     "type": "point",
-                     "value": {
-                                  "latitude": 52,
-                                  "longitude": 67
-                     }
-                 }
-             ]
-        }
-        ],
-        "updateAction": "UPDATE"
-       }'
+	# fetch the docker-compose file 
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/test/orion-ld/docker-compose.yml
 
+	# start the orion-ld broker
+	docker-compose pull
+	docker-Compose up -d 
 
-NGSI-LD アダプター タスクが作成され、ポート8888でリッスンします。ユーザーは、クラウド ノードまたはエッジ ノードのいずれか、上記のリクエストのメタデータで提供された場所に最も近い場所で実行されているタスクにタスクを一覧表示できます。
+次の手順を開始する前に、Orion-LD Broker と FogFlow システムが正しく実行されているかどうかを確認してください。
 
-
-NGSI-LD アダプターの使用
-===============================================
-
-コンテキスト データ変換にNGSI-LD アダプターを使用するには、以下の手順に従います。
-
-NGSI-LD アダプターに **サブスクリプション リクエストを送信** すると、同じリクエストが FogFlow Broker に転送されます。これは、FogFlow Broker へのアクセスがユーザーに直接利用できないためです。例のサブスクリプションリクエストは以下のとおりです:
+# Orion-LD Broker が実行されているかどうかを確認します
 
 .. code-block:: console
 
-    curl -iX POST \
-      'http://<LD-Adapter-Host-IP>:8888/subscribeContext' \
-      -H 'Content-Type: application/json' \
-      -d '
-    {
-      "entities": [
-        {
-          "id": "Temperature.*",
-          "type": "Temperature",
-          "isPattern": true
-        }
-      ],
-      "attributes": [
-        "temp"
-      ],
-      "restriction": {
-        "scopes": [
-          {
-            "scopeType": "circle",
-            "scopeValue": {
-              "centerLatitude": 49.406393,
-              "centerLongitude": 8.684208,
-              "radius": 2000
-            }
-          }
-        ]
-      },
-      "reference": "http://<LD-Adapter-Host-IP>:8888"
-    }'
+	curl localhost:1026/ngsi-ld/ex/v1/version
 
+# FogFlow システムが正しく実行されているかどうかを確認します
 
-上記のサブスクリプションで定義されたタイプと属性のエンティティを使用して、FogFlow Broker に **アップデート リクエストを送信** します。リクエストの例を以下に示します:
+	ブラウザから FogFlow ダッシュボードを開きます
+
+Orion-LD から FogFlow にデータをフェッチする方法
+================================================================
+
+ステップ 1: Orion-LD へのサブスクリプションを発行します
 
 .. code-block:: console
 
-    curl -iX POST \
-      'http://<Fogflow-Broker-IP>:8070/ngsi10/updateContext' \
-      -H 'Content-Type: application/json' \
-      -d '
-      {
-        "contextElements": [
-          {
-            "entityId": {
-              "id": "Temperature001",
-              "type": "Temperature",
-              "isPattern": false
-            },
-            "attributes": [
-              {
-                "name": "temp",
-                "type": "float",
-                "value": 34
-              }
-            ],
-            "domainMetadata": [
-              {
-              "name": "location",
-              "type": "point",
-              "value": {
-                "latitude": 49.406393,
-                "longitude": 8.684208
-                }
-              }
-             ]
-          }
-        ],
-        "updateAction": "UPDATE"
-      }'
+	curl -iX POST \
+		  'http://localhost:1026/ngsi-ld/v1/subscriptions' \
+		  -H 'Content-Type: application/json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -d ' {
+             	"type": "Subscription",
+             	"entities": [{
+                   "type": "Vehicle"
+             	}],
+             	"notification": {
+                   "format": "keyValues",
+                   "endpoint": {
+                       "uri": "http://192.168.0.59:8070/ngsi-ld/v1/notifyContext/",
+                       "accept": "application/ld+json"
+             	    }
+            	}
+ 			}'
 
 
-次の URL にアクセスして、NGSI-LD 形式のエンティティが Scorpio Broker で更新されているかどうかを確認します:  http://<Scorpio-Broker-IP:Port>/ngsi-ld/v1/entities?type=http://example.org/Temperature
+ステップ 2: エンティティの更新を Orion-LD に送信します
 
-次のコード ブロックは、変換されたコンテキスト データを示しています。
 
-.. code-block:: console
+.. code-block:: console    
 
-    {"@context": ["https://schema.lab.fiware.org/ld/context", "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
-    {"Temperature": "http://example.org/Temperature", "temp": "http://example.org/temp"}], "type": "Temperature", 
-    "id": "urn:ngsi-ld:Temperature001", "temp": {"type": "Property", "value": 34}, "location": {"type": "GeoProperty", 
-    "value": "{\"type\": \"point\", \"coordinates\": [49.406393, 8.684208]}"}}
+
+	curl --location --request POST 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert?options=update' \
+	--header 'Content-Type: application/json' \
+	--header 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	--data-raw '[
+	{
+	   "id": "urn:ngsi-ld:Vehicle:A106",
+	   "type": "Vehicle",
+	   "brandName": {
+	                  "type": "Property",
+	                  "value": "Mercedes"
+	    },
+	    "isParked": {
+	                  "type": "Relationship",
+	                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+	                  "providedBy": {
+	                                  "type": "Relationship",
+	                                  "object": "urn:ngsi-ld:Person:Bob"
+	                   }
+	     },
+	     "speed": {
+	                "type": "Property",
+	                "value": 120
+	      },
+	     "location": {
+	                    "type": "GeoProperty",
+	                    "value": {
+	                              "type": "Point",
+	                              "coordinates": [-8.5, 41.2]
+	                    }
+	     }
+	}
+	]'
+
+
+
+ステップ 3: FogFlow がサブスクライブされたエンティティを受信するかどうかを確認します
+
+
+FogFlow thinBroker から "Vehicle" エンティティをクエリするための curl コマンドを準備してください。
+
+
+.. code-block:: console    
+
+	curl -iX GET \
+		  'http://localhost:8070/ngsi-ld/v1/entities?type=Vehicle' \
+		  -H 'Content-Type: application/ld+json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
+
+
+
+データ分析機能をプログラムして適用する方法
+================================================================
+
+ステップ 4: fogfunction1 を適用して、カスタマイズされたデータ分析を実行します
+
+
+"/application/operator/alert" のコードを変更して、簡単な分析を行ってください。たとえば、
+車両の速度がしきい値を超えたときにアラート メッセージを生成します。
+
+
+生成された結果を NGSI-LD Broker にプッシュ バックする方法
+=========================================================================
+
+オペレーター、Docker イメージ、Fog ファンクションを含む fogfunction2 をデフォルトで登録してください。
+それらをデザイナの初期化リストに入れます。
+
+
+ステップ 5: fogfunction2 をトリガーする更新メッセージを送信します
+
+
+.. code-block:: console    
+
+	#please write the curl message to trigger fogfunction2
+
+
+ステップ 6: fogfunction2 が作成されているかどうかを確認します
+
+
+fogfunction2 がトリガーされているかどうかをユーザーが確認できる場所を説明します。
+
+
+ステップ 7: Orion-LD が転送された結果を受信したかどうかを確認します
+
+
+.. code-block:: console    
+
+	curl -iX GET \
+		  'http://localhost:8070/ngsi-ld/v1/entities?type=Alert' \
+		  -H 'Content-Type: application/ld+json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
