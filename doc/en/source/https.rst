@@ -443,10 +443,10 @@ Note: Above request is sent using POSTMAN Application. User can obtain Client ID
 
 
 
-- Above request can be made using curl, as shown below.
+ **Above request can be made using curl, as shown below**
 
 Note: The Authorization code can be generated using below command.
-      echo -n Client_ID:Client_SECRET | base64 -w 0
+        echo -n Client_ID:Client_SECRET | base64 -w 0
 
 
 .. code-block:: console
