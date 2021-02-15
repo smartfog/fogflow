@@ -84,7 +84,8 @@ On successful configuration the dashboard will return "Index OK. Time field name
 Grafana-based monitoring
 ===========================================================  
         
-Grafana based system metrics can be seen from Home Dashboard page of Grafana under "Starred dashboards".
+Grafana based system metrics can be seen from Home Dashboard page of Grafana. In the sidebar, take the cursor over Dashboards (squares) icon, and then click Manage. The dashboard appears in a Services folder.
+
 Here are some basic Grafana visualization dashboard to monitor metrics of FogFlow cloud as well as edge nodes.
 
 - **Below diagram illustrate steps to setup dashboard for containers list with maximum memory usage**.
