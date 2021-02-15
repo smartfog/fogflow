@@ -1960,9 +1960,18 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		context = append(context, DEFAULT_CONTEXT)
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+		var LDupdateCtxReq interface{}
 
+		err := json.Unmarshal(reqBytes, &LDupdateCtxReq)
+
+		if err != nil {
+			err := errors.New("unable to decode orion update")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		//Get a resolved object ([]interface object)
-		resolved, err := tb.ExpandPayload(r, context, contextInPayload)
+		resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
