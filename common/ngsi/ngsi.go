@@ -1266,3 +1266,16 @@ type CSourceRegistrationResponse struct {
 	RegistrationID string     `json: "registrationID",omitemtpy`
 	ErrorCode      StatusCode `json:"errorCode,omitempty",omitemtpy`
 }
+
+type ProblemDetails struct {
+        Type    string `json: "type",omitemtpy`
+        Status  string `json: "status",omitemtpy`
+        Title   string `json: "title",omitemtpy`
+        Details string `json: "details",omitemtpy`
+}
+
+type ResponseError struct {
+        Success []string         `json: "success",omitemtpy`
+        Errors  []ProblemDetails `json: "errors",omitemtpy`
+}
+
