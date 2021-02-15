@@ -66,6 +66,9 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		//create and update
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 
+		//upsertAPi
+
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.LDUpdateContext),
 		rest.Post("/ngsi-ld/v1/entities/#eid/attrs", broker.LDAppendEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs", broker.LDUpdateEntityAttributes),
 		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDUpdateEntityByAttribute),
