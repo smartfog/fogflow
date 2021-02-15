@@ -1,0 +1,15 @@
+# # config file version
+apiVersion: 1
+
+providers:
+ - name: 'fogflow'
+   orgId: 1
+   folder: ''
+   folderUid: ''
+   type: file
+   disableDeletion: false
+   updateIntervalSeconds: 10
+   options:
+     path: /var/lib/grafana/dashboards
+     foldersFromFilesStructure: true
+
