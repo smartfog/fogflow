@@ -553,3 +553,20 @@ func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
 	}
 	return false
 }
+
+/*
+   Header validation for upsert api
+*/
+
+func contentTypeValidator(cType string) error {
+	if cType == "application/x-www-form-urlencoded" {
+		err := errors.New("No content type header provided")
+		return err
+	}
+	cTypeInLower := strings.ToLower(cType)
+	if cTypeInLower != "application/json" && cTypeInLower != "application/ld + json" {
+		err := errors.New("Unsupported content type. Allowed are application/json and application/ld+json.")
+		return err
+	}
+	return nil
+}
