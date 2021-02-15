@@ -1,0 +1,18 @@
+name: "fogflow_cloud_node"
+metricbeat.modules:
+- module: docker
+  #Docker module parameters that has to be monitored based on user requirement, example as below
+  metricsets: ["cpu","memory","network"]
+  hosts: ["unix:///var/run/docker.sock"]
+  period: 10s
+  enabled: true
+- module: system
+  #System module parameters that has to be monitored based on user requirement, example as below
+  metricsets: ["cpu","load","memory","network"]
+  period: 10s
+#processors:
+#  - add_cloud_metadata: ~
+
+output.elasticsearch:
+  hosts: 'elasticsearch:9200'
+
