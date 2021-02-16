@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -12,13 +13,22 @@ import (
 	"strconv"
 	"syscall"
 	"time"
+	//"string"
 
 	mux "github.com/gufranmirza/go-router"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 var previous_num = int(0)
 var current_num = int(0)
 var ticker *time.Ticker
+var startTime = time.Now()
+var myport = "8066"
+var no_of_update = 2
+var my_ip, updateBrokerURL, subscriberBrokerURL, id, Etype string
+var counter = int64(0)
+
+// main handler
 
 func main() {
 	myPort := flag.Int("p", 8066, "the port of this agent")
@@ -32,30 +42,91 @@ func main() {
 	fmt.Println("the subscriber is listening on port " + strconv.Itoa(*myPort))
 
 	// start a timer to do something periodically
-	ticker = time.NewTicker(time.Second)
-	go func() {
-		for {
-			<-ticker.C
-			onTimer()
-		}
-	}()
+	setConfig()
+	startTime := time.Now().UnixNano()
+	fmt.Println(startTime)
+	// start timer to get the latency
 
+	fmt.Println(startTime)
+	sid, _ := subscriber()
+	fmt.Println(sid)
+	for i := 0; i < no_of_update; i = i+1 {
+	    update(i)
+	}
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	signal.Notify(c, syscall.SIGTERM)
 	<-c
 }
 
-func onTimer() {
-	//fmt.Println("timer")
-	if current_num != previous_num {
-		fmt.Printf("total =  %d, throughput = %d \r\n", current_num, current_num-previous_num)
-	}
+/*
+   update context request
+*/
 
-	previous_num = current_num
+func update(i int) {
+	ctxEle := make(map[string]interface{})
+	ctxEle["id"] = id + strconv.Itoa(i)
+	//ctxEle["id"] = id
+	ctxEle["type"] = Etype
+	newEle1 := make(map[string]string)
+	newEle1["type"] = "property"
+	newEle1["value"] = "BMW"
+	newEle2 := make(map[string]string)
+	newEle2["type"] = "relationship"
+	newEle2["object"] = "urn:ngsi-ld:Car:A111"
+	ctxEle["brand"] = newEle1
+	ctxEle["isparked"] = newEle2
+	err := UpdateLdContext(ctxEle,updateBrokerURL)
+	if err != nil {
+	    fmt.Println(err)
+	}
 }
 
-// to deal with the received notification messages
+/*
+ subscription creation
+*/
+
+func subscriber() (string, error) {
+	LdSubscription := LDSubscriptionRequest{}
+	newEntity := EntityId{}
+	newEntity.Type = Etype
+	newEntity.IdPattern = id + ".*"
+	LdSubscription.Entities = make([]EntityId, 0)
+	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
+	LdSubscription.Type = "Subscription"
+	LdSubscription.Notification.Format = "normalized"
+	LdSubscription.Notification.Endpoint.URI = my_ip + ":" + myport+ "/notifyContext"
+	brokerURL := subscriberBrokerURL
+	sid, err := SubscribeContextRequestForNGSILD(LdSubscription, brokerURL)
+	if err != nil {
+		ERROR.Println(err)
+		return "", err
+	} else {
+		return sid, nil
+	}
+}
+
+/*
+   set basic config for testing the latency
+*/
+
+func setConfig() {
+	config1, e  := ioutil.ReadFile("config.json")
+	if e != nil {
+		fmt.Printf("File Error: [%v]\n", e)
+		os.Exit(1)
+	}
+
+	dec := json.NewDecoder(bytes.NewReader(config1))
+	var commands map[string]interface{}
+	dec.Decode(&commands)
+	my_ip  = commands["my_ip"].(string)
+	updateBrokerURL = commands["update_broker_url"].(string)
+	subscriberBrokerURL = commands["subscribe_broker_url"].(string)
+	id = commands["id"].(string)
+	Etype  = commands["type"].(string)
+	fmt.Println(commands)
+}
 
 func fogfunction(ctxObj map[string]interface{}) error {
 	for k, v := range ctxObj {
@@ -96,14 +167,12 @@ func getStringInterfaceMap(r *http.Request) (map[string]interface{}, error) {
 /*
 	handler for receiving notification
 */
+
 func onNotify(w http.ResponseWriter, r *http.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		//var context []interface{}
-		//context = append(context, DEFAULT_CONTEXT)
+		fmt.Println(time.Since(startTime))
 		notifyElement, _ := getStringInterfaceMap(r)
-
 		fmt.Println("+v\n", notifyElement)
-
 		notifyElemtData := notifyElement["data"]
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		w.WriteHeader(200)
