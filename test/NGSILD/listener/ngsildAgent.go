@@ -37,7 +37,8 @@ func queryContext(id string, IoTBrokerURL string) (map[string]interface{}, error
 
 // Update request to FogFLow broker
 
-func UpdateLdContext(updateCtx map[string]interface{}, IoTBrokerURL string) error {
+func UpdateLdContext(updateCtx []map[string]interface{}, IoTBrokerURL string) error {
+	fmt.Println(updateCtx)
 	body, err := json.Marshal(updateCtx)
 	if err != nil {
 		return err

@@ -41,9 +41,21 @@ func main() {
 
 	fmt.Println("the subscriber is listening on port " + strconv.Itoa(*myPort))
 
-	// start a timer to do something periodically
-	setConfig()
-	startTime := time.Now().UnixNano()
+
+	configType := string(os.Args[1])
+	var file string
+	if configType == "Fog" {
+	    file = "configFog.json"
+	} else if configType == "orion" {
+	    file = "configOrion.json"
+	} else if configType == "scorpio" {
+	    file = "configScorpio.json"
+	}
+
+	fmt.Println(file)
+	setConfig(file)
+
+	startTime = time.Now()
 	fmt.Println(startTime)
 	// start timer to get the latency
 
@@ -76,7 +88,9 @@ func update(i int) {
 	newEle2["object"] = "urn:ngsi-ld:Car:A111"
 	ctxEle["brand"] = newEle1
 	ctxEle["isparked"] = newEle2
-	err := UpdateLdContext(ctxEle,updateBrokerURL)
+        ctxElements := make([]map[string]interface{},0)
+	ctxElements = append(ctxElements,ctxEle)
+	err := UpdateLdContext(ctxElements,updateBrokerURL)
 	if err != nil {
 	    fmt.Println(err)
 	}
@@ -110,8 +124,8 @@ func subscriber() (string, error) {
    set basic config for testing the latency
 */
 
-func setConfig() {
-	config1, e  := ioutil.ReadFile("config.json")
+func setConfig(file string) {
+	config1, e  := ioutil.ReadFile(file)
 	if e != nil {
 		fmt.Printf("File Error: [%v]\n", e)
 		os.Exit(1)
@@ -171,6 +185,8 @@ func getStringInterfaceMap(r *http.Request) (map[string]interface{}, error) {
 func onNotify(w http.ResponseWriter, r *http.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		fmt.Println(time.Since(startTime))
+	        startTime = time.Now()
+		fmt.Println(startTime)
 		notifyElement, _ := getStringInterfaceMap(r)
 		fmt.Println("+v\n", notifyElement)
 		notifyElemtData := notifyElement["data"]
