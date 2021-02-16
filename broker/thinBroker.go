@@ -1908,7 +1908,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
 				if err != nil {
 					problemSet := ProblemDetails{}
-					problemSet.Details = "Type can not be nil!"
+					problemSet.Details = "Problem in deserialization"
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				} else {
