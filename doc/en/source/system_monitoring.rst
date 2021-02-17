@@ -37,11 +37,11 @@ Download the docker-compose file and the configuration files as below.
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/grafana/dashboards.zip
 
 
-install unzip on system to extract JSON files from dashboards.zip
+install unzip tool on system to extract JSON files from dashboards.zip
 
 .. code-block:: console
  
-          #command to install unzip
+          #command for ubuntu to install unzip
           apt-get install unzip
 
           #command to unzip the zip file dashboards.zip
@@ -103,7 +103,7 @@ Here are some basic Grafana visualization dashboard to monitor metrics of FogFlo
 
 
 
-.. figure:: figures/Container_max_memory_usage.png
+.. figure:: figures/Container_usage_max_memory.png
 
 
 
