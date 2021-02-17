@@ -34,9 +34,18 @@ Download the docker-compose file and the configuration files as below.
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/grafana/metricbeat.docker.yml
 
         # JSON files to configure grafana dashboard 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/grafana/dashboards
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/grafana/dashboards.zip
 
 
+install unzip on system to extract JSON files from dashboards.zip
+
+.. code-block:: console
+ 
+          #command to install unzip
+          apt-get install unzip
+
+          #command to unzip the zip file dashboards.zip
+          unzip dashboards.zip
 
 
 .. note:: It is supposed that FogFlow cloud components are in running state before setting up system monitoring.
@@ -63,7 +72,7 @@ The default username and password for Grafana login are admin and admin respecti
 
 
 - After successful login to grafana, click on "Add data source" on Home Dashboard to setup the source of data.
-- Select Elasticsearch from Add Data Sourch page. Now the new page is Data Sources/Elasticsearch same as below figure.
+- Select Elasticsearch from Add Data Source page. Now the new page is Data Sources/Elasticsearch same as below figure.
 
 
 .. figure:: figures/Elastic_config.png
@@ -88,7 +97,8 @@ Grafana based system metrics can be seen from Home Dashboard page of Grafana. In
 
 Here are some basic Grafana visualization dashboard to monitor metrics of FogFlow cloud as well as edge nodes.
 
-- **Below diagram illustrate steps to setup dashboard for containers list with maximum memory usage**.
+
+- **Below dashboard diagram for containers list with maximum memory usage**.
 
 
 
@@ -98,31 +108,33 @@ Here are some basic Grafana visualization dashboard to monitor metrics of FogFlo
 
 
 
-- **Below diagram illustrate steps to setup dashboard to show system memory used in bytes**.
+- **Below dashboard diagram to show system memory used in bytes on cloud node**.
 
 
 
 
-.. figure:: figures/System_Memory_Gauge.png
+.. figure:: figures/System_memory_in_bytes_cloud.png
 
 
 
-- **Below diagram illustrate steps to setup dashboard to show system metric data rate in packet per second**.
+- **Below dashboard diagram to show system metric data rate in packet per second on cloud node**.
 
 
 
-.. figure:: figures/System_Metric_filter.png
+.. figure:: figures/System_Metric_cloud.png
 
 
 
-- **Below diagram illustrate steps to setup dashboard to show FogFlow Cloud and Edge nodes that are live**.
+- **Below dashboard diagram to show FogFlow Cloud node that are live**.
 
 
-.. figure:: figures/Fogflow_Cloud_Edge_Nodes.png
+.. figure:: figures/FogFlow_cloud.png
 
 
 
+.. note:: Before proceeding please clear the browser cache, browser might saves some information from websites in its cache and cookies. Clearing them fixes certain problems, like loading or formatting issues on sites.
 
+ 
 
 Set up the Metricbeat on Edge node
 -------------------------------------
@@ -141,4 +153,28 @@ Copy below Docker run command, edit and replace <Cloud_Public_IP> with IP/URL of
 .. code-block:: console  
 
             docker run -d   --name=metricbeat   --user=root   --volume="$(pwd)/metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro"   --volume="/var/run/docker.sock:/var/run/docker.sock:ro"   --volume="/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"   --volume="/proc:/hostfs/proc:ro"   --volume="/:/hostfs:ro"   docker.elastic.co/beats/metricbeat:7.6.0 metricbeat -e   -E output.elasticsearch.hosts=["<Cloud_Public_IP>:9200"]
+
+
+- **Below dashboard diagram to show system memory used in bytes on cloud as well as on edge node**.
+
+
+
+
+.. figure:: figures/System_Memory_Gauge.png
+
+
+
+- **Below dashboard diagram to show system metric data rate in packet per second on cloud as well as on edge node**.
+
+
+
+.. figure:: figures/System_Metric_filter.png
+
+
+
+- **Below dashboard diagram to show FogFlow Cloud and Edge nodes that are live**.
+
+
+.. figure:: figures/Fogflow_Cloud_Edge_Nodes.png
+
 
