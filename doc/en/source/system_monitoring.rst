@@ -41,7 +41,7 @@ install unzip tool on system to extract JSON files from dashboards.zip
 
 .. code-block:: console
  
-          #command for ubuntu to install unzip
+          #command to install unzip in ubuntu  
           apt-get install unzip
 
           #command to unzip the zip file dashboards.zip
