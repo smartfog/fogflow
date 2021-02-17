@@ -16,7 +16,7 @@ import (
 	//"string"
 
 	mux "github.com/gufranmirza/go-router"
-	. "github.com/smartfog/fogflow/common/ngsi"
+//	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 var previous_num = int(0)
@@ -24,7 +24,7 @@ var current_num = int(0)
 var ticker *time.Ticker
 var startTime = time.Now()
 var myport = "8066"
-var no_of_update = 2
+var no_of_update = 3
 var my_ip, updateBrokerURL, subscriberBrokerURL, id, Etype string
 var counter = int64(0)
 
@@ -52,14 +52,11 @@ func main() {
 	    file = "configScorpio.json"
 	}
 
-	fmt.Println(file)
 	setConfig(file)
 
 	startTime = time.Now()
-	fmt.Println(startTime)
 	// start timer to get the latency
 
-	fmt.Println(startTime)
 	sid, _ := subscriber()
 	fmt.Println(sid)
 	for i := 0; i < no_of_update; i = i+1 {
@@ -78,13 +75,12 @@ func main() {
 func update(i int) {
 	ctxEle := make(map[string]interface{})
 	ctxEle["id"] = id + strconv.Itoa(i)
-	//ctxEle["id"] = id
 	ctxEle["type"] = Etype
 	newEle1 := make(map[string]string)
-	newEle1["type"] = "property"
+	newEle1["type"] = "Property"
 	newEle1["value"] = "BMW"
 	newEle2 := make(map[string]string)
-	newEle2["type"] = "relationship"
+	newEle2["type"] = "Relationship"
 	newEle2["object"] = "urn:ngsi-ld:Car:A111"
 	ctxEle["brand"] = newEle1
 	ctxEle["isparked"] = newEle2
@@ -101,19 +97,26 @@ func update(i int) {
 */
 
 func subscriber() (string, error) {
-	LdSubscription := LDSubscriptionRequest{}
-	newEntity := EntityId{}
-	newEntity.Type = Etype
-	newEntity.IdPattern = id + ".*"
-	LdSubscription.Entities = make([]EntityId, 0)
-	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
-	LdSubscription.Type = "Subscription"
-	LdSubscription.Notification.Format = "normalized"
-	LdSubscription.Notification.Endpoint.URI = my_ip + ":" + myport+ "/notifyContext"
+	LdSubscription := make(map[string]interface{})
+	newEntities := make([]map[string]interface{},0)
+	newEntity := make(map[string]interface{})
+        newEntity["type"] = Etype
+	newEntity["idPattern"] = id + ".*"
+        newEntities  = append(newEntities,newEntity)
+	LdSubscription["entities"] = newEntities
+
+	notification := make(map[string]interface{})
+	notification["format"] = "normalized"
+	endpoint := make(map[string]interface{})
+	endpoint["uri"] = my_ip + ":" + myport+ "/notifyContext"
+	endpoint["accept"] = "application/json"
+	notification["endpoint"] = endpoint
+	LdSubscription["notification"] = notification
+	LdSubscription["type"] = "Subscription"
 	brokerURL := subscriberBrokerURL
 	sid, err := SubscribeContextRequestForNGSILD(LdSubscription, brokerURL)
 	if err != nil {
-		ERROR.Println(err)
+		fmt.Println(err)
 		return "", err
 	} else {
 		return sid, nil
@@ -186,7 +189,6 @@ func onNotify(w http.ResponseWriter, r *http.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		fmt.Println(time.Since(startTime))
 	        startTime = time.Now()
-		fmt.Println(startTime)
 		notifyElement, _ := getStringInterfaceMap(r)
 		fmt.Println("+v\n", notifyElement)
 		notifyElemtData := notifyElement["data"]
