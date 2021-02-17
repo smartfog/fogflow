@@ -155,6 +155,9 @@ Copy below Docker run command, edit and replace <Cloud_Public_IP> with IP/URL of
             docker run -d   --name=metricbeat   --user=root   --volume="$(pwd)/metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro"   --volume="/var/run/docker.sock:/var/run/docker.sock:ro"   --volume="/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"   --volume="/proc:/hostfs/proc:ro"   --volume="/:/hostfs:ro"   docker.elastic.co/beats/metricbeat:7.6.0 metricbeat -e   -E output.elasticsearch.hosts=["<Cloud_Public_IP>:9200"]
 
 
+Metrices for Edge node can be seen on Grafana dashboard via the URL: http://<output.elasticsearch.hosts>:3003/.
+
+
 - **Below dashboard diagram to show system memory used in bytes on cloud as well as on edge node**.
 
 
