@@ -10,7 +10,7 @@ three aspects with 8 steps
 
 * how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-3**)
 * how to use the serverless function in FogFlow to do customized data analytics (**Step 4**)
-* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 5-8**)
+* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 5-6**)
  
 
 .. figure:: figures/fogflow-ngsild-broker.png
@@ -72,9 +72,9 @@ Step 1: issue a subscription to Orion-LD
                    "type": "Vehicle"
              	}],
              	"notification": {
-                   "format": "keyValues",
+                   "format": "normalized",
                    "endpoint": {
-                       "uri": "http://192.168.0.59:8070/ngsi-ld/v1/notifyContext/",
+                       "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
                        "accept": "application/ld+json"
              	    }
             	}
@@ -132,7 +132,7 @@ please prepare the CURL command to query the "Vehicle" entities from  FogFlow th
 
 	curl -iX GET \
 		  'http://localhost:8070/ngsi-ld/v1/entities?type=Vehicle' \
-		  -H 'Content-Type: application/ld+json' \
+		  -H 'Content-Type: application/json' \
 		  -H 'Accept: application/ld+json' \
 		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
