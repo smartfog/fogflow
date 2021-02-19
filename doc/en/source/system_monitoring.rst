@@ -6,8 +6,7 @@ Fogflow system health can be monitored by system monitoring tools Metricbeat, El
 With these tools edges and Fogflow Docker service health can be monitored. 
 Metricbeat deployed on Edge node. Elasticsearch and Grafana on Cloud node.
 
-As illustrated by the following picture, in order to set up FogFlow System Monitoring tools to monitor system resource usage.
-
+As illustrated in following picture, set up System Monitoring tools  to monitor system resource usage.
 
 
 .. figure:: figures/Fogflow_System_Monitoring_Architecture.png
@@ -44,7 +43,7 @@ install unzip tool on system to extract JSON files from dashboards.zip
           #command to install unzip in ubuntu  
           apt-get install unzip
 
-          #command to unzip the zip file dashboards.zip
+          #command to unzip the file dashboards.zip
           unzip dashboards.zip
 
 
@@ -67,11 +66,11 @@ Configure Elasticsearch on Grafana Dashboard
 ===========================================================  
 
 
-Grafana dashboard can be accessible on web browser to see the current system status via the URL: http://<output.elasticsearch.hosts>:3003/. 
+Grafana dashboard can be accessible on web browser via the URL: http://<Cloud_Public_IP>:3003/. 
 The default username and password for Grafana login are admin and admin respectively.
 
 
-- After successful login to grafana, click on "Add data source" on Home Dashboard to setup the source of data.
+- After successful login to grafana, click on "Add data source" in Home Dashboard to setup the source of data.
 - Select Elasticsearch from Add Data Source page. Now the new page is Data Sources/Elasticsearch same as below figure.
 
 
@@ -79,10 +78,10 @@ The default username and password for Grafana login are admin and admin respecti
 
 
 
-1. Put a name for the Data Source.
-2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include HTTP. 
-3. In Access select Server(default). URL needs to be accessible from the Grafana backend/server.
-4. In Elasticsearch details, put @timestamp for Time field name. Here a default for the time field can be specified with the name of your Elasticsearch index. Use a time pattern for the index name or a wildcard.
+1. Put a name for the Data Source i.e. "Elasticsearch".
+2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include HTTP for eg: "http://192.168.100.112:9200"
+3. In Access select "Server(default)". URL needs to be accessible from the Grafana backend/server.
+4. In Elasticsearch details, put "@timestamp" for Time field name. 
 5. Select Elasticsearch Version i.e. "7.0+".
 
 Then click on "Save & Test" button.
@@ -93,9 +92,18 @@ On successful configuration the dashboard will return "Index OK. Time field name
 Grafana-based monitoring
 ===========================================================  
         
-Grafana based system metrics can be seen from Home Dashboard page of Grafana. In the sidebar, take the cursor over Dashboards (squares) icon, and then click Manage. The dashboard appears in a Services folder.
+Grafana based system metrics can be seen on grafana dashboard. Follow the steps:
 
-Here are some basic Grafana visualization dashboard to monitor metrics of FogFlow cloud as well as edge nodes.
+1. In the sidebar, take the cursor over Dashboards (squares) icon.
+
+2. click Manage. 
+
+3. The dashboard appears in a Services folder.
+
+
+
+Select particular dashboard to see the corresponding monitoring metrics.
+
 
 
 - **Below dashboard diagram for containers list with maximum memory usage**.
@@ -133,13 +141,14 @@ Here are some basic Grafana visualization dashboard to monitor metrics of FogFlo
 
 
 .. note:: Before proceeding please clear the browser cache, browser might saves some information from websites in its cache and cookies. Clearing them fixes certain problems, like loading or formatting issues on sites.
+	     
 
- 
 
-Set up the Metricbeat on Edge node
+Set up Metricbeat on Edge node
 -------------------------------------
 
-Download the metric beat yml file for edge node.
+
+Download the metricbeat yml file for edge node.
 
 .. code-block:: console  
 
@@ -155,7 +164,7 @@ Copy below Docker run command, edit and replace <Cloud_Public_IP> with IP/URL of
             docker run -d   --name=metricbeat   --user=root   --volume="$(pwd)/metricbeat.docker.yml:/usr/share/metricbeat/metricbeat.yml:ro"   --volume="/var/run/docker.sock:/var/run/docker.sock:ro"   --volume="/sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro"   --volume="/proc:/hostfs/proc:ro"   --volume="/:/hostfs:ro"   docker.elastic.co/beats/metricbeat:7.6.0 metricbeat -e   -E output.elasticsearch.hosts=["<Cloud_Public_IP>:9200"]
 
 
-Metrices for Edge node can be seen on Grafana dashboard via the URL: http://<output.elasticsearch.hosts>:3003/.
+Metrices for Edge node can be seen on same Grafana dashboard with cloud node metrics via URL: http://<Cloud_Public_IP>:3003/. 
 
 
 - **Below dashboard diagram to show system memory used in bytes on cloud as well as on edge node**.
