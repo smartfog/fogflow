@@ -428,7 +428,7 @@ func compactData(entity map[string]interface{}, context interface{}) (interface{
 	return compacted, err
 }
 
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, httpsCfg *HTTPS) error {
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration bool, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
 	ldCompactedElems := make([]map[string]interface{}, 0)
 	for k, _ := range ldCtxElems {
@@ -447,23 +447,30 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		}
 		LdElementList = append(LdElementList, element)
 	}
-
-	notifyCtxReq := &LDNotifyContextRequest{
-		SubscriptionId: subscriptionId,
-		Data:           LdElementList,
-		Type:           "Notification",
-		Id:             "fogflow:notification",
-		NotifyAt:       time.Now().String(),
+	var notifyCtxReq interface{}
+	var notifyURL string
+	if integration == true {
+		notifyCtxReq = LdElementList
+		notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
+	} else {
+		notifyCtxReq = &LDNotifyContextRequest{
+			SubscriptionId: subscriptionId,
+			Data:           LdElementList,
+			Type:           "Notification",
+			Id:             "fogflow:notification",
+			NotifyAt:       time.Now().String(),
+		}
+		notifyURL = URL
 	}
 	body, err := json.Marshal(notifyCtxReq)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", notifyURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Link","<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {

@@ -761,6 +761,7 @@ type Subscriber struct {
 	IsInternal         bool
 	RequireReliability bool
 	BrokerURL          string
+	Integration        bool
 	NotifyCache        []*ContextElement
 	LDNotifyCache      []map[string]interface{}
 }
