@@ -145,34 +145,4 @@ for example, generate an alert message when the speed of vehile is greater than 
 
 
 How to Push the Generated Result back to the NGSI-LD broker 
-=========================================================================
-
-please register fogfunction2 by default, including its operator, docker image, and fog function. 
-Put them into the initialization list of the designer. 
-
-
-Step 5: send a update message to trigger fogfunction2
-
-
-.. code-block:: console    
-
-	#please write the curl message to trigger fogfunction2
-
-
-Step 6: check if fogfunction2 is created
-
-
-explain where the users can check if the fogfunction2 is triggered. 
-
-
-Step 7: check if Orion-LD has received the forwarded results
-
-
-.. code-block:: console    
-
-	curl -iX GET \
-		  'http://localhost:8070/ngsi-ld/v1/entities?type=Alert' \
-		  -H 'Content-Type: application/ld+json' \
-		  -H 'Accept: application/ld+json' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
-
+=============================================================
