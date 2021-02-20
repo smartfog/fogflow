@@ -6,11 +6,11 @@ Integrate FogFlow with Other NGSI-LD Broker
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
 on top of the raw data captured in the NGSI-LD brokers, such as Scorpio, Orion-LD, and Stellio. 
 The following diagram shows a simple example of how to do this in details, mainly including
-three aspects with 8 steps
+three aspects with 7 steps
 
-* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-3**)
-* how to use the serverless function in FogFlow to do customized data analytics (**Step 4**)
-* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 5-6**)
+* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-4**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 5**)
+* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 6-7**)
  
 
 .. figure:: figures/fogflow-ngsild-broker.png
