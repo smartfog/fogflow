@@ -61,7 +61,7 @@ Step 1: send an entity update to Orion-Ld
 
 
             curl -iX POST \                 
-                 'http://180.179.214.202:8070/ngsi-ld/v1/entityOperations/upsert' \
+                 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert' \
                  -H 'Content-Type: application/json' \
                  -H Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-corecontext.jsonld";type="application/+json"' \
 	        -d '
