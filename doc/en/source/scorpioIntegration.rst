@@ -105,18 +105,18 @@ Step 2: issue a subscription to Orion-LD
 		  -H 'Accept: application/ld+json' \
 		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 		  -d ' {
-             	"type": "Subscription",
-             	"entities": [{
-                   "type": "Vehicle"
-             	}],
-             	"notification": {
-                   "format": "normalized",
-                   "endpoint": {
-                       "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
-                       "accept": "application/ld+json"
-             	    }
-            	}
- 			}'
+                 	"type": "Subscription",
+                	"entities": [{
+                               "type": "Vehicle"
+                 	}],
+             	      "notification": {
+                          "format": "normalized",
+                          "endpoint": {
+                                   "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
+                                   "accept": "application/ld+json"
+             	           }
+                       }
+ 	           }'
 
 Step 3: check if FogFlow receives the subscribed entity 
 
@@ -146,3 +146,30 @@ for example, generate an alert message when the speed of vehile is greater than 
 
 How to Push the Generated Result back to the NGSI-LD broker 
 =============================================================
+
+Step 1: issue a subscription request to the fogflow broker to publish result back to the NGSILD broker
+
+
+.. code-block:: console
+
+        curl -iX POST \
+                  'http://localhost:8070/ngsi-ld/v1/subscriptions' \
+                  -H 'Content-Type: application/json' \
+		  -H 'Integration: true' \
+                  -H 'Accept: application/ld+json' \
+                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -d ' {
+                        "type": "Subscription",
+                        "entities": [{
+                               "type": "result"
+                        }],
+                      "notification": {
+                          "format": "normalized",
+                          "endpoint": {
+                                   "uri": "http://localhost:1026",
+                                   "accept": "application/ld+json"
+                           }
+                       }
+                   }'
+
+
