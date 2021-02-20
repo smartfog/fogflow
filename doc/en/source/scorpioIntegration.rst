@@ -64,36 +64,36 @@ Step 1: send an entity update to Orion-Ld
                  'http://180.179.214.202:8070/ngsi-ld/v1/entityOperations/upsert' \
                  -H 'Content-Type: application/json' \
                  -H Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-corecontext.jsonld";type="application/+json"' \
-        -d '
-	[
-        {
-           "id": "urn:ngsi-ld:Vehicle:A106",
-           "type": "Vehicle",
-           "brandName": {
+	        -d '
+		[
+       	        {
+                    "id": "urn:ngsi-ld:Vehicle:A106",
+                    "type": "Vehicle",
+                    "brandName": {
                           "type": "Property",
                           "value": "Mercedes"
-            },
-            "isParked": {
+                     },
+                    "isParked": {
                           "type": "Relationship",
                           "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
                           "providedBy": {
                                           "type": "Relationship",
                                           "object": "urn:ngsi-ld:Person:Bob"
-                           }
-             },
-             "speed": {
+                                        }
+                       },
+                    "speed": {
                         "type": "Property",
                         "value": 120
-              },
-             "location": {
+                     },
+                   "location": {
                             "type": "GeoProperty",
                             "value": {
                                       "type": "Point",
                                       "coordinates": [-8.5, 41.2]
-                            }
-	                 }
-        }
-        ]'
+                                      }
+	           }
+              }
+              ]'
 Step 2: issue a subscription to Orion-LD 
 
 
