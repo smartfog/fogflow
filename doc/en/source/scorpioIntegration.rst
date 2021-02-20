@@ -6,11 +6,11 @@ Integrate FogFlow with Other NGSI-LD Broker
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
 on top of the raw data captured in the NGSI-LD brokers, such as Scorpio, Orion-LD, and Stellio. 
 The following diagram shows a simple example of how to do this in details, mainly including
-three aspects with 8 steps
+three aspects with 7 steps
 
-* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-3**)
-* how to use the serverless function in FogFlow to do customized data analytics (**Step 4**)
-* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 5-6**)
+* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-4**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 5**)
+* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 6-7**)
  
 
 .. figure:: figures/fogflow-ngsild-broker.png
@@ -55,8 +55,46 @@ Before you start the following steps, please check if your Orion-LD broker and F
 How to Fetch data from Orion-LD to FogFlow 
 ================================================================
 
+Step 1: send an entity update to Orion-Ld
 
-Step 1: issue a subscription to Orion-LD 
+.. code-block:: console
+
+
+            curl -iX POST \                 
+                 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert' \
+                 -H 'Content-Type: application/json' \
+                 -H Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-corecontext.jsonld";type="application/+json"' \
+	        -d '
+		[
+       	        {
+                    "id": "urn:ngsi-ld:Vehicle:A106",
+                    "type": "Vehicle",
+                    "brandName": {
+                          "type": "Property",
+                          "value": "Mercedes"
+                     },
+                    "isParked": {
+                          "type": "Relationship",
+                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                                        }
+                       },
+                    "speed": {
+                        "type": "Property",
+                        "value": 120
+                     },
+                   "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                                      }
+	           }
+              }
+              ]'
+Step 2: issue a subscription to Orion-LD 
 
 
 .. code-block:: console    
@@ -67,60 +105,18 @@ Step 1: issue a subscription to Orion-LD
 		  -H 'Accept: application/ld+json' \
 		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 		  -d ' {
-             	"type": "Subscription",
-             	"entities": [{
-                   "type": "Vehicle"
-             	}],
-             	"notification": {
-                   "format": "normalized",
-                   "endpoint": {
-                       "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
-                       "accept": "application/ld+json"
-             	    }
-            	}
- 			}'
-
-
-Step 2: send an entity update to Orion-LD 
-
-
-.. code-block:: console    
-
-	
-	curl --location --request POST 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert?options=update' \
-	--header 'Content-Type: application/json' \
-	--header 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-	--data-raw '[
-	{
-	   "id": "urn:ngsi-ld:Vehicle:A106",
-	   "type": "Vehicle",
-	   "brandName": {
-	                  "type": "Property",
-	                  "value": "Mercedes"
-	    },
-	    "isParked": {
-	                  "type": "Relationship",
-	                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
-	                  "providedBy": {
-	                                  "type": "Relationship",
-	                                  "object": "urn:ngsi-ld:Person:Bob"
-	                   }
-	     },
-	     "speed": {
-	                "type": "Property",
-	                "value": 120
-	      },
-	     "location": {
-	                    "type": "GeoProperty",
-	                    "value": {
-	                              "type": "Point",
-	                              "coordinates": [-8.5, 41.2]
-	                    }
-	     }
-	}
-	]'
-
-
+                 	"type": "Subscription",
+                	"entities": [{
+                               "type": "Vehicle"
+                 	}],
+             	      "notification": {
+                          "format": "normalized",
+                          "endpoint": {
+                                   "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
+                                   "accept": "application/ld+json"
+             	           }
+                       }
+ 	           }'
 
 Step 3: check if FogFlow receives the subscribed entity 
 
@@ -149,34 +145,31 @@ for example, generate an alert message when the speed of vehile is greater than 
 
 
 How to Push the Generated Result back to the NGSI-LD broker 
-=========================================================================
+=============================================================
 
-please register fogfunction2 by default, including its operator, docker image, and fog function. 
-Put them into the initialization list of the designer. 
-
-
-Step 5: send a update message to trigger fogfunction2
+Step 1: issue a subscription request to the fogflow broker to publish result back to the NGSILD broker
 
 
-.. code-block:: console    
+.. code-block:: console
 
-	#please write the curl message to trigger fogfunction2
+        curl -iX POST \
+                  'http://localhost:8070/ngsi-ld/v1/subscriptions' \
+                  -H 'Content-Type: application/json' \
+		  -H 'Integration: true' \
+                  -H 'Accept: application/ld+json' \
+                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -d ' {
+                        "type": "Subscription",
+                        "entities": [{
+                               "type": "result"
+                        }],
+                      "notification": {
+                          "format": "normalized",
+                          "endpoint": {
+                                   "uri": "http://localhost:1026",
+                                   "accept": "application/ld+json"
+                           }
+                       }
+                   }'
 
-
-Step 6: check if fogfunction2 is created
-
-
-explain where the users can check if the fogfunction2 is triggered. 
-
-
-Step 7: check if Orion-LD has received the forwarded results
-
-
-.. code-block:: console    
-
-	curl -iX GET \
-		  'http://localhost:8070/ngsi-ld/v1/entities?type=Alert' \
-		  -H 'Content-Type: application/ld+json' \
-		  -H 'Accept: application/ld+json' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
