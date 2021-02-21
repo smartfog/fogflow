@@ -33,7 +33,7 @@ In terms of the NGSI-LD broker, there are different choices (Scorpio, Orion-LD, 
 	
 	# start the orion-ld broker
 	docker-compose pull
-	docker-Compose up -d 
+	docker-compose up -d 
 
 Before you start the following steps, please check if your Orion-LD broker and FogFlow system is running properly. 
 
@@ -77,7 +77,7 @@ Step 1: issue a subscription to Orion-LD
              	      "notification": {
                           "format": "normalized",
                           "endpoint": {
-                                   "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
+                                   "uri": "http://my_hostip:8070/ngsi-ld/v1/notifyContext/",
                                    "accept": "application/ld+json"
              	           }
                        }
@@ -173,15 +173,15 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
                       "notification": {
                           "format": "normalized",
                           "endpoint": {
-                                   "uri": "http://localhost:1026",
+                                   "uri": "http://my_hostip:1026",
                                    "accept": "application/ld+json"
                            }
                        }
                    }'
 
 
-
-Step 2: check if NGSILD broker  receives the result entity
+ 
+Step 6: check if NGSILD broker  receives the result entity
 
 
 please prepare the CURL command to query the "result" entities from  NGSILD broker.
