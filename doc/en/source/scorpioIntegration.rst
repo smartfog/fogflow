@@ -28,7 +28,7 @@ In terms of the NGSI-LD broker, there are different choices (Scorpio, Orion-LD, 
 
 .. code-block:: console
 
-	# fetch the docker-compose file 
+	# fetch the docker-compose file  of Orion-LD 
 	wget https://raw.githubusercontent.com/smartfog/fogflow/development/test/orion-ld/docker-compose.yml
 	
 	# start the orion-ld broker
@@ -141,16 +141,19 @@ please prepare the CURL command to query the "Vehicle" entities from  FogFlow th
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-Step 4: apply fogfunction to do some customized data analytics
+Step 4: please refer the `Document link`_ to register fogfunction using dashboard.
 
+.. _`Document link`: https://fogflow.readthedocs.io/en/latest/onepage.html
 
-please change the template code at "/application/template/NGSILD" to do some simple analysis, 
+Example: how to detect overspeed vechiles. when speed of a vechile goes beyond 50 fogFlow will notify. 
+provide link :- https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD
+
 
 
 How to Push the Generated Result back to the NGSI-LD broker 
 =============================================================
 
-Step 1: FogFunction do some dataalalytics in step4 and publish the analytics result on fogflow broker . TO get the back to the analytics result on NGSILD broker issue the following subscription on fogflow broker.
+Step 5: Fog Function do some data analytics in step no. 4 and publish the analytics result on fogflow broker. NGSILD broker  subscribes fogFlow broker for getting the analytics result.
 
 .. code-block:: console
 
@@ -163,7 +166,7 @@ Step 1: FogFunction do some dataalalytics in step4 and publish the analytics res
                   -d ' {
                         "type": "Subscription",
                         "entities": [{
-                               "type": "Result"
+                               "type": "daresult"
                         }],
                       "notification": {
                           "format": "normalized",
@@ -185,126 +188,9 @@ please prepare the CURL command to query the "result" entities from  NGSILD brok
 .. code-block:: console
 
         curl -iX GET \
-                  'http://localhost:1026/ngsi-ld/v1/entities?type=Result' \
+                  'http://localhost:1026/ngsi-ld/v1/entities?type=daresult' \
                   -H 'Content-Type: application/json' \
                   -H 'Accept: application/ld+json' \
                   -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
-
-
-The following examole shows how to perform the above steps using vechile example
-===================================================================================
-
-Vechile operator at location '/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD' take decision according to the speed define in entity. The operator publish a result entity on NGSILD broker if speed > 50
-
-Get vechile Entity on NGSILD broker
-===================================================================================
-
-step1: create vechile entity on orion broker
-
-
-.. code-block:: console
-
-
-            curl -iX POST \                 
-                 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert' \
-                 -H 'Content-Type: application/json' \
-                 -H Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-corecontext.jsonld";type="application/+json"' \
-	        -d '
-		[
-       	        {
-                    "id": "urn:ngsi-ld:Vehicle:A106",
-                    "type": "Vehicle",
-                    "brandName": {
-                          "type": "Property",
-                          "value": "Mercedes"
-                     },
-                    "speed": {
-                        "type": "Property",
-                        "value": 120
-                     },
-                   "location": {
-                            "type": "GeoProperty",
-                            "value": {
-                                      "type": "Point",
-                                      "coordinates": [-8.5, 41.2]
-                                      }
-	           }
-              }
-              ]'
-	    
-step2: issue subscription on orion broker for above define entity
-
-Step 2: issue a subscription to Orion-LD 
-
-
-.. code-block:: console    
-
-	curl -iX POST \
-		  'http://localhost:1026/ngsi-ld/v1/subscriptions' \
-		  -H 'Content-Type: application/json' \
-		  -H 'Accept: application/ld+json' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-		  -d ' {
-                 	"type": "Subscription",
-                	"entities": [{
-			       "id": "urn:ngsi-ld:Vehicle:A106",
-                               "type": "Vehicle"
-                 	}],
-             	      "notification": {
-                          "format": "normalized",
-                          "endpoint": {
-                                   "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
-                                   "accept": "application/ld+json"
-             	           }
-                       }
- 	           }'
-
-
-
-Register FOgFunction on fogFLow broker
-===================================================================================
-
-Get analytics result back to the NGSI-LD broker
-===================================================================================
-
-step1: issue subscription on FogFLow broker 
-
-.. code-block:: console
-
-        curl -iX POST \
-                  'http://localhost:8070/ngsi-ld/v1/subscriptions' \
-                  -H 'Content-Type: application/json' \
-                  -H 'Integration: true' \
-                  -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-                  -d ' {
-                        "type": "Subscription",
-                        "entities": [{
-			       "id": "urn:ngsi-ld:Vehicle:A106ngsild",
-                               "type": "result"
-                        }],
-                      "notification": {
-                          "format": "normalized",
-                          "endpoint": {
-                                   "uri": "http://localhost:1026",
-                                   "accept": "application/ld+json"
-                           }
-                       }
-                   }'
-
-
-
-step2 : TO see the result on orion-ld run the following commond
-
-.. code-block:: console
-
-        curl -iX GET \
-                  'http://localhost:1026/ngsi-ld/v1/entities?type=result' \
-                  -H 'Content-Type: application/json' \
-                  -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
-
-
-Result:
 
 
