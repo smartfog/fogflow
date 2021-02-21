@@ -146,7 +146,7 @@ please change the template code at "/application/template/NGSILD" to do some sim
 How to Push the Generated Result back to the NGSI-LD broker 
 =============================================================
 
-Step 1: FogFunction do some dataalalytics in step and publish the analytics result on fogflow broker . TO get the back analytics result on NGSILD broker issue the following subscription on fogflow broker.
+Step 1: FogFunction do some dataalalytics in step4 and publish the analytics result on fogflow broker . TO get the back to the analytics result on NGSILD broker issue the following subscription on fogflow broker.
 
 .. code-block:: console
 
