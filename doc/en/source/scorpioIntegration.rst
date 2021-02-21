@@ -8,9 +8,9 @@ on top of the raw data captured in the NGSI-LD brokers, such as Scorpio, Orion-L
 The following diagram shows a simple example of how to do this in details, mainly including
 three aspects with 7 steps
 
-* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-4**)
-* how to use the serverless function in FogFlow to do customized data analytics (**Step 5**)
-* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 6-7**)
+* how to fetch some raw data from an NGSI-LD broker into the FogFlow system (**Step 1-3**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 4**)
+* how to push the generate analytics results back to the NGSI-LD broker for further sharing (**Step 5-7**)
  
 
 .. figure:: figures/fogflow-ngsild-broker.png
@@ -176,13 +176,13 @@ Step 1: FogFunction do some dataalalytics in step and publish the analytics resu
 Step 2: check if FogFlow receives the subscribed entity
 
 
-please prepare the CURL command to query the "Vehicle" entities from  FogFlow thinBroker.
+please prepare the CURL command to query the "result" entities from  FogFlow thinBroker.
 
 
 .. code-block:: console
 
         curl -iX GET \
-                  'http://localhost:8070/ngsi-ld/v1/entities?type=result' \
+                  'http://localhost:1026/ngsi-ld/v1/entities?type=result' \
                   -H 'Content-Type: application/json' \
                   -H 'Accept: application/ld+json' \
                   -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
