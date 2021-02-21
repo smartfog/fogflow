@@ -147,8 +147,7 @@ for example, generate an alert message when the speed of vehile is greater than 
 How to Push the Generated Result back to the NGSI-LD broker 
 =============================================================
 
-Step 1: issue a subscription request to the fogflow broker to publish result back to the NGSILD broker
-
+Step 1: FogFunction do some dataalalytics in step and publish the analytics result on fogflow broker . TO get the back analytics result on NGSILD broker issue the following subscription on fogflow broker.
 
 .. code-block:: console
 
@@ -171,5 +170,22 @@ Step 1: issue a subscription request to the fogflow broker to publish result bac
                            }
                        }
                    }'
+
+
+
+Step 2: check if FogFlow receives the subscribed entity
+
+
+please prepare the CURL command to query the "Vehicle" entities from  FogFlow thinBroker.
+
+
+.. code-block:: console
+
+        curl -iX GET \
+                  'http://localhost:8070/ngsi-ld/v1/entities?type=result' \
+                  -H 'Content-Type: application/json' \
+                  -H 'Accept: application/ld+json' \
+                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+
 
 
