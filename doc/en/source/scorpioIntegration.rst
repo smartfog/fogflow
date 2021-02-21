@@ -175,7 +175,7 @@ Step 1: FogFunction do some dataalalytics in step and publish the analytics resu
 Step 2: check if NGSILD broker  receives the result entity
 
 
-please prepare the CURL command to query the "result" entities from  FogFlow thinBroker.
+please prepare the CURL command to query the "result" entities from  NGSILD broker.
 
 
 .. code-block:: console
@@ -187,6 +187,6 @@ please prepare the CURL command to query the "result" entities from  FogFlow thi
                   -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
 
 
-Example to perform the above Example
-=============================================================
+The following examole shows how to perform the above steps using vechile example
+===================================================================================
 
