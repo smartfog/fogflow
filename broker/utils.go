@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/piprate/json-gold/ld"
 	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/ngsi"
@@ -476,8 +477,8 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	if strings.HasPrefix(URL, "https") == true {
 		client = httpsCfg.GetHTTPClient()
 	}
-
 	resp, err := client.Do(req)
+	fmt.Println(resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}

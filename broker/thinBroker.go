@@ -671,8 +671,20 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		var context []interface{}
 		context = append(context, DEFAULT_CONTEXT)
-		notifyElement, _ := tb.getStringInterfaceMap(r)
+		//notifyElement, _ := tb.getStringInterfaceMap(r)
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+                var notifyRequest interface{}
+
+                err := json.Unmarshal(reqBytes, &notifyRequest)
+
+                if err != nil {
+                        err := errors.New("not able to decode  orion update")
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
+		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
+		fmt.Println("notification from other broker")
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
@@ -1923,7 +1935,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
-
+					fmt.Println(deSerializedEntity)
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 				}

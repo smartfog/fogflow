@@ -49,8 +49,8 @@ exports.handler = function(contextEntity, publish, query, subscribe)
 	{
 		console.log('publishing started......' );
 		var updateEntity = {};
-		updateEntity.id = id+"ngsild"
-		updateEntity.type =  'result',
+		updateEntity.id = id+"daresult"
+		updateEntity.type =  'daresult',
 		updateEntity.speed = {'type':'Property', 'value': resultSpeed}
 		//console.log(updateEntity)
 		publish(updateEntity)
