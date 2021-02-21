@@ -45,7 +45,15 @@ Before you start the following steps, please check if your Orion-LD broker and F
 
 # check if the FogFlow system is running properly
 	
-	open the FogFlow dashboard from your browser
+	Check the system status from the FogFlow DashBoard
+
+	You can open the FogFlow dashboard in your web browser to see the current system status via the URL: localhost:80
+	
+	Once you are able to access the FogFlow dashboard, you can see the following web page
+
+.. figure:: figures/dashboard.png
+
+	
 
 
 
