@@ -190,3 +190,80 @@ please prepare the CURL command to query the "result" entities from  NGSILD brok
 The following examole shows how to perform the above steps using vechile example
 ===================================================================================
 
+Vechile operator at location '/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD' according to the speed define in entity. The operator publish a result entity on NGSILD broker if speed > 50
+
+Do something
+===================================================================================
+
+step1: create vechile entity on orion broker
+
+
+.. code-block:: console
+
+
+            curl -iX POST \                 
+                 'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert' \
+                 -H 'Content-Type: application/json' \
+                 -H Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-corecontext.jsonld";type="application/+json"' \
+	        -d '
+		[
+       	        {
+                    "id": "urn:ngsi-ld:Vehicle:A106",
+                    "type": "Vehicle",
+                    "brandName": {
+                          "type": "Property",
+                          "value": "Mercedes"
+                     },
+                    "isParked": {
+                          "type": "Relationship",
+                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                                        }
+                       },
+                    "speed": {
+                        "type": "Property",
+                        "value": 120
+                     },
+                   "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                                      }
+	           }
+              }
+              ]'
+	    
+step2: issue subscription on orion broker for above define entity
+
+Step 2: issue a subscription to Orion-LD 
+
+
+.. code-block:: console    
+
+	curl -iX POST \
+		  'http://localhost:1026/ngsi-ld/v1/subscriptions' \
+		  -H 'Content-Type: application/json' \
+		  -H 'Accept: application/ld+json' \
+		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -d ' {
+                 	"type": "Subscription",
+                	"entities": [{
+			       "id": "urn:ngsi-ld:Vehicle:A106",
+                               "type": "Vehicle"
+                 	}],
+             	      "notification": {
+                          "format": "normalized",
+                          "endpoint": {
+                                   "uri": "http://localhost:8070/ngsi-ld/v1/notifyContext/",
+                                   "accept": "application/ld+json"
+             	           }
+                       }
+ 	           }'
+
+
+
+Do something
+===================================================================================
