@@ -137,11 +137,10 @@ please prepare the CURL command to query the "Vehicle" entities from  FogFlow th
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-Step 4: apply fogfunction1 to do some customized data analytics
+Step 4: apply fogfunction to do some customized data analytics
 
 
-please change the code at "/application/operator/alert" to do some simple analysis, 
-for example, generate an alert message when the speed of vehile is greater than some threshold. 
+please change the template code at "/application/template/NGSILD" to do some simple analysis, 
 
 
 How to Push the Generated Result back to the NGSI-LD broker 
@@ -173,7 +172,7 @@ Step 1: FogFunction do some dataalalytics in step and publish the analytics resu
 
 
 
-Step 2: check if FogFlow receives the subscribed entity
+Step 2: check if NGSILD broker  receives the result entity
 
 
 please prepare the CURL command to query the "result" entities from  FogFlow thinBroker.
@@ -188,4 +187,6 @@ please prepare the CURL command to query the "result" entities from  FogFlow thi
                   -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
 
 
+Example to perform the above Example
+=============================================================
 
