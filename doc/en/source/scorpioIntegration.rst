@@ -159,7 +159,7 @@ Step 1: FogFunction do some dataalalytics in step4 and publish the analytics res
                   -d ' {
                         "type": "Subscription",
                         "entities": [{
-                               "type": "result"
+                               "type": "Result"
                         }],
                       "notification": {
                           "format": "normalized",
@@ -181,7 +181,7 @@ please prepare the CURL command to query the "result" entities from  NGSILD brok
 .. code-block:: console
 
         curl -iX GET \
-                  'http://localhost:1026/ngsi-ld/v1/entities?type=result' \
+                  'http://localhost:1026/ngsi-ld/v1/entities?type=Result' \
                   -H 'Content-Type: application/json' \
                   -H 'Accept: application/ld+json' \
                   -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
@@ -190,9 +190,9 @@ please prepare the CURL command to query the "result" entities from  NGSILD brok
 The following examole shows how to perform the above steps using vechile example
 ===================================================================================
 
-Vechile operator at location '/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD' according to the speed define in entity. The operator publish a result entity on NGSILD broker if speed > 50
+Vechile operator at location '/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD' take decision according to the speed define in entity. The operator publish a result entity on NGSILD broker if speed > 50
 
-Do something
+Get vechile Entity on NGSILD broker
 ===================================================================================
 
 step1: create vechile entity on orion broker
@@ -214,14 +214,6 @@ step1: create vechile entity on orion broker
                           "type": "Property",
                           "value": "Mercedes"
                      },
-                    "isParked": {
-                          "type": "Relationship",
-                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
-                          "providedBy": {
-                                          "type": "Relationship",
-                                          "object": "urn:ngsi-ld:Person:Bob"
-                                        }
-                       },
                     "speed": {
                         "type": "Property",
                         "value": 120
@@ -265,5 +257,50 @@ Step 2: issue a subscription to Orion-LD
 
 
 
-Do something
+Register FOgFunction on fogFLow broker
 ===================================================================================
+
+Get analytics result back to the NGSI-LD broker
+===================================================================================
+
+step1: issue subscription on FogFLow broker 
+
+.. code-block:: console
+
+        curl -iX POST \
+                  'http://localhost:8070/ngsi-ld/v1/subscriptions' \
+                  -H 'Content-Type: application/json' \
+                  -H 'Integration: true' \
+                  -H 'Accept: application/ld+json' \
+                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -d ' {
+                        "type": "Subscription",
+                        "entities": [{
+			       "id": "urn:ngsi-ld:Vehicle:A106ngsild",
+                               "type": "result"
+                        }],
+                      "notification": {
+                          "format": "normalized",
+                          "endpoint": {
+                                   "uri": "http://localhost:1026",
+                                   "accept": "application/ld+json"
+                           }
+                       }
+                   }'
+
+
+
+step2 : TO see the result on orion-ld run the following commond
+
+.. code-block:: console
+
+        curl -iX GET \
+                  'http://localhost:1026/ngsi-ld/v1/entities?type=result' \
+                  -H 'Content-Type: application/json' \
+                  -H 'Accept: application/ld+json' \
+                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+
+
+Result:
+
+
