@@ -167,6 +167,7 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
                   -d ' {
                         "type": "Subscription",
                         "entities": [{
+			       "id": "urn:ngsi-ld:Vehicle:A106daresult",
                                "type": "daresult"
                         }],
                       "notification": {
