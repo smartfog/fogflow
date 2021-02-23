@@ -159,7 +159,7 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
 .. code-block:: console
 
         curl -iX POST \
-                  'http://localhost:8070/ngsi-ld/v1/subscriptions' \
+                  'http://localhost:8070/ngsi-ld/v1/subscriptions/' \
                   -H 'Content-Type: application/json' \
 		  -H 'Integration: true' \
                   -H 'Accept: application/ld+json' \

@@ -688,6 +688,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
+		Link := DEFAULT_CONTEXT
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
 			notifyData["@context"] = context
@@ -695,12 +696,20 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 			sz := Serializer{}
 			deSerializedEntity, err := sz.DeSerializeEntity(expand)
 			if err != nil {
-				rest.Error(w, err.Error(), 400)
-				return
+				continue
 			} else {
 				deSerializedEntity["@context"] = context
+				deSerializedEntity["createdAt"] = time.Now().String()
+				eid := deSerializedEntity["id"].(string)
+				tb.LDe2sub_lock.RLock()
+				subscriberList := tb.entityId2LDSubcriptions[eid]
+				tb.LDe2sub_lock.RUnlock()
+				if len(subscriberList) > 0 {
 				//send the notification to subscriber
-				go tb.LDNotifySubscribers(deSerializedEntity, false)
+					go tb.LDNotifySubscribers(deSerializedEntity, false)
+				} else {
+					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
+				}
 			}
 		}
 	} else {
@@ -1932,7 +1941,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					}
-					deSerializedEntity["createdAt"] = time.Now().String()
+					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
 					fmt.Println(deSerializedEntity)
