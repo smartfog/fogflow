@@ -10,8 +10,8 @@ import ld_data
 import sys
 
 # change it by broker ip and port
-brokerIp="http://localhost:8070"
-discoveryIp="http://localhost:8090"
+brokerIp="http://180.179.214.199:8070"
+discoveryIp="http://180.179.214.199:8090"
 
 print("Testing of NGSI-LD")
 # testCase 1
@@ -329,7 +329,7 @@ def test_case24():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        #print(resp)
+        print(resp)
         if resp[0]["http://example.org/vehicle/brandName"]["value"]=="MARUTI":
                 print("\nValidated")
         else:
@@ -360,7 +360,7 @@ def test_case26():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        #print(resp)
+        print(resp)
         if resp[0]["type"]=="http://example.org/vehicle/Vehicle"  and resp[0]["id"]=="urn:ngsi-ld:Vehicle:A4580":
                 print("\nValidated")
         else:
@@ -379,7 +379,7 @@ def test_case27():
        	resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        #print(resp)
+        print(resp)
         if resp[0]["type"]=="http://example.org/vehicle/Vehicle":
                 print("\nValidated")
         else:
@@ -395,7 +395,7 @@ def test_case28():
         url=brokerIp+"/ngsi-ld/v1/entities?type=http://example.org"
         headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
-        #print(r.content)
+        print(r.content)
         #print(r.status_code)
         assert r.status_code == 404
 
@@ -410,7 +410,7 @@ def test_case29():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        #print(resp)
+        print(resp)
         if resp[0]["type"]=="Vehicle":
                 print("\nValidated")
         else:
@@ -441,7 +441,7 @@ def test_case31():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        #print(resp)
+        print(resp)
         if resp[0]["type"]=="http://example.org/vehicle/Vehicle" and resp[0]["id"].find("A")!=-1:
                 print("\nValidated")
         else:
@@ -1012,4 +1012,38 @@ def test_case58():
         print(r.content)
         #print(r.status_code)
         assert r.status_code == 400 
-	
+
+
+#testCase 59
+'''
+  To test  Upsert API for  single entity creation
+'''
+def test_case59():
+	url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+	headers={'Content-Type' : 'application/ld + json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+	r=requests.post(url,data=json.dumps(ld_data.subdata46),headers=headers)
+	print(r.content)
+	assert r.status_code == 204
+
+#testCase 60
+'''
+  To test  Upsert API for multiple entity creation
+'''
+def test_case60():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata47),headers=headers)
+        print(r.content)
+        assert r.status_code == 204
+
+#testCase 61
+'''
+  To test Upsert API for entity creation with different headers
+'''
+def test_case61():
+	url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+	headers={'Content-Type' : 'application/json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+	r=requests.post(url,data=json.dumps(ld_data.subdata48),headers=headers)
+	print(r.content)
+	assert r.status_code == 404
+

@@ -946,3 +946,108 @@ subdata45=\
                                }
              }
       }
+
+
+# to test for single entity creation with upsert API
+
+subdata46=\
+{
+   "id": "urn:ngsi-ld:Vehicle:A106",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+
+
+# to test for single entity creation with upsert API
+
+subdata47=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A1066",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A1033",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+
+# to test for empty payload
+
+subdata48=\
+[
+{
+
+}
+]
+
+
