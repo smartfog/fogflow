@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -670,8 +671,20 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		var context []interface{}
 		context = append(context, DEFAULT_CONTEXT)
-		notifyElement, _ := tb.getStringInterfaceMap(r)
+		//notifyElement, _ := tb.getStringInterfaceMap(r)
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+                var notifyRequest interface{}
+
+                err := json.Unmarshal(reqBytes, &notifyRequest)
+
+                if err != nil {
+                        err := errors.New("not able to decode  orion update")
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
+		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
+		fmt.Println("notification from other broker")
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
@@ -1922,7 +1935,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
-
+					fmt.Println(deSerializedEntity)
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 				}
@@ -1960,15 +1973,15 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		}
 		context = append(context, DEFAULT_CONTEXT)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
-                var LDupdateCtxReq interface{}
+		var LDupdateCtxReq interface{}
 
-                err := json.Unmarshal(reqBytes, &LDupdateCtxReq)
+		err := json.Unmarshal(reqBytes, &LDupdateCtxReq)
 
-                if err != nil {
-                        err := errors.New("unable to decode orion update")
-                        rest.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		if err != nil {
+			err := errors.New("unable to decode orion update")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		//Get a resolved object ([]interface object)
 		resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 		if err != nil {
@@ -2335,6 +2348,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
 				//tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
 
+				// For integration with NGSILD broker
+				if r.Header.Get("Integration") == "true" {
+					deSerializedSubscription.Subscriber.Integration = true
+				}
 				if r.Header.Get("Require-Reliability") == "true" {
 					deSerializedSubscription.Subscriber.RequireReliability = true
 					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
@@ -2722,7 +2739,8 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 		ldSubscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	}
 	tb.ldSubscriptions_lock.Unlock()
-	err := ldPostNotifyContext(elements, sid, subscriberURL /* true, */, tb.SecurityCfg)
+	fmt.Println(ldSubscription.Subscriber.Integration)
+	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, tb.SecurityCfg)
 	notifyTime := time.Now().String()
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
