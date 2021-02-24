@@ -169,13 +169,13 @@ How to Program and Apply a Data Analytics Function
 .. figure:: figures/docker_image_attachment.png
 
 
-3. Now, to create a fogfunction, toggle on Fog Function in the horizontal bar on dashboard. select Fog Function from left menu and click register button. Right click in the workspace and select task and stream from drop down list and enter details.
+3. Now, to create a fogfunction, toggle on Fog Function in the horizontal bar on dashboard. select Fog Function from left menu and click register button. Enter the name and description (optional) as shown. Right click in the workspace and select task and Entity stream from drop down list and configure details.
 
 
 .. figure:: figures/fog_function_creation.png
 
 
-Note: For a details on fogfunction creation follow the `link`_.
+Note: For a details on fogfunction creation follow the `Document link`_ .
  
 .. _`Document link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
