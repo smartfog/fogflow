@@ -141,7 +141,7 @@ please prepare the CURL command to query the "Vehicle" entities from  FogFlow th
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-Step 4: Please refer the `Document link`_  to register fogfunction using dashboard. Use Fogflow/OverspeedVehicleDetection while registering operator.
+Step 4: Please refer the `Document link`_  to register fogfunction using dashboard. Use ogflow/overspeedvd  while registering operator.
 
 .. _`Document link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
