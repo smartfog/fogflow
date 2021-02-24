@@ -177,7 +177,7 @@ How to Program and Apply a Data Analytics Function
 
 Note: For a details on fogfunction creation follow the `link`_.
  
-.. _`Document link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
+.. _`link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
 
 How to Push the Generated Result back to the NGSI-LD broker 
