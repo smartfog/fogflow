@@ -148,17 +148,22 @@ How to Program and Apply a Data Analytics Function
 
 **Step 4**: Please refer the steps below, to register fogfunction using dashboard.
 
-1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown.
+1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown and at last click on submit.
 
 
 .. figure:: figures/operator_creation.png 
 
 
 2. Register the following docker image, corresponding to the operator created in above step.
-   fogflow/overspeedvd
-   The above operator will notify Fogflow, When speed of a vehicle goes beyond 50.
+   
+   
+.. code-block:: console
 
-To register the image, select DockerImage from left menu, under Operator Registry from dashboard and click register button.
+	fogflow/overspeedvd
+   
+  	The above operator will notify Fogflow, When speed of a vehicle goes beyond 50.
+
+   	To register the image, select DockerImage from left menu, under Operator Registry from dashboard and click register button.
 
 
 .. figure:: figures/docker_image_attachment.png
@@ -170,7 +175,7 @@ To register the image, select DockerImage from left menu, under Operator Registr
 .. figure:: figures/fog_function_creation.png
 
 
-Note: For a details on fogfunction creation follow the _`link`.
+Note: For a details on fogfunction creation follow the `link`_.
  
 .. _`Document link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
