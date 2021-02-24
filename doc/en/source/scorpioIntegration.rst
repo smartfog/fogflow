@@ -202,13 +202,13 @@ How to Push the Generated Result back to the NGSI-LD broker
                       "notification": {
                           "format": "normalized",
                           "endpoint": {
-                                   "uri": "http://my_hostip:1026",
+                                   "uri": "http://<orion-ld-brokerIP>:1026",
                                    "accept": "application/ld+json"
                            }
                        }
                    }'
 
-Note: Replace localhost with IP where Fogflow thinbroker is running.
+Note: Replace localhost with IP where Fogflow thinbroker is running and <orion-ld-brokerIP> with IP where orion-ld broker is running.
  
 **Step 6**:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker has subscribed for the analytical data.
 
