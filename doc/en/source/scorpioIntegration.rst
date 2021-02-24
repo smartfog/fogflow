@@ -60,7 +60,7 @@ Before you start the following steps, please check if your Orion-LD broker and F
 How to Fetch data from Orion-LD to FogFlow 
 ================================================================
 
-Step 1: issue a subscription to Orion-LD 
+**Step 1**: Issue a subscription to Orion-LD broker. 
 
 .. code-block:: console    
 
@@ -77,12 +77,15 @@ Step 1: issue a subscription to Orion-LD
              	      "notification": {
                           "format": "normalized",
                           "endpoint": {
-                                   "uri": "http://my_hostip:8070/ngsi-ld/v1/notifyContext/",
+                                   "uri": "http://<fogflow_broker_IP>:8070/ngsi-ld/v1/notifyContext/",
                                    "accept": "application/ld+json"
              	           }
                        }
  	           }'
-Step 2: send an entity update to Orion-Ld
+
+Note: Replace the localhost with IP where Orion-LD broker is running and <fogflow_broker_IP> with the IP where the fogflow broker is running.
+
+**Step 2**: Send an entity update to Orion-Ld broker.
 
 .. code-block:: console
 
@@ -122,10 +125,12 @@ Step 2: send an entity update to Orion-Ld
 		}
 		]'
 
-Step 3: check if FogFlow receives the subscribed entity 
+Note: Replace localhost with the IP where Orion-LD broker is running.
+
+**Step 3**: Check if FogFlow receives the subscribed entity. 
 
 
-please prepare the CURL command to query the "Vehicle" entities from  FogFlow thinBroker. 
+Use the CURL command to query entities of type "Vehicle" from  FogFlow thinBroker. 
 
 
 .. code-block:: console    
@@ -136,25 +141,44 @@ please prepare the CURL command to query the "Vehicle" entities from  FogFlow th
 		  -H 'Accept: application/ld+json' \
 		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
-
+Note: Replace localhost with the IP where fogflow thinbroker is running.
 
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-Step 4: Please refer the `Document link`_  to register fogfunction using dashboard. Use fogflow/overspeedvd  while registering operator.
+**Step 4**: Please refer the steps below, to register fogfunction using dashboard.
 
+1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown.
+
+
+.. figure:: figures/operator_creation.png 
+
+
+2. Register the following docker image, corresponding to the operator created in above step.
+   fogflow/overspeedvd
+   The above operator will notify Fogflow, When speed of a vehicle goes beyond 50.
+
+To register the image, select DockerImage from left menu, under Operator Registry from dashboard and click register button.
+
+
+.. figure:: figures/docker_image_attachment.png
+
+
+3. Now, to create a fogfunction, toggle on Fog Function in the horizontal bar on dashboard. select Fog Function from left menu and click register button. Right click in the workspace and select task and stream from drop down list and enter details.
+
+
+.. figure:: figures/fog_function_creation.png
+
+
+Note: For a details on fogfunction creation follow the _`link`.
+ 
 .. _`Document link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
-
-Example: Overspeed Vehicle Detection. When speed of a vehicle goes beyond 50, FogFlow will notify.
-
-provide link :- https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD
-
 
 
 How to Push the Generated Result back to the NGSI-LD broker 
 =============================================================
 
-Step 5: Fog Function do some data analytics in step no. 4 and publish the analytics result on fogflow broker. NGSILD broker  subscribes fogFlow broker for getting the analytics result.
+**Step 5**: Fog Function do some data analytics in step no. 4 and publish the analytics result on fogflow broker. NGSILD broker  subscribes fogFlow broker for getting the analytics result.
 
 .. code-block:: console
 
@@ -179,11 +203,12 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
                        }
                    }'
 
-
+Note: Replace localhost with IP where Fogflow thinbroker is running.
  
-Step 6:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker has subscribed for the analytical data.
+**Step 6**:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker has subscribed for the analytical data.
 
-Please prepare the CURL command to query the "result" entities from NGSILD broker.
+
+**Step 7**:Use the CURL command to query entities of type "daresult" from NGSILD broker.
 
 
 .. code-block:: console
