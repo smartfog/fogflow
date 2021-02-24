@@ -181,7 +181,7 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
 
 
  
-Step 6:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker subscribed for the analytical data.
+Step 6:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker has subscribed for the analytical data.
 
 Please prepare the CURL command to query the "result" entities from NGSILD broker.
 

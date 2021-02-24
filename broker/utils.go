@@ -429,7 +429,7 @@ func compactData(entity map[string]interface{}, context interface{}) (interface{
 	return compacted, err
 }
 
-func clearTimeZone(element map[string]interface{}) map[string]interface{} {
+func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
 	elements := make(map[string]interface{})
 	for k ,_ := range element {
 		 if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
@@ -452,8 +452,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		element["type"] = ldEle["type"]
 		for k, _ := range ldEle {
 			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-				//element[k] = ldEle[k]
-				attr := clearTimeZone(ldEle[k].(map[string]interface{}))
+				attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
 				element[k] = attr
 			}
 		}
@@ -475,8 +474,6 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		notifyURL = URL
 	}
 	body, err := json.Marshal(notifyCtxReq)
-        s := string(body)
-	fmt.Println(s)
 	if err != nil {
 		return err
 	}
