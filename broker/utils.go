@@ -429,6 +429,15 @@ func compactData(entity map[string]interface{}, context interface{}) (interface{
 	return compacted, err
 }
 
+func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
+	elements := make(map[string]interface{})
+	for k ,_ := range element {
+		 if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
+			elements[k] = element[k]
+		}
+	}
+	return elements
+}
 func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration bool, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
 	ldCompactedElems := make([]map[string]interface{}, 0)
@@ -443,7 +452,8 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		element["type"] = ldEle["type"]
 		for k, _ := range ldEle {
 			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-				element[k] = ldEle[k]
+				attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
+				element[k] = attr
 			}
 		}
 		LdElementList = append(LdElementList, element)

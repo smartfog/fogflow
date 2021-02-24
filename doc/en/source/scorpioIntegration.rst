@@ -141,11 +141,11 @@ please prepare the CURL command to query the "Vehicle" entities from  FogFlow th
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-Step 4: please refer the `Document link`_ to register fogfunction using dashboard.
+Step 4: Please refer the `Document link`_  to register fogfunction using dashboard. Use fogflow/overspeedvd  while registering operator.
 
 .. _`Document link`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html
 
-Example: how to detect overspeed vechiles. when speed of a vechile goes beyond 50 fogFlow will notify. 
+Example: Overspeed Vehicle Detection. When speed of a vehicle goes beyond 50, FogFlow will notify.
 
 provide link :- https://github.com/smartfog/fogflow/tree/development/application/operator/NGSI-LD-operator/alertForSpeedInNGSILD
 
@@ -159,7 +159,7 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
 .. code-block:: console
 
         curl -iX POST \
-                  'http://localhost:8070/ngsi-ld/v1/subscriptions' \
+                  'http://localhost:8070/ngsi-ld/v1/subscriptions/' \
                   -H 'Content-Type: application/json' \
 		  -H 'Integration: true' \
                   -H 'Accept: application/ld+json' \
@@ -181,10 +181,9 @@ Step 5: Fog Function do some data analytics in step no. 4 and publish the analyt
 
 
  
-Step 6: check if NGSILD broker  receives the result entity
+Step 6:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker has subscribed for the analytical data.
 
-
-please prepare the CURL command to query the "result" entities from  NGSILD broker.
+Please prepare the CURL command to query the "result" entities from NGSILD broker.
 
 
 .. code-block:: console

@@ -45,17 +45,15 @@ exports.handler = function(contextEntity, publish, query, subscribe)
 	/*
 		This example will publish the result is speed is under risk
 	*/ 
-	if(speed > 50)
-	{
-		console.log('publishing started......' );
-		var updateEntity = {};
-		updateEntity.id = id+"daresult"
-		updateEntity.type =  'daresult',
-		updateEntity.speed = {'type':'Property', 'value': resultSpeed}
-		//console.log(updateEntity)
-		publish(updateEntity)
-		console.log("publish: ", updateEntity);
-	}
+	console.log('publishing started......' );
+	var updateEntity = {};
+	updateEntity.id = id+"daresult"
+	updateEntity.type =  'daresult',
+	updateEntity.speed = {'type':'Property', 'value': resultSpeed}
+	//console.log(updateEntity)
+	publish(updateEntity)
+	console.log("publish: ", updateEntity);
+	
 
 
  	// ============================== subscribe ======================================================   
