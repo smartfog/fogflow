@@ -1,6 +1,0 @@
-{
-	"my_ip": "http://192.168.0.59",	
-	"update_broker_url": "http://192.168.0.59:8070",	
-	"subscribe_broker_url": "http://192.168.0.59:8070"			
-}
-

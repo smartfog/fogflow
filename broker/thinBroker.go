@@ -671,11 +671,24 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		var context []interface{}
 		context = append(context, DEFAULT_CONTEXT)
-		notifyElement, _ := tb.getStringInterfaceMap(r)
+		//notifyElement, _ := tb.getStringInterfaceMap(r)
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+                var notifyRequest interface{}
+
+                err := json.Unmarshal(reqBytes, &notifyRequest)
+
+                if err != nil {
+                        err := errors.New("not able to decode  orion update")
+                        rest.Error(w, err.Error(), http.StatusInternalServerError)
+                        return
+                }
+		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
+		fmt.Println("notification from other broker")
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
+		Link := DEFAULT_CONTEXT
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
 			notifyData["@context"] = context
@@ -683,12 +696,20 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 			sz := Serializer{}
 			deSerializedEntity, err := sz.DeSerializeEntity(expand)
 			if err != nil {
-				rest.Error(w, err.Error(), 400)
-				return
+				continue
 			} else {
 				deSerializedEntity["@context"] = context
+				deSerializedEntity["createdAt"] = time.Now().String()
+				eid := deSerializedEntity["id"].(string)
+				tb.LDe2sub_lock.RLock()
+				subscriberList := tb.entityId2LDSubcriptions[eid]
+				tb.LDe2sub_lock.RUnlock()
+				if len(subscriberList) > 0 {
 				//send the notification to subscriber
-				go tb.LDNotifySubscribers(deSerializedEntity, false)
+					go tb.LDNotifySubscribers(deSerializedEntity, false)
+				} else {
+					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
+				}
 			}
 		}
 	} else {
@@ -1841,6 +1862,109 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 
 // NGSI-LD starts from here.
 
+func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
+	err := contentTypeValidator(r.Header.Get("Content-Type"))
+	if err != nil {
+		w.WriteHeader(500)
+		rest.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	} else {
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+		var LDupdateCtxReq []interface{}
+
+		err = json.Unmarshal(reqBytes, &LDupdateCtxReq)
+
+		if err != nil {
+			err := errors.New("This interface only supports arrays of entities")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		res := ResponseError{}
+
+		for _, ctx := range LDupdateCtxReq {
+			var context []interface{}
+			contextInPayload := true
+			//Get Link header if present
+			Link := r.Header.Get("Link")
+			if link := r.Header.Get("Link"); link != "" {
+				contextInPayload = false                    // Context in Link header
+				linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+				if linkMap["rel"] != DEFAULT_CONTEXT {
+				}
+			}
+			context = append(context, DEFAULT_CONTEXT)
+
+			//Get a resolved object ([]interface object)
+			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
+			if err != nil {
+
+				if err.Error() == "EmptyPayload!" {
+					//res.Errors.Details  = "EmptyPayload is not allowed"
+					problemSet := ProblemDetails{}
+					problemSet.Details = "EmptyPayload is not allowed"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				}
+				if err.Error() == "Id can not be nil!" {
+					problemSet := ProblemDetails{}
+					problemSet.Details = "Id can not be nil!"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				}
+				if err.Error() == "Type can not be nil!" {
+					problemSet := ProblemDetails{}
+					problemSet.Details = "Type can not be nil!"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				}
+				//res.Errors.Details  = "Unknown"
+				problemSet := ProblemDetails{}
+				problemSet.Details = "Unkown!"
+				res.Errors = append(res.Errors, problemSet)
+				continue
+			} else {
+				sz := Serializer{}
+
+				// Deserialize the payload here.
+				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+				if err != nil {
+					problemSet := ProblemDetails{}
+					problemSet.Details = "Problem in deserialization"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				} else {
+					//Update createdAt value.
+					if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+						problemSet := ProblemDetails{}
+						problemSet.Details = "Entity id must contain uri!"
+						res.Errors = append(res.Errors, problemSet)
+						continue
+					}
+					//deSerializedEntity["createdAt"] = time.Now().String()
+					// Store Context
+					deSerializedEntity["@context"] = context
+					fmt.Println(deSerializedEntity)
+					res.Success = append(res.Success, deSerializedEntity["id"].(string))
+					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
+				}
+			}
+		}
+		if res.Errors != nil && res.Success == nil {
+			w.WriteHeader(404)
+			w.WriteJson(&res)
+		}
+		if res.Errors != nil && res.Success != nil {
+			w.WriteHeader(207)
+			w.WriteJson(&res)
+		}
+		if res.Errors == nil && res.Success != nil {
+			w.WriteHeader(http.StatusNoContent)
+		}
+
+	}
+}
+
 // Create an NGSI-LD Entity
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
@@ -1857,9 +1981,18 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			}
 		}
 		context = append(context, DEFAULT_CONTEXT)
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+		var LDupdateCtxReq interface{}
 
+		err := json.Unmarshal(reqBytes, &LDupdateCtxReq)
+
+		if err != nil {
+			err := errors.New("unable to decode orion update")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		//Get a resolved object ([]interface object)
-		resolved, err := tb.ExpandPayload(r, context, contextInPayload)
+		resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 		if err != nil {
 
 			if err.Error() == "EmptyPayload!" {
@@ -2154,7 +2287,18 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		}
 
 		// Get an []interface object
-		resolved, err := tb.ExpandPayload(r, context, contextInPayload)
+
+		reqBytes, _ := ioutil.ReadAll(r.Body)
+		var LDSubscribeCtxReq interface{}
+
+		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
+
+		if err != nil {
+			err := errors.New("not able to decode  orion update")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
@@ -2213,6 +2357,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
 				//tb.createEntityID2SubscriptionsIDMap(&deSerializedSubscription)
 
+				// For integration with NGSILD broker
+				if r.Header.Get("Integration") == "true" {
+					deSerializedSubscription.Subscriber.Integration = true
+				}
 				if r.Header.Get("Require-Reliability") == "true" {
 					deSerializedSubscription.Subscriber.RequireReliability = true
 					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
@@ -2291,9 +2439,9 @@ func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
 }
 
 // Expand the payload
-func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, contextInPayload bool) ([]interface{}, error) {
+func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, contextInPayload bool) ([]interface{}, error) {
 	//get map[string]interface{} of reqBody
-	itemsMap, err := tb.getStringInterfaceMap(r)
+	itemsMap, err := tb.getStringInterfaceMap(ctx)
 	if err != nil {
 		return nil, err
 	} else {
@@ -2336,11 +2484,11 @@ func (tb *ThinBroker) ExpandPayload(r *rest.Request, context []interface{}, cont
 				tb.ldEntities_lock.RUnlock()*/
 			}
 			if ownerURL != tb.MyURL {
-				ownerURL = strings.TrimSuffix(ownerURL, "/ngsi10")
+				/*ownerURL = strings.TrimSuffix(ownerURL, "/ngsi10")
 				link := r.Header.Get("Link") // Pick link header if present
 				fmt.Println("Here 1..., link sending to remote broker:", link, "\nOwner URL:", ownerURL, "\nMy URL:", tb.MyURL)
 				err := tb.updateLDContextElement2RemoteSite(itemsMap, ownerURL, link)
-				return nil, err
+				return nil, err*/
 			}
 		}
 
@@ -2454,21 +2602,21 @@ func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
 }
 
 //Get string-interface{} map from request body
-func (tb *ThinBroker) getStringInterfaceMap(r *rest.Request) (map[string]interface{}, error) {
+func (tb *ThinBroker) getStringInterfaceMap(ctx interface{}) (map[string]interface{}, error) {
 	// Get bite array of request body
-	reqBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-	// Unmarshal using a generic interface
-	var req interface{}
-	err = json.Unmarshal(reqBytes, &req)
-	if err != nil {
-		DEBUG.Println("Invalid Request.")
-		return nil, err
-	}
+	/*	reqBytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return nil, err
+		}
+		// Unmarshal using a generic interface
+		var req interface{}
+		err = json.Unmarshal(reqBytes, &req)
+		if err != nil {
+			DEBUG.Println("Invalid Request.")
+			return nil, err
+		}*/
 	// Parse the JSON object into a map with string keys
-	itemsMap := req.(map[string]interface{})
+	itemsMap := ctx.(map[string]interface{})
 
 	if len(itemsMap) != 0 {
 		return itemsMap, nil
@@ -2600,7 +2748,8 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 		ldSubscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	}
 	tb.ldSubscriptions_lock.Unlock()
-	err := ldPostNotifyContext(elements, sid, subscriberURL /* true, */, tb.SecurityCfg)
+	fmt.Println(ldSubscription.Subscriber.Integration)
+	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, tb.SecurityCfg)
 	notifyTime := time.Now().String()
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
@@ -3217,7 +3366,17 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 		tb.ldSubscriptions_lock.Lock()
 		if _, ok := tb.ldSubscriptions[sid]; ok == true {
 			tb.ldSubscriptions_lock.Unlock()
-			resolved, err := tb.ExpandPayload(r, context, false) // Context in Link header
+			reqBytes, _ := ioutil.ReadAll(r.Body)
+			var LDUpdateSubscribeCtxReq interface{}
+
+			err := json.Unmarshal(reqBytes, &LDUpdateSubscribeCtxReq)
+
+			if err != nil {
+				err := errors.New("not able to decode orion update")
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			resolved, err := tb.ExpandPayload(LDUpdateSubscribeCtxReq, context, false) // Context in Link header
 
 			if err != nil {
 				if err.Error() == "EmptyPayload!" {

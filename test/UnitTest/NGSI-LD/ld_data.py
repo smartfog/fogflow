@@ -946,3 +946,996 @@ subdata45=\
                                }
              }
       }
+
+
+# to test for single entity creation with upsert API
+
+subdata46=\
+{
+   "id": "urn:ngsi-ld:Vehicle:A106",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+
+
+# to test for single entity creation with upsert API
+
+subdata47=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A1066",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A1033",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+
+# to test for empty payload
+
+subdata48=\
+[
+{
+
+}
+]
+
+
+# to test multiple entity creation with one empty payload in array
+
+subdata49=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A111",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+}
+]
+
+# to test multiple entity creation with missing id in one entity
+
+subdata50=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A1060",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+
+# to test multiple entity creation with missing id in one 
+
+subdata51=\
+[
+{
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A1030",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+
+# to test multiple entity creation with id in any entity
+
+subdata52=\
+[
+{
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test multiple entity creation with missig type in first entity
+
+subdata53=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A500",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A600",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+
+# to test for multiple entity creation with missing type in second entity
+
+subdata54=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A700",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A800",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test creation of multiple entity with missing type in all entities
+
+subdata55=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A900",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A10001",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test multiple entity creation with id not as a uri in first entity
+
+subdata56=\
+[
+{
+   "id": "A250",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A350",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test multiple entity creation with id not as a uri for second entity
+
+subdata57=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A909",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "A202",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test multiple entity creation with id not as a uri in both entities
+
+subdata58=\
+[
+{
+   "id": "AB",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "CD",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test for multiple entity creation with array in attributes of first entity
+
+subdata59=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A0001",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": [12,13]
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A0002",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test multiple entities creation with array in attributes of those entities
+
+subdata60=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A0101",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": ["Mercedes","Benz"]
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:A9090",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": ["Mercedes","Maruti"]
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test updation using upsert
+subdata61=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A0210",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:APC",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test updation through upsert API
+
+subdata62=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A0210",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Maruti"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:APC",
+   "type": "Vehicle",
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
+# to test subcription with upsert
+
+subdata63=\
+{
+             "id": "urn:ngsi-ld:Subscription:Upsert",
+             "type": "Subscription",
+             "entities": [{
+                             "idPattern": ".*",
+                             "type": "Vehicle"
+             }],
+             "watchedAttributes": ["brandName","speed"],
+             "notification": {
+                             "attributes": ["brandName","speed"],
+                             "format": "keyValues",
+                             "endpoint": {
+                                             "uri": "http://127.0.0.1:8888/ld-notify",
+                                             "accept": "application/json"
+                               }
+             }
+     }
+
+
+# fire update
+
+subdata64=\
+[
+{
+   "id": "urn:ngsi-ld:Vehicle:A0210",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "MarutiBenz"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+},
+{
+   "id": "urn:ngsi-ld:Vehicle:APC",
+   "type": "Vehicle",
+   "brandName": {
+                  "type": "Property",
+                  "value": "Mercedes"
+    },
+    "isParked": {
+                  "type": "Relationship",
+                  "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                  "providedBy": {
+                                  "type": "Relationship",
+                                  "object": "urn:ngsi-ld:Person:Bob"
+                   }
+     },
+     "speed": {
+                "type": "Property",
+                "value": 120
+      },
+     "location": {
+                    "type": "GeoProperty",
+                    "value": {
+                              "type": "Point",
+                              "coordinates": [-8.5, 41.2]
+                    }
+     }
+}
+]
+
