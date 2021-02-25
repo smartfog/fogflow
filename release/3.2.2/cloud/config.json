@@ -26,7 +26,7 @@
         "capacity": 8
     },
     "designer": {
-        "webSrvPort": 8080,
+        "webSrvPort": 8060,
         "agentPort": 1030               
     },    
     "rabbitmq": {
