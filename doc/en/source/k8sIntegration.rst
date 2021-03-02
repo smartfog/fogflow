@@ -31,17 +31,14 @@ FogFlow document would be updated with the functioning details of above features
 
 Below are few limitations of FogFlow Kubernetes Integration. These limitation will be implemented with FogFlow in future.
 
-1. Task Instance which FogFlow worker launches are not implemented on Pods. Migration of launching task instances over k8s pods are in future scope of FogFlow OSS.  
 
-2. FogFlow Edge node K8s Support.
+1. Security and Network Policy in K8s environment.
 
-3. Security and Network Policy in K8s environment.
+2. Taints and Trait
 
-4. Taints and Trait
+3. Performance Evaluation
 
-5. Performance Evaluation
-
-6. Other Functionality
+4. Other Functionality
 
 
 FogFlow Cloud architecture diagram on Kubernetes
@@ -184,7 +181,7 @@ Add "--set" flag with helm install command to pass configuration from command li
           helm install ./fogflow-chart --set externalIPs={XXX.XX.48.24} --generate-name
 
 
-Refer Helm official `link_` for more details
+Refer Helm official `link`_ for more details
 
 .. _`link`: https://helm.sh/docs/helm/
 
@@ -215,3 +212,36 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 System status can also be verified from FogFlow dashboard on web browser to see the current system status via the URL: http://<coreservice_ip>/index.html
 
+
+**Launch FogFlow Worker task instances on k8s pods**
+
+
+
+Previously, task instances was launching on Docker containers. In that case, FogFlow worker used to call go-dockerclient and with the help of this client was launching task instances on docker containers.
+
+
+
+.. figure:: figures/dockerTaskInstance.png
+
+
+
+
+
+Now, An interface pod.go is being used. This interface will receive the dockerimage name, port and configuration details from worker and launch the task inside a pod.
+
+
+
+.. figure:: figures/podTaskInstance.png 
+
+
+
+
+
+Create a task using link `task_Instance`_
+
+.. _`task_Instance`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html#define-a-dummy-fog-function 
+
+
+
+
+**FogFlow Edge node Kubernetes support**
