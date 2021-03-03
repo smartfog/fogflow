@@ -255,7 +255,7 @@ Microk8s supports self-healing high availability clusters, which is the key attr
 FogFlow Edge Architecture over Microk8s
 ------------------------------------------
 
-.. figure:: figures/microk8s_Architecture.png 
+.. figure:: figures/microk8s_architecture.png 
 
 
 
@@ -356,7 +356,6 @@ To configure the serviceaccount file, change the occurence namespace with <User 
         metadata:
         namespace: <User Specified> #eg namespace: fogflow
         name: fogflow-dns
-        ---
 
         # similarly change all the occurences of namespace in this file (it will be changed at three places in files, in above shown manner)
 
@@ -391,7 +390,7 @@ To unzip the downloaded folder using following,
         unzip edge-chart.zip
 
 
- **Step 1** : Edit the config.json file in edge-chart folder.
+**Step 1** : Edit the config.json file in edge-chart folder.
 
  .. code-block:: console
    
