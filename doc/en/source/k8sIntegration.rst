@@ -244,4 +244,211 @@ Create a task using link `task_Instance`_
 
 
 
-**FogFlow Edge node Kubernetes support**
+FogFlow Edge Node Kubernetes Support
+-------------------------------------------
+
+Edge node being a light weight component of Fogflow architecture is using the lighter version of kubernetes. The edge node will interact with IoT Devices and actuators to accomplish the task launched on that particular edge node. The lighter version of kubernetes is supported by Microk8s utility, which comes as a distribution with snap tool. MicroK8s is the smallest, fastest, fully-conformant Kubernetes that will connect with cloud kubernetes clusters easily. 
+
+Microk8s supports self-healing high availability clusters, which is the key attribute that makes it a great pick for kubernetes at edge. When edge lose a cluster database node, another node is promoted automatically. It gives the user hassle free opertaions of deployments, initiating and stopping cluster and even bundle of additional add ons.
+
+
+FogFlow Edge Architecture over Microk8s
+------------------------------------------
+
+.. figure:: figures/microk8s_Architecture.png 
+
+
+
+Microk8s Installation And Setup
+---------------------------------------
+
+To setup microk8s kubernetes cluster on edge node follow the below mentioned steps:
+
+
+**step 1** : Verify the installation of snapd utility, using **snap version**. If snap is not preinstalled on edge, use below commands for its installation.
+
+
+.. code-block:: console
+
+        # Start by updating packages
+
+        $ sudo apt update
+
+        # Now install snapd tool
+
+        $ sudo apt install snapd
+
+
+
+**Step 2** : Now install microk8s using below commands.
+
+
+.. code-block:: console
+
+        $ sudo snap install microk8s --classic
+
+
+**Step 3** : Verfiy the status of microk8s, that is whether it is running or not.
+
+
+.. code-block:: console
+
+        # to check status
+
+        $ microk8s.status
+
+
+**Step 4** : If the output of above step indicate that microk8s is not in running state, then use below command to start it.
+
+
+.. code-block:: console
+
+        $ microk8s.start
+
+        # to check the status again follow the command 
+
+        $ microk8s.status
+
+
+**Step 5** : Now to enable microk8s to interact with host, user need to enbale the following add ons. It can be done using following command.
+
+.. code-block:: console
+
+        # to enable add ons
+
+        $ microk8s.enable host-access helm3
+
+        # to check if add ons are enabled or not, verify the status of microk8
+
+        $ microk8s.status
+
+
+With above steps basic installation and setup of microk8s is accomplished.
+
+
+Configuring Microk8s kubernetes cluster
+---------------------------------------------
+
+To be able to create deployment over microk8s kubernetes cluster, user needs to create namespace and serviceaccount in kubernetes cluster for edge node. To do so, follow the below procedure.
+
+.. code-block:: console
+
+        $ microk8s.kubectl create namespace <User Specified>
+
+        # eg : microk8s.kubectl create namespace fogflow
+
+
+Note: Now, to create service account, fetch the serviceaccount.yaml file. 
+
+.. code-block:: console 
+
+        # to fetch serviceaccount.yaml file
+        
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/serviceaccount.yaml
+
+
+To configure the serviceaccount file, change the occurence namespace with <User Specified> name mentioned in above step, that is while creating namespace.
+
+.. code-block:: console
+
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+        namespace: <User Specified> #eg namespace: fogflow
+        name: fogflow-dns
+        ---
+
+        # similarly change all the occurences of namespace in this file (it will be changed at three places in files, in above shown manner)
+
+
+
+With the above procedure, microk8 cluster is ready to deploy pods and services on it.
+
+
+Deploying Edge-Chart With Microk8s and helm 
+----------------------------------------------
+
+For deploying edge chart, use helm3 tool with microk8s as shown below. 
+
+
+.. code-block:: console
+
+        #fetch scripts for edge-chart
+
+        $ wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/edge-chart.zip
+
+
+To unzip the downloaded folder using following, 
+
+.. code-block:: console
+
+        #command to install unzip in ubuntu
+        
+        apt-get install unzip
+
+        #command to unzip the file dashboards.zip
+
+        unzip edge-chart.zip
+
+
+ **Step 1** : Edit the config.json file in edge-chart folder.
+
+ .. code-block:: console
+   
+      "coreservice_ip": "<Cloud Node IP>",       
+      
+      # Eg. "coreservice_ip": "172.30.48.24"
+
+      
+      "my_hostip": "<Edge Node Ip>",
+
+      # Eg. "my_hostip": "172.30.48.46"
+
+
+**Step 2** : Edit the namespace, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
+
+.. code-block:: console
+
+        namespace: <User Specified>   #Eg. namespace: fogflow 
+
+        #replicas will make sure that no. of replicaCount mention in values.yaml
+        # are running all the time for the deployment
+        replicaCount: 2 
+
+        serviceAccount:
+        # Specifies whether a service account should be created
+        create: true
+        # Annotations to add to the service account
+        annotations: {}
+        # The name of the service account to use.
+        # If not set and create is true, a name is generated using the fullname template
+        name: ""
+
+        #hostPath for config.json  
+        configJson:
+        hostPath:
+        path: /root/new_fog/fogflow-helm/helm/edge-chart/config.json
+
+
+        Service:
+        spec: 
+        externalIPs: 
+        - 172.30.48.46 #The IP of Edge Node 
+
+Note: The value of namespace will be one which user specified while creating the namespace in previous steps. Value of "externalIPs" will be the IP of edge node and value of "path" under configJson will be equal to the path of host machine where config.json is present inside edge-chart.
+
+
+**Step 3** : To finally deploy chart, use the command as below.
+
+.. code-block:: console
+
+        $ microk8s.helm3 install ./edge-chart --set externalIPs={XXX.XX.48.46} --generate-name
+
+        # the externalIPs is IP of edge node.
+
+        # to check status of deployed pods 
+
+        $ microk8s.kubectl get pods --all-namespaces
+
+
+.. figure:: figures/microk8s_pods.png
