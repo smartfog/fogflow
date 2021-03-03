@@ -152,12 +152,12 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 - Check the system status from the FogFlow DashBoard
 
-You can open the FogFlow dashboard in your web browser to see the current system status via the URL: http://<coreservice_ip>/index.html
+You can open the FogFlow dashboard in your web browser to see the current system status via the URL: http://<my_hostip>/index.html
 
 
 .. important:: 
 
-	If the FogFlow cloud node is behind a gateway, you need to create a mapping from the gateway IP to the coreservice_ip and then 
+	If the FogFlow cloud node is behind a gateway, you need to create a mapping from the gateway IP to the my_hostip and then 
 	access the FogFlow dashboard via the gateway IP;
 	If the FogFlow cloud node is a VM in a public cloud like Azure Cloud, Google Cloud, or Amazon Cloud, you need to access the 
 	FogFlow dashboard via the public IP of your VM;
