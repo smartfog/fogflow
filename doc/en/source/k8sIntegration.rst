@@ -270,13 +270,13 @@ To setup microk8s kubernetes cluster on edge node follow the below mentioned ste
 
 .. code-block:: console
 
-        # Start by updating packages
+        #Start by updating packages
 
-        $ sudo apt update
+        $sudo apt update
 
-        # Now install snapd tool
+        #Now install snapd tool
 
-        $ sudo apt install snapd
+        $sudo apt install snapd
 
 
 
@@ -285,7 +285,7 @@ To setup microk8s kubernetes cluster on edge node follow the below mentioned ste
 
 .. code-block:: console
 
-        $ sudo snap install microk8s --classic
+        $sudo snap install microk8s --classic
 
 
 **Step 3** : Verfiy the status of microk8s, that is whether it is running or not.
@@ -293,9 +293,9 @@ To setup microk8s kubernetes cluster on edge node follow the below mentioned ste
 
 .. code-block:: console
 
-        # to check status
+        #to check status
 
-        $ microk8s.status
+        $microk8s.status
 
 
 **Step 4** : If the output of above step indicate that microk8s is not in running state, then use below command to start it.
@@ -303,24 +303,24 @@ To setup microk8s kubernetes cluster on edge node follow the below mentioned ste
 
 .. code-block:: console
 
-        $ microk8s.start
+        $microk8s.start
 
-        # to check the status again follow the command 
+        #to check the status again follow the command 
 
-        $ microk8s.status
+        $microk8s.status
 
 
 **Step 5** : Now to enable microk8s to interact with host, user need to enbale the following add ons. It can be done using following command.
 
 .. code-block:: console
 
-        # to enable add ons
+        #to enable add ons
 
-        $ microk8s.enable host-access helm3
+        $microk8s.enable host-access helm3
 
-        # to check if add ons are enabled or not, verify the status of microk8
+        #to check if add ons are enabled or not, verify the status of microk8
 
-        $ microk8s.status
+        $microk8s.status
 
 
 With above steps basic installation and setup of microk8s is accomplished.
@@ -333,18 +333,18 @@ To be able to create deployment over microk8s kubernetes cluster, user needs to 
 
 .. code-block:: console
 
-        $ microk8s.kubectl create namespace <User Specified>
+        $microk8s.kubectl create namespace <User Specified>
 
-        # eg : microk8s.kubectl create namespace fogflow
+        #eg : microk8s.kubectl create namespace fogflow
 
 
 Note: Now, to create service account, fetch the serviceaccount.yaml file. 
 
 .. code-block:: console 
 
-        # to fetch serviceaccount.yaml file
+        #to fetch serviceaccount.yaml file
         
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/serviceaccount.yaml
+        $wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/serviceaccount.yaml
 
 
 To configure the serviceaccount file, change the occurence namespace with <User Specified> name mentioned in above step, that is while creating namespace.
@@ -357,7 +357,7 @@ To configure the serviceaccount file, change the occurence namespace with <User 
         namespace: <User Specified> #eg namespace: fogflow
         name: fogflow-dns
 
-        # similarly change all the occurences of namespace in this file (it will be changed at three places in files, in above shown manner)
+        #similarly change all the occurences of namespace in this file (it will be changed at three places in files, in above shown manner)
 
 
 
@@ -374,7 +374,7 @@ For deploying edge chart, use helm3 tool with microk8s as shown below.
 
         #fetch scripts for edge-chart
 
-        $ wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/edge-chart.zip
+        $wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/edge-chart.zip
 
 
 To unzip the downloaded folder using following, 
@@ -383,11 +383,11 @@ To unzip the downloaded folder using following,
 
         #command to install unzip in ubuntu
         
-        apt-get install unzip
+        $apt-get install unzip
 
         #command to unzip the file dashboards.zip
 
-        unzip edge-chart.zip
+        $unzip edge-chart.zip
 
 
 **Step 1** : Edit the config.json file in edge-chart folder.
@@ -396,12 +396,12 @@ To unzip the downloaded folder using following,
    
       "coreservice_ip": "<Cloud Node IP>",       
       
-      # Eg. "coreservice_ip": "172.30.48.24"
+      #Eg. "coreservice_ip": "172.30.48.24"
 
       
       "my_hostip": "<Edge Node Ip>",
 
-      # Eg. "my_hostip": "172.30.48.46"
+      #Eg. "my_hostip": "172.30.48.46"
 
 
 **Step 2** : Edit the namespace, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
@@ -411,16 +411,16 @@ To unzip the downloaded folder using following,
         namespace: <User Specified>   #Eg. namespace: fogflow 
 
         #replicas will make sure that no. of replicaCount mention in values.yaml
-        # are running all the time for the deployment
+        #are running all the time for the deployment
         replicaCount: 2 
 
         serviceAccount:
-        # Specifies whether a service account should be created
+        #Specifies whether a service account should be created
         create: true
-        # Annotations to add to the service account
+        #Annotations to add to the service account
         annotations: {}
-        # The name of the service account to use.
-        # If not set and create is true, a name is generated using the fullname template
+        #The name of the service account to use.
+        #If not set and create is true, a name is generated using the fullname template
         name: ""
 
         #hostPath for config.json  
@@ -441,13 +441,13 @@ Note: The value of namespace will be one which user specified while creating the
 
 .. code-block:: console
 
-        $ microk8s.helm3 install ./edge-chart --set externalIPs={XXX.XX.48.46} --generate-name
+        $microk8s.helm3 install ./edge-chart --set externalIPs={XXX.XX.48.46} --generate-name
 
-        # the externalIPs is IP of edge node.
+        #the externalIPs is IP of edge node.
 
-        # to check status of deployed pods 
+        #to check status of deployed pods 
 
-        $ microk8s.kubectl get pods --all-namespaces
+        $microk8s.kubectl get pods --all-namespaces
 
 
 .. figure:: figures/microk8s_pods.png
