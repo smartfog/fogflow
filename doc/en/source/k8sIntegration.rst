@@ -249,7 +249,10 @@ FogFlow Edge Node Kubernetes Support
 
 Edge node being a light weight component of Fogflow architecture is using the lighter version of kubernetes. The edge node will interact with IoT Devices and actuators to accomplish the task launched on that particular edge node. The lighter version of kubernetes is supported by Microk8s utility, which comes as a distribution with snap tool. MicroK8s is the smallest, fastest, fully-conformant Kubernetes that will connect with cloud kubernetes clusters easily. 
 
-Microk8s supports self-healing high availability clusters, which is the key attribute that makes it a great pick for kubernetes at edge. When edge lose a cluster database node, another node is promoted automatically. It gives the user hassle free opertaions of deployments, initiating and stopping cluster and even bundle of additional add ons.
+Microk8s supports self-healing high availability clusters, which is the key attribute that makes it a great pick for kubernetes at edge. When edge lose a cluster database node, another node is promoted automatically. It gives the user hassle free opertaions of deployments, initiating and stopping cluster and even bundle of additional add ons. For more detail about, please visit this `link`_.
+
+
+.. _`link`: https://microk8s.io/docs
 
 
 FogFlow Edge Architecture over Microk8s
@@ -347,7 +350,7 @@ Note: Now, to create service account, fetch the serviceaccount.yaml file.
         $wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/serviceaccount.yaml
 
 
-To configure the serviceaccount file, change the occurence namespace with <User Specified> name mentioned in above step, that is while creating namespace.
+To configure the serviceaccount file, change the occurence of namespace with <User Specified> name mentioned in above step, that is the name used  while creating namespace.
 
 .. code-block:: console
 
@@ -434,7 +437,7 @@ To unzip the downloaded folder using following,
         externalIPs: 
         - 172.30.48.46 #The IP of Edge Node 
 
-Note: The value of namespace will be one which user specified while creating the namespace in previous steps. Value of "externalIPs" will be the IP of edge node and value of "path" under configJson will be equal to the path of host machine where config.json is present inside edge-chart.
+Note: The value of **"namespace"** will be one which user specified while creating the namespace in previous steps. Value of **"externalIPs"** will be the IP of edge node and value of **"path"** under configJson will be equal to the path of host machine where config.json is present inside edge-chart.
 
 
 **Step 3** : To finally deploy chart, use the command as below.
