@@ -249,10 +249,10 @@ FogFlow Edge Node Kubernetes Support
 
 Edge node being a light weight component of Fogflow architecture is using the lighter version of kubernetes. The edge node will interact with IoT Devices and actuators to accomplish the task launched on that particular edge node. The lighter version of kubernetes is supported by Microk8s utility, which comes as a distribution with snap tool. MicroK8s is the smallest, fastest, fully-conformant Kubernetes that will connect with cloud kubernetes clusters easily. 
 
-Microk8s supports self-healing high availability clusters, which is the key attribute that makes it a great pick for kubernetes at edge. When edge lose a cluster database node, another node is promoted automatically. It gives the user hassle free opertaions of deployments, initiating and stopping cluster and even bundle of additional add ons. For more detail about, please visit this `link`_.
+Microk8s supports self-healing high availability clusters, which is the key attribute that makes it a great pick for kubernetes at edge. When edge lose a cluster database node, another node is promoted automatically. It gives the user hassle free opertaions of deployments, initiating and stopping cluster and even bundle of additional add ons. For more detail about, please visit official site  of `microk8s`_.
 
 
-.. _`link`: https://microk8s.io/docs
+.. _`microk8s`: https://microk8s.io/docs
 
 
 FogFlow Edge Architecture over Microk8s
