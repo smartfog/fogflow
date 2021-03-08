@@ -1,0 +1,34 @@
+{
+    "coreservice_ip": "192.168.0.59",   
+    "my_hostip": "192.168.0.16",  
+    "physical_location":{
+        "longitude": 138.709059,
+        "latitude": 36.692221
+    },
+    "site_id": "002",
+    "logging":{
+        "info":"stdout",
+        "error":"stdout",
+        "protocol": "stdout",
+        "debug": "stdout"
+    },
+    "discovery": {
+        "http_port": 8090           
+    },
+    "broker": {
+        "http_port": 8060
+    },     
+    "worker": {
+        "container_autoremove": false,
+        "start_actual_task": true,
+        "capacity": 4              
+    },
+    "rabbitmq": {
+        "port": 5672,
+        "username": "admin",
+        "password":"mypass"
+    },
+    "https": {
+        "enabled" : false
+    }
+}
