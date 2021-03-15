@@ -211,7 +211,7 @@ def notify2execution():
     app.run(host='0.0.0.0', port=myport)
 
 
-def runInOperationMode():
+'''def runInOperationMode():
     print '===== OPERATION MODEL========'
 
     # apply the configuration received from the environmental varible
@@ -229,6 +229,26 @@ def runInOperationMode():
     else:
         notify2execution()
 
+'''
+
+def runInOperationMode():
+    print("===== OPERATION MODEL========")
+    global brokerURL
+    # apply the configuration received from the environmental varible
+    myCfg = os.getenv('adminCfg')
+
+    print(myCfg)
+    if myCfg != None :
+
+        adminCfg = json.loads(myCfg)
+        handleConfig(adminCfg)
+    else:
+        brokerURL = os.getenv('brokerURL')
+    syncMode = os.getenv('sync')
+    if syncMode != None and syncMode == 'yes':
+        query2execution()
+    else:
+        notify2execution()
 
 # one time execution triggered by query
 
