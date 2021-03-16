@@ -97,7 +97,7 @@ jobs:
 
         cd ../test/UnitTest/
         #screen -d -m python accumulator.py
-        python accumulator.py
+        python2 accumulator.py
 
         cd ../UnitTest/v2/
         pytest -s -v
