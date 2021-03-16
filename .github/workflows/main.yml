@@ -50,7 +50,7 @@ jobs:
         #sudo apt install python2
         python
         pip -V
-        sudo pip install --upgrade pip
+        #sudo pip install --upgrade pip
         pip install Flask
         pip install requests
         pip install -U pytest
