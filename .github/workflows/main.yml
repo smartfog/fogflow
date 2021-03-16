@@ -94,7 +94,7 @@ jobs:
         cd ../broker/
         screen -d -m ./broker
         #./broker
-        telnet localhost 8070
+        #telnet localhost 8070
 
         cd ../designer/
         screen -d -m node main.js
