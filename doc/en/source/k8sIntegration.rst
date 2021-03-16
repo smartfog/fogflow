@@ -19,7 +19,7 @@ High Availability is about setting up Kubernetes, along with its supporting comp
 2. **Automated Rollouts & Rollback**: can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. It updates cycles previous Pod out and bring newer Pod in incrementally.
 When any introduced change that breaks production, then there should have a plan to roll back that change Kubernetes and kubectl offer a simple mechanism to roll back changes to resources such as Deployments.
 
-3. **Self-Healing**: if any of the pod are deleted manually or a pod got deleted accidentally or restarted. The deployment will make sure that it brings back the pod because Kubernetes has a feature to auto-heal the pods.
+3. **Aelf-Healing**: if any of the pod are deleted manually or a pod got deleted accidentally or restarted. The deployment will make sure that it brings back the pod because Kubernetes has a feature to auto-heal the pods.
 
 4. **Ease the deployment with Helm Support**: Helm is a tool that streamlines installing and managing Kubernetes applications. It helps in managing Kubernetes applications. 
 Helm Chart helps to define, install, and upgrade even the most complex Kubernetes application.
