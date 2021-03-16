@@ -43,10 +43,12 @@ jobs:
         pwd
         sh build
         
+    - name: python
+      run: sudo apt-get install python-pip
+      
     - name: Setting Up Environment
       run: |
         sudo apt-get update
-        sudo apt-get install python-pip
         sudo apt-get install jq
         pip -V
         sudo pip install --upgrade pip
