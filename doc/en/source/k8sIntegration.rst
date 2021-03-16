@@ -92,27 +92,30 @@ FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Maste
 
 Download the Kubernetes file and the configuration files as below.
 
-.. code-block:: console    
+.. code-block:: console
 
-	# the Kubernetes yaml file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/fogflow-chart
-	
-	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/config.json
+        # the Kubernetes yaml file to start all FogFlow components on the cloud node
+        wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/fogflow-chart.zip
 
-	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/nginx.conf
+
+install unzip tool on system to extract JSON files from dashboards.zip
+
+.. code-block:: console
+
+          #command to install unzip in ubuntu
+          apt-get install unzip
+
+          #command to unzip the fogflow-chart.zip in same location
+          unzip fogflow-chart.zip
 
 	
    
 Change the IP configuration accordingly
 -------------------------------------------------------------
 
-You need to change the following IP addresses in config.json according to your own environment.
+You need to change the following IP addresses in config.json according to your own environment. The config.json file present in the abobe downloaded folder "fogflow-chart"
 
-- **coreservice_ip**: it is used by all FogFlow edge nodes to access the core services (e.g., nginx on port 80 and rabbitmq on port 5672) on the FogFlow cloud node; usually this will be the public IP of the FogFlow cloud node.
-- **external_hostip**: for the configuration of the FogFlow cloud node, this is the same as coreservice_ip used by the components (Cloud Worker and Cloud Broker) to access the running FogFlow core services;        
-- **internal_hostip**: this is the IP of your default K8s network Interface, which is the "cni0" network interface on your Linux host.
+- **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
 - **physical_location**: the geo-location of the FogFlow node;
@@ -122,7 +125,7 @@ You need to change the following IP addresses in config.json according to your o
 Change values.yaml file
 ---------------------------
 
--Edit namespace as per requirement. Add the no. of replicaCount required.
+-Edit namespace and serviceAccount as per requirement. Add the no. of replicaCount required.
 
 -Change dgraph, configJson and nginxConf path in values.yaml  file as per the environment hostPath.
 
@@ -137,7 +140,7 @@ Change values.yaml file
       #are running all the time for the deployment
       replicaCount: 1
 
-      serviceAccount:
+      serviceAccount: default
       #Specifies whether a service account should be created
         create: true
       #Annotations to add to the service account
@@ -151,12 +154,12 @@ Change values.yaml file
         hostPath:
           path: /mnt/dgraph
 
-      #hostPath for config.json
+      #hostPath for config.json, add this path to fogflow-chart directory
       configJson:
         hostPath:
           path: /home/necuser/fogflow/helm/files/fogflow-chart/config.json
 
-      #hostPath for nginx.conf
+      #hostPath for nginx.conf, add this path to fogflow-chart directory
       nginxConf:
         hostPath:
           path: /home/necuser/fogflow/fogflow/yaml/nginx.conf
