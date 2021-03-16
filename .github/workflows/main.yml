@@ -47,8 +47,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install jq
-        #sudo apt install python2
-        python
+        sudo apt install python-pip
         pip -V
         #sudo pip install --upgrade pip
         pip install Flask
