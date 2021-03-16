@@ -92,7 +92,8 @@ jobs:
         screen -d -m ./discovery
 
         cd ../broker/
-        screen -d -m ./broker
+        #screen -d -m ./broker
+        ./broker
 
         cd ../designer/
         screen -d -m node main.js
