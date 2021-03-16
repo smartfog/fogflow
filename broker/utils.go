@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/piprate/json-gold/ld"
 	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/ngsi"
@@ -428,7 +429,16 @@ func compactData(entity map[string]interface{}, context interface{}) (interface{
 	return compacted, err
 }
 
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, httpsCfg *HTTPS) error {
+func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
+	elements := make(map[string]interface{})
+	for k ,_ := range element {
+		 if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
+			elements[k] = element[k]
+		}
+	}
+	return elements
+}
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration bool, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
 	ldCompactedElems := make([]map[string]interface{}, 0)
 	for k, _ := range ldCtxElems {
@@ -442,35 +452,43 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		element["type"] = ldEle["type"]
 		for k, _ := range ldEle {
 			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-				element[k] = ldEle[k]
+				attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
+				element[k] = attr
 			}
 		}
 		LdElementList = append(LdElementList, element)
 	}
-
-	notifyCtxReq := &LDNotifyContextRequest{
-		SubscriptionId: subscriptionId,
-		Data:           LdElementList,
-		Type:           "Notification",
-		Id:             "fogflow:notification",
-		NotifyAt:       time.Now().String(),
+	var notifyCtxReq interface{}
+	var notifyURL string
+	if integration == true {
+		notifyCtxReq = LdElementList
+		notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
+	} else {
+		notifyCtxReq = &LDNotifyContextRequest{
+			SubscriptionId: subscriptionId,
+			Data:           LdElementList,
+			Type:           "Notification",
+			Id:             "fogflow:notification",
+			NotifyAt:       time.Now().String(),
+		}
+		notifyURL = URL
 	}
 	body, err := json.Marshal(notifyCtxReq)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", notifyURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Link", "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
 		client = httpsCfg.GetHTTPClient()
 	}
-
 	resp, err := client.Do(req)
+	fmt.Println(resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -552,4 +570,21 @@ func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
 		}
 	}
 	return false
+}
+
+/*
+   Header validation for upsert api
+*/
+
+func contentTypeValidator(cType string) error {
+	if cType == "application/x-www-form-urlencoded" {
+		err := errors.New("No content type header provided")
+		return err
+	}
+	cTypeInLower := strings.ToLower(cType)
+	if cTypeInLower != "application/json" && cTypeInLower != "application/ld + json" {
+		err := errors.New("Unsupported content type. Allowed are application/json and application/ld+json.")
+		return err
+	}
+	return nil
 }

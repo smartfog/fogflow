@@ -1,0 +1,16 @@
+[{
+	"command": "CONNECT_BROKER",
+	"brokerURL": "http://180.179.214.202:8070" 
+}, {
+	"command": "SET_OUTPUTS",
+	"id": "urn:ngsi-ld:Vehicle:A103",
+	"type": "Vehicle"
+}, {
+	"command": "SET_INPUTS",
+	"id": "urn:ngsi-ld:Vehicle:A103",
+	"type": "Vehicle"
+}, {
+	"command": "SET_REFERENCE",
+	"url":     "http://180.179.214.202:8888/notifyContext"
+}
+]

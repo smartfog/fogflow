@@ -485,7 +485,6 @@ func (sz Serializer) getGeometryCollectionLocation(geometries []interface{}) []G
 	return Geometries
 }
 
-
 func (sz Serializer) getArrayOfIds(arrayOfIds []interface{}) []string {
 	var ArrayOfIds []string
 	for _, v := range arrayOfIds {
@@ -567,7 +566,6 @@ func (sz Serializer) getEndpoint(endpointArray []interface{}) (Endpoint, error) 
 	}
 	return endpoint, nil
 }
-
 
 func (sz Serializer) afterString(str string, markingStr string) string {
 	// Get sub-string after markingStr string
