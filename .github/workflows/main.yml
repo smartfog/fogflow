@@ -42,16 +42,12 @@ jobs:
         cd ../master
         pwd
         sh build
-        
-    - name: python
-      run: |
-        sudo apt-get update
-        sudo apt-get install python-pip
-      
+            
     - name: Setting Up Environment
       run: |
         sudo apt-get update
         sudo apt-get install jq
+        sudo apt install python2
         pip -V
         sudo pip install --upgrade pip
         pip install Flask
