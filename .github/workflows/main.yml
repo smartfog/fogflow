@@ -44,7 +44,9 @@ jobs:
         sh build
         
     - name: python
-      run: sudo apt-get install python-pip
+      run: |
+        sudo apt-get update
+        sudo apt-get install python-pip
       
     - name: Setting Up Environment
       run: |
