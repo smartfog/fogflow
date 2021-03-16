@@ -29,7 +29,7 @@ In terms of the NGSI-LD broker, there are different choices (Scorpio, Orion-LD, 
 .. code-block:: console
 
 	# fetch the docker-compose file  of Orion-LD 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/development/test/orion-ld/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/test/orion-ld/docker-compose.yml
 	
 	# start the orion-ld broker
 	docker-compose pull
