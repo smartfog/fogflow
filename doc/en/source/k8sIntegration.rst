@@ -111,7 +111,7 @@ install unzip tool on system to extract JSON files from dashboards.zip
 
 	
    
-Configure IP configurations
+Configure IP Addresses in config.json File
 -------------------------------------------------------------
 
 You need to change the following IP addresses in config.json according to your own environment. The config.json file present in the abobe downloaded folder "fogflow-chart"
@@ -123,7 +123,7 @@ You need to change the following IP addresses in config.json according to your o
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
 
-Configure values.yaml file
+Configure values.yaml File
 ---------------------------
 
 -Edit namespace and serviceAccount as per requirement. Add the no. of replicaCount required.
