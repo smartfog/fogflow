@@ -15,7 +15,7 @@ Along with cluster following features of K8s are implemented in FogFlow:
 
 1. **High Availability and Load Balancing**:
 High Availability is about setting up Kubernetes, along with its supporting components in a way that there is no single point of failure. If the environment setup has multiple applications running on Single containers that container can easily fail. Same as the virtual machines for high availability in Kubernetes multiple replicas of containers can be run. Load balancing is efficient in distributing incoming network traffic across a group of backend servers. A load balancer is a device that distributes network or application traffic across a cluster of servers. The load balancer has a big role to achieve high availability and performance increase of cluster.
- 
+
 2. **Self-healing**: if any of the pod are deleted manually or a pod got deleted accidentally or restarted. The deployment will make sure that it brings back the pod because Kubernetes has a feature to auto-heal the pods.
 
 3. **Automated Rollouts & Rollback**: can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. It updates cycles previous Pod out and bring newer Pod in incrementally.
