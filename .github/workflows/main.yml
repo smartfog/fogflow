@@ -48,7 +48,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install jq
         sudo apt install python2
-        curl https://bootstrap.pypa.io/2.7/get-pip.py --output get-pip.py
+        curl  https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
         sudo python2 get-pip.py
         pip -V
         #sudo pip install --upgrade pip
