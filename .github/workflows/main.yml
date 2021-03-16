@@ -98,8 +98,7 @@ jobs:
         screen -d -m node main.js
 
         cd ../test/UnitTest/
-        #screen -d -m python accumulator.py
-        python2 accumulator.py
+        screen -d -m python accumulator.py
 
         cd ../UnitTest/v2/
         pytest -s -v
