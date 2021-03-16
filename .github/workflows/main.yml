@@ -48,11 +48,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install jq
         sudo apt install python2
-        pip -V
+        pip2 -V
         sudo pip install --upgrade pip
-        pip install Flask
-        pip install requests
-        pip install -U pytest
+        pip2 install Flask
+        pip2 install requests
+        pip2 install -U pytest
         sudo apt-get install curl
         
     - name: Launching Docker containers
