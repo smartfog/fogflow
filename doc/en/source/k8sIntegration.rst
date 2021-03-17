@@ -2,7 +2,7 @@
 Kubernetes Integration
 **********************
 
-The components of FogFlow can be built via source code as well as in docker environment using docker-compose tool. In docker environment each component of FogFlow is running running as single instance. Whole FogFlow system will have to re-start in case any single component container goes down and if any single service is overloaded it cannot scale to handle the load.  
+The components of FogFlow can be built via source code as well as in docker environment using docker-compose tool. In docker environment each component of FogFlow is running as single instance. Whole FogFlow system will have to re-start in case any single component container goes down and if any single service is overloaded it cannot scale to handle the load.  
 To overcome these issues FogFlow has migrated to Kubernetes. FogFlow components will be deployed in Kubernetes cluster environment based on end user requirement. Various cluster configuration can be deployed:
 
 1.	Master and Worker on same Node
@@ -13,23 +13,23 @@ To overcome these issues FogFlow has migrated to Kubernetes. FogFlow components 
 
 Along with cluster following features of K8s are implemented in FogFlow:
 
-1. **High Availability and Load Balancing**:
-High Availability is about setting up Kubernetes, along with its supporting components in a way that there is no single point of failure. If the environment setup has multiple applications running on Single containers that container can easily fail. Same as the virtual machines for high availability in Kubernetes multiple replicas of containers can be run. Load balancing is efficient in distributing incoming network traffic across a group of backend servers.
-A load balancer is a device that distributes network or application traffic across a cluster of servers. The load balancer has a big role to achieve high availability and performance increase of cluster.
- 
-2. **Self-healing**: if any of the pod are deleted manually or a pod got deleted accidentally or restarted. The deployment will make sure that it brings back the pod because Kubernetes has a feature to auto-heal the pods.
+1. **High Availability and Load Balancing**: 
+High Availability is about setting up Kubernetes, along with its supporting components in a way that there is no single point of failure. If the environment setup has multiple applications running on Single container then this container can easily fail. Same as the virtual machine for high availability multiple replicas of a container can be run in Kubernetes. Load balancing is efficient in distributing incoming network traffic across a group of backend servers. A load balancer is a device that distributes network or application traffic across a cluster of servers. The load balancer plays a big role for achieving the high availability and better performance of the cluster. 
 
-3. **Automated Rollouts & Rollback**: can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. It updates cycles previous Pod out and bring newer Pod in incrementally.
-When any introduced change that breaks production, then there should have a plan to roll back that change Kubernetes and kubectl offer a simple mechanism to roll back changes to resources such as Deployments.
+2. **Self-Healing**: 
+This feature of kubernetes is what makes it best among others. If any pod gets deleted manually or accidentally, it is restared by kubernetes cluster. This maintains continuity with the deployed project. This feature of kuberenetes to heal a pod is referred as auto-heal. 
 
-4. **Ease the deployment with Helm Support**: Helm is a tool that streamlines installing and managing Kubernetes applications. It helps in managing Kubernetes applications. 
+3. **Automated Rollouts & Rollback**: This can be achieved by rolling update. Rolling updates are the default strategy to update the running version of your app. With every new update cycle the previously launched Pod is removed and in its place a  newer Pod with latest updates is launched incrementally. 
+When any change is introduced that breaks production, then there should be  a plan to roll back that change. Kubernetes and kubectl offer a simple mechanism to roll back changes to its resources such as Deployments.
+
+4. **Ease the deployment with Helm Support**: Helm is a tool that streamlines the installation and management of Kubernetes applications. 
 Helm Chart helps to define, install, and upgrade even the most complex Kubernetes application.
 FogFlow document would be updated with the functioning details of above features to understand and access the Kubernetes environment well.
 
 
 **Limitation of FogFlow K8s Integration**
 
-Below are few limitations of FogFlow Kubernetes Integration. These limitation will be implemented with FogFlow in future.
+Below are few limitations of FogFlow Kubernetes Integration. These limitation will be implemented in future.
 
 
 1. Security and Network Policy in K8s environment.
@@ -111,7 +111,7 @@ install unzip tool on system to extract JSON files from dashboards.zip
 
 	
    
-Change the IP configuration accordingly
+Configure IP Addresses in config.json File
 -------------------------------------------------------------
 
 You need to change the following IP addresses in config.json according to your own environment. The config.json file present in the abobe downloaded folder "fogflow-chart"
@@ -123,7 +123,7 @@ You need to change the following IP addresses in config.json according to your o
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
 
-Change values.yaml file
+Configure values.yaml File
 ---------------------------
 
 -Edit namespace and serviceAccount as per requirement. Add the no. of replicaCount required.
