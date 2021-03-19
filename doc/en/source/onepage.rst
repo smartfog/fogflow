@@ -84,8 +84,7 @@ Change the IP configuration accordingly
 -------------------------------------------------------------
 
 
-
-You need to change the following IP addresses in config.json according to syour own environment.
+You need to change the following IP addresses in config.json according to your own environment and also check if the used port nubmers are blocked by your firewall. 
 
 - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this. 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
