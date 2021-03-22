@@ -126,16 +126,23 @@ def publishResult(ctxObj):
         return
 
     ctxElement = object2Element(ctxObj)
-
+    ctxElements = []
+    ctxElements.append(ctxElement)
     headers = {'Accept': 'application/ld+json',
                'Content-Type': 'application/json',
                'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
-    response = requests.post(brokerURL + '/ngsi-ld/v1/entities/',
-                             data=json.dumps(ctxElement),
+    response = requests.post(brokerURL + '/ngsi-ld/v1/entityOperations/upsert',
+                             data=json.dumps(ctxElements),
                              headers=headers)
-    if response.status_code != 201:
-        print 'failed to update context'
+    if response.status_code == 204:
+        print 'Successfully updated'
         print response.text
+    elif response.status_code == 207:
+	print 'Failed to update some  entity'
+	print response.text
+    else:
+	print "failed to update"
+	print response.text
 
 
 def fetchInputByQuery():
@@ -204,7 +211,7 @@ def notify2execution():
     app.run(host='0.0.0.0', port=myport)
 
 
-def runInOperationMode():
+'''def runInOperationMode():
     print '===== OPERATION MODEL========'
 
     # apply the configuration received from the environmental varible
@@ -222,6 +229,26 @@ def runInOperationMode():
     else:
         notify2execution()
 
+'''
+
+def runInOperationMode():
+    print("===== OPERATION MODEL========")
+    global brokerURL
+    # apply the configuration received from the environmental varible
+    myCfg = os.getenv('adminCfg')
+
+    print(myCfg)
+    if myCfg != None :
+
+        adminCfg = json.loads(myCfg)
+        handleConfig(adminCfg)
+    else:
+        brokerURL = os.getenv('brokerURL')
+    syncMode = os.getenv('sync')
+    if syncMode != None and syncMode == 'yes':
+        query2execution()
+    else:
+        notify2execution()
 
 # one time execution triggered by query
 

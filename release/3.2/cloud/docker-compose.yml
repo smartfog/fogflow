@@ -5,7 +5,7 @@ services:
         volumes:
             - ./config.json:/app/config.json
         ports:
-            - 8080:8080
+            - 8686:8686
             - 1030:1030
         depends_on: 
             - discovery

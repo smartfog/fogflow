@@ -40,20 +40,26 @@ var NGSILDclient = (function() {
     NGSILDclient.prototype.updateContext = function updateContext(ctxObj) {
         updateCtxReq = JSONObject2CtxElement(ctxObj) 
 		console.log(updateCtxReq);
-		      
+   
+        const updateCtxElements = []
+	updateCtxElements.push(updateCtxReq)
         return axios({
             method: 'post',
-            url: this.brokerURL + '/ngsi-ld/v1/entities/',
+            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/upsert',
 	    headers: {
     		'content-type': 'application/json',
    		'Accept': 'application/ld+json',
 		'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
   },
-            data: updateCtxReq
+            data: updateCtxElements
         }).then( function(response){
-            if (response.status == 200) {
+            if (response.status == 204) {
+		console.log("Successfully updated")
                 return response.data;
-            } else {
+            } else if(response.status == 207) {
+		console.log("Failed to update some entities")
+		return response.data;
+	    } else {
                 return null;
             }
         });
