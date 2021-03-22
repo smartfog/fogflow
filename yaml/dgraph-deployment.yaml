@@ -13,7 +13,7 @@ metadata:
   name: dgraph
 spec:
   #replicas will make sure that 2 pods running all the time for the deployment
-  replicas: 2 
+  replicas: 1 
   selector:
     matchLabels:
       io.kompose.service: dgraph
@@ -36,8 +36,8 @@ spec:
         io.kompose.service: dgraph
     spec:
       containers:
-      - image: fogflow/dgraph:latest
-        imagePullPolicy: ""
+      - image: dgraph/standalone
+        imagePullPolicy: "Always"
         name: dgraph
         ports:
         - containerPort: 6080
@@ -56,7 +56,7 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 20
         resources:
-        #CPU and memory limits for dgraph deployment
+        CPU and memory limits for dgraph deployment
           limits:
             memory: 3Gi
             cpu: 2
@@ -69,11 +69,11 @@ spec:
           #Dgraph requires write permission           
           readOnly: false              
       restartPolicy: Always
-      serviceAccountName: fogflow-dns 
+      #serviceAccountName: fogflow-dns 
       volumes:
       - name: dgraph
         hostPath: 
-          path: /mnt/dgraph
+          path: /dgraph
 
 ---
 
@@ -95,16 +95,16 @@ spec:
     targetPort: 6080
   - name: "8080"
     port: 8082
-    targetPort: 8082
+    targetPort: 8080
   - name: "9080"
     port: 9082
-    targetPort: 9082
+    targetPort: 9080
   - name: "8000"
     port: 8000
     targetPort: 8000
   selector:
     io.kompose.service: dgraph
-  externalIPs: [172.30.48.24] 
+  externalIPs: [172.30.48.46] 
 status:
   loadBalancer: {}
 
