@@ -389,7 +389,9 @@ func (tb *ThinBroker) deletev2Subscription(sid string) error {
 	}
 
 	// remove the subscription from the map
-	delete(tb.v2subscriptions, sid)
+	if _, oK := tb.v2subscriptions[sid]; oK {
+		delete(tb.v2subscriptions, sid)
+	}
 
 	return nil
 }
@@ -741,6 +743,11 @@ func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 
 func (tb *ThinBroker) checkMatchedAttr(ctxElemAttrs []string, sid string) bool {
 	tb.v2subscriptions_lock.RLock()
+	_, res := tb.v2subscriptions[sid]
+	if res == false {
+		tb.v2subscriptions_lock.RUnlock()
+		return false
+	}
 	conditionList := tb.v2subscriptions[sid].Subject.Conditions.Attrs
 	tb.v2subscriptions_lock.RUnlock()
 	matchedAtleastOnce := false
