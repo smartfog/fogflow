@@ -389,8 +389,9 @@ func (tb *ThinBroker) deletev2Subscription(sid string) error {
 	}
 
 	// remove the subscription from the map
-	delete(tb.v2subscriptions, sid)
-
+	if _ , oK := tb.v2subscriptions[sid]; oK {
+		delete(tb.v2subscriptions, sid)
+	}
 	return nil
 }
 
