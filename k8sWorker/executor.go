@@ -48,7 +48,6 @@ type Executor struct {
 
 func (e *Executor) Init(cfg *Config, selectedBrokerURL string) bool {
 	// for Windows
-	fmt.Println("************003**********")
 	if runtime.GOOS == "windows" {
 		endpoint := os.Getenv("DOCKER_HOST")
 		path := os.Getenv("DOCKER_CERT_PATH")
@@ -200,7 +199,6 @@ func (e *Executor) writeTempFile(fileName string, fileContent string) {
 	}
 }
 
-
 // Ask the kernel for a free open port that is ready to use
 func (e *Executor) findFreePortNumber() int {
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
@@ -252,9 +250,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// find a free listening port number available on the host machine
 	freePort := strconv.Itoa(e.findFreePortNumber())
 
-	// function code
-	//functionCode := task.FunctionCode
-
 	// configure the task with its output streams via its admin interface
 	commands := make([]interface{}, 0)
 
@@ -298,12 +293,12 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	//k8s pod add
 	p := pod{}
-	podId,err:=p.pod(dockerImage, freePort, commands)
+	podId, err := p.pod(dockerImage, freePort, commands)
 	if err != nil {
-                ERROR.Println(err)
-                return false
-        } 	
-	
+		ERROR.Println(err)
+		return false
+	}
+
 	// start a container to run the scheduled task instance
 	/*containerId, err := e.startContainer(dockerImage, freePort, functionCode, task.ID, commands, servicePorts)
 	if err != nil {
@@ -315,7 +310,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	taskCtx.ListeningPort = freePort
 	//taskCtx.ContainerID = containerId
-	taskCtx.ContainerID = podId 	
+	taskCtx.ContainerID = podId
 
 	// register the service ports of uservices
 	if len(servicePorts) > 0 {
