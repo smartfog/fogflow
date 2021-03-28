@@ -1,0 +1,107 @@
+#Dgraph deployment and service configuration 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  #FogFlow cloud components will be deployed inside fogflow namespace 
+  namespace: {{ .Values.namespace }}                      
+  annotations:
+    kompose.version: 1.21.0 (992df58d8)
+    "helm.sh/hook-weight": "1" 
+  creationTimestamp: null
+  labels:
+    io.kompose.service: dgraph
+  name: dgraph
+spec:
+  #replicas will make sure that no. of replicaCount mention in values.yaml 
+  # are running all the time for the deployment
+  replicas: {{ .Values.replicaCount }} 
+  selector:
+    matchLabels:
+      io.kompose.service: dgraph
+  minReadySeconds: 10
+  #strategy tells about How do want to update the pods?
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%  
+      maxUnavailable: 25% 
+    type: RollingUpdate
+  # This template field is a regular pod configuration 
+  # nested inside the deployment spec
+  template:
+    metadata:
+      annotations:
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: dgraph
+    spec:
+      containers:
+      - image: dgraph/standalone
+        imagePullPolicy: Always
+        name: dgraph
+        ports:
+        - containerPort: 8000
+        - containerPort: 8080
+        - containerPort: 9080
+        - containerPort: 6080
+        #readiness and liveness to check pod's Health
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+        #CPU and memory limits for dgraph deployment
+          limits:
+            memory: 3Gi
+            cpu: 2
+          requests: 
+            memory: 2Gi
+            cpu: 1 
+        volumeMounts:
+        - name: dgraph 
+          mountPath: /dgraph 
+          #Dgraph requires write permission           
+          readOnly: false              
+      restartPolicy: Always
+      serviceAccountName: {{ .Values.serviceAccount }} 
+      volumes:
+      - name: dgraph
+        hostPath: 
+          path: {{ .Values.dgraph.hostPath.path }} 
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Values.namespace }} 
+  annotations:
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: dgraph
+  name: dgraph
+spec:
+  ports:
+  - name: "8000"
+    port: 8000
+    targetPort: 8000
+  - name: "8080"
+    port: 8082
+    targetPort: 8080
+  - name: "9080"
+    port: 9082
+    targetPort: 9080
+  - name: "6080"
+    port: 6080
+    targetPort: 6080 
+  selector:
+    io.kompose.service: dgraph
+  #externalIPs: {{ .Values.Service.spec.externalIPs }}
+
