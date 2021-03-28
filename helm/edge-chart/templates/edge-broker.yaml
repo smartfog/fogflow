@@ -36,7 +36,7 @@ spec:
         io.kompose.service: edge-broker
     spec:
       containers:
-      - image: fogflow/broker:3.2
+      - image: fogflow/broker:latest
         imagePullPolicy: Always 
         name: edge-broker
         ports:
