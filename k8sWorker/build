@@ -1,0 +1,14 @@
+go get
+
+#build the linux version (amd64) of worker
+CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo    -o worker
+docker build -t "fogflow/worker:k8s" .
+
+
+#build the arm version of worker
+#CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo    -o worker_arm
+#docker build -f Dockerfile4Arm -t "fogflow/worker:arm"  .
+
+#build worker for ARMv8
+#CGO_ENABLED=0  GOOS=linux GOARCH=arm64 go build  -a -installsuffix cgo    -o worker_arm64
+#docker build -f Dockerfile4Armv8 -t "fogflow/worker:arm64"  .
