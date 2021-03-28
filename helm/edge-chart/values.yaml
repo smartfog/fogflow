@@ -3,11 +3,11 @@
 # Declare variables to be passed into your templates.
 
 #Kubernetes namespace of FogFlow components 
-namespace: default 
+namespace: fogflow 
 
 #replicas will make sure that no. of replicaCount mention in values.yaml
 # are running all the time for the deployment
-replicaCount: 3 
+replicaCount: 2 
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -16,22 +16,12 @@ serviceAccount:
   annotations: {}
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-#hostPath for dgraph volume mount
-#dgraph:
-# hostPath:
-#   path: /mnt/dgraph
+  name: "fogflow-dns"
 
 #hostPath for config.json  
 configJson:
   hostPath:
     path: /root/new_fog/fogflow-helm/helm/edge-chart/config.json
-
-#hostPath for nginx.conf 
-#nginxConf:
-# hostPath:
-#   path: /root/new_fog/fogflow/helm/fogflow-chart/nginx.conf 
 
 Service:
  spec: 
