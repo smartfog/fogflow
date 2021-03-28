@@ -1,8 +1,8 @@
-# Default values for fogflow-chart.
+# Default values for edge-chart.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-#Kubernetes namespace of FogFlow components 
+#Microk8s Kubernetes namespace of FogFlow components 
 namespace: fogflow 
 
 #replicas will make sure that no. of replicaCount mention in values.yaml
