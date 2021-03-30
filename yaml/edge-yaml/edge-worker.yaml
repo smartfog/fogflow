@@ -1,0 +1,70 @@
+#FogFlow worker deployment and service configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  #FogFlow cloud components will be deployed inside fogflow namespace
+  namespace: fogflow
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yml
+    kompose.version: 1.21.0 (992df58d8)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: edge-worker
+  name: edge-worker
+spec:
+  #replicas will make sure that 2 pods running all the time for the deployment
+  replicas: 2 
+  selector:
+    matchLabels:
+      io.kompose.service: edge-worker
+  minReadySeconds: 10   
+  #strategy tells about How do want to update the pods? 
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  # This template field is a regular pod configuration
+  # nested inside the deployment spec
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yml
+        kompose.version: 1.21.0 (992df58d8)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: edge-worker
+    spec:
+      containers:
+      - image: fogflow/worker:k8s
+        imagePullPolicy: ""
+        name: edge-worker
+        resources:
+          #CPU and memory limits for dgraph deployment 
+          limits:
+            memory: 2Gi
+            cpu: 1 
+          requests:
+            memory: 1Gi
+            cpu: 1
+        volumeMounts:
+        - name: edge-worker1
+          mountPath: /tmp
+          readOnly: true
+        - name: edge-worker 
+          mountPath: /config.json
+          readOnly: true
+        - name: dockersock
+          mountPath: "/var/run/docker.sock"  
+      restartPolicy: Always
+      serviceAccountName: fogflow-dns 
+      volumes:
+      - name: edge-worker 
+        hostPath:
+          path: /home/necuser/fogflow/fogflow/yaml/edge-yaml/config.json 
+      - name: edge-worker1
+        hostPath:
+          path: /tmp
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock

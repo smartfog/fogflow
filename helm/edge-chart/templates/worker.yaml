@@ -3,42 +3,47 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   #FogFlow cloud components will be deployed inside fogflow namespace
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
+    "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
-    io.kompose.service: cloud-worker
-  name: cloud-worker
+    io.kompose.service: edge-worker
+  name: edge-worker
 spec:
-  #replicas will make sure that 2 pods running all the time for the deployment
-  replicas: 2 
+  #replicas will make sure that no. of replicaCount mention in values.yaml
+  # are running all the time for the deployment
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: cloud-worker
+      io.kompose.service: edge-worker
   minReadySeconds: 10   
   #strategy tells about How do want to update the pods? 
   strategy:
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 25% 
+      maxUnavailable: 25% 
     type: RollingUpdate
   # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: cloud-worker
+        io.kompose.service: edge-worker
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 30s;']
       containers:
-      - image: fogflow/worker:3.2
-        imagePullPolicy: ""
-        name: cloud-worker
+      - image: fogflow/worker:k8s
+        imagePullPolicy: Always 
+        name: edge-worker 
         resources:
           #CPU and memory limits for dgraph deployment 
           limits:
@@ -48,21 +53,21 @@ spec:
             memory: 1Gi
             cpu: 1
         volumeMounts:
-        - name: cloud-worker1
+        - name: edge-worker
           mountPath: /tmp
           readOnly: true
-        - name: cloud-worker 
+        - name: config-json 
           mountPath: /config.json
           readOnly: true
         - name: dockersock
           mountPath: "/var/run/docker.sock"  
       restartPolicy: Always
-      serviceAccountName: fogflow-dns 
+      #serviceAccountName: fogflow-dns 
       volumes:
-      - name: cloud-worker 
+      - name: config-json 
         hostPath:
-          path: /home/necuser/fogflow/fogflow/yaml/config.json 
-      - name: cloud-worker1
+          path: {{ .Values.configJson.hostPath.path }} 
+      - name: edge-worker
         hostPath:
           path: /tmp
       - name: dockersock

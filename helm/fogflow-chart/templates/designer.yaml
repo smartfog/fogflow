@@ -3,17 +3,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   #FogFlow cloud components will be deployed inside fogflow namespace
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
+    "helm.sh/hook-weight": "4"
   creationTimestamp: null
   labels:
     io.kompose.service: designer
   name: designer
 spec:
-  #replicas will make sure that 2 pods running all the time for the deploymen
-  replicas: 2 
+  #replicas will make sure that no. of replicaCount mention in values.yaml
+  # are running all the time for the deployment
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       io.kompose.service: designer
@@ -21,23 +22,22 @@ spec:
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+      maxSurge: 25% 
+      maxUnavailable: 25% 
     type: RollingUpdate
   # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
       annotations:
-        kompose.cmd: kompose convert -f docker-compose.yml
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
         io.kompose.service: designer
     spec:
       containers:
-      - image: fogflow/designer:3.2
-        imagePullPolicy: ""
+      - image: fogflow/designer:latest
+        imagePullPolicy: Always 
         name: designer
         ports:
         - containerPort: 8080
@@ -65,19 +65,18 @@ spec:
         - name: config-json
           mountPath: /app/config.json
       restartPolicy: Always
-      serviceAccountName: fogflow-dns 
+      serviceAccountName: {{ .Values.serviceAccount }} 
       volumes:
       - name: config-json
         hostPath:
-          path: /home/necuser/fogflow/fogflow/yaml/config.json 
+          path: {{ .Values.configJson.hostPath.path }}
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.cmd: kompose convert -f docker-compose.yml
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
@@ -93,7 +92,5 @@ spec:
     targetPort: 1030
   selector:
     io.kompose.service: designer
-  externalIPs: [172.30.48.24] 
-status:
-  loadBalancer: {}
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
 
