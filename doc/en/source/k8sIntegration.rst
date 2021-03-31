@@ -464,4 +464,15 @@ Kubernetes Security
 
 Kubernetes provides many controls that can greatly improve an application's security. In order to use any of those methods provided by kubernetes, one need to properly configure the apiserver. **Role Based Access Control (RBAC)** is one such security implementation. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within an organization. RBAC authorization uses the **rbac.authorization.k8s.io** API group to drive authorization decisions, allowing user to dynamically configure policies through the Kubernetes API.
 
+Implementing RBAC over Cloud Node Kubernetes Cluster
+-----------------------------------------------------
 
+Assuming kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download the following scrpit using below command.
+
+.. code-block:: console 
+
+        $wget https://github.com/smartfog/fogflow/development/helm/fogflow-chart/serviceaccount.yaml
+        
+        #This will download a file that contains the defined roles and role bindings.
+
+Note: serviceaccount.yaml can also be accessed from repository from **"fogflow/helm/fogflow-chart/serviceaccount.yaml"**
