@@ -467,22 +467,53 @@ Kubernetes provides many controls that can greatly improve an application's secu
 Implementing RBAC over Cloud Node Kubernetes Cluster
 -----------------------------------------------------
 
-Assuming kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download the following scrpit using below command.
-
-.. code-block:: console 
-
-        $wget https://github.com/smartfog/fogflow/development/helm/fogflow-chart/serviceaccount.yaml
-        
-        #This will download a file that contains the defined roles and role bindings.
-
-Note: serviceaccount.yaml can also be accessed from fogflow repository using **"fogflow/helm/fogflow-chart/serviceaccount.yaml"** path.
+It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart as shown above. 
 
 
-Configuring serviceaccount.yaml over Cloud Node Kubernetes Cluster
---------------------------------------------------------------------
+Configuring values.yaml over Cloud Node Kubernetes Cluster
+--------------------------------------------------------------
 
-Configure the namespace and service account name in serviceaccount.yaml file as shown below:
+values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-chart/values.yaml"** path.
+
+- Configure the namespace and service account name in values.yaml file as shown below:
 
 .. code-block:: console
 
+   
+   #Kubernetes namespace of FogFlow components 
+   namespace: fogflow   //CAN BE CHANGED AS PER USER'S NEED
+
+   #replicas will make sure that no. of replicaCount mention in values.yaml
+   # are running all the time for the deployment
+   replicaCount: 1
+
+   serviceAccount:
+   # Specifies whether a service account should be created
+   create: true
+   # Annotations to add to the service account
+   annotations: {}
+   # The name of the service account to use.
+   # If not set and create is true, a name is generated using the fullname template
+   name: "fogflow-dns"   //CAN BE CHANGED AS PER USER'S NEED
+
         
+- On deploying this chart using helm, the **namespace** with name **fogflow** is created and inside that a **sericeaccount** with name **fogflow-dns** is created. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
+  
+.. list-table:: Roles Classification
+   :widths: 25 25 50
+   :header-rows: 1  
+  
+   * - Heading Roles, RoleBinding, Scope
+   * - fogflow-root-role, RootUser, Cluster
+     - fogflow-Admin-role, Admin, fogflow - namespace 
+     - fogflow-user-role, EndUser, fogflow - namespace
+- To verify the creation of above resources use following commands:
+
+.. code-block:: console
+
+   $kubectl get ns 
+
+.. figures:: figure/ns.png
+
+.. code-block:: console
+
