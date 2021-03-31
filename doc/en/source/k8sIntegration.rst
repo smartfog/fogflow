@@ -515,12 +515,13 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 
    $kubectl get ns 
 
-.. figures:: figure/ns.png
+.. figure:: figures/ns.png
 
 .. code-block:: console
 
    $kubectl get rolebindings --namespace=fogflow
 
+.. figure:: figures/rbaccloud.png
 
 Adding Users in Cloud Node Kubernetes Cluster
 -----------------------------------------------
@@ -564,7 +565,7 @@ Note: The tags **--client-certificate** is followed by the path where user's pri
 
    $kubectl config view
 
-.. figures:: figure/addedrootuser.png
+.. figure:: figures/addedrootuser.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
@@ -578,13 +579,16 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. code-block:: console
 
-   $kubectl get node
+   $kubectl get node --context=RootUser-context1
 
-   $kubectl delete pods "any pod name"
+   $kubectl delete pods "any pod name" --context=RootUser-context1
 
-   $kubectl get pods 
+   $kubectl get pods --context=RootUser-context1
 
-   $kubectl get pods --namespace=fogflow
+   $kubectl get pods --namespace=fogflow --context=RootUser-context1
+
+
+.. figure:: figures/addedrootuseroutput.png
 
 
 Certificate Generation And Admin User Addition
@@ -624,7 +628,7 @@ Note: The tags **--client-certificate** is followed by the path where user's pri
 
    $kubectl config view
 
-.. figures:: figure/addedAdminuser.png
+.. figure:: figures/addedadminuser.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
@@ -638,13 +642,16 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. code-block:: console
 
-   $kubectl get node
+   $kubectl get node --context=AdminUser-context1
 
-   $kubectl delete pods "any pod name"
+   $kubectl delete pods "any pod name" --context=AdminUser-context1
 
-   $kubectl get pods
+   $kubectl get pods --context=AdminUser-context1
 
-   $kubectl get pods --namespace=fogflow
+   $kubectl get pods --namespace=fogflow --context=AdminUser-context1
+
+.. figure:: figures/addedaminuseroutput.png
+
 
 Certificate Generation And End User Addition
 --------------------------------------------------
@@ -683,7 +690,7 @@ Note: The tags **--client-certificate** is followed by the path where user's pri
 
    $kubectl config view
 
-.. figures:: figure/addedenduser.png
+.. figure:: figures/addedenduser.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
@@ -697,13 +704,17 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. code-block:: console
 
-   $kubectl get node
+   $kubectl get node --context=EndUser-context1
 
-   $kubectl delete pods "any pod name"
+   $kubectl delete pods "any pod name" --context=EndUser-context1
 
-   $kubectl get pods
+   $kubectl get pods --context=EndUser-context1
 
-   $kubectl get pods --namespace=fogflow
+   $kubectl get pods --namespace=fogflow --context=EndUser-context1
+
+
+.. figure:: figures/addedenduseroutput.png
+
 
 Implementing RBAC over Edge Node Microk8s Kubernetes Cluster
 -----------------------------------------------------
