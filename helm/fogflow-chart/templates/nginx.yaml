@@ -65,7 +65,7 @@ spec:
           mountPath: /etc/nginx/nginx.conf
           readOnly: true
       restartPolicy: Always
-      serviceAccountName: {{ .Values.serviceAccount }} 
+      serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: nginx-conf 
         hostPath:

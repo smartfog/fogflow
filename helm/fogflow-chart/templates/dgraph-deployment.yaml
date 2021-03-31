@@ -69,7 +69,7 @@ spec:
           #Dgraph requires write permission           
           readOnly: false              
       restartPolicy: Always
-      serviceAccountName: fogflow-dns 
+      serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: dgraph
         hostPath: 
