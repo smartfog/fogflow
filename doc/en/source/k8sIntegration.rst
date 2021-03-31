@@ -646,4 +646,63 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
    $kubectl get pods --namespace=fogflow
 
+Certificate Generation And End User Addition
+--------------------------------------------------
+
+**Step 1**: Generate User's private key, using below command.
+
+.. code-block:: console
+
+   $openssl genrsa -out EndUser1.key 2048
+
+**Step 2**: Generate User's certificate signing request using below commands.
+
+.. code-block:: console
+
+   $openssl req -new -key EndUser1.key -out EndUser1.csr -subj "/CN=EndUser1/O=EndUser"
+
+   #the tag "/O=EndUser" defines the rolebinding, so enter carefully
+
+**Step 3**: Generate User's certificate using below command.
+
+.. code-block:: console
+
+   $openssl x509 -req -in EndUser1.csr -CA /etc/kubernetes/pki/ca.crt -CAkey /etc/kubernetes/pki/ca.key  -CAcreateserial -out EndUser1.crt -days 365
+
+   #The "-day" tag justifies the no of days for which user's certificate will be valid. so it can be changed accordingly.
+
+**Step 4**: To add user to kubernetes cluster, use following command.
+
+.. code-block:: console
+
+   $kubectl config set-credentials EndUser1 --client-certificate /root/EndUser/EndUser1.crt --client-key /root/EndUser/EndUser1.key
+
+Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
+
+.. code-block:: console
+
+   $kubectl config view
+
+.. figures:: figure/addedenduser.png
+
+**Step 5**: Set the context in kubeconfig to recently added user using following command.
+
+.. code-block:: console
+
+   $kubectl config set-context EndUser-context1 --cluster=kubernetes --namespace=fogflow --user=EndUser1
+
+Note: set the value of namespace according to the value mentioned in values.yaml. Here **EndUser-context1** is the new context set for RootUser1.
+
+**Step 6**: Now verify the permissions RootUser1 has by using various kubectl commands with above context as shown below.
+
+.. code-block:: console
+
+   $kubectl get node
+
+   $kubectl delete pods "any pod name"
+
+   $kubectl get pods
+
+   $kubectl get pods --namespace=fogflow
+
 
