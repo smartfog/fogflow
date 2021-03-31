@@ -650,7 +650,7 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
    $kubectl get pods --namespace=fogflow --context=AdminUser-context1
 
-.. figure:: figures/addedaminuseroutput.png
+.. figure:: figures/addedadminuseroutput.png
 
 
 Certificate Generation And End User Addition
