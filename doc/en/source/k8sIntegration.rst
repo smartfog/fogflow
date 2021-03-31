@@ -155,7 +155,7 @@ Configure values.yaml File
         hostPath:
           path: /mnt/dgraph
 
-      #hostPath for config.json, add this path to fogflow-chart directory
+      #hostPath for config.json, add this path to cloud-chart directory
       configJson:
         hostPath:
           path: /home/necuser/fogflow/helm/files/cloud-chart/config.json
@@ -729,7 +729,7 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-c
 
    $kubectl get ns 
 
-.. figures:: figure/nsedge.png
+.. figure:: figures/nsedge.png
 
 .. code-block:: console
 
