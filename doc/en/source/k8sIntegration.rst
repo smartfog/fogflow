@@ -507,6 +507,7 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
    * - fogflow-root-role, RootUser, Cluster
      - fogflow-Admin-role, Admin, fogflow - namespace 
      - fogflow-user-role, EndUser, fogflow - namespace
+
 - To verify the creation of above resources use following commands:
 
 .. code-block:: console
