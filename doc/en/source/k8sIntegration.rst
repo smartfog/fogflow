@@ -767,12 +767,13 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-c
 
    $kubectl get ns 
 
-.. figures:: figure/ns.png
+.. figures:: figure/nsedge.png
 
 .. code-block:: console
 
    $kubectl get rolebindings --namespace=fogflow
 
+.. figure:: figures/rbacedge.png
 
 Adding Users in Edge Node Kubernetes Cluster
 -----------------------------------------------
@@ -878,7 +879,7 @@ Note: The tags **--client-certificate** is followed by the path where user's pri
 
    $microk8s.kubectl config view
 
-.. figure:: figures/addedAdminuseredge.png
+.. figure:: figures/addedadminuseredge.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
