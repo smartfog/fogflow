@@ -705,4 +705,245 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
    $kubectl get pods --namespace=fogflow
 
+Implementing RBAC over Edge Node Microk8s Kubernetes Cluster
+-----------------------------------------------------
+
+It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart as shown above. 
+
+
+Configuring values.yaml over Edge Node Kubernetes Cluster
+--------------------------------------------------------------
+
+values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-chart/values.yaml"** path.
+
+- Configure the namespace and service account name in values.yaml file as shown below:
+
+.. code-block:: console
+
+   
+   #Kubernetes namespace of FogFlow components 
+   namespace: fogflow   //CAN BE CHANGED AS PER USER'S NEED
+
+   #replicas will make sure that no. of replicaCount mention in values.yaml
+   # are running all the time for the deployment
+   replicaCount: 1
+
+   serviceAccount:
+   # Specifies whether a service account should be created
+   create: true
+   # Annotations to add to the service account
+   annotations: {}
+   # The name of the service account to use.
+   # If not set and create is true, a name is generated using the fullname template
+   name: "fogflow-dns"   //CAN BE CHANGED AS PER USER'S NEED
+
+        
+- On deploying this chart using helm, the **namespace** with name **fogflow** is created and inside that a **sericeaccount** with name **fogflow-dns** is created. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
+
++--------------------+----------------+----------------------+
+|     Roles          |  RoleBindings  |    Scope             |
++--------------------+----------------+----------------------+
+| fogflow-root-role  |   RootUser     |  Cluster             |
++--------------------+----------------+----------------------+
+| fogflow-admin-role |   Admin        |  fogflow - namespace |
++--------------------+----------------+----------------------+
+| fogflow-user-role  |   EndUser      |  fogflow - namespace |
++--------------------+----------------+----------------------+
+
+- To verify the creation of above resources use following commands:
+
+.. code-block:: console
+
+   $kubectl get ns 
+
+.. figures:: figure/ns.png
+
+.. code-block:: console
+
+   $kubectl get rolebindings --namespace=fogflow
+
+
+Adding Users in Edge Node Kubernetes Cluster
+-----------------------------------------------
+
+- To add users in kubernetes cluster at edge node, follow below steps:
+
+Certificate Generation And Root User Addition
+--------------------------------------------------
+
+**Step 1**: Generate User's private key, using below command.
+
+.. code-block:: console
+
+   $openssl genrsa -out RootUser1.key 2048
+
+**Step 2**: Generate User's certificate signing request using below commands.
+
+.. code-block:: console
+
+   $openssl req -new -key RootUser1.key -out RootUser1.csr -subj "/CN=RootUser1/O=RootUser"
+
+   #the tag "/O=RootUser" defines the rolebinding, so enter carefully
+
+**Step 3**: Generate User's certificate using below command.
+
+.. code-block:: console
+
+   $openssl x509 -req -in RootUser1.csr -CA /var/snap/microk8s/current/certs/ca.crt -CAkey /var/snap/microk8s/current/certs/ca.key  -CAcreateserial -out RootUser1.crt -days 365
+
+   #The "-day" tag justifies the no of days for which user's certificate will be valid. so it can be changed accordingly.
+
+**Step 4**: To add user to kubernetes cluster, use following command.
+
+.. code-block:: console
+
+   $kubectl config set-credentials RootUser1 --client-certificate /root/RootUser/RootUser1.crt --client-key /root/RootUser/RootUser1.key
+
+Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
+
+.. code-block:: console
+
+   $kubectl config view
+
+.. figures:: figure/addedrootuseredge.png
+
+**Step 5**: Set the context in kubeconfig to recently added user using following command.
+
+.. code-block:: console
+
+   $kubectl config set-context RootUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=RootUser1
+
+Note: set the value of namespace according to the value mentioned in values.yaml. Here **RootUser-context1** is the new context set for RootUser1.
+
+**Step 6**: Now verify the permissions RootUser1 has by using various kubectl commands with above context as shown below.
+
+.. code-block:: console
+
+   $kubectl get node
+
+   $kubectl delete pods "any pod name"
+
+   $kubectl get pods 
+
+   $kubectl get pods --namespace=fogflow
+
+
+Certificate Generation And Admin User Addition
+--------------------------------------------------
+
+**Step 1**: Generate User's private key, using below command.
+
+.. code-block:: console
+
+   $openssl genrsa -out AdminUser1.key 2048
+
+**Step 2**: Generate User's certificate signing request using below commands.
+
+.. code-block:: console
+
+   $openssl req -new -key AdminUser1.key -out AdminUser1.csr -subj "/CN=AdminUser1/O=Admin"
+
+   #the tag "/O=Admin" defines the rolebinding, so enter carefully
+
+**Step 3**: Generate User's certificate using below command.
+
+.. code-block:: console
+
+   $openssl x509 -req -in AdminUser1.csr -CA /var/snap/microk8s/current/certs/ca.crt -CAkey /var/snap/microk8s/current/certs/ca.key  -CAcreateserial -out AdminUser1.crt -days 365
+
+   #The "-day" tag justifies the no of days for which user's certificate will be valid. so it can be changed accordingly.
+
+**Step 4**: To add user to kubernetes cluster, use following command.
+
+.. code-block:: console
+
+   $kubectl config set-credentials AdminUser1 --client-certificate /root/AdminUser/AdminUser1.crt --client-key /root/AdminUser/AdminUser1.key
+
+Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
+
+.. code-block:: console
+
+   $kubectl config view
+
+.. figures:: figure/addedAdminuseredge.png
+
+**Step 5**: Set the context in kubeconfig to recently added user using following command.
+
+.. code-block:: console
+
+   $kubectl config set-context AdminUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=AdminUser1
+
+Note: set the value of namespace according to the value mentioned in values.yaml. Here **AdminUser-context1** is the new context set for RootUser1.
+
+**Step 6**: Now verify the permissions RootUser1 has by using various kubectl commands with above context as shown below.
+
+.. code-block:: console
+
+   $kubectl get node
+
+   $kubectl delete pods "any pod name"
+
+   $kubectl get pods
+
+   $kubectl get pods --namespace=fogflow
+
+Certificate Generation And End User Addition
+--------------------------------------------------
+
+**Step 1**: Generate User's private key, using below command.
+
+.. code-block:: console
+
+   $openssl genrsa -out EndUser1.key 2048
+
+**Step 2**: Generate User's certificate signing request using below commands.
+
+.. code-block:: console
+
+   $openssl req -new -key EndUser1.key -out EndUser1.csr -subj "/CN=EndUser1/O=EndUser"
+
+   #the tag "/O=EndUser" defines the rolebinding, so enter carefully
+
+**Step 3**: Generate User's certificate using below command.
+
+.. code-block:: console
+
+   $openssl x509 -req -in EndUser1.csr -CA /var/snap/microk8s/current/certs/ca.crt -CAkey /var/snap/microk8s/current/certs/ca.key  -CAcreateserial -out EndUser1.crt -days 365
+
+   #The "-day" tag justifies the no of days for which user's certificate will be valid. so it can be changed accordingly.
+
+**Step 4**: To add user to kubernetes cluster, use following command.
+
+.. code-block:: console
+
+   $kubectl config set-credentials EndUser1 --client-certificate /root/EndUser/EndUser1.crt --client-key /root/EndUser/EndUser1.key
+
+Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
+
+.. code-block:: console
+
+   $kubectl config view
+
+.. figures:: figure/addedenduseredge.png
+
+**Step 5**: Set the context in kubeconfig to recently added user using following command.
+
+.. code-block:: console
+
+   $kubectl config set-context EndUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=EndUser1
+
+Note: set the value of namespace according to the value mentioned in values.yaml. Here **EndUser-context1** is the new context set for RootUser1.
+
+**Step 6**: Now verify the permissions RootUser1 has by using various kubectl commands with above context as shown below.
+
+.. code-block:: console
+
+   $kubectl get node
+
+   $kubectl delete pods "any pod name"
+
+   $kubectl get pods
+
+   $kubectl get pods --namespace=fogflow
+
 
