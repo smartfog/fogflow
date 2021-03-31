@@ -65,7 +65,7 @@ spec:
           mountPath: /config.json
           readOnly: true
       restartPolicy: Always
-      #serviceAccountName: fogflow-dns 
+      serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
        - name: config-json
          hostPath:

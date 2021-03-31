@@ -21,7 +21,7 @@ serviceAccount:
 #hostPath for config.json  
 configJson:
   hostPath:
-    path: /root/new_fog/fogflow-helm/helm/edge-chart/config.json
+    path: /root/co-28/fogflow/helm/edge-chart/config.json
 
 Service:
  spec: 
