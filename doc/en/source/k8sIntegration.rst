@@ -96,7 +96,7 @@ Download the Kubernetes file and the configuration files as below.
 .. code-block:: console
 
         # the Kubernetes yaml file to start all FogFlow components on the cloud node
-        wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/fogflow-chart.zip
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm/cloud-chart.zip
 
 
 install unzip tool on system to extract JSON files from dashboards.zip
@@ -107,14 +107,14 @@ install unzip tool on system to extract JSON files from dashboards.zip
           apt-get install unzip
 
           #command to unzip the fogflow-chart.zip in same location
-          unzip fogflow-chart.zip
+          unzip cloud-chart.zip
 
 	
    
 Configure IP Addresses in config.json File
 -------------------------------------------------------------
 
-You need to change the following IP addresses in config.json according to your own environment. The config.json file present in the abobe downloaded folder "fogflow-chart"
+You need to change the following IP addresses in config.json according to your own environment. The config.json file present in the above downloaded folder "cloud-chart"
 
 - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
 
@@ -135,7 +135,7 @@ Configure values.yaml File
 .. code-block:: console
 
       #Kubernetes namespace of FogFlow components
-      namespace: default
+      namespace: fogflow
 
       #replicas will make sure that no. of replicaCount mention in values.yaml
       #are running all the time for the deployment
@@ -148,7 +148,7 @@ Configure values.yaml File
         annotations: {}
       #The name of the service account to use.
       #If not set and create is true, a name is generated using the fullname template
-        name: ""
+        name: "fogflow-dns"
 
       #hostPath for dgraph volume mount
       dgraph:
@@ -158,9 +158,9 @@ Configure values.yaml File
       #hostPath for config.json, add this path to fogflow-chart directory
       configJson:
         hostPath:
-          path: /home/necuser/fogflow/helm/files/fogflow-chart/config.json
+          path: /home/necuser/fogflow/helm/files/cloud-chart/config.json
 
-      #hostPath for nginx.conf, add this path to fogflow-chart directory
+      #hostPath for nginx.conf, add this path to cloud-chart directory
       nginxConf:
         hostPath:
           path: /home/necuser/fogflow/fogflow/yaml/nginx.conf
@@ -181,7 +181,7 @@ Add "--set" flag with helm install command to pass configuration from command li
 
 .. code-block:: console
  
-          helm install ./fogflow-chart --set externalIPs={XXX.XX.48.24} --generate-name
+          helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name
 
 
 Refer Helm official `link`_ for more details
@@ -332,44 +332,6 @@ To setup microk8s kubernetes cluster on edge node follow the below mentioned ste
 With above steps basic installation and setup of microk8s is accomplished.
 
 
-Configuring Microk8s kubernetes cluster
----------------------------------------------
-
-To be able to create deployment over microk8s kubernetes cluster, user needs to create namespace and serviceaccount in kubernetes cluster for edge node. To do so, follow the below procedure.
-
-.. code-block:: console
-
-        $microk8s.kubectl create namespace <User Specified>
-
-        #eg : microk8s.kubectl create namespace fogflow
-
-
-Note: Now, to create service account, fetch the serviceaccount.yaml file. 
-
-.. code-block:: console 
-
-        #to fetch serviceaccount.yaml file
-        
-        $wget https://raw.githubusercontent.com/smartfog/fogflow/master/yaml/serviceaccount.yaml
-
-
-To configure the serviceaccount file, change the occurence of namespace with <User Specified> name mentioned in above step, that is the name used  while creating namespace.
-
-.. code-block:: console
-
-        apiVersion: v1
-        kind: ServiceAccount
-        metadata:
-        namespace: <User Specified> #eg namespace: fogflow
-        name: fogflow-dns
-
-        #similarly change all the occurences of namespace in this file (it will be changed at three places in files, in above shown manner)
-
-
-
-With the above procedure, microk8 cluster is ready to deploy pods and services on it.
-
-
 Deploying Edge-Chart With Microk8s and helm 
 ----------------------------------------------
 
@@ -410,7 +372,7 @@ To unzip the downloaded folder using following,
       #Eg. "my_hostip": "172.30.48.46"
 
 
-**Step 2** : Edit the namespace, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
+**Step 2** : Edit the namespace, serviceaccount name, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
 
 .. code-block:: console
 
@@ -817,7 +779,7 @@ Note: The tags **--client-certificate** is followed by the path where user's pri
 
    $microk8s.kubectl config view
 
-.. figures:: figure/addedrootuseredge.png
+.. figure:: figures/addedrootuseredge.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
