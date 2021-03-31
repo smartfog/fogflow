@@ -103,5 +103,5 @@ spec:
     targetPort: 6080 
   selector:
     io.kompose.service: dgraph
-  #externalIPs: {{ .Values.Service.spec.externalIPs }}
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
 
