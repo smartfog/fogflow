@@ -498,15 +498,16 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 
         
 - On deploying this chart using helm, the **namespace** with name **fogflow** is created and inside that a **sericeaccount** with name **fogflow-dns** is created. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
-  
-.. list-table:: Roles Classification
-   :widths: 25 25 50
-   :header-rows: 1  
-  
-   * - Heading Roles, RoleBinding, Scope
-   * - fogflow-root-role, RootUser, Cluster
-     - fogflow-Admin-role, Admin, fogflow - namespace 
-     - fogflow-user-role, EndUser, fogflow - namespace
+
++--------------------+----------------+----------------------+
+|     Roles          |  RoleBindings  |    Scope             |
++--------------------+----------------+----------------------+
+| fogflow-root-role  |   RootUser     |  Cluster             |
++--------------------+----------------+----------------------+
+| fogflow-admin-role |   Admin        |  fogflow - namespace |
++--------------------+----------------+----------------------+
+| fogflow-user-role  |   EndUser      |  fogflow - namespace |
++--------------------+----------------+----------------------+
 
 - To verify the creation of above resources use following commands:
 
