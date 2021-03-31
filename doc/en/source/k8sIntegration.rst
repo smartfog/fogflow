@@ -475,4 +475,14 @@ Assuming kubernetes cluter is setup and running at cloud node. Inorder to setup 
         
         #This will download a file that contains the defined roles and role bindings.
 
-Note: serviceaccount.yaml can also be accessed from repository from **"fogflow/helm/fogflow-chart/serviceaccount.yaml"**
+Note: serviceaccount.yaml can also be accessed from fogflow repository using **"fogflow/helm/fogflow-chart/serviceaccount.yaml"** path.
+
+
+Configuring serviceaccount.yaml over Cloud Node Kubernetes Cluster
+--------------------------------------------------------------------
+
+Configure the namespace and service account name in serviceaccount.yaml file as shown below:
+
+.. code-block:: console
+
+        
