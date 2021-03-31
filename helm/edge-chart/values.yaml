@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 #Microk8s Kubernetes namespace of FogFlow components 
-namespace: fogflow 
+namespace: fogflow
 
 #replicas will make sure that no. of replicaCount mention in values.yaml
 # are running all the time for the deployment
