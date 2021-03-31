@@ -457,3 +457,11 @@ Note: The value of **"namespace"** will be one which user specified while creati
 
 
 .. figure:: figures/microk8s_pods.png
+
+***********************
+Kubernetes Security 
+***********************
+
+Kubernetes provides many controls that can greatly improve an application's security. In order to use any of those methods provided by kubernetes, one need to properly configure the apiserver. **Role Based Access Control (RBAC)** is one such security implementation. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within an organization. RBAC authorization uses the **rbac.authorization.k8s.io** API group to drive authorization decisions, allowing user to dynamically configure policies through the Kubernetes API.
+
+
