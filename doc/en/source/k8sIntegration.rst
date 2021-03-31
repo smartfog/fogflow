@@ -808,13 +808,13 @@ Certificate Generation And Root User Addition
 
 .. code-block:: console
 
-   $kubectl config set-credentials RootUser1 --client-certificate /root/RootUser/RootUser1.crt --client-key /root/RootUser/RootUser1.key
+   $microk8s.kubectl config set-credentials RootUser1 --client-certificate /root/RootUser/RootUser1.crt --client-key /root/RootUser/RootUser1.key
 
 Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
 
 .. code-block:: console
 
-   $kubectl config view
+   $microk8s.kubectl config view
 
 .. figures:: figure/addedrootuseredge.png
 
@@ -822,7 +822,7 @@ Note: The tags **--client-certificate** is followed by the path where user's pri
 
 .. code-block:: console
 
-   $kubectl config set-context RootUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=RootUser1
+   $microk8s.kubectl config set-context RootUser1-context --cluster=microk8s-cluster --namespace=fogflow --user=RootUser1
 
 Note: set the value of namespace according to the value mentioned in values.yaml. Here **RootUser-context1** is the new context set for RootUser1.
 
@@ -830,14 +830,16 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. code-block:: console
 
-   $kubectl get node
+   $microk8.kubectl get node --context=RootUser1-context
 
-   $kubectl delete pods "any pod name"
+   $microk8.kubectl delete pods "any pod name" --context=RootUser1-context
 
-   $kubectl get pods 
+   $microk8s.kubectl get pods --context=RootUser1-context
 
-   $kubectl get pods --namespace=fogflow
+   $microk8s.kubectl get pods --namespace=fogflow --context=RootUser1-context
 
+
+.. figure:: figures/addedrootuseredgeoutput.png   
 
 Certificate Generation And Admin User Addition
 --------------------------------------------------
@@ -868,21 +870,21 @@ Certificate Generation And Admin User Addition
 
 .. code-block:: console
 
-   $kubectl config set-credentials AdminUser1 --client-certificate /root/AdminUser/AdminUser1.crt --client-key /root/AdminUser/AdminUser1.key
+   $microk8s.kubectl config set-credentials AdminUser1 --client-certificate /root/AdminUser/AdminUser1.crt --client-key /root/AdminUser/AdminUser1.key
 
 Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
 
 .. code-block:: console
 
-   $kubectl config view
+   $microk8s.kubectl config view
 
-.. figures:: figure/addedAdminuseredge.png
+.. figure:: figures/addedAdminuseredge.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
 .. code-block:: console
 
-   $kubectl config set-context AdminUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=AdminUser1
+   $microk8s.kubectl config set-context AdminUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=AdminUser1
 
 Note: set the value of namespace according to the value mentioned in values.yaml. Here **AdminUser-context1** is the new context set for RootUser1.
 
@@ -890,13 +892,17 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. code-block:: console
 
-   $kubectl get node
+   $microk8s.kubectl get node --context=AdminUser-context1
 
-   $kubectl delete pods "any pod name"
+   $microk8s.kubectl delete pods "any pod name" --context=AdminUser-context1
 
-   $kubectl get pods
+   $microk8s.kubectl get pods --context=AdminUser-context1
 
-   $kubectl get pods --namespace=fogflow
+   $microk8s.kubectl get pods --namespace=fogflow --context=AdminUser-context1
+
+
+.. figure:: figures/addedadminuseredgeoutput.png
+
 
 Certificate Generation And End User Addition
 --------------------------------------------------
@@ -927,21 +933,21 @@ Certificate Generation And End User Addition
 
 .. code-block:: console
 
-   $kubectl config set-credentials EndUser1 --client-certificate /root/EndUser/EndUser1.crt --client-key /root/EndUser/EndUser1.key
+   $microk8s.kubectl config set-credentials EndUser1 --client-certificate /root/EndUser/EndUser1.crt --client-key /root/EndUser/EndUser1.key
 
 Note: The tags **--client-certificate** is followed by the path where user's private key is kept and **--client-key** is followed by path where user's certificate is kept. To verify added user, use below command.
 
 .. code-block:: console
 
-   $kubectl config view
+   $microk8s.kubectl config view
 
-.. figures:: figure/addedenduseredge.png
+.. figure:: figures/addedenduseredge.png
 
 **Step 5**: Set the context in kubeconfig to recently added user using following command.
 
 .. code-block:: console
 
-   $kubectl config set-context EndUser-context1 --cluster=microk8s-cluster --namespace=fogflow --user=EndUser1
+   $microk8s.kubectl config set-context EndUser1-context --cluster=microk8s-cluster --namespace=fogflow --user=EndUser1
 
 Note: set the value of namespace according to the value mentioned in values.yaml. Here **EndUser-context1** is the new context set for RootUser1.
 
@@ -949,12 +955,14 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. code-block:: console
 
-   $kubectl get node
+   $microk8s.kubectl get node --context=EndUser1-context
 
-   $kubectl delete pods "any pod name"
+   $micr0k8s.kubectl delete pods "any pod name" --context=EndUser1-context
 
-   $kubectl get pods
+   $microk8s.kubectl get pods --context=EndUser1-context
 
-   $kubectl get pods --namespace=fogflow
+   $microk8s.kubectl get pods --namespace=fogflow --context=EndUser1-context
+
+.. figure:: figures/addedenduseredgeoutput.png
 
 
