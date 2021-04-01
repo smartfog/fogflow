@@ -426,15 +426,15 @@ Kubernetes Security
 
 Kubernetes provides many controls that can greatly improve an application's security. In order to use any of those methods provided by kubernetes, one need to properly configure the apiserver. **Role Based Access Control (RBAC)** is one such security implementation. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within an organization. RBAC authorization uses the **rbac.authorization.k8s.io** API group to drive authorization decisions, allowing user to dynamically configure policies through the Kubernetes API.
 
-**RBAC Impementation over Cloud Node Kubernetes Cluster**
-------------------------------------------------------------
+RBAC Impementation over Cloud Node Kubernetes Cluster
+________________________________________________________________
 
 It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart, configure **config.json** file as shown `above`_. 
 
 .. _`above`: https://github.com/smartfog/fogflow/development/doc/en/source/k8sIntegration.rst#deploy-fogflow-cloud-components-on-k8s-environment
 
 
-**values.yaml Configurations over Cloud Node Kubernetes Cluster**
+values.yaml Configurations over Cloud Node Kubernetes Cluster
 -------------------------------------------------------------------
 
 values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-chart/values.yaml"** path.
@@ -489,9 +489,8 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 
 Steps To Add Users in Cloud Node Kubernetes Cluster
 -------------------------------------------------------
-___________________________________________________________
 
-- To add users in kubernetes cluster at cloud node, follow below steps:
+To add users in kubernetes cluster at cloud node, follow below steps:
 
 1. Certificate Generation And Root User Addition
 --------------------------------------------------
@@ -681,15 +680,15 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 .. figure:: figures/addedenduseroutput.png
 
 
-**RBAC Implementation over Edge Node Microk8s Kubernetes Cluster**
--------------------------------------------------------------------------
+RBAC Implementation over Edge Node Microk8s Kubernetes Cluster
+______________________________________________________________________
 
 It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract edge-chart,configure **config.json** file as shown `above`_.
 
 .. _`above`: https://github.com/smartfog/fogflow/development/doc/en/source/k8sIntegration.rst#deploying-edge-chart-with-microk8s-and-helm
 
 
-**values.yaml Configurations over Edge Node Kubernetes Cluster**
+values.yaml Configurations over Edge Node Kubernetes Cluster
 ----------------------------------------------------------------------
 
 values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-chart/values.yaml"** path.
@@ -742,10 +741,10 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-c
 
 .. figure:: figures/rbacedge.png
 
-**Steps to Add Users in Edge Node Kubernetes Cluster**
-------------------------------------------------------------
+Steps to Add Users in Edge Node Kubernetes Cluster
+-----------------------------------------------------------
 
-- To add users in kubernetes cluster at edge node, follow below steps:
+To add users in kubernetes cluster at edge node, follow below steps:
 
 1. Certificate Generation And Root User Addition
 --------------------------------------------------
