@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
 	"github.com/piprate/json-gold/ld"
-	"github.com/satori/go.uuid"
 	. "github.com/smartfog/fogflow/common/config"
 	. "github.com/smartfog/fogflow/common/constants"
 	. "github.com/smartfog/fogflow/common/datamodel"
@@ -675,15 +675,15 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
-                var notifyRequest interface{}
+		var notifyRequest interface{}
 
-                err := json.Unmarshal(reqBytes, &notifyRequest)
+		err := json.Unmarshal(reqBytes, &notifyRequest)
 
-                if err != nil {
-                        err := errors.New("not able to decode  orion update")
-                        rest.Error(w, err.Error(), http.StatusInternalServerError)
-                        return
-                }
+		if err != nil {
+			err := errors.New("not able to decode  orion update")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
 		fmt.Println("notification from other broker")
@@ -707,7 +707,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				subscriberList := tb.entityId2LDSubcriptions[eid]
 				tb.LDe2sub_lock.RUnlock()
 				if len(subscriberList) > 0 {
-				//send the notification to subscriber
+					//send the notification to subscriber
 					go tb.LDNotifySubscribers(deSerializedEntity, false)
 				} else {
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
@@ -1084,7 +1084,7 @@ func (tb *ThinBroker) SubscribeContext(w rest.ResponseWriter, r *rest.Request) {
 		return
 	}
 	// new SubscriptionID
-	u1, err := uuid.NewV4()
+	u1, err := uuid.NewUUID()
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -1152,7 +1152,7 @@ func (tb *ThinBroker) Subscriptionv2Context(w rest.ResponseWriter, r *rest.Reque
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	u1, err := uuid.NewV4()
+	u1, err := uuid.NewUUID()
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -2330,7 +2330,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				// Create Subscription Id, if missing
 
 				if deSerializedSubscription.Id == "" {
-					u1, err := uuid.NewV4()
+					u1, err := uuid.NewUUID()
 					if err != nil {
 						rest.Error(w, err.Error(), http.StatusInternalServerError)
 						return
