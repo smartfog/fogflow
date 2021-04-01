@@ -487,12 +487,13 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 
 .. figure:: figures/rbaccloud.png
 
-**Steps To Add Users in Cloud Node Kubernetes Cluster**
-----------------------------------------------------------
+Steps To Add Users in Cloud Node Kubernetes Cluster
+-------------------------------------------------------
+___________________________________________________________
 
 - To add users in kubernetes cluster at cloud node, follow below steps:
 
-1.Certificate Generation And Root User Addition
+1. Certificate Generation And Root User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
