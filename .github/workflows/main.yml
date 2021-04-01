@@ -50,6 +50,7 @@ jobs:
         sudo apt install python-pip
         pip -V
         sudo pip install --upgrade pip
+        pip install setuptools
         pip install Flask
         pip install requests
         pip install -U pytest
