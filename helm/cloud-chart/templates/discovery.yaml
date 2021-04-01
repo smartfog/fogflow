@@ -1,4 +1,4 @@
-#rabbitmq deployment and service configuration
+#Discovery deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -9,18 +9,18 @@ metadata:
     "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
-    io.kompose.service: rabbitmq
-  name: rabbitmq
+    io.kompose.service: discovery
+  name: discovery
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: rabbitmq
+      io.kompose.service: discovery  
   minReadySeconds: 10
   #strategy tells about How do want to update the pods?
-  strategy: 
+  strategy:
     rollingUpdate:
       maxSurge: 25% 
       maxUnavailable: 25% 
@@ -33,42 +33,43 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: rabbitmq
+        io.kompose.service: discovery
     spec:
       containers:
-      - env:
-        - name: RABBITMQ_DEFAULT_PASS
-          value: mypass
-        - name: RABBITMQ_DEFAULT_USER
-          value: admin
-        image: rabbitmq:3
+      - image: fogflow/discovery:latest
         imagePullPolicy: Always 
-        name: rabbitmq
+        name: discovery
         ports:
-        - containerPort: 5672
+        - containerPort: 8090
         #readiness and liveness to check pod's Health
         readinessProbe:
           tcpSocket:
-            port: 5672 
+            port: 8090
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 5672 
+            port: 8090
           initialDelaySeconds: 15
           periodSeconds: 20
-        resources: 
-         #CPU and memory limits for rabbitmq deployment
+        resources:
+         #CPU and memory limits for discovery deployment 
           limits:
             memory: 2Gi
             cpu: 1
           requests:
-            memory: 2Gi
+            memory: 1Gi
             cpu: 1
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          readOnly: true
       restartPolicy: Always
-      serviceAccountName: fogflow-dns 
-      volumes: null
-status: {}
+      serviceAccountName: {{ .Values.serviceAccount.name }} 
+      volumes:
+      - name: config-json
+        hostPath:
+          path: {{ .Values.configJson.hostPath.path }}
 
 ---
 
@@ -80,14 +81,14 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: rabbitmq
-  name: rabbitmq
+    io.kompose.service: discovery
+  name: discovery
 spec:
   ports:
-  - name: "5672"
-    port: 5672
-    targetPort: 5672
+  - name: "8090"
+    port: 8090
+    targetPort: 8090
   selector:
-    io.kompose.service: rabbitmq
-  externalIPs:  {{ .Values.Service.spec.externalIPs }}
-
+    io.kompose.service: discovery
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
+ 

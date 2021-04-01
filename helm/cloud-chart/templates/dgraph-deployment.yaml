@@ -69,7 +69,7 @@ spec:
           #Dgraph requires write permission           
           readOnly: false              
       restartPolicy: Always
-      serviceAccountName: {{ .Values.serviceAccount }} 
+      serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: dgraph
         hostPath: 
@@ -103,5 +103,5 @@ spec:
     targetPort: 6080 
   selector:
     io.kompose.service: dgraph
-  #externalIPs: {{ .Values.Service.spec.externalIPs }}
+  externalIPs: {{ .Values.Service.spec.externalIPs }}
 
