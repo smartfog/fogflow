@@ -426,14 +426,16 @@ Kubernetes Security
 
 Kubernetes provides many controls that can greatly improve an application's security. In order to use any of those methods provided by kubernetes, one need to properly configure the apiserver. **Role Based Access Control (RBAC)** is one such security implementation. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within an organization. RBAC authorization uses the **rbac.authorization.k8s.io** API group to drive authorization decisions, allowing user to dynamically configure policies through the Kubernetes API.
 
-Implementing RBAC over Cloud Node Kubernetes Cluster
------------------------------------------------------
+RBAC Impementation over Cloud Node Kubernetes Cluster
+###########################################################
 
-It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart as shown above. 
+It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart, configure **config.json** file as shown `above`_. 
+
+.. _`above`: https://github.com/smartfog/fogflow/development/doc/en/source/k8sIntegration.rst#deploy-fogflow-cloud-components-on-k8s-environment
 
 
-Configuring values.yaml over Cloud Node Kubernetes Cluster
---------------------------------------------------------------
+**values.yaml Configurations over Cloud Node Kubernetes Cluster**
+-------------------------------------------------------------------
 
 values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-chart/values.yaml"** path.
 
@@ -459,7 +461,7 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
    name: "fogflow-dns"   //CAN BE CHANGED AS PER USER'S NEED
 
         
-- On deploying this chart using helm, the **namespace** with name **fogflow** is created and inside that a **sericeaccount** with name **fogflow-dns** is created. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
+- On deploying this chart using helm, the **namespace** is created with name **fogflow**  and inside that a **sericeaccount** is created with name **fogflow-dns**. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
 
 +--------------------+----------------+----------------------+
 |     Roles          |  RoleBindings  |    Scope             |
@@ -471,7 +473,7 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 | fogflow-user-role  |   EndUser      |  fogflow - namespace |
 +--------------------+----------------+----------------------+
 
-- To verify the creation of above resources use following commands:
+- To verify the creation of above resources, use following commands:
 
 .. code-block:: console
 
@@ -485,12 +487,12 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 
 .. figure:: figures/rbaccloud.png
 
-Adding Users in Cloud Node Kubernetes Cluster
------------------------------------------------
+**Steps To Add Users in Cloud Node Kubernetes Cluster**
+----------------------------------------------------------
 
 - To add users in kubernetes cluster at cloud node, follow below steps:
 
-Certificate Generation And Root User Addition
+1.Certificate Generation And Root User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
@@ -553,7 +555,7 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 .. figure:: figures/addedrootuseroutput.png
 
 
-Certificate Generation And Admin User Addition
+2. Certificate Generation And Admin User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
@@ -615,7 +617,7 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 .. figure:: figures/addedadminuseroutput.png
 
 
-Certificate Generation And End User Addition
+3. Certificate Generation And End User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
@@ -678,14 +680,16 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 .. figure:: figures/addedenduseroutput.png
 
 
-Implementing RBAC over Edge Node Microk8s Kubernetes Cluster
------------------------------------------------------
+RBAC Implementation over Edge Node Microk8s Kubernetes Cluster
+###########################################################################
 
-It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart as shown above. 
+It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract edge-chart,configure **config.json** file as shown `above`_.
+
+.. _`above`: https://github.com/smartfog/fogflow/development/doc/en/source/k8sIntegration.rst#deploying-edge-chart-with-microk8s-and-helm
 
 
-Configuring values.yaml over Edge Node Kubernetes Cluster
---------------------------------------------------------------
+**values.yaml Configurations over Edge Node Kubernetes Cluster**
+----------------------------------------------------------------------
 
 values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-chart/values.yaml"** path.
 
@@ -723,26 +727,26 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-c
 | fogflow-user-role  |   EndUser      |  fogflow - namespace |
 +--------------------+----------------+----------------------+
 
-- To verify the creation of above resources use following commands:
+- To verify the creation of above resources, use following commands:
 
 .. code-block:: console
 
-   $kubectl get ns 
+   $mirok8s.kubectl get ns 
 
 .. figure:: figures/nsedge.png
 
 .. code-block:: console
 
-   $kubectl get rolebindings --namespace=fogflow
+   $microk8s.kubectl get rolebindings --namespace=fogflow
 
 .. figure:: figures/rbacedge.png
 
-Adding Users in Edge Node Kubernetes Cluster
------------------------------------------------
+**Steps to Add Users in Edge Node Kubernetes Cluster**
+------------------------------------------------------------
 
 - To add users in kubernetes cluster at edge node, follow below steps:
 
-Certificate Generation And Root User Addition
+1. Certificate Generation And Root User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
@@ -804,7 +808,7 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 
 .. figure:: figures/addedrootuseredgeoutput.png   
 
-Certificate Generation And Admin User Addition
+2. Certificate Generation And Admin User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
@@ -867,7 +871,7 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 .. figure:: figures/addedadminuseredgeoutput.png
 
 
-Certificate Generation And End User Addition
+3. Certificate Generation And End User Addition
 --------------------------------------------------
 
 **Step 1**: Generate User's private key, using below command.
