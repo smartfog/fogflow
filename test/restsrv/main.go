@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	. "github.com/smartfog/nec-fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func HandleNotifyContext(notifyCtxReq *NotifyContextRequest) {
