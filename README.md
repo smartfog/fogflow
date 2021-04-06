@@ -114,7 +114,7 @@ follows:
 
 ## Publications
 
--   [IoT Journal, 2020 Best Paper Award Runner-Up](https://ieee-iotj.org/awards/) B. Cheng, G. Solmaz, F. Cirillo, E. Kovacs, K. Terasawa and A. Kitazawa, “[FogFlow: Easy Programming of IoT Services Over Cloud and Edges for Smart Cities](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8022859),” in IEEE Internet of Things Journal, vol. 5, no. 2, pp. 696-707, April 2018, doi: 10.1109/JIOT.2017.2747214.
--   [IEEE SCC, 2019 Best Paper Award](https://conferences.computer.org/services/2019/proceedings/bestpapers2019.html) Cheng, Bin, Jonathan Fuerst, Gurkan Solmaz, and Takuya Sanada. "[Fog function: Serverless fog computing for data intensive iot services](https://arxiv.org/pdf/1907.08278)." In 2019 IEEE International Conference on Services Computing (SCC), pp. 28-35. IEEE, 2019.
+-   B. Cheng, G. Solmaz, F. Cirillo, E. Kovacs, K. Terasawa and A. Kitazawa, “[FogFlow: Easy Programming of IoT Services Over Cloud and Edges for Smart Cities](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8022859),” in IEEE Internet of Things Journal, vol. 5, no. 2, pp. 696-707, April 2018, doi: 10.1109/JIOT.2017.2747214. [IoT Journal, 2020 Best Paper Award Runner-Up](https://ieee-iotj.org/awards/) 
+-   Cheng, Bin, Jonathan Fuerst, Gurkan Solmaz, and Takuya Sanada. "[Fog function: Serverless fog computing for data intensive iot services](https://arxiv.org/pdf/1907.08278)." In 2019 IEEE International Conference on Services Computing (SCC), pp. 28-35. IEEE, 2019. [IEEE SCC, 2019 Best Paper Award](https://conferences.computer.org/services/2019/proceedings/bestpapers2019.html) 
 
 © 2021 NEC
