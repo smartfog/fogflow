@@ -96,7 +96,7 @@ Download the Kubernetes file and the configuration files as below.
 .. code-block:: console
 
         # the Kubernetes yaml file to start all FogFlow components on the cloud node
-        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm/cloud-chart.zip
+        wget https://raw.githubusercontent.com/smartfog/fogflow/RBAC_manual/helm/cloud-chart.zip
 
 
 install unzip tool on system to extract JSON files from dashboards.zip
@@ -123,10 +123,24 @@ You need to change the following IP addresses in config.json according to your o
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
 
+Setup Namespace and ServiceAccount for Cloud Kubernetes Cluster
+---------------------------------------------------------------
+
+To setup the cloud-chart, user need to create a namespace and serviceaccount associated to that namespace. Use below command:
+
+.. code-block:: console
+
+        //User can decide the namespace
+        $kubectl create ns <User_provided_name> //kubectl create ns fogflow
+
+        //User can decide the name os serviceaccount
+        $kubectl create serviceaccount <User_provided_name> --namespace=<as_provided_above> //kubectl create serviceaccount fogflow-dns --namespace=fogflow
+
+
 Configure values.yaml File
 ---------------------------
 
--Edit namespace and serviceAccount as per requirement. Add the no. of replicaCount required.
+-Edit namespace and serviceAccount as per above configuration. Add the no. of replicaCount required.
 
 -Change dgraph, configJson and nginxConf path in values.yaml  file as per the environment hostPath.
 
@@ -171,7 +185,7 @@ Configure values.yaml File
         externalIPs:
         - XXX.XX.48.24
 
-	  
+
 Start all Fogflow components with Helm Chart
 -------------------------------------------------------------
 
