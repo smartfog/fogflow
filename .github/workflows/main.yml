@@ -14,6 +14,13 @@ jobs:
       with:
         go-version: 1.15
         
+    - name: Gosec - Code Analyser
+      run: |
+        curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
+        cd discovery/
+        gosec -fmt=json -out=results.json *.go
+        cat result.json
+        
     - name: Docker Build Job
       run: |
         export GOBIN=/home/runner/go/bin
@@ -70,12 +77,6 @@ jobs:
         cd ../worker
         golint
         cd ../
-        
-    - name: Gosec - Code Analyser
-      run: |
-        curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
-        gosec ./... -fmt=json -out=results.json *.go
-        cat result.json
         
     - name: Launching Docker containers
       run: |
