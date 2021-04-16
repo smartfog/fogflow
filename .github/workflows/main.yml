@@ -17,9 +17,7 @@ jobs:
     - name: Gosec - Code Analyser
       run: |
         curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
-        cd discovery/
-        gosec -fmt=text -out=results.txt *.go
-        cat result.txt
+        gosec -nosec=true ./...
         
     - name: Docker Build Job
       run: |
