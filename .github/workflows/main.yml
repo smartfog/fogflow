@@ -56,6 +56,20 @@ jobs:
         pip install -U pytest
         sudo apt-get install curl
         
+    - name: Running GoLint - a linter for golang
+      run: |
+        go get -u golang.org/x/lint/golint
+        export GOBIN=/home/runner/go/bin
+        cd discovery/
+        golint
+        cd ../broker
+        golint
+        cd ../master
+        golint
+        cd ../worker
+        golint
+        cd ../
+        
     - name: Launching Docker containers
       run: |
         sudo docker run  -it -d -p 8082:8080 -p 9082:9080 -p 8000:8000 -v ~/dgraph:/dgraph fogflow/dgraph:latest
