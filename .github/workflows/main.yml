@@ -54,6 +54,7 @@ jobs:
         pip install Flask
         pip install requests
         pip install -U pytest
+        pip install pytest-cov
         sudo apt-get install curl
         
     - name: Running GoLint - a linter for golang
@@ -114,15 +115,26 @@ jobs:
         screen -d -m python accumulator.py
 
         cd ../UnitTest/v2/
-        pytest -s -v
+        pytest -s -v test_casesNGSIv2.py --cov > result.txt
+        sed -i -e '33,146d' result.txt
+        sed -i -e '36,37d' result.txt
+        cat result.txt
  
         cd ../v1/
-        pytest -s -v
+        pytest -s -v test_casesNGSIv1.py --cov > result.txt
+        sed -i -e '79,192d' result.txt
+        sed -i -e '82,83d' result.txt
+        cat result.txt
 
         cd ../NGSI-LD/
-        pytest -s -v 
+        pytest -s -v test_casesNGSI-LD.py --cov > result.txt
+        sed -i -e '202,315d' result.txt 
+        sed -i -e '205,206d' result.txt
+        cat result.txt
+
 
         cd ../persistance/
-        pytest -s -v 
+        pytest -s -v test_persistance.py --cov > result.txt
+        cat result.txt
 
         echo "Testing Done !!!!"
