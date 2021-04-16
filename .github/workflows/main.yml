@@ -71,6 +71,11 @@ jobs:
         golint
         cd ../
         
+    - name: Gosec - Code Analyser
+      run: |
+        curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
+        gosec ./...
+        
     - name: Launching Docker containers
       run: |
         sudo docker run  -it -d -p 8082:8080 -p 9082:9080 -p 8000:8000 -v ~/dgraph:/dgraph fogflow/dgraph:latest
