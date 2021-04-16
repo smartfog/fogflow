@@ -74,7 +74,7 @@ jobs:
     - name: Gosec - Code Analyser
       run: |
         curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
-        gosec -fmt=json -out=results.json *.go
+        gosec ./... -fmt=json -out=results.json *.go
         cat result.json
         
     - name: Launching Docker containers
