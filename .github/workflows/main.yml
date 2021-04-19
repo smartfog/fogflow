@@ -15,9 +15,10 @@ jobs:
         go-version: 1.15
         
     - name: Gosec - Code Analyser
+      continue-on-error: true
       run: |
         curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
-        gosec -fmt=json -out=result.json ./...
+        gosec ./...
         
     - name: Docker Build Job
       run: |
