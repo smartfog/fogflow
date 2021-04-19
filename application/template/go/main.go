@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"syscall"
 
-	. "nec-fogflow/common/ngsi"
+	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 var ctxUpdateBuffer []*ContextObject

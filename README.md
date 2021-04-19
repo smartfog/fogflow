@@ -9,6 +9,7 @@
 [![Documentation badge](https://img.shields.io/readthedocs/fogflow.svg)](http://fogflow.readthedocs.org/en/latest/)
 ![Status](https://nexus.lab.fiware.org/repository/raw/public/static/badges/statuses/fogflow.svg)
 [![Swagger Validator](https://img.shields.io/swagger/valid/2.0/https/raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-expanded.json.svg)](https://app.swaggerhub.com/apis/fogflow/broker/1.0.0)
+ [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/4798/badge)](https://bestpractices.coreinfrastructure.org/projects/4798)
 
 FogFlow is an IoT edge computing framework to automatically orchestrate dynamic
 data processing flows over cloud and edges driven by context, including system
@@ -34,8 +35,8 @@ check the FIWARE Catalogue entry for
 -   [Testing](#testing)
 -   [Quality Assurance](#quality-assurance)
 -   [Roadmap](./doc/roadmap.md)
--   [More Information](#more-information)
--   [License](#license)
+-   [Publications](#publications)
+
 
 ## Background
 
@@ -112,14 +113,9 @@ follows:
     ![ ](https://img.shields.io/badge/dynamic/json.svg?label=Performance&url=https://fiware.github.io/catalogue/json/fogflow.json&query=$.performance&colorB=blue)
     ![ ](https://img.shields.io/badge/dynamic/json.svg?label=Stability&url=https://fiware.github.io/catalogue/json/fogflow.json&query=$.stability&colorB=blue)
 
-## More Information
+## Publications
 
--   [Tutorial](http://fogflow.readthedocs.io/en/latest/index.html)
--   [IoT-J paper](http://ieeexplore.ieee.org/document/8022859/)
+-   B. Cheng, G. Solmaz, F. Cirillo, E. Kovacs, K. Terasawa and A. Kitazawa, “[FogFlow: Easy Programming of IoT Services Over Cloud and Edges for Smart Cities](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8022859),” in IEEE Internet of Things Journal, vol. 5, no. 2, pp. 696-707, April 2018, doi: 10.1109/JIOT.2017.2747214. [IoT Journal, 2020 Best Paper Award Runner-Up](https://ieee-iotj.org/awards/) 
+-   Cheng, Bin, Jonathan Fuerst, Gurkan Solmaz, and Takuya Sanada. "[Fog function: Serverless fog computing for data intensive iot services](https://arxiv.org/pdf/1907.08278)." In 2019 IEEE International Conference on Services Computing (SCC), pp. 28-35. IEEE, 2019. [IEEE SCC, 2019 Best Paper Award](https://conferences.computer.org/services/2019/proceedings/bestpapers2019.html) 
 
-## License
-
-FogFlow is licensed under
-[BSD-4-Clause](https://spdx.org/licenses/BSD-4-Clause.html).
-
-© 2017 NEC
+© 2021 NEC

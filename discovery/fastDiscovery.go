@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ant0ine/go-json-rest/rest"
-	_ "github.com/lib/pq"
-	"github.com/satori/go.uuid"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	_ "github.com/lib/pq"
 
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
@@ -65,7 +66,7 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 	}
 
 	if registerCtxReq.RegistrationId == "" {
-		u1, err := uuid.NewV4()
+		u1, err := uuid.NewUUID()
 		if err != nil {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -202,7 +203,7 @@ func (fd *FastDiscovery) SubscribeContextAvailability(w rest.ResponseWriter, r *
 	}
 
 	// generate a new subscription id
-	u1, err := uuid.NewV4()
+	u1, err := uuid.NewUUID()
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
