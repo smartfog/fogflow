@@ -93,4 +93,5 @@ spec:
   selector:
     io.kompose.service: designer
   externalIPs: {{ .Values.Service.spec.externalIPs }}
-
+status:
+  loadBalancer: {}

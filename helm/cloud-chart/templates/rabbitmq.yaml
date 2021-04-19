@@ -90,4 +90,5 @@ spec:
   selector:
     io.kompose.service: rabbitmq
   externalIPs:  {{ .Values.Service.spec.externalIPs }}
-
+status:
+  loadBalancer: {}

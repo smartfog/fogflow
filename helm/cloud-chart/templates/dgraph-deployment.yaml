@@ -58,14 +58,14 @@ spec:
         resources:
         #CPU and memory limits for dgraph deployment
           limits:
-            memory: 3Gi
+            memory: 2Gi
             cpu: 2
           requests: 
             memory: 2Gi
             cpu: 1 
         volumeMounts:
         - name: dgraph 
-          mountPath: /dgraph 
+          mountPath: /mnt/dgraph 
           #Dgraph requires write permission           
           readOnly: false              
       restartPolicy: Always
@@ -104,4 +104,5 @@ spec:
   selector:
     io.kompose.service: dgraph
   externalIPs: {{ .Values.Service.spec.externalIPs }}
-
+status:
+  loadBalancer: {}

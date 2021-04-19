@@ -91,3 +91,5 @@ spec:
   selector:
     io.kompose.service: cloud-broker
   externalIPs: {{ .Values.Service.spec.externalIPs }}
+status:
+  loadBalancer: {}
