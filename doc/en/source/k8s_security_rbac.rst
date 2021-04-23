@@ -1,4 +1,4 @@
-Deploy FogFlow Cloud Components on K8s Environment With Preconfigured RBAC (Role Based Access Control)
+FogFlow Cloud Components Deployment on K8s Environment With Preconfigured RBAC (Role Based Access Control)
 ------------------------------------------------------------------------------------------------------------
 
 FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Master, Worker, Rabbitmq are distributed in cluster nodes. The communication between FogFlow components and their behaviour are as usual and the worker node will launch task instances on kubernetes pod. 
@@ -182,15 +182,15 @@ Create a task using link `task_Instance`_
 
 
 
-Edge-Chart Deployment With Microk8s and helm 
-----------------------------------------------
+Edge-Chart Deployment on Microk8s Environment With Preconfigured RBAC (Role Based Access Control) 
+-----------------------------------------------------------------------------------------------------
 
 For deploying edge chart, use helm3 tool with microk8s as shown below. 
 
 
 .. code-block:: console
 
-        #fetch scripts for edge-chart
+        #fetch scripts for edge-chart-RBAC
 
         $wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/edge-chart-RBAC.zip
 
