@@ -1,3 +1,282 @@
+Deploy FogFlow Cloud Components on K8s Environment With Preconfigured RBAC (Role Based Access Control)
+------------------------------------------------------------------------------------------------------------
+
+FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Master, Worker, Rabbitmq are distributed in cluster nodes. The communication between FogFlow components and their behaviour are as usual and the worker node will launch task instances on kubernetes pod. 
+
+
+**Fetch all required scripts**
+
+Download the Kubernetes file and the configuration files as below.
+
+.. code-block:: console
+
+        # the Kubernetes yaml file to start all FogFlow components on the cloud node
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/cloud-chart-RBAC.zip
+
+
+install unzip tool on system to extract files from cloud-chart-RBAC.zip
+
+.. code-block:: console
+
+          #command to install unzip in ubuntu
+          apt-get install unzip
+
+          #command to unzip the fogflow-chart.zip in same location
+          unzip cloud-chart-RBAC.zip
+
+	
+   
+Configure IP Addresses in config.json File
+-------------------------------------------------------------
+
+You need to change the following IP addresses in config.json according to user's environment. The config.json file present in the above downloaded folder "cloud-chart-RBAC"
+
+- **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
+
+- **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
+- **physical_location**: the geo-location of the FogFlow node;
+- **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
+
+Configure Namespace in Cloud Kubernetes Cluster
+-------------------------------------------------
+
+In order to launch fogflow components, user need to create a namespace. To create namespace in kubernetes cluster, use below command:
+
+.. code-block::
+
+    $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow_fiware_integration
+
+
+Configure values.yaml File
+---------------------------
+
+- User should provide name of the namespace created by him in previous step. 
+
+- User should provide name of serviceAccount as per requirement. 
+
+- User should configure the no. of replicaCount required.
+
+- User should provide absolute path for dgraph, configJson and nginxConf in values.yaml file as per the environment.
+
+- User should provide externalIPs as per the environment.
+
+.. important::
+
+        1. externalIPs are the IPs where Fogflow dashboard will be visible i.e. externalIP's are my_hostip in case of fogflow.
+        2. externalIPs will be used by user to make any CRUD request to Fogflow
+
+
+.. code-block:: console
+
+      #Kubernetes namespace of FogFlow components
+      namespace: fogflow
+
+      #replicas will make sure that no. of replicaCount mention in values.yaml
+      #are running all the time for the deployment
+      replicaCount: 1
+
+      serviceAccount: default
+      #Specifies whether a service account should be created
+        create: true
+      #Annotations to add to the service account
+        annotations: {}
+      #The name of the service account to use.
+      #If not set and create is true, a name is generated using the fullname template
+        name: "fogflow-dns"
+
+      #hostPath for dgraph volume mount
+      dgraph:
+        hostPath:
+          path: /mnt/dgraph
+
+      #hostPath for config.json, add this path to cloud-chart directory
+      configJson:
+        hostPath:
+          path: /home/necuser/fogflow/helm_with_RBAC/cloud-chart-RBAC/config.json
+
+      #hostPath for nginx.conf, add this path to cloud-chart directory
+      nginxConf:
+        hostPath:
+          path: /home/necuser/fogflow/helm_with_RBAC/cloud-chart-RBAC/nginx.conf
+
+      #External IP to expose cluster
+      Service:
+       spec:
+        externalIPs:
+        - XXX.XX.48.24
+
+	  
+Start all Fogflow components with Helm Chart
+-------------------------------------------------------------
+
+Execute Helm command from outside the Helm-Chart folder to start FogFlow Components, here helm-chart name is "cloud-chart-RBAC". 
+
+Add "--set" flag with helm install command to pass configuration from command line.
+
+.. code-block:: console
+ 
+          helm install ./cloud-chart-RBAC --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
+          //Namespace should be the one created above. In our case namespace was "fogflow"
+
+
+Refer Helm official `link`_ for more details
+
+.. _`link`: https://helm.sh/docs/helm/
+
+Validate the setup
+-------------------------------------------------------------
+
+There are two ways to check if the FogFlow cloud node is started correctly: 
+
+- Check all the Pods are Up and Running using "kubectl get pods --namespace=<namespace_name>"
+
+.. code-block:: console  
+
+         kubectl get pods --namespace=fogflow
+		 
+		 
+        NAME                           READY   STATUS              RESTARTS   AGE
+        cloud-broker-c78679dd8-gx5ds   1/1     Running             0          8s
+        cloud-worker-db94ff4f7-hwx72   1/1     Running             0          8s
+        designer-bf959f7b7-csjn5       1/1     Running             0          8s
+        dgraph-869f65597c-jrlqm        1/1     Running             0          8s
+        discovery-7566b87d8d-hhknd     1/1     Running             0          8s
+        master-86976888d5-drfz2        1/1     Running             0          8s
+        nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
+        rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
+
+		
+- Check the system status from the FogFlow DashBoard
+
+System status can also be verified from FogFlow dashboard on web browser to see the current system status via the URL: http://<coreservice_ip>/index.html
+
+
+**Launch FogFlow Worker task instances on k8s pods**
+
+
+
+Previously, task instances was launching on Docker containers. In that case, FogFlow worker used to call go-dockerclient and with the help of this client was launching task instances on docker containers.
+
+
+
+.. figure:: figures/dockerTaskInstance.png
+
+
+
+
+
+Now, An interface pod.go is being used. This interface will receive the dockerimage name, port and configuration details from worker and launch the task inside a pod.
+
+
+
+.. figure:: figures/podTaskInstance.png 
+
+
+
+
+
+Create a task using link `task_Instance`_
+
+.. _`task_Instance`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html#define-a-dummy-fog-function 
+
+
+
+
+Edge-Chart Deployment With Microk8s and helm 
+----------------------------------------------
+
+For deploying edge chart, use helm3 tool with microk8s as shown below. 
+
+
+.. code-block:: console
+
+        #fetch scripts for edge-chart
+
+        $wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/edge-chart-RBAC.zip
+
+
+To unzip the downloaded folder, use following, 
+
+.. code-block:: console
+
+        #command to install unzip in ubuntu
+        
+        $apt-get install unzip
+
+        #command to unzip the file dashboards.zip
+
+        $unzip edge-chart-RBAC.zip
+
+
+**Step 1** : Edit the config.json file in edge-chart folder.
+
+ .. code-block:: console
+   
+      "coreservice_ip": "<Cloud Node IP>",       
+      
+      #Eg. "coreservice_ip": "172.30.48.24"
+
+      
+      "my_hostip": "<Edge Node Ip>",
+
+      #Eg. "my_hostip": "172.30.48.46"
+
+**Step 2** : Create a namespace in order to deploy edge-components in microk8s environment.
+
+.. code-block:: console
+
+        $microk8s.kubectl create ns <User_provided_name> //E.g. microk8s.kubectl create ns fogflow
+
+
+**Step 3** : Edit the namespace as created above, serviceaccount name, externalIPs  in values.yaml file inside edge-chart-RBAC folder. User should change the and path under configJson tag as per his environment and also configure the value of replicaCount.
+
+.. code-block:: console
+
+        namespace: <User Specified>   #Eg. namespace: fogflow  (as created in previous step)
+
+        #replicas will make sure that no. of replicaCount mention in values.yaml
+        #are running all the time for the deployment
+        replicaCount: 2 
+
+        serviceAccount:
+        #Specifies whether a service account should be created
+        create: true
+        #Annotations to add to the service account
+        annotations: {}
+        #The name of the service account to use.
+        #If not set and create is true, a name is generated using the fullname template
+        name: ""
+
+        #hostPath for config.json  
+        configJson:
+        hostPath:
+        path: /root/new_fog/fogflow-helm/helm/edge-chart-RBAC/config.json
+
+
+        Service:
+        spec: 
+        externalIPs: 
+        - 172.30.48.46 #The IP of Edge Node 
+
+Note: The value of **"namespace"** will be one which user specified while creating the namespace in previous steps. Value of **"externalIPs"** will be the IP of edge node and value of **"path"** under configJson will be equal to the path of host machine where config.json is present inside edge-chart-RBAC.
+
+
+**Step 4** : To finally deploy chart, use the command as below.
+
+.. code-block:: console
+
+        $microk8s.helm3 install ./edge-chart-RBAC --set externalIPs={XXX.XX.48.46} --generate-name --namespace=fogflow
+
+        #the externalIPs is IP of edge node.
+
+        #to check status of deployed pods use below command
+
+        $microk8s.kubectl get pods --all-namespaces
+
+
+.. figure:: figures/microk8s_pods.png
+
+
 ***********************
 Kubernetes Security 
 ***********************
