@@ -512,7 +512,7 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 RBAC Verification over Edge Node Microk8s Kubernetes Cluster
 --------------------------------------------------------------
 
-It is assumed that microk8s kubernetes cluter is setup and running at edge node. RBAC is implemented in edge node automatically through edge-chart-RBAC chart deployment using helm3
+It is assumed that microk8s kubernetes cluter is setup and running at edge node. RBAC is implemented in edge node automatically through edge-chart-RBAC chart deployment using helm3.
         
 - On deploying the edge-chart-RBAC using helm, a **sericeaccount** is created with name **fogflow-dns** is created in "fogflow" namespace (or any other namespace configured by user). Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding.
 
