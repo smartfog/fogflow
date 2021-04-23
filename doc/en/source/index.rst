@@ -70,6 +70,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     context.rst
     api.rst
     build.rst
+    k8s_security_rbac.rst
     test.rst
 
 .. toctree::
