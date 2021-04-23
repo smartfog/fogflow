@@ -284,8 +284,7 @@ Kubernetes Security
 Kubernetes provides many controls that can greatly improve an application's security. In order to use any of those methods provided by kubernetes, one need to properly configure the apiserver. **Role Based Access Control (RBAC)** is one such security implementation. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within an organization. RBAC authorization uses the **rbac.authorization.k8s.io** API group to drive authorization decisions, allowing user to dynamically configure policies through the Kubernetes API.
 
 RBAC Impementation over Cloud Node Kubernetes Cluster
---------------------------------------------------------
-________________________________________________________________
+-------------------------------------------------------------
 
 It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart, configure **config.json** file as shown `above`_. 
 
