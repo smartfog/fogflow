@@ -1,0 +1,39 @@
+# Default values for fogflow-chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+#Kubernetes namespace of FogFlow components 
+namespace: fogflow 
+
+#replicas will make sure that no. of replicaCount mention in values.yaml
+# are running all the time for the deployment
+replicaCount: 1
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: "fogflow-dns"
+
+#hostPath for dgraph volume mount
+dgraph:
+  hostPath:
+    path: /dgraph
+
+#hostPath for config.json  
+configJson:
+  hostPath:
+    path: /root/co-28/fogflow/helm/cloud-chart/config.json
+
+#hostPath for nginx.conf 
+nginxConf:
+  hostPath:
+    path: /root/co-28/fogflow/helm/cloud-chart/nginx.conf 
+
+Service:
+ spec: 
+  externalIPs: 
+  - 172.30.48.24 
