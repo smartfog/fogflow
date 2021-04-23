@@ -284,42 +284,12 @@ Kubernetes Security
 
 Kubernetes provides many controls that can greatly improve an application's security. In order to use any of those methods provided by kubernetes, one need to properly configure the apiserver. **Role Based Access Control (RBAC)** is one such security implementation. RBAC is a method of regulating access to computer or network resources based on the roles of individual users within an organization. RBAC authorization uses the **rbac.authorization.k8s.io** API group to drive authorization decisions, allowing user to dynamically configure policies through the Kubernetes API.
 
-RBAC Impementation over Cloud Node Kubernetes Cluster
+RBAC Verification over Cloud Node Kubernetes Cluster
 -------------------------------------------------------------
 
-It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract cloud-chart, configure **config.json** file as shown `above`_. 
+It is assumed that kubernetes cluter is setup and running at cloud node. RBAC is implemented in cloud node automatically through cloud-chart-RBAC chart deployment using helm. 
 
-.. _`above`: https://github.com/smartfog/fogflow/development/doc/en/source/k8sIntegration.rst#deploy-fogflow-cloud-components-on-k8s-environment
-
-
-values.yaml Configurations over Cloud Node Kubernetes Cluster
--------------------------------------------------------------------
-
-values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-chart/values.yaml"** path.
-
-- Configure the namespace and service account name in values.yaml file as shown below:
-
-.. code-block:: console
-
-   
-   #Kubernetes namespace of FogFlow components 
-   namespace: fogflow   //CAN BE CHANGED AS PER USER'S NEED
-
-   #replicas will make sure that no. of replicaCount mention in values.yaml
-   # are running all the time for the deployment
-   replicaCount: 1
-
-   serviceAccount:
-   # Specifies whether a service account should be created
-   create: true
-   # Annotations to add to the service account
-   annotations: {}
-   # The name of the service account to use.
-   # If not set and create is true, a name is generated using the fullname template
-   name: "fogflow-dns"   //CAN BE CHANGED AS PER USER'S NEED
-
-        
-- On deploying this chart using helm, the **namespace** is created with name **fogflow**  and inside that a **sericeaccount** is created with name **fogflow-dns**. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
+- On deploying the chart using helm, a **sericeaccount** is created with name **fogflow-dns** is created in "fogflow" namespace (or any other namespace configured by user). Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
 
 +--------------------+----------------+----------------------+
 |     Roles          |  RoleBindings  |    Scope             |
@@ -335,7 +305,8 @@ values.yaml can be accessed from fogflow repository using **"fogflow/helm/cloud-
 
 .. code-block:: console
 
-   $kubectl get ns 
+   $kubectl get ns --namespace=fogflow
+   // The value of namespace should be as per user.
 
 .. figure:: figures/ns.png
 
@@ -538,43 +509,12 @@ Note: set the value of namespace according to the value mentioned in values.yaml
 .. figure:: figures/addedenduseroutput.png
 
 
-RBAC Implementation over Edge Node Microk8s Kubernetes Cluster
-----------------------------------------------------------------
-______________________________________________________________________
+RBAC Verification over Edge Node Microk8s Kubernetes Cluster
+--------------------------------------------------------------
 
-It is assumed that kubernetes cluter is setup and running at cloud node. Inorder to setup RBAC in cloud node download and extract edge-chart,configure **config.json** file as shown `above`_.
-
-.. _`above`: https://github.com/smartfog/fogflow/development/doc/en/source/k8sIntegration.rst#deploying-edge-chart-with-microk8s-and-helm
-
-
-values.yaml Configurations over Edge Node Kubernetes Cluster
-----------------------------------------------------------------------
-
-values.yaml can be accessed from fogflow repository using **"fogflow/helm/edge-chart/values.yaml"** path.
-
-- Configure the namespace and service account name in values.yaml file as shown below:
-
-.. code-block:: console
-
-   
-   #Kubernetes namespace of FogFlow components 
-   namespace: fogflow   //CAN BE CHANGED AS PER USER'S NEED
-
-   #replicas will make sure that no. of replicaCount mention in values.yaml
-   # are running all the time for the deployment
-   replicaCount: 1
-
-   serviceAccount:
-   # Specifies whether a service account should be created
-   create: true
-   # Annotations to add to the service account
-   annotations: {}
-   # The name of the service account to use.
-   # If not set and create is true, a name is generated using the fullname template
-   name: "fogflow-dns"   //CAN BE CHANGED AS PER USER'S NEED
-
+It is assumed that microk8s kubernetes cluter is setup and running at edge node. RBAC is implemented in edge node automatically through edge-chart-RBAC chart deployment using helm3
         
-- On deploying this chart using helm, the **namespace** with name **fogflow** is created and inside that a **sericeaccount** with name **fogflow-dns** is created. Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding. 
+- On deploying the edge-chart-RBAC using helm, a **sericeaccount** is created with name **fogflow-dns** is created in "fogflow" namespace (or any other namespace configured by user). Once these namespace and serviceaccount is created, next roles and their rolebindings are created. The table lists the created roles and rolebinding.
 
 +--------------------+----------------+----------------------+
 |     Roles          |  RoleBindings  |    Scope             |
