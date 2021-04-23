@@ -83,10 +83,16 @@ To install Helm, please refer `Install Helm`_
 .. _`Install Helm`: https://helm.sh/docs/intro/install/
 
 
-Deploy FogFlow Cloud Components on K8s Environment
---------------------------------------------------
+.. important::
 
-FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Master, Worker, Rabbitmq are distributed in cluster nodes. The communication between FogFlow components and their behaviour are as usual and the worker node will launch task instances on docker container. 
+   There are two ways in which cloud components can be deployed in k8s environment:
+      1. Using Helm Utility
+      2. Using Individual YAML Files 
+
+Deploy FogFlow Cloud Components on K8s Environment Using Helm
+--------------------------------------------------------------------
+
+FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Master, Worker, Rabbitmq are distributed in cluster nodes. The communication between FogFlow components and their behaviour are as usual and the worker node will launch task instances on kubernetes pod. 
 
 
 **Fetch all required scripts**
@@ -122,15 +128,33 @@ You need to change the following IP addresses in config.json according to your o
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
+Configure Namespace in Cloud Kubernetes Cluster
+-------------------------------------------------
+
+In order to launch fogflow components, user need to create a namespace. To create namespace in kubernetes cluster, use below command:
+
+.. code-block::
+
+    $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow_fiware_integration
+
 
 Configure values.yaml File
 ---------------------------
 
--Edit namespace and serviceAccount as per requirement. Add the no. of replicaCount required.
+- User should provide name of the namespace created by him in previous step. 
 
--Change dgraph, configJson and nginxConf path in values.yaml  file as per the environment hostPath.
+- User should provide name of serviceAccount as per requirement. 
 
--Change externalIPs as per the environment.
+- User should configure the no. of replicaCount required.
+
+- User should provide absolute path for dgraph, configJson and nginxConf in values.yaml file as per the environment.
+
+- User should provide externalIPs as per the environment.
+
+.. important::
+
+        1. externalIPs are the IPs where Fogflow dashboard will be visible i.e. externalIP's are my_hostip in case of fogflow.
+        2. externalIPs will be used by user to make any CRUD request to Fogflow
 
 .. code-block:: console
 
@@ -158,12 +182,12 @@ Configure values.yaml File
       #hostPath for config.json, add this path to cloud-chart directory
       configJson:
         hostPath:
-          path: /home/necuser/fogflow/helm/files/cloud-chart/config.json
+          path: /home/necuser/fogflow/helm/cloud-chart/config.json
 
       #hostPath for nginx.conf, add this path to cloud-chart directory
       nginxConf:
         hostPath:
-          path: /home/necuser/fogflow/fogflow/yaml/nginx.conf
+          path: /home/necuser/fogflow/helm/cloud-chart/config.json
 
       #External IP to expose cluster
       Service:
@@ -175,13 +199,14 @@ Configure values.yaml File
 Start all Fogflow components with Helm Chart
 -------------------------------------------------------------
 
-Execute Helm command from outside the Helm-Chart folder to start FogFlow Components, here helm-chart name is "fogflow-chart". 
+Execute Helm command from outside the Helm-Chart folder to start FogFlow Components, here helm-chart name is "cloud-chart". 
 
 Add "--set" flag with helm install command to pass configuration from command line.
 
 .. code-block:: console
  
-          helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name
+          helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
+          //Namespace should be the one created above. In our case namespace was "fogflow"
 
 
 Refer Helm official `link`_ for more details
@@ -191,7 +216,7 @@ Refer Helm official `link`_ for more details
 Validate the setup
 -------------------------------------------------------------
 
-There are two ways to check if the FogFlow cloud node is started correctly: 
+There are two ways to check if the FogFlow cloud node has started correctly: 
 
 - Check all the Pods are Up and Running using "kubectl get pods --namespace=<namespace_name>"
 
@@ -332,8 +357,8 @@ To setup microk8s kubernetes cluster on edge node follow the below mentioned ste
 With above steps basic installation and setup of microk8s is accomplished.
 
 
-Deploying Edge-Chart With Microk8s and helm 
-----------------------------------------------
+Deploying Edge-Chart on Microk8s Environment and Helm3 
+--------------------------------------------------------
 
 For deploying edge chart, use helm3 tool with microk8s as shown below. 
 
@@ -371,8 +396,13 @@ To unzip the downloaded folder using following,
 
       #Eg. "my_hostip": "172.30.48.46"
 
+**Step 2** : Create a namespace in order to deploy edge-components in microk8s environment.
 
-**Step 2** : Edit the namespace, serviceaccount name, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
+.. code-block:: console
+
+        $microk8s.kubectl create ns <User_provided_name> //E.g. microk8s.kubectl create ns fogflow
+
+**Step 3** : Edit the namespace, serviceaccount name, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
 
 .. code-block:: console
 
@@ -405,7 +435,7 @@ To unzip the downloaded folder using following,
 Note: The value of **"namespace"** will be one which user specified while creating the namespace in previous steps. Value of **"externalIPs"** will be the IP of edge node and value of **"path"** under configJson will be equal to the path of host machine where config.json is present inside edge-chart.
 
 
-**Step 3** : To finally deploy chart, use the command as below.
+**Step 4** : To finally deploy chart, use the command as below.
 
 .. code-block:: console
 
@@ -413,10 +443,16 @@ Note: The value of **"namespace"** will be one which user specified while creati
 
         #the externalIPs is IP of edge node.
 
+**Step 5** : To validate edge node deployments, use below commands:
+
+.. code-block:: console
+
         #to check status of deployed pods 
 
         $microk8s.kubectl get pods --all-namespaces
 
 
 .. figure:: figures/microk8s_pods.png
+
+
 

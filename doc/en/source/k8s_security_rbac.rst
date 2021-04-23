@@ -127,7 +127,7 @@ Refer Helm official `link`_ for more details
 Validate the setup
 -------------------------------------------------------------
 
-There are two ways to check if the FogFlow cloud node is started correctly: 
+There are two ways to check if the FogFlow cloud node has started correctly: 
 
 - Check all the Pods are Up and Running using "kubectl get pods --namespace=<namespace_name>"
 
@@ -270,9 +270,14 @@ Note: The value of **"namespace"** will be one which user specified while creati
 
         #the externalIPs is IP of edge node.
 
-        #to check status of deployed pods use below command
+**Step 5** : To validate edge node deployments, use below commands:
+
+.. code-block:: console
+
+        #to check status of deployed pods 
 
         $microk8s.kubectl get pods --all-namespaces
+
 
 
 .. figure:: figures/microk8s_pods.png
