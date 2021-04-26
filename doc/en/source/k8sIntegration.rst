@@ -91,7 +91,7 @@ To install Helm, please refer `Install Helm`_
 
       `2. Using Individual YAML Files`_
 
-      .. _`2. Using Individual YAML Files` : https://github.com/smartfog/fogflow/blob/k8s_manual_update/doc/en/source/k8sIntegrationYAML
+      .. _`2. Using Individual YAML Files` : https://github.com/smartfog/fogflow/blob/k8s_manual_update/doc/en/source/k8sIntegrationYAML.rst
 
 Deploy FogFlow Cloud Components on K8s Environment Using Helm
 --------------------------------------------------------------------
