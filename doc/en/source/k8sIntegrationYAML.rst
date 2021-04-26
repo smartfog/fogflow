@@ -2,7 +2,7 @@
 Kubernetes Integration Using YAML Files
 ******************************************
 
-Fogflow can be deployed on kubernetes cluster using individual YAML files if user whish to do so. To accomplish that following are the prerequisites :
+Fogflow can be deployed on kubernetes cluster using individual YAML files if user whish to do so. To accomplish that, following are the prerequisites :
 
 1. docker
 2. Kubernetes
@@ -177,13 +177,15 @@ Microk8s cluster
 
 Important
 
-To install microk8s, please refer to `link`_.
+To install microk8s, please refer to these `steps`_.
 
-.. _`link` : https://github.com/smartfog/fogflow/blob/k8s_manual_update/doc/en/source/k8sIntegration.rst#microk8s-installation-and-setup
+.. _`steps` : https://github.com/smartfog/fogflow/blob/k8s_manual_update/doc/en/source/k8sIntegration.rst#microk8s-installation-and-setup
 
-**Step 1** : Clone the github repository of Fogflow using this `link`_ if not already present.
+To deploy edge components, follow below steps:
 
-.. _`link` : https://github.com/smartfog/fogflow
+**Step 1** : Clone the github repository of Fogflow using this `repository link`_ if not already present.
+
+.. _`repository link` : https://github.com/smartfog/fogflow
 
 **Step 2** : Now, traverse to yaml folder in Fogflow repository using the **"fogflow/yaml/"** path.
 
