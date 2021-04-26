@@ -96,51 +96,51 @@ Inorder to setup the components, please refer the steps below:
 
 **Step 6** : Edit the namespace, serviceaccount value and configjson in dgraph-deployment.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f dgraph-deployment.yaml 
+    $kubectl create -f dgraph-deployment.yaml 
 
 **Step 7** : Edit the namespace, serviceaccount value and configjson path in discovery.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f discovery.yaml 
+    $kubectl create -f discovery.yaml 
 
 **Step 8** : Edit the namespace, serviceaccount value and configjson path in cloud-broker.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f cloud-broker.yaml 
+    $kubectl create -f cloud-broker.yaml 
 
 **Step 9** : Edit the namespace, serviceaccount value and configjson path in designer.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f designer.yaml 
+    $kubectl create -f designer.yaml 
     
 **Step 10** : Edit the namespace, serviceaccount value and nginxConf path in nginx.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f nginx.yaml 
+    $kubectl create -f nginx.yaml 
 
 **Step 11** : Edit the namespace, serviceaccount value and configjson path in rabbitmq.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f rabbitmq.yaml 
+    $kubectl create -f rabbitmq.yaml 
 
 **Step 12** : Edit the namespace, serviceaccount value and configjson path in master.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f master.yaml 
+    $kubectl create -f master.yaml 
 
 **Step 13** : Edit the namespace, serviceaccount value and configjson path in worker.yaml as per user's environment and use below command to launch the deployments.
 
-    .. code-block:: console
+.. code-block:: console
 
-        $kubectl create -f worker.yaml 
+    $kubectl create -f worker.yaml 
 
 
 Now verify the deployments using, 
