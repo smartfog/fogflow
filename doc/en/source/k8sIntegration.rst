@@ -83,11 +83,14 @@ To install Helm, please refer `Install Helm`_
 .. _`Install Helm`: https://helm.sh/docs/intro/install/
 
 
-.. important::
+**There are two ways in which cloud components can be deployed in k8s environment:**
+      `1. Using Helm Utility`_
 
-   There are two ways in which cloud components can be deployed in k8s environment:
-      1. Using Helm Utility
-      2. Using Individual YAML Files 
+        .. _`1. Using Helm Utility` : https://github.com/smartfog/fogflow/k8s_manual_update/doc/en/source/k8sIntegration.rst#deploy-fogflow-cloud-components-on-k8s-environment-using-helm 
+
+      `2. Using Individual YAML Files`_
+
+      .. _`2. Using Individual YAML Files` : 
 
 Deploy FogFlow Cloud Components on K8s Environment Using Helm
 --------------------------------------------------------------------
