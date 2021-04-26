@@ -73,7 +73,7 @@ Inorder to setup the components, please refer the steps below:
     namespace: fogflow  //Edit this as per previous step , for example namespace : fogflow
     name: fogflow-dns-role
 
-    **Step 5** : Configure config.json as per user's environnment like shown below:
+**Step 5** : Configure config.json as per user's environnment like shown below:
 
     - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
     - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
@@ -94,49 +94,49 @@ Inorder to setup the components, please refer the steps below:
         "capacity": 8
         }
 
-    **Step 6** : Edit the namespace, serviceaccount value and configjson in dgraph-deployment.yaml as per user's environment and use below command to launch the deployments.
+**Step 6** : Edit the namespace, serviceaccount value and configjson in dgraph-deployment.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f dgraph-deployment.yaml 
 
-    **Step 7** : Edit the namespace, serviceaccount value and configjson path in discovery.yaml as per user's environment and use below command to launch the deployments.
+**Step 7** : Edit the namespace, serviceaccount value and configjson path in discovery.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f discovery.yaml 
 
-    **Step 8** : Edit the namespace, serviceaccount value and configjson path in cloud-broker.yaml as per user's environment and use below command to launch the deployments.
+**Step 8** : Edit the namespace, serviceaccount value and configjson path in cloud-broker.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f cloud-broker.yaml 
 
-    **Step 9** : Edit the namespace, serviceaccount value and configjson path in designer.yaml as per user's environment and use below command to launch the deployments.
+**Step 9** : Edit the namespace, serviceaccount value and configjson path in designer.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f designer.yaml 
     
-    **Step 10** : Edit the namespace, serviceaccount value and nginxConf path in nginx.yaml as per user's environment and use below command to launch the deployments.
+**Step 10** : Edit the namespace, serviceaccount value and nginxConf path in nginx.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f nginx.yaml 
 
-    **Step 11** : Edit the namespace, serviceaccount value and configjson path in rabbitmq.yaml as per user's environment and use below command to launch the deployments.
+**Step 11** : Edit the namespace, serviceaccount value and configjson path in rabbitmq.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f rabbitmq.yaml 
 
-    **Step 12** : Edit the namespace, serviceaccount value and configjson path in master.yaml as per user's environment and use below command to launch the deployments.
+**Step 12** : Edit the namespace, serviceaccount value and configjson path in master.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
         $kubectl create -f master.yaml 
 
-    **Step 13** : Edit the namespace, serviceaccount value and configjson path in worker.yaml as per user's environment and use below command to launch the deployments.
+**Step 13** : Edit the namespace, serviceaccount value and configjson path in worker.yaml as per user's environment and use below command to launch the deployments.
 
     .. code-block:: console
 
