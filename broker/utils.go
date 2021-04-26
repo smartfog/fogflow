@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -422,14 +423,41 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
-var compactinstance bool = false
-var cdl *ld.RFC7324CachingDocumentLoader
+var ExpandOnce sync.Once
+var CompactOnce sync.Once
+var ldE *ld.RFC7324CachingDocumentLoader
+var ldC *ld.RFC7324CachingDocumentLoader
+
+func Expand_once() *ld.RFC7324CachingDocumentLoader {
+	fmt.Println(ldE)
+	if ldE == nil {
+		ExpandOnce.Do(
+			func() {
+				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
+				fmt.Println("created object", ldE)
+			})
+	} else {
+		fmt.Println("The loader object is already created")
+	}
+	return ldE
+}
+
+func Compact_once() *ld.RFC7324CachingDocumentLoader {
+	fmt.Println(ldC)
+	if ldE == nil {
+		CompactOnce.Do(
+			func() {
+				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
+				fmt.Println("created object", ldC)
+			})
+	} else {
+		fmt.Println("The loader object is already created")
+	}
+	return ldC
+}
 
 func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
-	if compactinstance == false {
-		cdl = ld.NewRFC7324CachingDocumentLoader(nil)
-		compactinstance = true
-	}
+	cdl := Compact_once()
 	proc := ld.NewJsonLdProcessor()
 	opts := ld.NewJsonLdOptions("")
 	opts.ProcessingMode = ld.JsonLd_1_1

@@ -80,8 +80,6 @@ type ThinBroker struct {
 	tmpNGSIldNotifyCache    []string
 	tmpNGSILDNotifyCache    map[string]*NotifyContextAvailabilityRequest
 	entityId2LDSubcriptions map[string][]string
-	expandInstance          bool
-	dl                      *ld.RFC7324CachingDocumentLoader
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
@@ -129,7 +127,6 @@ func (tb *ThinBroker) Start(cfg *Config) {
 
 	// send the first heartbeat message
 	tb.sendHeartBeat()
-	tb.expandInstance = false
 }
 
 func (tb *ThinBroker) Stop() {
@@ -2605,14 +2602,11 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 // Expand the NGSI-LD Data with context
 func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
 	//var dl *ld.RFC7324CachingDocumentLoader
-	if tb.expandInstance == false {
-		tb.dl = ld.NewRFC7324CachingDocumentLoader(nil)
-		tb.expandInstance = true
-	}
+	dl := Expand_once()
 	proc := ld.NewJsonLdProcessor()
 	opts := ld.NewJsonLdOptions("")
 	opts.ProcessingMode = ld.JsonLd_1_1
-	opts.DocumentLoader = tb.dl
+	opts.DocumentLoader = dl
 	expanded, err := proc.Expand(v, opts)
 	//LD processor expands the data and returns []interface{}
 	//expanded, err := proc.Expand(v, options)
