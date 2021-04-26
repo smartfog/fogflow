@@ -422,17 +422,27 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
+var compactinstance bool = false
+var cdl *ld.RFC7324CachingDocumentLoader
+
 func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
+	if compactinstance == false {
+		cdl = ld.NewRFC7324CachingDocumentLoader(nil)
+		compactinstance = true
+	}
 	proc := ld.NewJsonLdProcessor()
-	options := ld.NewJsonLdOptions("")
-	compacted, err := proc.Compact(entity, context, options)
+	opts := ld.NewJsonLdOptions("")
+	opts.ProcessingMode = ld.JsonLd_1_1
+	opts.DocumentLoader = cdl
+	//options := ld.NewJsonLdOptions("")
+	compacted, err := proc.Compact(entity, context, opts)
 	return compacted, err
 }
 
 func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
 	elements := make(map[string]interface{})
-	for k ,_ := range element {
-		 if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
+	for k, _ := range element {
+		if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
 			elements[k] = element[k]
 		}
 	}
