@@ -210,7 +210,7 @@ Add "--set" flag with helm install command to pass configuration from command li
 .. code-block:: console
  
           helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
-          //Namespace should be the one created above. In our case namespace was "fogflow"
+          //Namespace should be the one created above for example "fogflow"
 
 
 Refer Helm official `link`_ for more details
@@ -443,9 +443,11 @@ Note: The value of **"namespace"** will be one which user specified while creati
 
 .. code-block:: console
 
-        $microk8s.helm3 install ./edge-chart --set externalIPs={XXX.XX.48.46} --generate-name
+        $microk8s.helm3 install ./edge-chart --set externalIPs={XXX.XX.48.46} --generate-name --namespace=fogflow
 
         #the externalIPs is IP of edge node.
+        #Namespace should be the one created above for example "fogflow"
+        
 
 **Step 5** : To validate edge node deployments, use below commands:
 
