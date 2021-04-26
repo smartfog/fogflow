@@ -75,24 +75,24 @@ Inorder to setup the components, please refer the steps below:
 
 **Step 5** : Configure config.json as per user's environnment like shown below:
 
-    - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
-    - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
-    - **physical_location**: the geo-location of the FogFlow node;
-    - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
+- **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
+- **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
+- **physical_location**: the geo-location of the FogFlow node;
+- **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
-    .. code-block:: console
+.. code-block:: console
 
-        "my_hostip": "172.30.48.24", //User should update the IP as per his/her environment
-        "physical_location":{
-            "longitude": 139.709059,
-            "latitude": 35.692221
-        },
-        "site_id": "001",
-        "worker": {
-        "container_autoremove": false,
-        "start_actual_task": true,
-        "capacity": 8
-        }
+    "my_hostip": "172.30.48.24", //User should update the IP as per his/her environment
+    "physical_location":{
+        "longitude": 139.709059,
+        "latitude": 35.692221
+    },
+    "site_id": "001",
+    "worker": {
+    "container_autoremove": false,
+    "start_actual_task": true,
+    "capacity": 8
+    }
 
 **Step 6** : Edit the namespace, serviceaccount value and configjson in dgraph-deployment.yaml as per user's environment and use below command to launch the deployments.
 
