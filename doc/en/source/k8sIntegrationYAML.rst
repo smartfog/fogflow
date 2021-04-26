@@ -161,6 +161,12 @@ Now verify the deployments using,
     nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
     rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
 
+.. important:: 
+
+    Inorder to setup RBAC, use RBAC_setup.yaml file. Configure the namespace as per user (previously created namespace in step 3). Then use below command :
+
+    $kubectl create -f RBAC_setup.yaml
+
 
 Deploy FogFlow Edge Components on MicroK8s Environment Using YAML Files
 -----------------------------------------------------------------------------
@@ -271,3 +277,8 @@ Now verify the deployments using,
     worker-db94ff4f7-hwx72         1/1     Running             0          8s
     
 
+.. important:: 
+
+    Inorder to setup RBAC, use RBAC_setup.yaml file. Configure the namespace as per user (previously created namespace in step 3). Then use below command :
+
+    $microk8s.kubectl create -f RBAC_setup.yaml
