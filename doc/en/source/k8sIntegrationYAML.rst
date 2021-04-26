@@ -161,3 +161,113 @@ Now verify the deployments using,
     nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
     rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
 
+
+Deploy FogFlow Edge Components on MicroK8s Environment Using YAML Files
+-----------------------------------------------------------------------------
+
+Fogflow Edge can be deployed on Microk8s cluster using individual YAML files if user whish to do so. To accomplish that following are the prerequisites :
+
+Microk8s cluster
+
+Important
+
+To install microk8s, please refer to `link`_.
+
+.. _`link` : https://github.com/smartfog/fogflow/blob/k8s_manual_update/doc/en/source/k8sIntegration.rst#microk8s-installation-and-setup
+
+**Step 1** : Clone the github repository of Fogflow using this `link`_ if not already present.
+
+.. _`link` : https://github.com/smartfog/fogflow
+
+**Step 2** : Now, traverse to yaml folder in Fogflow repository using the **"fogflow/yaml/"** path.
+
+**Step 3** : Now create a namespace in microk8s, using following command :
+
+.. code-block:: console
+
+    $microk8s.kubectl create ns <user-specified> //E.g. microk8s.kubectl create ns fogflow
+
+**Step 4** : Now, in order to deploy edge components, traverse to edge-yaml folder and configure serviceaccount.yaml file. Edit the namespace with the one created in previous step and provide a serviceaccount name as shown below.
+
+.. code-block:: console
+
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+    namespace: fogflow //Edit this as per previous step , for example namespace : fogflow
+    name: fogflow-dns  //User can provide this as per his/her choice
+    ---
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+    namespace: fogflow  //Edit this as per previous step , for example namespace : fogflow
+    name: fogflow-dns-role
+    rules:
+    - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get","watch","list","create"]
+    - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get","watch","list","create"]
+    ---
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRoleBinding
+    metadata:
+    namespace: fogflow  //Edit this as per previous step , for example namespace : fogflow
+    name: fogflow-dns-viewer
+    roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: fogflow-dns-role
+    subjects:
+    - kind: ServiceAccount
+    namespace: fogflow  //Edit this as per previous step , for example namespace : fogflow
+    name: fogflow-dns-role
+
+**Step 5** : Configure config.json as per user's environnment like shown below:
+
+- **coreservice_ip**: this is the IP where cloud node is running.
+- **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
+- **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
+- **physical_location**: the geo-location of the FogFlow node;
+- **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
+
+.. code-block:: console
+
+    "coreservice_ip": "172.30.48.46", //User should update the IP as per his/her environment where cloud is running
+    "my_hostip": "172.30.48.24", //User should update the IP as per his/her environment i.e. the IP of host machine where edge is running
+    "physical_location":{
+        "longitude": 139.709059,
+        "latitude": 35.692221
+    },
+    "site_id": "002",
+    "worker": {
+    "container_autoremove": false,
+    "start_actual_task": true,
+    "capacity": 4
+    }
+
+**Step 6** : Edit the namespace, serviceaccount value and configjson path in edge-broker.yaml as per user's environment and use below command to launch the deployments.
+
+.. code-block:: console
+
+    $microk8s.kubectl create -f edge-broker.yaml 
+
+**Step 7** : Edit the namespace, serviceaccount value and configjson path in worker.yaml as per user's environment and use below command to launch the deployments.
+
+.. code-block:: console
+
+    $microk8s.kubectl create -f worker.yaml
+
+ 
+Now verify the deployments using, 
+
+1. Check for pods status, using **microk8s.kubectl get pods --namespace=fogflow**
+
+.. code-block:: console
+
+    NAME                           READY   STATUS              RESTARTS   AGE
+    edge-broker-c78679dd8-gx5ds    1/1     Running             0          8s
+    worker-db94ff4f7-hwx72         1/1     Running             0          8s
+    
+
