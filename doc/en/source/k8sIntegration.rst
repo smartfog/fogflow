@@ -423,7 +423,7 @@ To unzip the downloaded folder using following,
         annotations: {}
         #The name of the service account to use.
         #If not set and create is true, a name is generated using the fullname template
-        name: ""
+        name: "fogflow-dns"
 
         #hostPath for config.json  
         configJson:
@@ -447,7 +447,7 @@ Note: The value of **"namespace"** will be one which user specified while creati
 
         #the externalIPs is IP of edge node.
         #Namespace should be the one created above for example "fogflow"
-        
+
 
 **Step 5** : To validate edge node deployments, use below commands:
 
