@@ -149,3 +149,15 @@ Now verify the deployments using,
 
 2. Check for pods status, using **kubectl get pods --namespace=fogflow**
 
+.. code-block:: console
+
+    NAME                           READY   STATUS              RESTARTS   AGE
+    cloud-broker-c78679dd8-gx5ds   1/1     Running             0          8s
+    cloud-worker-db94ff4f7-hwx72   1/1     Running             0          8s
+    designer-bf959f7b7-csjn5       1/1     Running             0          8s
+    dgraph-869f65597c-jrlqm        1/1     Running             0          8s
+    discovery-7566b87d8d-hhknd     1/1     Running             0          8s
+    master-86976888d5-drfz2        1/1     Running             0          8s
+    nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
+    rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
+
