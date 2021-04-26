@@ -444,7 +444,7 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 
 func Compact_once() *ld.RFC7324CachingDocumentLoader {
 	fmt.Println(ldC)
-	if ldE == nil {
+	if ldC == nil {
 		CompactOnce.Do(
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
