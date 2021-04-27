@@ -105,7 +105,7 @@ You need to change the following IP addresses in config.json according to your o
 		Component			Port
 
 		Discovery			8090 
-		Cloud-broker		8070
+		Broker				8070
 		Dgraph				9082
 		Designer			8080
 		Nginx				80
