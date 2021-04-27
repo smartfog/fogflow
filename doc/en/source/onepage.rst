@@ -102,15 +102,15 @@ You need to change the following IP addresses in config.json according to your o
 	
 	.. code-block:: console
 
-		Component			Port
+		Component		Port
 
-		Discovery			8090 
-		Broker				8070
-		Dgraph				9082
-		Designer			8080
-		Nginx				80
-		Rabbitmq			5672
-		Worker				launches task instance over any port internally
+		Discovery		8090 
+		Broker			8070
+		Dgraph			9082
+		Designer		8080
+		Nginx			80
+		Rabbitmq		5672
+		Worker			launches task instance over any port internally
 
 
 	Above mentioned port number(s) are default port number(s). If user needs to change the port number(s), please make sure the change is consistence in all the configuration files named as **"config.json"**.
