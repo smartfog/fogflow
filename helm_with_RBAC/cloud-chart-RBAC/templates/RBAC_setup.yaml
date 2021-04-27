@@ -1,0 +1,130 @@
+#Role based access control yaml file
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+ namespace: {{ .Values.namespace }}
+ name: fogflow-root-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods","pods/log","deployments","services","nodes"]
+  verbs: ["get","watch","list","create","delete"]
+---
+# Role binding for fogflow root user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+ namespace: {{ .Values.namespace }}
+ name: fogflow-root
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: ClusterRole
+ name: fogflow-root-role
+subjects:
+- kind: Group
+  name: RootUser
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role for fogflow administrator
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+ namespace: {{ .Values.namespace }}
+ name: fogflow-admin-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods","pods/log","deployments","services"]
+  verbs: ["get","watch","list","create","delete"]
+---
+# Role for default administrator
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+ namespace: default
+ name: fogflow-admin-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods","pods/log","deployments","services"]
+  verbs: ["get","watch","list","create","delete"]
+---
+# Role binding for fogflow administrator
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+ namespace: {{ .Values.namespace }}
+ name: fogflow-admin
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: Role
+ name: fogflow-admin-role
+subjects:
+- kind: Group
+  name: Admin
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role binding for default administrator
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+ namespace: default
+ name: fogflow-admin
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: Role
+ name: fogflow-admin-role
+subjects:
+- kind: Group
+  name: Admin
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role for fogflow user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+ namespace: {{ .Values.namespace }}
+ name: fogflow-user-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods","pods/log","deployments","services"]
+  verbs: ["get","watch","list"]
+---
+# Role for default user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+ namespace: default
+ name: fogflow-user-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods","pods/log","deployments","services"]
+  verbs: ["get","watch","list"]
+---
+# Role binding for fogflow user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+ namespace: {{ .Values.namespace }}
+ name: fogflow-user
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: Role
+ name: fogflow-user-role
+subjects:
+- kind: Group
+  name: EndUser
+  apiGroup: rbac.authorization.k8s.io
+---
+# Role binding for defualt user
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+ namespace: default
+ name: fogflow-user
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: Role
+ name: fogflow-user-role
+subjects:
+- kind: Group
+  name: EndUser
+  apiGroup: rbac.authorization.k8s.io
+

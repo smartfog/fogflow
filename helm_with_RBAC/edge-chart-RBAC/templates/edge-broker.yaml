@@ -1,24 +1,24 @@
-#Master deployment and service configuration
+#Cloud-broker deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   #FogFlow cloud components will be deployed inside fogflow namespace
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "7"
+    "helm.sh/hook-weight": "1"
   creationTimestamp: null
   labels:
-    io.kompose.service: master
-  name: master
+    io.kompose.service: edge-broker
+  name: edge-broker
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: master
-  minReadySeconds: 10
+      io.kompose.service: edge-broker
+  minReadySeconds: 10    
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
@@ -33,34 +33,29 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: master
+        io.kompose.service: edge-broker
     spec:
-      initContainers:
-      - image: busybox:1.28
-        imagePullPolicy: Always
-        name: init-broker
-        command: ['sh', '-c', 'sleep 20s;']
       containers:
-      - image: fogflow/master:latest
+      - image: fogflow/broker:latest
         imagePullPolicy: Always 
-        name: master
+        name: edge-broker
         ports:
-        - containerPort: 1060
-        #readiness and liveness to check pod's Health
+        - containerPort: 8060
+        #readiness and liveness to check pod's Health 
         readinessProbe:
           tcpSocket:
-            port: 1060
+            port: 8060
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 1060
+            port: 8060
           initialDelaySeconds: 15
           periodSeconds: 20
-        resources:
-         #CPU and memory limits for FogFlow master deployment 
+        resources: 
+        #CPU and memory limits for cloud-broker deployment 
           limits:
-            memory: 2Gi
+            memory: 3Gi
             cpu: 1 
           requests:
             memory: 2Gi
@@ -72,29 +67,28 @@ spec:
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
-      - name: config-json
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }}
+       - name: config-json
+         hostPath:
+           path: {{ .Values.configJson.hostPath.path }}
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Values.namespace }} 
+  namespace: {{ .Values.namespace }}
   annotations:
-    kompose.version: 1.21.0 (992df58d8)
+    kompose.version: 1.21.0 (992df58d8) 
   creationTimestamp: null
   labels:
-    io.kompose.service: master
-  name: master
+    io.kompose.service: edge-broker
+  name: edge-broker
 spec:
   ports:
-  - name: "1060"
-    port: 1060
-    targetPort: 1060
+  - name: "8060"
+    port: 8060
+    targetPort: 8060
   selector:
-    io.kompose.service: master
+    io.kompose.service: edge-broker
   externalIPs: {{ .Values.Service.spec.externalIPs }}
-status:
-  loadBalancer: {}
+

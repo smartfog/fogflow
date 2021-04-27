@@ -6,18 +6,18 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "8"
+    "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
-    io.kompose.service: cloud-worker
-  name: cloud-worker
+    io.kompose.service: edge-worker
+  name: edge-worker
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: cloud-worker
+      io.kompose.service: edge-worker
   minReadySeconds: 10   
   #strategy tells about How do want to update the pods? 
   strategy:
@@ -33,27 +33,27 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: cloud-worker
+        io.kompose.service: edge-worker
     spec:
       initContainers:
       - image: busybox:1.28
         imagePullPolicy: Always
         name: init-broker
-        command: ['sh', '-c', 'sleep 80s;']
+        command: ['sh', '-c', 'sleep 30s;']
       containers:
       - image: fogflow/worker:k8s
         imagePullPolicy: Always 
-        name: cloud-worker
-        #resources:
+        name: edge-worker 
+        resources:
           #CPU and memory limits for dgraph deployment 
-          #limits:
-            #memory: 2Gi
-            #cpu: 1 
-          #requests:
-            #memory: 1Gi
-            #cpu: 1
+          limits:
+            memory: 2Gi
+            cpu: 1 
+          requests:
+            memory: 1Gi
+            cpu: 1
         volumeMounts:
-        - name: cloud-worker
+        - name: edge-worker
           mountPath: /tmp
           readOnly: true
         - name: config-json 
@@ -67,7 +67,7 @@ spec:
       - name: config-json 
         hostPath:
           path: {{ .Values.configJson.hostPath.path }} 
-      - name: cloud-worker
+      - name: edge-worker
         hostPath:
           path: /tmp
       - name: dockersock
