@@ -113,7 +113,7 @@ You need to change the following IP addresses in config.json according to your o
 		Worker			launches task instance over any port internally
 
 
-	Above mentioned port number(s) are default port number(s). If user needs to change the port number(s), please make sure the change is consistence in all the configuration files named as **"config.json"**.
+	**Above mentioned port number(s) are default port number(s). If user needs to change the port number(s), please make sure the change is consistence in all the configuration files named as "config.json".**
 
 	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
 	as my_hostip in the configuration file
