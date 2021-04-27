@@ -100,21 +100,17 @@ You need to change the following IP addresses in config.json according to your o
 	
 	**Firewall rules:** To make FogFlow web portal accessible and for its proper functioning, the following ports must be free and open over TCP in host machine. 
 	
-	Component        Port
+	.. code-block:: console
 
-	Discovery		 8090 
+		Component        Port
 
-	Cloud-broker     8070
-
-	Dgraph			 9082
-
-	Designer		 8080
-
-	Nginx			 80
-
-	Rabbitmq	     5672
-	
-	Worker			 launches task instance over any port internally
+		Discovery		 8090 
+		Cloud-broker     8070
+		Dgraph			 9082
+		Designer		 8080
+		Nginx			 80
+		Rabbitmq	     5672
+		Worker			 launches task instance over any port internally
 
 
 	Above mentioned port number(s) are default port number(s). If user needs to change the port number(s), please make sure the change is consistence in all the configuration files named as **"config.json"**.
