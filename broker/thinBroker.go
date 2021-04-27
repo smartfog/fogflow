@@ -2601,10 +2601,15 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 
 // Expand the NGSI-LD Data with context
 func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
+	//var dl *ld.RFC7324CachingDocumentLoader
+	dl := Expand_once()
 	proc := ld.NewJsonLdProcessor()
-	options := ld.NewJsonLdOptions("")
+	opts := ld.NewJsonLdOptions("")
+	opts.ProcessingMode = ld.JsonLd_1_1
+	opts.DocumentLoader = dl
+	expanded, err := proc.Expand(v, opts)
 	//LD processor expands the data and returns []interface{}
-	expanded, err := proc.Expand(v, options)
+	//expanded, err := proc.Expand(v, options)
 	return expanded, err
 }
 
