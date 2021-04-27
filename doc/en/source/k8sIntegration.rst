@@ -109,7 +109,7 @@ Download the Kubernetes file and the configuration files as below.
         wget https://raw.githubusercontent.com/smartfog/fogflow/RBAC_manual/helm/cloud-chart.zip
 
 
-install unzip tool on system to extract JSON files from dashboards.zip
+install unzip tool on system to extract files from cloud-chart.zip
 
 .. code-block:: console
 
