@@ -428,6 +428,8 @@ var CompactOnce sync.Once
 var ldE *ld.RFC7324CachingDocumentLoader
 var ldC *ld.RFC7324CachingDocumentLoader
 
+//creating expand singleton object for document loader
+
 func Expand_once() *ld.RFC7324CachingDocumentLoader {
 	fmt.Println(ldE)
 	if ldE == nil {
@@ -441,6 +443,8 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 	}
 	return ldE
 }
+
+//creating compact  singleton object for document loader
 
 func Compact_once() *ld.RFC7324CachingDocumentLoader {
 	fmt.Println(ldC)
