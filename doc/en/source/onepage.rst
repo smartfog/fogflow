@@ -101,12 +101,19 @@ You need to change the following IP addresses in config.json according to your o
 	**Firewall rules:** To make FogFlow web portal accessible and for its proper functioning, the following ports must be free and open over TCP in host machine. 
 	
 	Component        Port
-	Discovery		 8090  
+
+	Discovery		 8090 
+
 	Cloud-broker     8070
+
 	Dgraph			 9082
+
 	Designer		 8080
+
 	Nginx			 80
+
 	Rabbitmq	     5672
+	
 	Worker			 launches task instance over any port internally
 
 
