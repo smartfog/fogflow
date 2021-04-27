@@ -85,7 +85,7 @@ Change the IP configuration accordingly
 
 
 
-You need to change the following IP addresses in config.json according to syour own environment.
+You need to change the following IP addresses in config.json according to your own environment.
 
 - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this. 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
@@ -95,15 +95,26 @@ You need to change the following IP addresses in config.json according to syour 
 
 .. important:: 
 
-	please DO NOT use "127.0.0.1" as the IP address of **my_hostip**, because it is only accessible to a 
+	Please DO NOT use "127.0.0.1" as the IP address of **my_hostip**, because it is only accessible to a 
 	running task inside a docker container. 
 	
-	**Firewall rules:** to make your FogFlow web portal accessible, the following ports 80 and 5672 over TCP must be open. 
+	**Firewall rules:** To make FogFlow web portal accessible and for its proper functioning, the following ports must be free and open over TCP in host machine. 
+	
+	Component        Port
+	Discovery		 8090  
+	Cloud-broker     8070
+	Dgraph			 9082
+	Designer		 8080
+	Nginx			 80
+	Rabbitmq	     5672
+	Worker			 launches task instance over any port internally
+
+
+	Above mentioned port number(s) are default port number(s). If user needs to change the port number(s), please make sure the change is consistence in all the configuration files named as **"config.json"**.
 
 	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
 	as my_hostip in the configuration file
-
-	If you need to change the port number(s), please make sure the change is consistence in all these three configuration files. 
+ 
 
 
 Start all Fogflow components 
