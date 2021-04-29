@@ -3280,25 +3280,34 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	var req interface{}
 	var eid = r.PathParam("eid")
 	var attr = r.PathParam("attr")
-
+	var newEid string
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		reqBytes, err := ioutil.ReadAll(r.Body)
+		if r.Header.Get("fiware-service") != "" {
+			newEid = eid + "@" + r.Header.Get("fiware-service")
+			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+		} else {
+			newEid = eid + "@" + "default"
+		}
 		if err != nil {
 			rest.Error(w, err.Error(), 400)
+			return
 		}
 		// Unmarshal using a generic interface
 		err = json.Unmarshal(reqBytes, &req)
 		if err != nil {
 			rest.Error(w, err.Error(), 400)
+			return
 		}
 	}
-
-	err := tb.ldDeleteEntityAttribute(eid, attr, req)
+	fmt.Println("@@@@@@@@@@@2newEid@@@@@@@@@@@2", newEid, attr)
+	err := tb.ldDeleteEntityAttribute(newEid, attr, req)
 
 	if err == nil {
 		w.WriteHeader(204)
 	} else {
 		rest.Error(w, err.Error(), 404)
+		return
 	}
 }
 
@@ -3386,26 +3395,29 @@ func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req inter
 	return nil
 }
 
-func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string) []interface{} {
+func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService string) []interface{} {
 	var entities []interface{}
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
-		allExist := true
-		for _, attr := range attrs {
-			if _, ok := entityMap[attr]; ok != true {
-				allExist = false
+		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
+			allExist := true
+			for _, attr := range attrs {
+				if _, ok := entityMap[attr]; ok != true {
+					allExist = false
+				}
 			}
-		}
-		if allExist == true {
-			compactEntity := tb.createOriginalPayload(entity)
-			entities = append(entities, compactEntity)
+			if allExist == true {
+				actualEId := getActualEntity(entityMap)
+				entityMap["id"] = actualEId
+				compactEntity := tb.createOriginalPayload(entityMap)
+				entities = append(entities, compactEntity)
+			}
 		}
 	}
 	tb.ldEntities_lock.Unlock()
 	return entities
 }
-
 func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []interface{} {
 	tb.ldEntities_lock.Lock()
 	var entities []interface{}
@@ -3423,7 +3435,7 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []interface{}
 	return entities
 }
 
-func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]interface{}, error) {
+func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareService string) ([]interface{}, error) {
 	var entities []interface{}
 	typ := typs[0]
 	if link != "" {
@@ -3435,10 +3447,16 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string) ([]interface
 	}
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
+		fmt.Println("Entity", entity)
 		entityMap := entity.(map[string]interface{})
-		if entityMap["type"] == typ {
-			compactEntity := tb.createOriginalPayload(entity)
-			entities = append(entities, compactEntity)
+		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
+			if entityMap["type"] == typ {
+				compactEntity := tb.createOriginalPayload(entityMap)
+				compactEntityMap := compactEntity.(map[string]interface{})
+				compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))
+				delete(compactEntityMap, "fiwareServicePath")
+				entities = append(entities, compactEntityMap)
+			}
 		}
 	}
 	tb.ldEntities_lock.Unlock()
