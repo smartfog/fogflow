@@ -109,7 +109,7 @@ Download the Kubernetes file and the configuration files as below.
         wget https://raw.githubusercontent.com/smartfog/fogflow/RBAC_manual/helm/cloud-chart.zip
 
 
-install unzip tool on system to extract JSON files from dashboards.zip
+- Install unzip tool on system to extract files from **cloud-chart.zip**.
 
 .. code-block:: console
 
@@ -139,21 +139,7 @@ In order to launch fogflow components, user need to create a namespace. To creat
 
 .. code-block::
 
-    $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow_fiware_integration
-
-
-Setup Namespace and ServiceAccount for Cloud Kubernetes Cluster
----------------------------------------------------------------
-
-To setup the cloud-chart, user need to create a namespace and serviceaccount associated to that namespace. Use below command:
-
-.. code-block:: console
-
-        //User can decide the namespace
-        $kubectl create ns <User_provided_name> //kubectl create ns fogflow
-
-        //User can decide the name os serviceaccount
-        $kubectl create serviceaccount <User_provided_name> --namespace=<as_provided_above> //kubectl create serviceaccount fogflow-dns --namespace=fogflow
+    $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow
 
 
 Configure values.yaml File
@@ -224,7 +210,7 @@ Add "--set" flag with helm install command to pass configuration from command li
 .. code-block:: console
  
           helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
-          //Namespace should be the one created above for example "fogflow"
+          //Namespace should be the one created in previous steps, for example "fogflow"
 
 
 Refer Helm official `link`_ for more details
