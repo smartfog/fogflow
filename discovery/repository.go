@@ -7,10 +7,12 @@ import (
 )
 
 type Candidate struct {
-	ProviderURL string
-	ID          string
-	Type        string
-	Distance    uint64
+	ProviderURL       string
+	ID                string
+	Type              string
+	FiwareServicePath string
+	MsgFormat         string
+	Distance          uint64
 }
 
 type EntityRepository struct {
@@ -45,9 +47,7 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registration *ContextRegistration) *EntityRegistration {
 	er.ctxRegistrationList_lock.Lock()
 	defer er.ctxRegistrationList_lock.Unlock()
-
 	eid := entity.ID
-
 	if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
 		// update existing entity type
 		if entity.Type != "" {
@@ -85,6 +85,13 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		if len(registration.ProvidingApplication) > 0 {
 			existRegistration.ProvidingApplication = registration.ProvidingApplication
 		}
+		if len(registration.FiwareServicePath) > 0 {
+			existRegistration.FiwareServicePath = registration.FiwareServicePath
+		}
+		if len(registration.MsgFormat) > 0 {
+			existRegistration.MsgFormat = registration.MsgFormat
+		}
+
 	} else {
 		entityRegistry := EntityRegistration{}
 
@@ -108,9 +115,16 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 			entityRegistry.ProvidingApplication = registration.ProvidingApplication
 		}
 
+		// update FiwareServive path
+		if len(registration.FiwareServicePath) > 0 {
+			entityRegistry.FiwareServicePath = registration.FiwareServicePath
+		}
+		if len(registration.MsgFormat) > 0 {
+			entityRegistry.MsgFormat = registration.MsgFormat
+		}
+
 		er.ctxRegistrationList[eid] = &entityRegistry
 	}
-
 	return er.ctxRegistrationList[eid]
 }
 
@@ -151,6 +165,8 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 			candidate.ID = registration.ID
 			candidate.Type = registration.Type
 			candidate.ProviderURL = registration.ProvidingApplication
+			candidate.FiwareServicePath = registration.FiwareServicePath
+			candidate.MsgFormat = registration.MsgFormat
 
 			if nearby != nil {
 				landmark := Point{}
@@ -180,12 +196,13 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 
 	// return the final result
 	entityMap := make(map[string][]EntityId, 0)
-
 	for _, candidate := range candidates {
 		entity := EntityId{}
 		entity.ID = candidate.ID
 		entity.Type = candidate.Type
 		entity.IsPattern = false
+		entity.FiwareServicePath = candidate.FiwareServicePath
+		entity.MsgFormat = candidate.MsgFormat
 
 		providerURL := candidate.ProviderURL
 		entityMap[providerURL] = append(entityMap[providerURL], entity)

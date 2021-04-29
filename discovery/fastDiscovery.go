@@ -3,14 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	_ "github.com/lib/pq"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/google/uuid"
-	_ "github.com/lib/pq"
 
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
@@ -74,7 +73,6 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 		registrationID := u1.String()
 		registerCtxReq.RegistrationId = registrationID
 	}
-
 	// update context registration
 	go fd.updateRegistration(&registerCtxReq)
 
@@ -99,7 +97,6 @@ func (fd *FastDiscovery) forwardRegistrationCtxAvailability(discoveryURL string,
 func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, updateAction string) {
 	fd.subscriptions_lock.RLock()
 	defer fd.subscriptions_lock.RUnlock()
-
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
@@ -112,7 +109,8 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 			entity.ID = registration.ID
 			entity.Type = registration.Type
 			entity.IsPattern = false
-
+			entity.FiwareServicePath = registration.FiwareServicePath
+			entity.MsgFormat = registration.MsgFormat
 			entities = append(entities, entity)
 
 			entityMap := make(map[string][]EntityId)
@@ -360,7 +358,6 @@ func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyConte
 		ERROR.Println(err)
 		return false
 	}
-
 	req, err := http.NewRequest("POST", subscriberURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -418,11 +415,24 @@ func (fd *FastDiscovery) UnsubscribeContextAvailability(w rest.ResponseWriter, r
 	w.WriteJson(&unsubscribeCtxAvailabilityResp)
 }
 
-func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
+func (fd *FastDiscovery) getRegisteredLDEntity(w rest.ResponseWriter, r *rest.Request) {
 	var eid = r.PathParam("eid")
-
-	registration := fd.repository.retrieveRegistration(eid)
+	var newEid string
+	if r.Header.Get("fiware-service") != "" {
+		newEid = eid + "@" + r.Header.Get("fiware-service")
+		w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+	} else {
+		newEid = eid + "@" + "default"
+	}
+	registration := fd.repository.retrieveRegistration(newEid)
 	w.WriteJson(registration)
+}
+
+
+func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
+        var eid = r.PathParam("eid")
+        registration := fd.repository.retrieveRegistration(eid)
+        w.WriteJson(registration)
 }
 
 func (fd *FastDiscovery) deleteRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {

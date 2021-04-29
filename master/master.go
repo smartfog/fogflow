@@ -226,9 +226,7 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 	if len(notifyCtxReq.ContextResponses) == 0 {
 		return
 	}
-
-	contextObj := CtxElement2Object(&(notifyCtxReq.ContextResponses[0].ContextElement))
-
+	contextObj := CtxElement2Object(&notifyCtxReq.ContextResponses[0].ContextElement)
 	switch stype {
 	// registry of an operator
 	case "Operator":
@@ -480,7 +478,6 @@ func (master *Master) queryWorkers() []*ContextObject {
 func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
 	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY=========")
 	DEBUG.Println(notifyCtxAvailReq)
-
 	subID := notifyCtxAvailReq.SubscriptionId
 
 	var action string
@@ -507,14 +504,16 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	entityRegistration := EntityRegistration{}
 
 	ctxObj := master.RetrieveContextEntity(entityId.ID)
-
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
+		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		entityRegistration.MsgFormat = entityId.MsgFormat
 	} else {
 		entityRegistration.ID = ctxObj.Entity.ID
 		entityRegistration.Type = ctxObj.Entity.Type
-
+		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		entityRegistration.MsgFormat = entityId.MsgFormat
 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
 		for attrName, attrValue := range ctxObj.Attributes {
 			attributeRegistration := ContextRegistrationAttribute{}

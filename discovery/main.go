@@ -49,6 +49,7 @@ func main() {
 
 		// convenient ngsi9 API
 		rest.Get("/ngsi9/registration/#eid", iotDiscovery.getRegisteredEntity),
+		rest.Get("/ngsi9/ngsi-ld/registration/#eid", iotDiscovery.getRegisteredLDEntity),
 		rest.Get("/ngsi9/subscription/#sid", iotDiscovery.getSubscription),
 		rest.Get("/ngsi9/subscription", iotDiscovery.getSubscriptions),
 
