@@ -679,13 +679,12 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 
 		err := json.Unmarshal(reqBytes, &notifyRequest)
 		var fiwareService string
-	 	//var fiwareServicePath string	
+		//var fiwareServicePath string
 		if r.Header.Get("fiware-service") != "" {
-			 fiwareService = r.Header.Get("fiware-service")
+			fiwareService = r.Header.Get("fiware-service")
 		} else {
 			fiwareService = "default"
-		 }
-
+		}
 
 		if err != nil {
 			err := errors.New("not able to decode  orion update")
@@ -710,12 +709,12 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
 				var fsp string
 				if r.Header.Get("fiware-servicePath") != "" {
-                                       fsp  = r.Header.Get("fiware-servicePath")
-                                 } else {
-                                                //deSerializedEntity["fiwareServicePath"] = "default"
-                                        fsp = "default"
-                                  }
-                                 deSerializedEntity["fiwareServicePath"] = fsp
+					fsp = r.Header.Get("fiware-servicePath")
+				} else {
+					//deSerializedEntity["fiwareServicePath"] = "default"
+					fsp = "default"
+				}
+				deSerializedEntity["fiwareServicePath"] = fsp
 
 				deSerializedEntity["@context"] = context
 				deSerializedEntity["createdAt"] = time.Now().String()
@@ -1332,7 +1331,6 @@ func (tb *ThinBroker) UnsubscribeLDContext(w rest.ResponseWriter, r *rest.Reques
 	// remove the subscription from the map
 	delete(tb.ldSubscriptions, subID)
 }
-
 
 /*
 	Unsubscribe to the NGSIV2 subscriber
@@ -2112,17 +2110,17 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 				} else {
 					deSerializedEntity["fiwareServicePath"] = "default"
 				}*/
-				 var fsp string
-                                 if r.Header.Get("fiware-servicePath") != "" {
-                                            fsp  = r.Header.Get("fiware-servicePath")
-                                  } else {
-                                                //deSerializedEntity["fiwareServicePath"] = "default"
-                                             fsp = "default"
-                                   }
-                                  //if fiwareService != "default" && fsp == "default" {
-                                    //         fsp = "/"
-                                  // }
-                                deSerializedEntity["fiwareServicePath"] = fsp
+				var fsp string
+				if r.Header.Get("fiware-servicePath") != "" {
+					fsp = r.Header.Get("fiware-servicePath")
+				} else {
+					//deSerializedEntity["fiwareServicePath"] = "default"
+					fsp = "default"
+				}
+				//if fiwareService != "default" && fsp == "default" {
+				//         fsp = "/"
+				// }
+				deSerializedEntity["fiwareServicePath"] = fsp
 				tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 			}
 		}
@@ -2136,7 +2134,7 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
 	for k, v := range elem {
-		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context"  && k != "mgsFormat" && k != "fiwareServicePath" {
+		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
 				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
 				attrMap := elem[k].(map[string]interface{})            // to be updated as
@@ -2366,8 +2364,6 @@ func (tb *ThinBroker) compactData(entity map[string]interface{}, context interfa
 	return compacted, err
 }
 
-
-
 func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Request) {
 	var context []interface{}
 	context = append(context, DEFAULT_CONTEXT)
@@ -2385,7 +2381,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			fiwareServicePath = "default"
 		}
-		fmt.Println("fiwareServicePath",fiwareServicePath)
+		fmt.Println("fiwareServicePath", fiwareServicePath)
 		contextInPayload := true
 		//Get Link header if present
 		if link := r.Header.Get("Link"); link != "" {
@@ -2490,11 +2486,11 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				}
 				// save subscription
 				for key, entity := range deSerializedSubscription.Entities {
-			                if entity.ID != "" {
+					if entity.ID != "" {
 						entity.ID = entity.ID + "@" + fiwareService
-					 }
-						deSerializedSubscription.Entities[key] = entity
-				 }
+					}
+					deSerializedSubscription.Entities[key] = entity
+				}
 
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
@@ -2800,7 +2796,7 @@ func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 
 func (tb *ThinBroker) checkMatcheLdAttr(ctxElemAttrs []string, sid string) bool {
 	tb.ldSubscriptions_lock.RLock()
-	 _, exist := tb.ldSubscriptions[sid]
+	_, exist := tb.ldSubscriptions[sid]
 	if exist == false {
 		tb.ldSubscriptions_lock.RUnlock()
 		return false

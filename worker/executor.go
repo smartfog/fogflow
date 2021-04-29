@@ -574,7 +574,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
 	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	sid, err := client.SubscribeLdContext(&LdSubscription, true, Fs, Fsp)
-	fmt.Println("sid",sid)
+	fmt.Println("sid", sid)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err

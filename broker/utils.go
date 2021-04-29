@@ -533,26 +533,26 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		var id string
 		//var updatedAttr string
 		for _, ldEle := range ldCompactedElems {
-			id,_ = FiwareId(ldEle["id"].(string))
+			id, _ = FiwareId(ldEle["id"].(string))
 			var updateAttr string
 			result := make(map[string]interface{})
 			if val, ok := ldEle["command"]; ok {
 				commandResult := val.(map[string]interface{})
-				if _, ok := commandResult["value"]; ok { 
+				if _, ok := commandResult["value"]; ok {
 					updateAttr = commandResult["value"].(string)
 					result["type"] = "Property"
 					result["value"] = ""
 					notifyURL = URL + "/ngsi-ld/v1/entities/" + id + "/attrs/" + updateAttr
 					body, err := json.Marshal(result)
 					if err != nil {
-                                             return err
-                                        }
-                                        err = patchRequest(body, notifyURL, fiwareService, fiwareServicePath, httpsCfg)
-                                        return err
+						return err
+					}
+					err = patchRequest(body, notifyURL, fiwareService, fiwareServicePath, httpsCfg)
+					return err
 				}
 			}
 		}
-			//commandResult := ldEle["command"]
+		//commandResult := ldEle["command"]
 	}
 	return nil
 }
@@ -563,11 +563,11 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 		return err
 	}
 	if fiwreService != "default" {
-               req.Header.Add("fiware-service", fiwreService)
-        }
-        if FiwareServicePath != "default" {
-                req.Header.Add("fiware-servicepath", FiwareServicePath)
-        }
+		req.Header.Add("fiware-service", fiwreService)
+	}
+	if FiwareServicePath != "default" {
+		req.Header.Add("fiware-servicepath", FiwareServicePath)
+	}
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
@@ -589,7 +589,6 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 
 	return nil
 }
-
 
 func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePath string, httpsCfg *HTTPS) error {
 	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
@@ -686,7 +685,7 @@ func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
 	recCtxEleMap := recCtxEle.(map[string]interface{})
 	currCtxEleMap := currCtxEle.(map[string]interface{})
 	for attr, _ := range recCtxEleMap {
-		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" && attr != "fiwareServicePath" && attr != "msgFormat"{
+		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" && attr != "fiwareServicePath" && attr != "msgFormat" {
 			if isNewLdAttribute(attr, currCtxEleMap) == true {
 				return true
 			}
@@ -713,18 +712,16 @@ func contentTypeValidator(cType string) error {
 }
 
 func getActualEntity(resultEntity map[string]interface{}) string {
-        id := resultEntity["id"].(string)
-        idSplit := strings.Split(id, "@")
-        actualId := idSplit[0]
-        return actualId
+	id := resultEntity["id"].(string)
+	idSplit := strings.Split(id, "@")
+	actualId := idSplit[0]
+	return actualId
 }
 
 func getIoTID(id string, fiwareService string) string {
-        Id := id + "@" + fiwareService
-        return Id
+	Id := id + "@" + fiwareService
+	return Id
 }
-
-
 
 func unsubscribeContextLDProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
 	unsubscription := &UnsubscribeContextRequest{

@@ -428,11 +428,10 @@ func (fd *FastDiscovery) getRegisteredLDEntity(w rest.ResponseWriter, r *rest.Re
 	w.WriteJson(registration)
 }
 
-
 func (fd *FastDiscovery) getRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {
-        var eid = r.PathParam("eid")
-        registration := fd.repository.retrieveRegistration(eid)
-        w.WriteJson(registration)
+	var eid = r.PathParam("eid")
+	registration := fd.repository.retrieveRegistration(eid)
+	w.WriteJson(registration)
 }
 
 func (fd *FastDiscovery) deleteRegisteredEntity(w rest.ResponseWriter, r *rest.Request) {

@@ -834,7 +834,6 @@ func (tMgr *TaskMgr) selector2Subscription(inputSelector *InputStreamConfig, geo
 // the main function to deal with data-driven and context aware task orchestration
 //
 
-
 func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction string, entityRegistration *EntityRegistration) {
 	INFO.Println("handle the change of stream availability")
 	INFO.Println(subID, entityAction, entityRegistration.ID)
