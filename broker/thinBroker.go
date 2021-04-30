@@ -2514,9 +2514,11 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					if entity.ID != "" {
 						entity.ID = entity.ID + "@" + fiwareService
 					}
+					if entity.IdPattern == "" &&  entity.ID == "" {
+						entity.IsPattern = true
+					}
 					deSerializedSubscription.Entities[key] = entity
 				}
-
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")

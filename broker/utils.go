@@ -4,15 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"github.com/piprate/json-gold/ld"
-	. "github.com/smartfog/fogflow/common/constants"
-	. "github.com/smartfog/fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+	"fmt"
+	"github.com/piprate/json-gold/ld"
+        . "github.com/smartfog/fogflow/common/constants"
+        . "github.com/smartfog/fogflow/common/ngsi"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -431,7 +431,6 @@ var ldC *ld.RFC7324CachingDocumentLoader
 //creating expand singleton object for document loader
 
 func Expand_once() *ld.RFC7324CachingDocumentLoader {
-	fmt.Println(ldE)
 	if ldE == nil {
 		ExpandOnce.Do(
 			func() {
@@ -447,7 +446,6 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 //creating compact  singleton object for document loader
 
 func Compact_once() *ld.RFC7324CachingDocumentLoader {
-	fmt.Println(ldC)
 	if ldC == nil {
 		CompactOnce.Do(
 			func() {
@@ -474,7 +472,7 @@ func compactData(entity map[string]interface{}, context interface{}) (interface{
 func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
 	elements := make(map[string]interface{})
 	for k, _ := range element {
-		if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
+		if k != "modifiedAt" && k != "createdAt" {
 			elements[k] = element[k]
 		}
 	}
@@ -610,7 +608,6 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 		client = httpsCfg.GetHTTPClient()
 	}
 	resp, err := client.Do(req)
-	fmt.Println(resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
