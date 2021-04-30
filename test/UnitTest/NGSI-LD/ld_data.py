@@ -672,22 +672,7 @@ subdata33=\
                                                                 "object": "urn:ngsi-ld:camera:c1"
                                                 }
                                 }
-                },
-                "@context": [
-                                {
-                                                "Vehicle": "http://example.org/vehicle/Vehicle",
-                                                "brandName": "http://example.org/vehicle/brandName",
-                                                "speed": "http://example.org/vehicle/speed",
-                                                "isParked": {
-                                                                "@type": "@id",
-                                                                "@id": "http://example.org/common/isParked"
-                                                },
-                                                "providedBy": {
-                                                                "@type": "@id",
-                                                                "@id": "http://example.org/common/providedBy"
-                                                }
-                                }
-                ]
+                }
 }
 
 # Payload to create nested entity with context in link header
@@ -1937,5 +1922,140 @@ subdata64=\
                     }
      }
 }
+]
+
+testData74=\
+ [{
+  	"id": "urn:ngsi-ld:Device:water001",
+  	"type": "Device",
+  	"on": {
+  		"type": "Property",
+  		"value": " "
+  	}
+  }]
+
+testData75=\
+ {
+        "id": "urn:ngsi-ld:Device:water001",
+        "type": "Device",
+        "on": {
+                "type": "Property",
+                "value": " "
+        }
+  }
+
+subData80 = \
+{
+                "type": "Subscription",
+                "entities": [{
+			"id":"urn:ngsi-ld:Device:water080",
+                       "type": "Device"
+                }],
+              "notification": {
+                  "format": "normalized",
+                  "endpoint": {
+                           "uri": "http://180.179.214.202:8888",
+                           "accept": "application/ld+json"
+                   }
+               }
+ }
+
+upsertMultipleCommand = \
+[
+  {
+  	"id": "urn:ngsi-ld:Device:water001",
+  	"type": "Device",
+  	"on1": {
+  		"type": "Property",
+  		"value": " "
+  	}
+   },
+   {
+        "id": "urn:ngsi-ld:Device:water002",
+        "type": "Device",
+        "on2": {
+                "type": "Property",
+                "value": " "
+        }
+   },
+   {
+        "id": "urn:ngsi-ld:Device:water003",
+        "type": "Device",
+        "on3": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+upsertCommand = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:water001",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+
+upsertCommand80 = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:water080",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+
+
+DelData= \
+ [{
+ 	"id": "urn:ngsi-ld:Vehicle:A109",
+ 	"type": "Device",
+ 	"brandName": {
+ 		"type": "Property",
+ 		"value": "xyzeee"
+ 	},
+ 	"isParked": {
+ 		"type": "Relationship",
+ 		"object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+ 		"providedBy": {
+ 			"type": "Relationship",
+ 			"object": "urn:ngsi-ld:Person:Bob"
+ 		}
+ 	},
+ 	"speed": {
+ 		"type": "Property",
+ 		"value": 30
+ 	},
+ 	"location": {
+ 		"type": "GeoProperty",
+ 		"value": {
+ 			"type": "Point",
+ 			"coordinates": [-8.5, 41.2]
+ 		}
+ 	}
+ }]
+test89 = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:test89",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
 ]
 

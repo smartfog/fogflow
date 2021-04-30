@@ -879,12 +879,19 @@ func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]
 	return nil, 0
 }
 
-func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool) (string, error) {
+func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool, fs string , fsp string) (string, error) {
+	
 	body, err := json.Marshal(*sub)
 	if err != nil {
-		return "", err
-	}
-	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
+                return "", err
+        }
+        req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
+        if fs != "" {
+                req.Header.Add("fiware-service", fs)
+        }
+        if fsp != "" {
+                req.Header.Add("fiware-servicepath", fsp)
+        }
 	req.Header.Add("Content-Type", "application/ld+json")
 	req.Header.Add("Accept", "application/ld+json")
 	req.Header.Add("Link", "<{{link}}>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
