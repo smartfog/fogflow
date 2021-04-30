@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 )
 
 type InterSiteSubscription struct {

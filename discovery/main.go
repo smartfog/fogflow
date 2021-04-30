@@ -16,8 +16,8 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/config"
+	. "fogflow/common/ngsi"
 )
 
 func main() {

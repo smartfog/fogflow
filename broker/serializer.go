@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 	"strings"
 	"time"
 )

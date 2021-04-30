@@ -3,7 +3,7 @@ package datamodel
 import (
 	"encoding/json"
 
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 )
 
 // Message represents a single task invocation

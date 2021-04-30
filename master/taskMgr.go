@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 func hash(s string) uint32 {

@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/smartfog/fogflow/common/communicator"
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/communicator"
+	. "fogflow/common/config"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type Worker struct {

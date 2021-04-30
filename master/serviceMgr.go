@@ -6,8 +6,8 @@ import (
 
 	"github.com/google/uuid"
 
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type TaskIntentRecord struct {

@@ -10,9 +10,10 @@ import (
 	"os"
 	"strconv"
 
+	. "fogflow/common/config"
+	. "fogflow/common/ngsi"
+
 	"github.com/ant0ine/go-json-rest/rest"
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type RestApiSrv struct {

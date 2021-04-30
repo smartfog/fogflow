@@ -10,13 +10,14 @@ import (
 	"sync"
 	"time"
 
+	. "fogflow/common/config"
+	. "fogflow/common/constants"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
+
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/google/uuid"
 	"github.com/piprate/json-gold/ld"
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/constants"
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 type ThinBroker struct {

@@ -5,14 +5,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/piprate/json-gold/ld"
-	. "github.com/smartfog/fogflow/common/constants"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/constants"
+	. "fogflow/common/ngsi"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/piprate/json-gold/ld"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {

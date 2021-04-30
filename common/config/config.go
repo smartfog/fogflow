@@ -10,8 +10,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type DatabaseCfg struct {

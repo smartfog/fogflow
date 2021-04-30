@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/smartfog/fogflow/common/communicator"
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/communicator"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 
-	. "github.com/smartfog/fogflow/common/config"
+	. "fogflow/common/config"
 )
 
 type Master struct {
