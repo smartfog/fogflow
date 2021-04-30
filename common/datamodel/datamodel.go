@@ -165,9 +165,11 @@ type DockerImage struct {
 }
 
 type InputStream struct {
-	Type          string
-	ID            string
-	AttributeList []string
+	Type              string
+	ID                string
+	FiwareServicePath string
+	MsgFormat         string
+	AttributeList     []string
 }
 
 func (myInputStream *InputStream) Equal(otherInputStream *InputStream) bool {
@@ -284,4 +286,16 @@ type PrometheusConfig struct {
 	Labels  struct {
 		Job string `json:"job"`
 	} `json:"labels"`
+}
+
+func SetFiwareServicePath(scheduledTaskInstance ScheduledTaskInstance, fiwareServicePath string, msgFormat string) ScheduledTaskInstance {
+	//fmt.Println("SetFiwareServicePath",fiwareServicePath)
+	newInputStream := make([]InputStream, 0)
+	for _, entity := range scheduledTaskInstance.Inputs {
+		entity.FiwareServicePath = fiwareServicePath
+		entity.MsgFormat = msgFormat
+		newInputStream = append(newInputStream, entity)
+	}
+	scheduledTaskInstance.Inputs = newInputStream
+	return scheduledTaskInstance
 }

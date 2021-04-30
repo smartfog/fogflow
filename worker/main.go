@@ -36,8 +36,8 @@ func main() {
 
 	// construct the unique id for this worker
 	myID := "Worker." + config.SiteID
-	if (*id) != "0" {
-		myID = myID + "." + (*id)
+	if *id != "0" {
+		myID = myID + "." + *id
 	}
 
 	// start the worker to deal with tasks

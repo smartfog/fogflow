@@ -512,14 +512,19 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	LdSubscription := LDSubscriptionRequest{}
 
 	newEntity := EntityId{}
-
+	var Fs, Fsp, ID string
 	if len(inputStream.ID) > 0 { // for a specific context entity
 		newEntity.Type = inputStream.Type
-		newEntity.ID = inputStream.ID
-	} else { // for all context entities with a specific type
+		ID, Fs = FiwareId(inputStream.ID)
+		if Fs == "default" {
+			Fs = ""
+		}
+		newEntity.ID = ID
+		Fsp = inputStream.FiwareServicePath
+	} else {
 		newEntity.Type = inputStream.Type
 	}
-
+	fmt.Println("FS,FSP", Fs, Fsp)
 	LdSubscription.Entities = make([]EntityId, 0)
 	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
 	LdSubscription.Type = "Subscription"
@@ -531,7 +536,8 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	brokerURL := e.brokerURL
 	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
 	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	sid, err := client.SubscribeLdContext(&LdSubscription, true)
+	sid, err := client.SubscribeLdContext(&LdSubscription, true, Fs, Fsp)
+	fmt.Println("sid", sid)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err

@@ -223,7 +223,7 @@ func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state 
 
 func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 	INFO.Println("execute task ", task.ID, " with operation", task.DockerImage)
-	INFO.Printf("task configuration %+v\n", (*task))
+	INFO.Printf("task configuration %+v\n", *task)
 
 	w.taskList_lock.Lock()
 	defer w.taskList_lock.Unlock()
