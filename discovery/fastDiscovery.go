@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"strings"
 	"sync"
-
 	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
@@ -425,6 +424,7 @@ func (fd *FastDiscovery) getRegisteredLDEntity(w rest.ResponseWriter, r *rest.Re
 		newEid = eid + "@" + "default"
 	}
 	registration := fd.repository.retrieveRegistration(newEid)
+        registration.ID ,_ = FiwareId(registration.ID)
 	w.WriteJson(registration)
 }
 

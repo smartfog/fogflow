@@ -1925,8 +1925,14 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
+	var fiwareService string
+	//var fiwareServicePath string
+	if r.Header.Get("fiware-service") != "" {
+		fiwareService = r.Header.Get("fiware-service")
+	} else {
+		fiwareService = "default"
+	}
 	if err != nil {
-		w.WriteHeader(500)
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	} else {
@@ -1945,18 +1951,23 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 		for _, ctx := range LDupdateCtxReq {
 			var context []interface{}
-			contextInPayload := true
-			//Get Link header if present
+			contextInPayload := false
+			cType := r.Header.Get("Content-Type")
+			cTypeInLower := strings.ToLower(cType)
 			Link := r.Header.Get("Link")
-			if link := r.Header.Get("Link"); link != "" {
-				contextInPayload = false                    // Context in Link header
-				linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-				if linkMap["rel"] != DEFAULT_CONTEXT {
-				}
+			//if Link == "" {
+			//	fmt.Println("Link is blank")
+			//}
+			if cTypeInLower == "application/ld+json" {
+				contextInPayload = true
+			} else {
+				/*if link := r.Header.Get("Link"); link != "" {
+					linkMap := tb.extractLinkHeaderFields(link)
+					if linkMap["rel"] != DEFAULT_CONTEXT {
+					}
+				}*/
+				context = append(context, DEFAULT_CONTEXT)
 			}
-			context = append(context, DEFAULT_CONTEXT)
-
-			//Get a resolved object ([]interface object)
 			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 			if err != nil {
 
@@ -1976,6 +1987,12 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				if err.Error() == "Type can not be nil!" {
 					problemSet := ProblemDetails{}
 					problemSet.Details = "Type can not be nil!"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				}
+				if err.Error() == "@context is Empty" {
+					problemSet := ProblemDetails{}
+					problemSet.Details = "@context can not be nil if Content-Type is application/ld+json"
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				}
@@ -2002,10 +2019,18 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					}
+					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
 					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
-					fmt.Println(deSerializedEntity)
+					var fsp string
+					if r.Header.Get("fiware-servicePath") != "" {
+							fsp  = r.Header.Get("fiware-servicePath")
+					} else {
+						//deSerializedEntity["fiwareServicePath"] = "default"
+							fsp = "default"
+					}
+					deSerializedEntity["fiwareServicePath"] = fsp
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 				}
@@ -2025,7 +2050,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 	}
 }
-
 // Create an NGSI-LD Entity
 
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
@@ -2306,6 +2330,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq.ContextRegistrations = ctxRegistrations
 
 	// Send the registration to discovery
+	fmt.Println("registerCtxReq",registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
