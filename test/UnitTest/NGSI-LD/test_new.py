@@ -10,9 +10,9 @@ import ld_data
 import sys
 
 # change it by broker ip and port
-brokerIp="http://180.179.214.202:8070"
-accumulatorURl ="http://180.179.214.202:8888"
-discoveryIp="http://180.179.214.202:8090"
+brokerIp="http://127.0.0.1:8070"
+accumulatorURl ="http://127.0.0.1:8888"
+discoveryIp="http://127.0.0.1:8090"
 
 # test if header content-Type application/json is allowed or not 
 def test_case74():
