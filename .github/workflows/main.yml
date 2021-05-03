@@ -152,9 +152,9 @@ jobs:
 
         echo "Persistance Testing !!!"  
         cd ../persistance/
-        pytest -s -v test_persistance.py --cov > result.txt
-        sed -i -e '24,137d' result.txt
-        sed -i -e '27,28d' result.txt
-        cat result.txt
+        pytest -s -v test_persistance.py 
+        #sed -i -e '24,137d' result.txt
+        #sed -i -e '27,28d' result.txt
+        #cat result.txt
 
         echo "Testing Done !!!!"
