@@ -31,7 +31,7 @@ def upsertNotificationNew():
     print(entities)
     return "Done"
 
-@app.route('/validateupsert')
+@app.route('/validateupsert', methods=['GET'])
 def upsertNotificationvalidator():
     global entityIdDict
     print(entityIdDict)
