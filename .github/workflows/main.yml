@@ -61,10 +61,13 @@ jobs:
         pip install requests
         pip install -U pytest
         pip install pytest-cov
+        pip install pylint
+        sudo npm install -g eslint
         sudo apt-get install curl
         
-    - name: Running GoLint - a linter for golang
+    - name: Running Linters [GoLint - a linter for golang, Pylint - a linter for python,  ESLint - for Javascript]
       run: |
+        #For go directories
         go get -u golang.org/x/lint/golint
         export GOBIN=/home/runner/go/bin
         cd discovery/
@@ -76,6 +79,12 @@ jobs:
         cd ../worker
         golint
         cd ../
+        
+        echo "For python files"
+        find . -name '*.py' -exec pylint {} \; 
+                        
+        echo "For Javascript files"
+        eslint . --no-eslintrc --format table || true
         
     - name: Launching Docker containers
       run: |
