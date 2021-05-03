@@ -1,5 +1,4 @@
 import os,sys
-# change the path accoring to the test folder in system
 from datetime import datetime
 import copy
 import json
@@ -10,8 +9,8 @@ import ld_data
 import sys
 
 # change it by broker ip and port
-brokerIp="http://172.30.48.24:8070"
-discoveryIp="http://172.30.48.24:8090"
+brokerIp="http://127.0.0.1:8070"
+discoveryIp="http://127.0.0.1:8090"
 
 print("Testing of NGSI-LD")
 # testCase 1

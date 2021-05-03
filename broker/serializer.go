@@ -34,6 +34,11 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
 					mp := interfaceArray[0].(map[string]interface{})
+					_, oK := mp["@type"]
+					if oK == false {
+						err := errors.New("attribute type can not be nil!")
+						return nil, err
+					}
 					typ := mp["@type"].([]interface{})
 					if len(typ) > 0 {
 						if strings.Contains(typ[0].(string), "Property") {
@@ -44,7 +49,6 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 								entity[k] = property
 							}
 						} else if strings.Contains(typ[0].(string), "Relationship") {
-
 							relationship, err := sz.getRelationship(mp)
 							if err != nil {
 								return entity, err
@@ -56,12 +60,10 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				}
 			}
 		}
-
 	}
 	entity["modifiedAt"] = time.Now().String()
 	return entity, nil
 }
-
 func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	subscription := LDSubscriptionRequest{}
 	for _, val := range expanded {

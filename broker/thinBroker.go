@@ -2623,24 +2623,15 @@ func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, cont
 				err := errors.New("Id can not be nil!")
 				return nil, err
 			}
-			ownerURL := tb.queryOwnerOfLDEntity(entityId)
-			if ownerURL == tb.MyURL {
-				/*tb.ldEntities_lock.RLock()
-				if _, ok := tb.ldEntities[entityId]; ok == true {
-					fmt.Println("Already exists here...!!")
-					tb.ldEntities_lock.RUnlock()
-					err := errors.New("AlreadyExists!")
-					fmt.Println("Error: ", err.Error())
+			if contextInPayload == true {
+				if Context := itemsMap["@context"]; Context == nil {
+					err := errors.New("@context is Empty")
 					return nil, err
 				}
-				tb.ldEntities_lock.RUnlock()*/
-			}
-			if ownerURL != tb.MyURL {
-				/*ownerURL = strings.TrimSuffix(ownerURL, "/ngsi10")
-				link := r.Header.Get("Link") // Pick link header if present
-				fmt.Println("Here 1..., link sending to remote broker:", link, "\nOwner URL:", ownerURL, "\nMy URL:", tb.MyURL)
-				err := tb.updateLDContextElement2RemoteSite(itemsMap, ownerURL, link)
-				return nil, err*/
+				if Context := itemsMap["@context"].([]interface{}); len(Context) == 0 {
+					err := errors.New("@context is Empty")
+					return nil, err
+				}
 			}
 		}
 
