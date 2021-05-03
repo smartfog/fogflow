@@ -1954,7 +1954,7 @@ subData80 = \
               "notification": {
                   "format": "normalized",
                   "endpoint": {
-                           "uri": "http://180.179.214.202:8888",
+                           "uri": "http://127.0.0.1:8888",
                            "accept": "application/ld+json"
                    }
                }
