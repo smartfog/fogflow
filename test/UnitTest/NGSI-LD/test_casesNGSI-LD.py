@@ -1438,7 +1438,7 @@ def test_case80():
         print(rSubscribe.status_code)
 	time.sleep(5)
 	getURL=accumulatorURl+"/validateupsert"
-	rget = requests.post(getURL)
+	rget = requests.get(getURL)
 	print(rget.content)
         assert rget.content == "200"
 
