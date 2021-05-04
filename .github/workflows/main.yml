@@ -61,10 +61,13 @@ jobs:
         pip install requests
         pip install -U pytest
         pip install pytest-cov
+        pip install pyflakes
+        sudo npm install -g eslint
         sudo apt-get install curl
         
-    - name: Running GoLint - a linter for golang
+    - name: Running Linters [GoLint - a linter for golang, Pyflakes - a linter for python,  ESLint - for Javascript]
       run: |
+        #For go directories
         go get -u golang.org/x/lint/golint
         export GOBIN=/home/runner/go/bin
         cd discovery/
@@ -76,6 +79,12 @@ jobs:
         cd ../worker
         golint
         cd ../
+        
+        echo "For python files"
+        pyflakes . || true
+                        
+        echo "For Javascript files"
+        eslint . --no-eslintrc --format table || true
         
     - name: Launching Docker containers
       run: |
@@ -136,10 +145,10 @@ jobs:
 
         echo "NGSI-LD Testing !!!"
         cd ../NGSI-LD/
-        pytest -s -v test_casesNGSI-LD.py --cov > result.txt
-        sed -i -e '202,315d' result.txt 
-        sed -i -e '205,206d' result.txt
-        cat result.txt
+        pytest -s -v test_casesNGSI-LD.py 
+        #sed -i -e '202,315d' result.txt 
+        #sed -i -e '205,206d' result.txt
+        #cat result.txt
 
         echo "Persistance Testing !!!"  
         cd ../persistance/
