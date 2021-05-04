@@ -81,7 +81,7 @@ jobs:
         cd ../
         
         echo "For python files"
-        pyflakes . 
+        pyflakes . || true
                         
         echo "For Javascript files"
         eslint . --no-eslintrc --format table || true
