@@ -61,11 +61,11 @@ jobs:
         pip install requests
         pip install -U pytest
         pip install pytest-cov
-        pip install pylint
+        pip install pyflakes
         sudo npm install -g eslint
         sudo apt-get install curl
         
-    - name: Running Linters [GoLint - a linter for golang, Pylint - a linter for python,  ESLint - for Javascript]
+    - name: Running Linters [GoLint - a linter for golang, Pyflakes - a linter for python,  ESLint - for Javascript]
       run: |
         #For go directories
         go get -u golang.org/x/lint/golint
@@ -81,7 +81,7 @@ jobs:
         cd ../
         
         echo "For python files"
-        find . -name '*.py' -exec pylint {} \; 
+        pyflakes . 
                         
         echo "For Javascript files"
         eslint . --no-eslintrc --format table || true
