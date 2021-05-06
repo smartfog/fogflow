@@ -2026,10 +2026,10 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					deSerializedEntity["@context"] = context
 					var fsp string
 					if r.Header.Get("fiware-servicePath") != "" {
-							fsp  = r.Header.Get("fiware-servicePath")
+						fsp = r.Header.Get("fiware-servicePath")
 					} else {
 						//deSerializedEntity["fiwareServicePath"] = "default"
-							fsp = "default"
+						fsp = "default"
 					}
 					deSerializedEntity["fiwareServicePath"] = fsp
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
@@ -2051,6 +2051,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 	}
 }
+
 // Create an NGSI-LD Entity
 
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
@@ -2331,7 +2332,6 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq.ContextRegistrations = ctxRegistrations
 
 	// Send the registration to discovery
-	fmt.Println("registerCtxReq",registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
@@ -2407,7 +2407,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			fiwareServicePath = "default"
 		}
-		fmt.Println("fiwareServicePath", fiwareServicePath)
 		contextInPayload := true
 		//Get Link header if present
 		if link := r.Header.Get("Link"); link != "" {
@@ -2515,7 +2514,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					if entity.ID != "" {
 						entity.ID = entity.ID + "@" + fiwareService
 					}
-					if entity.IdPattern == "" &&  entity.ID == "" {
+					if entity.IdPattern == "" && entity.ID == "" {
 						entity.IsPattern = true
 					}
 					deSerializedSubscription.Entities[key] = entity
@@ -2901,7 +2900,6 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 		ldSubscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	}
 	tb.ldSubscriptions_lock.Unlock()
-	fmt.Println(ldSubscription.Subscriber.Integration)
 	FiwareService := ldSubscription.Subscriber.FiwareService
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
 	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
@@ -3296,31 +3294,18 @@ func (tb *ThinBroker) ldDeleteEntity(eid string) error {
 }
 
 func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Request) {
-	var req interface{}
 	var eid = r.PathParam("eid")
 	var attr = r.PathParam("attr")
 	var newEid string
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		reqBytes, err := ioutil.ReadAll(r.Body)
 		if r.Header.Get("fiware-service") != "" {
 			newEid = eid + "@" + r.Header.Get("fiware-service")
 			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
 		} else {
 			newEid = eid + "@" + "default"
 		}
-		if err != nil {
-			rest.Error(w, err.Error(), 400)
-			return
-		}
-		// Unmarshal using a generic interface
-		err = json.Unmarshal(reqBytes, &req)
-		if err != nil {
-			rest.Error(w, err.Error(), 400)
-			return
-		}
 	}
-	fmt.Println("@@@@@@@@@@@2newEid@@@@@@@@@@@2", newEid, attr)
-	err := tb.ldDeleteEntityAttribute(newEid, attr, req)
+	err := tb.ldDeleteEntityAttribute(newEid, attr /*req*/)
 
 	if err == nil {
 		w.WriteHeader(204)
@@ -3330,7 +3315,7 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	}
 }
 
-func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string, req interface{}) error {
+func (tb *ThinBroker) ldDeleteEntityAttribute(eid string, attr string /*req interface{}*/) error {
 	tb.ldEntities_lock.Lock()
 	if tb.ldEntities[eid] != nil {
 		entityMap := tb.ldEntities[eid].(map[string]interface{})
@@ -3712,13 +3697,17 @@ func (tb *ThinBroker) deleteLDSubscription(sid string) error {
 	defer tb.ldSubscriptions_lock.Unlock()
 	tb.subLinks_lock.RLock()
 	defer tb.subLinks_lock.RUnlock()
-
 	//for external subscription, we need to cancel all subscriptions to IoT Discovery and other Brokers
 	for index, otherSubID := range tb.main2Other[sid] {
 		if index == 0 {
 			tb.UnsubscribeContextAvailability(otherSubID)
 		} else {
-			unsubscribeContextLDProvider(otherSubID, tb.ldSubscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
+			//fmt.Println(" tb.ldSubscriptions[otherSubID]", tb.ldSubscriptions[otherSubID])
+			if _, exist := tb.ldSubscriptions[otherSubID]; exist {
+				unsubscribeContextLDProvider(otherSubID, tb.ldSubscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
+			} else {
+				tb.UnsubscribeContextAvailability(otherSubID)
+			}
 		}
 	}
 
