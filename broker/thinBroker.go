@@ -3298,14 +3298,14 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	var eid = r.PathParam("eid")
 	var attr = r.PathParam("attr")
 	var newEid string
-	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
+	//if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		if r.Header.Get("fiware-service") != "" {
 			newEid = eid + "@" + r.Header.Get("fiware-service")
 			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
 		} else {
 			newEid = eid + "@" + "default"
 		}
-	}
+	//}
 	err := tb.ldDeleteEntityAttribute(newEid, attr /*req*/)
 
 	if err == nil {
@@ -3423,12 +3423,14 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	tb.ldEntities_lock.Unlock()
 	return entities
 }
-func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string) []interface{} {
+func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService string) []interface{} {
+	var newEid string
 	tb.ldEntities_lock.Lock()
 	var entities []interface{}
 
 	for index, eid := range eids {
-		if entity, ok := tb.ldEntities[eid]; ok == true {
+		newEid = eid + "@" + fiwareService
+		if entity, ok := tb.ldEntities[newEid]; ok == true {
 			entityMap := entity.(map[string]interface{})
 			if entityMap["type"] == typ[index] {
 				compactEntity := tb.createOriginalPayload(entity)
