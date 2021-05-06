@@ -11,7 +11,7 @@
                 ./testperformance noOfthread gbid
 	To test get Entity by Type excute :
                 ./testperformance noOfthread gbtype
-	 
+
 */
 package main
 
@@ -22,10 +22,10 @@ import (
 	"sync"
 )
 
-var updateBrokerURL = "http://180.179.214.202:8070"  // broker URL
+var updateBrokerURL = "http://180.179.214.202:8070" // broker URL
 var id = "urn:ngsi-ld:latency:A102"
 var Etype = "latency"
-var my_ip = "http://180.179.214.202:8888"   // listner URL
+var my_ip = "http://180.179.214.202:8888" // listner URL
 
 var wg = &sync.WaitGroup{}
 
@@ -34,21 +34,21 @@ func main() {
 
 	// set no of thred to be executed
 	n := os.Args[2]
-	noOfThread ,_:= strconv.Atoi(n)
+	noOfThread, _ := strconv.Atoi(n)
 	if testType == "subscription" {
-	    subscribeContext(noOfThread)
+		subscribeContext(noOfThread)
 	} else if testType == "create" {
-	    updateContext(noOfThread)
+		updateContext(noOfThread)
 	} else if testType == "gbid" {
-	    getEntityByID(noOfThread)
+		getEntityByID(noOfThread)
 	} else if testType == "gbtype" {
-	    fmt.Println("test by type")
+		fmt.Println("test by type")
 	}
 
 }
 
 func updateContext(n int) {
-	for i := 0; i < n ; i = i+1 {
+	for i := 0; i < n; i = i + 1 {
 		wg.Add(1)
 		go func() {
 			update(i)
@@ -58,30 +58,29 @@ func updateContext(n int) {
 	wg.Wait()
 }
 
-
 func subscribeContext(n int) {
-        for i := 0; i < n ; i = i+1 {
+	for i := 0; i < n; i = i + 1 {
 		wg.Add(1)
 		go func() {
 			fmt.Println("Subscribe")
 			subscribe(i)
 			wg.Done()
 		}()
-        }
+	}
 	wg.Wait()
 }
 
 func getEntityByID(n int) {
-	for i := 0; i < n ; i = i+1 {
-                wg.Add(1)
-                go func() {
-                        fmt.Println("get Entity ById")
+	for i := 0; i < n; i = i + 1 {
+		wg.Add(1)
+		go func() {
+			fmt.Println("get Entity ById")
 			Eid := id + strconv.Itoa(i)
-                        queryContext(Eid,updateBrokerURL)
-                        wg.Done()
-                }()
-        }
-        wg.Wait()
+			queryContext(Eid, updateBrokerURL)
+			wg.Done()
+		}()
+	}
+	wg.Wait()
 }
 
 /*
@@ -101,22 +100,22 @@ func update(i int) {
 	newEle2["object"] = "urn:ngsi-ld:Car:A111"
 	ctxEle["brand"] = newEle1
 	ctxEle["isparked"] = newEle2
-        ctxElements := make([]map[string]interface{},0)
-	ctxElements = append(ctxElements,ctxEle)
+	ctxElements := make([]map[string]interface{}, 0)
+	ctxElements = append(ctxElements, ctxEle)
 	fmt.Println(ctxElements)
-	err := UpdateLdContext(ctxElements,updateBrokerURL)
+	err := UpdateLdContext(ctxElements, updateBrokerURL)
 	if err != nil {
-	    fmt.Println(err)
+		fmt.Println(err)
 	}
 }
 
 func subscribe(i int) {
 	LdSubscription := make(map[string]interface{})
-	newEntities := make([]map[string]interface{},0)
+	newEntities := make([]map[string]interface{}, 0)
 	newEntity := make(map[string]interface{})
-        newEntity["type"] = Etype
+	newEntity["type"] = Etype
 	newEntity["id"] = id + strconv.Itoa(i)
-        newEntities  = append(newEntities,newEntity)
+	newEntities = append(newEntities, newEntity)
 	LdSubscription["entities"] = newEntities
 	notification := make(map[string]interface{})
 	notification["format"] = "normalized"
@@ -127,6 +126,6 @@ func subscribe(i int) {
 	LdSubscription["notification"] = notification
 	LdSubscription["type"] = "Subscription"
 	brokerURL := updateBrokerURL
-	sid , _ := SubscribeContextRequestForNGSILD(LdSubscription, brokerURL)
+	sid, _ := SubscribeContextRequestForNGSILD(LdSubscription, brokerURL)
 	fmt.Println(sid)
 }

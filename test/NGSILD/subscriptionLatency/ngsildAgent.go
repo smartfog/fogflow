@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-//	. "github.com/smartfog/fogflow/common/ngsi"
+	//	. "github.com/smartfog/fogflow/common/ngsi"
 )
 
 // Query from FogFLow broker to get entity by ID
@@ -58,28 +58,24 @@ func UpdateLdContext(updateCtx []map[string]interface{}, IoTBrokerURL string) er
 	return nil
 }
 
-
-
 // subscribe Context
 
-
 func SubscribeContextRequestForNGSILD(sub map[string]interface{}, IoTBrokerURL string) (string, error) {
-        body, err := json.Marshal(sub)
-        if err != nil {
-                return "", err
-        }
-        req, err := http.NewRequest("POST", IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
-        req.Header.Add("Content-Type", "application/json")
-        req.Header.Add("Accept", "application/ld+json")
-        req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
-        res, err := http.DefaultClient.Do(req)
-        if res != nil {
-                defer res.Body.Close()
-        }
-        if err != nil {
+	body, err := json.Marshal(sub)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/ld+json")
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	res, err := http.DefaultClient.Do(req)
+	if res != nil {
+		defer res.Body.Close()
+	}
+	if err != nil {
 		fmt.Println(err)
-                return "" ,err
-        }
-        return "" ,nil
+		return "", err
+	}
+	return "", nil
 }
-
