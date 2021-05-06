@@ -346,7 +346,7 @@ def test_case21():
 '''
   To test to retrieve entities by attributes  
 '''
-def test_case22():
+#def test_case22():
 #	time.sleep(3)
 #        url=brokerIp+"/ngsi-ld/v1/entities?attrs=https://uri.etsi.org/ngsi-ld/default-context/brandName"
 #        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
@@ -1443,7 +1443,11 @@ def test_case80():
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
+<<<<<<< HEAD
 	#time.sleep(5)
+=======
+	time.sleep(5)
+>>>>>>> development
 	getURL=accumulatorURl+"/validateupsert"
 	rget = requests.get(getURL)
 	print(rget.content)
