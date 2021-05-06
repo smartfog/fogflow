@@ -3298,14 +3298,14 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	var eid = r.PathParam("eid")
 	var attr = r.PathParam("attr")
 	var newEid string
-	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
+	//if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		if r.Header.Get("fiware-service") != "" {
 			newEid = eid + "@" + r.Header.Get("fiware-service")
 			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
 		} else {
 			newEid = eid + "@" + "default"
 		}
-	}
+	//}
 	err := tb.ldDeleteEntityAttribute(newEid, attr /*req*/)
 
 	if err == nil {
