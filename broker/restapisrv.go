@@ -419,7 +419,7 @@ func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.
 					rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
 					return
 				}
-				entities := apisrv.broker.ldEntityGetById(eid, typ)
+				entities := apisrv.broker.ldEntityGetById(eid, typ, fiwareService string)
 				if len(entities) > 0 {
 					w.WriteHeader(200)
 					w.WriteJson(entities)
