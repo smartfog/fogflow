@@ -2352,8 +2352,13 @@ func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
 	tb.ldEntities_lock.RLock()
 	if entity := tb.ldEntities[eid]; entity != nil {
 		tb.ldEntities_lock.RUnlock()
-		compactEntity := tb.createOriginalPayload(entity)
-		return compactEntity
+		entityMap := entity.(map[string]interface{})
+		compactEntity := tb.createOriginalPayload(entityMap)
+		resultEntity := compactEntity.(map[string]interface{})
+		actualId := getActualEntity(resultEntity)
+		resultEntity["id"] = actualId
+		delete(resultEntity, "fiwareServicePath")
+		return resultEntity
 	} else {
 		tb.ldEntities_lock.RUnlock()
 		return nil
@@ -2374,7 +2379,7 @@ func (tb *ThinBroker) createOriginalPayload(entity interface{}) interface{} {
 
 	// Compacting the expanded entity.
 	entity1 := expandedEntity[0].(map[string]interface{})
-	compactEntity, err := tb.compactData(entity1, entityMap["@context"])
+	compactEntity, err := compactData(entity1, entityMap["@context"])
 	if err != nil {
 		DEBUG.Println("Error while compacting:", err)
 		return nil
@@ -2383,12 +2388,12 @@ func (tb *ThinBroker) createOriginalPayload(entity interface{}) interface{} {
 }
 
 // Compacting data to display to user in original form.
-func (tb *ThinBroker) compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
+/*func (tb *ThinBroker) compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
 	proc := ld.NewJsonLdProcessor()
 	options := ld.NewJsonLdOptions("")
 	compacted, err := proc.Compact(entity, context, options)
 	return compacted, err
-}
+}*/
 
 func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Request) {
 	var context []interface{}
@@ -3413,10 +3418,13 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 				}
 			}
 			if allExist == true {
-				actualEId := getActualEntity(entityMap)
-				entityMap["id"] = actualEId
 				compactEntity := tb.createOriginalPayload(entityMap)
-				entities = append(entities, compactEntity)
+				resultEntity := compactEntity.(map[string]interface{})
+				actualEId := getActualEntity(resultEntity)
+				resultEntity["id"] = actualEId
+				//compactEntity := tb.createOriginalPayload(entityMap)
+				delete(resultEntity, "fiwareServicePath")
+				entities = append(entities, resultEntity)
 			}
 		}
 	}
