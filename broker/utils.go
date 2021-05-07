@@ -429,7 +429,9 @@ var ExpandOnce sync.Once
 var CompactOnce sync.Once
 var ldE *ld.RFC7324CachingDocumentLoader
 var ldC *ld.RFC7324CachingDocumentLoader
+var expand_lock sync.RWMutex
 
+var compact_lock sync.RWMutex
 //creating expand singleton object for document loader
 
 func Expand_once() *ld.RFC7324CachingDocumentLoader {
@@ -485,7 +487,9 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	INFO.Println("NOTIFY: ", URL)
 	ldCompactedElems := make([]map[string]interface{}, 0)
 	for k, _ := range ldCtxElems {
+		compact_lock.Lock()
 		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+		compact_lock.Unlock()
 		if err != nil {
 			continue
 		}

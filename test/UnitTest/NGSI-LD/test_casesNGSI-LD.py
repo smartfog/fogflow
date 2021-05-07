@@ -244,27 +244,27 @@ def test_case16():
 '''
   To test to delete NGSI-LD context entity
 '''
-#def test_case17():
-#	#create NGSI-LD  entity
+def test_case17():
+	#create NGSI-LD  entity
 #	time.sleep(3)
-#        url=brokerIp+"/ngsi-ld/v1/entities/"
-#        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
- #       r=requests.post(url,data=json.dumps(ld_data.subdata32),headers=headers)
- #       print(r.content)
- #       print(r.status_code)
-#
-#   	#to delete corresponding entity
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata32),headers=headers)
+        print(r.content)
+        print(r.status_code)
+
+   	#to delete corresponding entity
 #	time.sleep(3)
-# 	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A999"
-#        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
-#	r=requests.delete(url,headers=headers)
-#        print(r.status_code)
-#        assert r.status_code == 204
+ 	url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A999"
+        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
+	r=requests.delete(url,headers=headers)
+        print(r.status_code)
+        assert r.status_code == 204
 
 #testCase 18
 '''
   To test to delete an attribute of an NGSI-LD context entity
-
+'''
 def test_case18():
 	#create NGSI-LD entity
         url=brokerIp+"/ngsi-ld/v1/entities/"
@@ -285,7 +285,6 @@ def test_case18():
         r=requests.delete(url)
 	print(r.status_code)
         assert r.status_code == 204
-'''
 
 
 #testCase 19
@@ -336,7 +335,7 @@ def test_case21():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         print(resp)
-        if resp["id"]=="urn:ngsi-ld:Vehicle:A4580":
+        if resp["id"]=="urn:ngsi-ld:Vehicle:A4580@default":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -356,10 +355,10 @@ def test_case21():
         #resInJson= resp_content.decode('utf8').replace("'", '"')
         #resp=json.loads(resInJson)
 #        print(r.content)
-        #if resp[0]["brandName"]["value"]=="Mercedes":
-         #       print("\nValidated")
+        #if resp[0]["brandName"]["value"]:
+                #print("\nValidated")
         #else:
-        #        print("\nNot Validated")
+                #print("\nNot Validated")
 #        print(r.status_code)
 #        assert r.status_code == 200
 
@@ -379,9 +378,9 @@ def test_case23():
 #testCase 24
 '''
   To test to retrieve a specific entity by ID and Type
-
+'''
 def test_case24():
-        url=brokerIp+"/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4580&type=Vehicle"
+        url=brokerIp+"/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4580&type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.get(url,headers=headers)
         resp_content=r.content
@@ -394,7 +393,7 @@ def test_case24():
                 print("\nNot Validated")
         #print(r.status_code)
         assert r.status_code == 200
-'''
+
 
 #testCase 25
 '''
@@ -466,20 +465,20 @@ def test_case28():
 '''
   To test to To retrieve a specific entity by IdPattern and Type
 '''
-#def test_case29():
- #       url=brokerIp+"/ngsi-ld/v1/entities?idPattern=urn:ngsi-ld:Vehicle:A.*&type=http://example.org/vehicle/Vehicle"
-  #      headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
-   #     r=requests.get(url,headers=headers)
-    #    resp_content=r.content
-   #     resInJson= resp_content.decode('utf8').replace("'", '"')
-   #     resp=json.loads(resInJson)
-   #     print(resp)
-   #     if resp[0]["type"]=="http://example.org/vehicle/Vehicle" and resp[0]["id"].find("A")!=-1:
-   #             print("\nValidated")
-   #     else:
-   #             print("\nNot Validated")
-   #     print(r.status_code)
-   #     assert r.status_code == 200
+def test_case29():
+        url=brokerIp+"/ngsi-ld/v1/entities?idPattern=urn:ngsi-ld:Vehicle:A.*&type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        resp_content=r.content
+        resInJson= resp_content.decode('utf8').replace("'", '"')
+        resp=json.loads(resInJson)
+        print(resp)
+        if resp[0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle" and resp[0]["id"].find("A")!=-1:
+                print("\nValidated")
+        else:
+                print("\nNot Validated")
+        print(r.status_code)
+        assert r.status_code == 200
 
 
 #testCase 30
@@ -616,13 +615,12 @@ def test_case36():
 #testCase 37
 '''
   To test to delete a specific subscription based on subscription id
-
+'''
 def test_case37():
         url=brokerIp+"/ngsi-ld/v1/subscriptions/urn:ngsi-ld:Subscription:7"
         r=requests.delete(url)
         print(r.status_code)
         assert r.status_code == 204
-'''
 
 #testCase 38
 '''
@@ -857,6 +855,7 @@ def test_case48():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
+	print(resp)
         #print(resp["AttributesList"]["https://uri.etsi.org/ngsi-ld/default-context/brandName"])
 	print("\nchecking if brandName attribute is present in discovery before deletion")
         if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
@@ -897,15 +896,23 @@ def test_case48():
   To test if appended attribute is reflected on discovery 
 '''
 def test_case49():
+        #to create an entity
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata38b),headers=headers)
+        #print(r.content)
+        #print(r.status_code)
+
+
 	#to fetch registration of entity from discovery before appending
-	url=discoveryIp+"/ngsi9/ngsi-ld/registration/urn:ngsi-ld:Vehicle:A3000"
+	url=discoveryIp+"/ngsi9/ngsi-ld/registration/urn:ngsi-ld:Vehicle:A3000b"
         r=requests.get(url)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp["AttributesList"])
         print("\nchecking if brandName1 attribute is present in discovery before appending")
-        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000b":
                 if "https://uri.etsi.org/ngsi-ld/default-context/brandName1" in resp["AttributesList"]:
                         print("\n-----> brandName1 is existing...!!")
                 else:
@@ -913,7 +920,7 @@ def test_case49():
         else:
                 print("\nNot Validated")
 
-	#to append an entity with id as urn:ngsi-ld:Vehicle:A3000
+	#to append an entity with id as urn:ngsi-ld:Vehicle:A3000b
 	url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
         r=requests.post(url,data=json.dumps(ld_data.subdata4c),headers=headers)
@@ -922,14 +929,14 @@ def test_case49():
         assert r.status_code == 201
 
 	#to fetch registration of entity from discovery after appending
-	url=discoveryIp+"/ngsi9/ngsi-ld/registration/urn:ngsi-ld:Vehicle:A3000"
+	url=discoveryIp+"/ngsi9/ngsi-ld/registration/urn:ngsi-ld:Vehicle:A3000b"
         r=requests.get(url)
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         #print(resp["AttributesList"])
         print("\nchecking if brandName1 attribute is present in discovery after appending")
-        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000":
+        if resp["ID"]=="urn:ngsi-ld:Vehicle:A3000b":
                 if "https://uri.etsi.org/ngsi-ld/default-context/brandName1" in resp["AttributesList"]:
                         print("\n-----> brandName1 is existing after appending...!!")
                 else:
@@ -1436,7 +1443,7 @@ def test_case80():
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
-	time.sleep(5)
+	#time.sleep(5)
 	getURL=accumulatorURl+"/validateupsert"
 	rget = requests.get(getURL)
 	print(rget.content)

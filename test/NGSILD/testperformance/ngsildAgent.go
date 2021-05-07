@@ -6,8 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	//	. "github.com/smartfog/fogflow/common/ngsi"
+	"sync"
 )
+
+var pass = int(0)
+var fail = int(0)
+var pass_lock sync.RWMutex
+var fail_lock sync.RWMutex
 
 // Query from FogFLow broker to get entity by ID
 
@@ -15,6 +20,7 @@ func queryContext(id string, IoTBrokerURL string) (map[string]interface{}, error
 	req, _ := http.NewRequest("GET", IoTBrokerURL+"/ngsi-ld/v1/entities/"+id, nil)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	res, err := http.DefaultClient.Do(req)
 	fmt.Println(res)
 	if err != nil {
@@ -48,6 +54,20 @@ func UpdateLdContext(updateCtx []map[string]interface{}, IoTBrokerURL string) er
 	req.Header.Add("Accept", "application/ld+json")
 	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	res, err := http.DefaultClient.Do(req)
+	if res.StatusCode == 204 || res.StatusCode == 207 {
+		pass_lock.RLock()
+		fmt.Println(res)
+		pass = pass + 1
+		pass_lock.RUnlock()
+	} else {
+		fail_lock.RLock()
+		fmt.Println(res)
+		fail = fail + 1
+		fail_lock.RUnlock()
+	}
+
+	fmt.Println("pass:", pass)
+	fmt.Println("fail:", fail)
 	if res != nil {
 		defer res.Body.Close()
 	}
@@ -70,6 +90,20 @@ func SubscribeContextRequestForNGSILD(sub map[string]interface{}, IoTBrokerURL s
 	req.Header.Add("Accept", "application/ld+json")
 	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	res, err := http.DefaultClient.Do(req)
+	if res.StatusCode == 201 {
+		pass_lock.RLock()
+		fmt.Println(res)
+		pass = pass + 1
+		pass_lock.RUnlock()
+
+	} else {
+		fail_lock.RLock()
+		fmt.Println(res)
+		fail = fail + 1
+		fail_lock.RUnlock()
+	}
+	fmt.Println("pass:", pass)
+	fmt.Println("fail:", fail)
 	if res != nil {
 		defer res.Body.Close()
 	}

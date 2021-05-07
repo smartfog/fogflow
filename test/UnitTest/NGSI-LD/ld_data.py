@@ -215,7 +215,7 @@ subdata4b=\
 
 subdata4c=\
 {
-      "id": "urn:ngsi-ld:Vehicle:A3000",
+      "id": "urn:ngsi-ld:Vehicle:A3000b",
       "type": "Vehicle",
       "brandName1": {
                           "type": "Property",
@@ -814,6 +814,38 @@ subdata38=\
         }
     }
 }
+
+subdata38b=\
+{
+    "id": "urn:ngsi-ld:Vehicle:A3000b",
+    "type": "Vehicle",
+    "brandName": {
+        "type": "Property",
+        "value": "Mercedes"
+    },
+    "isParked": {
+        "type": "Relationship",
+        "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+        "observedAt": "2017-07-29T12:00:04",
+        "providedBy": {
+            "type": "Relationship",
+            "object": "urn:ngsi-ld:Person:Bob"
+        }
+    },
+    "speed": {
+        "type": "Property",
+        "value": 80
+    },
+    "createdAt": "2017-07-29T12:00:04",
+    "location": {
+        "type": "GeoProperty",
+        "value": {
+            "type": "Point",
+            "coordinates": [-8.5, 41.2]
+        }
+    }
+}
+
 
 subdata39=\
 {
