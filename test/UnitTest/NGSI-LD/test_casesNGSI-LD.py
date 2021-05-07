@@ -1443,7 +1443,7 @@ def test_case80():
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
-	#time.sleep(5)
+	time.sleep(5)
 	getURL=accumulatorURl+"/validateupsert"
 	rget = requests.get(getURL)
 	print(rget.content)
