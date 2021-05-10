@@ -1986,7 +1986,7 @@ subData80 = \
               "notification": {
                   "format": "normalized",
                   "endpoint": {
-                           "uri": "http://127.0.0.1:8888/ngsi-ld/v1/entityOperations/upsert",
+                           "uri": "http://localhost:8888",
                            "accept": "application/ld+json"
                    }
                }
