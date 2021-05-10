@@ -335,7 +335,7 @@ def test_case21():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         print(resp)
-        if resp["id"]=="urn:ngsi-ld:Vehicle:A4580@default":
+        if resp["id"]=="urn:ngsi-ld:Vehicle:A4580":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -346,21 +346,21 @@ def test_case21():
 '''
   To test to retrieve entities by attributes  
 '''
-#def test_case22():
-#	time.sleep(3)
-#        url=brokerIp+"/ngsi-ld/v1/entities?attrs=https://uri.etsi.org/ngsi-ld/default-context/brandName"
-#        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
-#        r=requests.get(url,headers=headers)
+def test_case22():
+	time.sleep(3)
+        url=brokerIp+"/ngsi-ld/v1/entities?attrs=https://uri.etsi.org/ngsi-ld/default-context/brandName"
+        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
         #resp_content=r.content
         #resInJson= resp_content.decode('utf8').replace("'", '"')
         #resp=json.loads(resInJson)
-#        print(r.content)
+        print(r.content)
         #if resp[0]["brandName"]["value"]:
                 #print("\nValidated")
         #else:
                 #print("\nNot Validated")
-#        print(r.status_code)
-#        assert r.status_code == 200
+        print(r.status_code)
+        assert r.status_code == 200
 
 #testCase 23
 '''
@@ -408,7 +408,7 @@ def test_case25():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         print(resp)
-        if resp[0]["type"]=="http://example.org/vehicle/Vehicle":
+        if resp[0]["type"]=="Vehicle":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -472,8 +472,8 @@ def test_case29():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
-        if resp[0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle" and resp[0]["id"].find("A")!=-1:
+        #print(resp[0]["id"].find("urn:ngsi-ld:Vehicle:A")!=-1 and resp[0]["type"]=="Vehicle")
+        if resp[0]["type"]=="Vehicle" and resp[0]["id"].find("urn:ngsi-ld:Vehicle:A")!=-1:
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -974,7 +974,7 @@ def test_case50():
         print(r.status_code)
         
 	#to validate
-	#time.sleep(3)
+	time.sleep(3)
 	url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : "urn:ngsi-ld:Subscription:020"})
         print(r.content)
@@ -1373,7 +1373,7 @@ def test_case73():
         print(r.status_code)
 
         #to validate
-	#time.sleep(3)
+	time.sleep(3)
         url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : "urn:ngsi-ld:Subscription:Upsert"})
         print(r.content)
@@ -1443,9 +1443,9 @@ def test_case80():
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
-	#time.sleep(5)
+	time.sleep(5)
 	getURL=accumulatorURl+"/validateupsert"
-	rget = requests.get(getURL)
+	rget = requests.post(getURL)
 	print(rget.content)
         assert rget.content == "200"
 

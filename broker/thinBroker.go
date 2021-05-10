@@ -3440,9 +3440,16 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService
 		newEid = eid + "@" + fiwareService
 		if entity, ok := tb.ldEntities[newEid]; ok == true {
 			entityMap := entity.(map[string]interface{})
+			//compactEntity := tb.createOriginalPayload(entityMap)
+			//resultEntity := compactEntity.(map[string]interface{})
 			if entityMap["type"] == typ[index] {
-				compactEntity := tb.createOriginalPayload(entity)
-				entities = append(entities, compactEntity)
+				compactEntity := tb.createOriginalPayload(entityMap)
+				resultEntity := compactEntity.(map[string]interface{})
+				//compactEntity := tb.createOriginalPayload(entity)
+				actualId := getActualEntity(resultEntity)
+				resultEntity["id"] = actualId
+				delete(resultEntity, "fiwareServicePath")
+				entities = append(entities, resultEntity)
 			}
 		}
 	}
@@ -3490,7 +3497,12 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				if strings.Contains(eid, idPattern) {
 					if entityMap["type"] == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
-						entities = append(entities, compactEntity)
+						resultEntity2 := compactEntity.(map[string]interface{})
+						actualEId2 := getActualEntity(resultEntity2)
+						resultEntity2["id"] = actualEId2
+						//compactEntity := tb.createOriginalPayload(entityMap)
+						delete(resultEntity2, "fiwareServicePath")
+						entities = append(entities, resultEntity2)
 						break
 					}
 				}
@@ -3500,7 +3512,12 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				if strings.HasPrefix(eid, idPattern) {
 					if entityMap["type"] == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
-						entities = append(entities, compactEntity)
+						resultEntity3 := compactEntity.(map[string]interface{})
+						actualEId3 := getActualEntity(resultEntity3)
+						resultEntity3["id"] = actualEId3
+						//compactEntity := tb.createOriginalPayload(entityMap)
+						delete(resultEntity3, "fiwareServicePath")
+						entities = append(entities, resultEntity3)
 						break
 					}
 				}
@@ -3510,7 +3527,12 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				if strings.HasSuffix(eid, idPattern) {
 					if entityMap["type"] == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
-						entities = append(entities, compactEntity)
+						resultEntity4 := compactEntity.(map[string]interface{})
+                                                actualEId4:= getActualEntity(resultEntity4)
+                                                resultEntity4["id"] = actualEId4
+                                                //compactEntity := tb.createOriginalPayload(entityMap)
+                                                delete(resultEntity4, "fiwareServicePath")
+						entities = append(entities, resultEntity4)
 						break
 					}
 				}
