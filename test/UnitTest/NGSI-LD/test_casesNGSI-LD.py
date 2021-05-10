@@ -1373,7 +1373,7 @@ def test_case73():
         print(r.status_code)
 
         #to validate
-	#time.sleep(3)
+	time.sleep(3)
         url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : "urn:ngsi-ld:Subscription:Upsert"})
         print(r.content)
