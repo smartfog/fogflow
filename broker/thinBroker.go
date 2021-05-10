@@ -3442,7 +3442,7 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService
 			entityMap := entity.(map[string]interface{})
 			//compactEntity := tb.createOriginalPayload(entityMap)
 			//resultEntity := compactEntity.(map[string]interface{})
-			if resultEntity["type"] == typ[index] {
+			if entityMap["type"] == typ[index] {
 				compactEntity := tb.createOriginalPayload(entityMap)
 				resultEntity := compactEntity.(map[string]interface{})
 				//compactEntity := tb.createOriginalPayload(entity)
