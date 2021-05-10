@@ -335,7 +335,7 @@ def test_case21():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         print(resp)
-        if resp["id"]=="urn:ngsi-ld:Vehicle:A4580@default":
+        if resp["id"]=="urn:ngsi-ld:Vehicle:A4580":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -408,7 +408,7 @@ def test_case25():
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
         print(resp)
-        if resp[0]["type"]=="http://example.org/vehicle/Vehicle":
+        if resp[0]["type"]=="Vehicle":
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -472,8 +472,8 @@ def test_case29():
         resp_content=r.content
         resInJson= resp_content.decode('utf8').replace("'", '"')
         resp=json.loads(resInJson)
-        print(resp)
-        if resp[0]["type"]=="https://uri.etsi.org/ngsi-ld/default-context/Vehicle" and resp[0]["id"].find("A")!=-1:
+        #print(resp[0]["id"].find("urn:ngsi-ld:Vehicle:A")!=-1 and resp[0]["type"]=="Vehicle")
+        if resp[0]["type"]=="Vehicle" and resp[0]["id"].find("urn:ngsi-ld:Vehicle:A")!=-1:
                 print("\nValidated")
         else:
                 print("\nNot Validated")
@@ -974,7 +974,7 @@ def test_case50():
         print(r.status_code)
         
 	#to validate
-	#time.sleep(3)
+	time.sleep(3)
 	url="http://0.0.0.0:8888/validateNotification"
         r=requests.post(url,json={"subscriptionId" : "urn:ngsi-ld:Subscription:020"})
         print(r.content)
