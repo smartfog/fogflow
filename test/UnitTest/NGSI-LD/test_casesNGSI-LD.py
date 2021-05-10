@@ -346,21 +346,21 @@ def test_case21():
 '''
   To test to retrieve entities by attributes  
 '''
-#def test_case22():
-#	time.sleep(3)
-#        url=brokerIp+"/ngsi-ld/v1/entities?attrs=https://uri.etsi.org/ngsi-ld/default-context/brandName"
-#        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
-#        r=requests.get(url,headers=headers)
+def test_case22():
+	time.sleep(3)
+        url=brokerIp+"/ngsi-ld/v1/entities?attrs=https://uri.etsi.org/ngsi-ld/default-context/brandName"
+        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
         #resp_content=r.content
         #resInJson= resp_content.decode('utf8').replace("'", '"')
         #resp=json.loads(resInJson)
-#        print(r.content)
+        print(r.content)
         #if resp[0]["brandName"]["value"]:
                 #print("\nValidated")
         #else:
                 #print("\nNot Validated")
-#        print(r.status_code)
-#        assert r.status_code == 200
+        print(r.status_code)
+        assert r.status_code == 200
 
 #testCase 23
 '''
@@ -1443,7 +1443,7 @@ def test_case80():
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
-	#time.sleep(5)
+	time.sleep(5)
 	getURL=accumulatorURl+"/validateupsert"
 	rget = requests.get(getURL)
 	print(rget.content)
