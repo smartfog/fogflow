@@ -23,28 +23,30 @@ var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
 var config = globalConfigFile.designer;
 
 // get the URL of the cloud broker
-var cloudBrokerURL = "http://" + globalConfigFile.my_hostip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
 
-config.agentIP = globalConfigFile.my_hostip;
+if ( !('host_ip' in globalConfigFile.broker)) {
+    globalConfigFile.broker.host_ip = globalConfigFile.my_hostip    
+}
+
+var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
+
+if (config.host_ip) {
+    config.agentIP = config.host_ip;        
+} else {
+    config.agentIP = globalConfigFile.my_hostip;    
+}
+
 config.agentPort = globalConfigFile.designer.agentPort;
-
 
 config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';
 
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 
-//config.brokerIp = globalConfigFile.coreservice_ip
-    //broker port
-//config.brokerPort = globalConfigFile.broker.http_port
-    //designer IP
-//config.designerIP = globalConfigFile.coreservice_ip
-//config.DGraphPort = globalConfigFile.persistent_storage.port
-
 
 console.log(config);
 
-dgraph.queryForEntity()
+dgraph.Init();
 
 function uuid() {
     var uuid = "",
@@ -133,22 +135,28 @@ app.post('/intent', jsonParser, function(req, res) {
   api to create fogFlow internal entities
 */
 
-//app.use (bodyParser.json());
-app.post('/internal/updateContext', jsonParser, async function(req, res) {
-    console.log("receive internal update");
+app.post('/internal/updateContext', jsonParser, async function (req, res) {
+    var updateContextReq = await req.body
 
-    var payload = await req.body
+    console.log(updateContextReq);
+
+    //forward it to the cloud broker 
     var response = await axios({
         method: 'post',
         url: cloudBrokerURL + '/updateContext',
-        data: payload
-    })
+        data: updateContextReq
+    });
+
     if (response.status == 200) {
-        await dgraph.db(payload)
+        if (updateContextReq.updateAction == "DELETE") {
+            await dgraph.DeleteEntity(updateContextReq);
+        } else if (updateContextReq.updateAction == "UPDATE") {
+            await dgraph.WriteEntity(updateContextReq)
+        }
     }
+
     res.send(response.data)
 });
-
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res) {

@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: cloudbroker
+spec:
+  selector:
+    matchLabels:
+      run: cloudbroker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloudbroker
+    spec:
+      containers:
+      - name: cloudbroker
+        image: fogflow/broker:k8s
+        ports:
+        - containerPort: 8070  
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json          
+          readOnly: true
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap       
+          
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow                      
+  name: cloudbroker
+  labels:
+    run: cloudbroker
+spec:
+  ports:
+  - port: 8070
+    protocol: TCP
+  selector:
+    run: cloudbroker
+
+

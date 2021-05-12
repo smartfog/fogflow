@@ -262,7 +262,10 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	// pass the reference URL to the task so that the task can issue context subscription as well
 	setReferenceCmd := make(map[string]interface{})
 	setReferenceCmd["command"] = "SET_REFERENCE"
-	setReferenceCmd["url"] = "http://" + e.workerCfg.InternalIP + ":" + freePort
+
+	//setReferenceCmd["url"] = "http://" + e.workerCfg.InternalIP + ":" + freePort
+	setReferenceCmd["url"] = "http://fogflow-deployment-" + freePort + ":" + freePort
+
 	commands = append(commands, setReferenceCmd)
 
 	// set output stream
@@ -305,6 +308,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 		ERROR.Println(err)
 		return false
 	}*/
+
 	//INFO.Printf(" task %s  started within container = %s\n", task.ID, containerId)
 	INFO.Printf(" task %s  started within container = %s\n", task.ID, podId)
 

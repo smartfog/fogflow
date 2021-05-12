@@ -9,16 +9,33 @@ const bodyParser = require('body-parser');
 var globalConfigFile = require(config_fs_name)
 var config = globalConfigFile.designer;
 config.grpcPort = globalConfigFile.persistent_storage.port;
-config.HostIp = globalConfigFile.my_hostip;
-config.brokerIp = globalConfigFile.my_hostip
+
+
+if ('host_ip' in globalConfigFile.persistent_storage){
+    config.HostIp = globalConfigFile.persistent_storage.host_ip;
+} else {
+    config.HostIp = globalConfigFile.my_hostip;
+}
+
+
+if ('host_ip' in globalConfigFile.broker){
+    config.brokerIp = globalConfigFile.broker.host_ip;    
+} else {
+    config.brokerIp = globalConfigFile.my_hostip    
+}
+
+
 config.brokerPort = globalConfigFile.broker.http_port
+
+
 
 /*
    creating grpc client for making connection with dgraph
 */
 
 async function newClientStub() {
-    return new dgraph.DgraphClientStub(config.HostIp+":"+config.grpcPort);
+    var clientStub = new dgraph.DgraphClientStub(config.HostIp + ":" + config.grpcPort);
+    return clientStub;
 }
 
 // Create a client.
@@ -28,34 +45,12 @@ async function newClient(clientStub) {
 }
 
 // Drop All - discard all data and start from a clean slate.
-/*async function dropAll(dgraphClient) {
+async function dropAll(dgraphClient) {
     const op = new dgraph.Operation();
     op.setDropAll(true);
     await dgraphClient.alter(op);
-}*/
-
-/*
-   create scheema for node
-*/
-
-async function setSchema(dgraphClient) {
-    const schema = `
-            attributes: [uid] .
-            domainMetadata: [uid] .
-            entityId: uid .
-            updateAction: string .
-            id: string .
-            isPattern: bool .
-            latitude: float .
-            longitude: float .
-            name: string .
-            type: string .
-	    	value: string . 
-    `;
-    const op = new dgraph.Operation();
-    op.setSchema(schema);
-    await dgraphClient.alter(op);
 }
+
 
 /*
    convert object domainmetadata data into string to store entity as single node  
@@ -93,6 +88,57 @@ async function resolveAttributes(data) {
     }
 }
 
+
+function CtxElement2JSONObject(e) {
+    var jsonObj = {};
+    jsonObj.entityId = e.entityId;
+
+    jsonObj.attributes = {}
+    for (var i = 0; e.attributes && i < e.attributes.length; i++) {
+        var attr = e.attributes[i];
+        jsonObj.attributes[attr.name] = {
+            type: attr.type,
+            value: attr.value
+        };
+    }
+
+    jsonObj.metadata = {}
+    for (var i = 0; e.domainMetadata && i < e.domainMetadata.length; i++) {
+        var meta = e.domainMetadata[i];
+        jsonObj.metadata[meta.name] = {
+            type: meta.type,
+            value: meta.value
+        };
+    }
+
+    return jsonObj;
+}
+
+function JSONObject2CtxElement(ob) {
+    console.log('convert json object to context element')
+    var contextElement = {};
+
+    contextElement.entityId = ob.entityId;
+
+    contextElement.attributes = [];
+    if (ob.attributes) {
+        for (key in ob.attributes) {
+            attr = ob.attributes[key];
+            contextElement.attributes.push({ name: key, type: attr.type, value: attr.value });
+        }
+    }
+
+    contextElement.domainMetadata = [];
+    if (ob.metadata) {
+        for (key in ob.metadata) {
+            meta = ob.metadata[key];
+            contextElement.domainMetadata.push({ name: key, type: meta.type, value: meta.value });
+        }
+    }
+
+    return contextElement;
+}
+
 /*
    insert data into database
 */
@@ -112,7 +158,6 @@ async function createData(dgraphClient, ctx) {
 /*
    send data to cloud broker
 */
-
 async function sendData(contextEle) {
     var updateCtxReq = {};
     updateCtxReq.contextElements = [];
@@ -122,7 +167,7 @@ async function sendData(contextEle) {
         method: 'post',
         url: 'http://' + config.brokerIp + ':' + config.brokerPort + '/ngsi10/updateContext',
         data: updateCtxReq
-    }).then(function(response) {
+    }).then(function (response) {
         if (response.status == 200) {
             return response.data;
         } else {
@@ -134,9 +179,9 @@ async function sendData(contextEle) {
 /*
    convert string object into structure to register data into cloud broker
 */
-
-async function changeFromDataToobject(contextElement) {
+async function sendPostRequestToBroker(contextElement) {
     contextEle = contextElement['contextElements']
+
     for (var ctxEle = 0; ctxEle < contextEle.length; ctxEle = ctxEle + 1) {
         ctxEleReq = contextEle[ctxEle]
         if ('attributes' in ctxEleReq) {
@@ -160,7 +205,6 @@ async function changeFromDataToobject(contextElement) {
                     else
                         ctxEleReq.attributes[ctxAttr].value = true
                 }
-
             }
         }
         if ('domainMetadata' in ctxEleReq) {
@@ -173,66 +217,66 @@ async function changeFromDataToobject(contextElement) {
                 }
             }
         }
+
         await sendData(ctxEleReq)
     }
 }
 
-async function sendPostRequestToBroker(contextElement) {
-    await changeFromDataToobject(contextElement)
-}
-
 /*
-   Query for getting the registered node
+   load all context elemented that have been saved into the dgraph databasefor getting the registered node
 */
 
-async function queryData(dgraphClient) {
+async function loadContextElements(dgraphClient) {
     const query = `{
-
         contextElements(func: has(entityId)) {
            {
                   entityId{
-                       id
-                       type
-                       isPattern
+                        id
+                        type
+                        isPattern
                   }
                   attributes{
-                       name
-                       type
-		       value
+                        name
+                        type
+                        value
                   }
                   domainMetadata{
-                       name
-                       type
-		       value
-                       location
+                        name
+                        type
+                        value
+                        location
                   }
               }
            }
-
     }`;
 
     responseBody = await dgraphClient.newTxn().queryWithVars(query);
     const responsData = responseBody.getJson();
-    //const responseObject=JSON.stringify(responsData)
-    const responseObject = responsData
+        
     sendPostRequestToBroker(responsData)
 }
 
-/*
-   main handler 
-*/
 
-async function db(contextData) {
+/*
+   write entity data into dgraph
+*/
+async function WriteEntity(contextData) {
     try {
         const dgraphClientStub = await newClientStub();
         const dgraphClient = await newClient(dgraphClientStub);
-        //await dropAll(dgraphClient);
+
         if ('contextElements' in contextData) {
             contextData = contextData['contextElements']
             contextData = contextData[0]
         }
+
         await resolveAttributes(contextData)
         await resolveDomainMetaData(contextData)
+
+        contextData["dgraph.type"] = "ContextElement"
+
+        console.log(contextData);
+
         await createData(dgraphClient, contextData);
         await dgraphClientStub.close();
     } catch (err) {
@@ -240,19 +284,280 @@ async function db(contextData) {
     }
 }
 
+
+/*
+   delete entity
+*/
+async function DeleteEntity(updateCtxReq) {
+    ctxElement = null
+
+    console.log(updateCtxReq);
+
+    if ('contextElements' in updateCtxReq) {
+        elements = updateCtxReq['contextElements']
+        ctxElement = elements[0]
+    }
+
+    if (ctxElement == null) {
+        console.log("there is no context element in the request");
+        return
+    }
+
+    eid = ctxElement.entityId.id;
+
+    elements = await QueryNodeByEntityId(eid)
+
+    for (var i = 0; i < elements.length; i++) {
+        var element = elements[i];
+
+        DeleteNodeById(element.uid)
+    }
+}
+
+
+/*
+   query entity by uid
+*/
+async function QueryNodeByEntityId(eid) {
+    try {
+        const dgraphClientStub = await newClientStub();
+        const dgraphClient = await newClient(dgraphClientStub);
+
+        console.log("query context elements by entity ID: " + eid)
+
+        const query = `query all($eid: string) {
+            contextElements(func: has(entityId)) {
+               {
+                    uid
+                    entityId @filter(ge(id, $eid)) {
+                         id
+                    }                     
+               }
+            }
+        }`;
+        const vars = { $eid: eid };
+        const responseBody = await dgraphClient.newTxn().queryWithVars(query, vars);
+
+        console.log(responseBody.getJson())
+
+        ctxElements = responseBody.getJson().contextElements;
+
+        await dgraphClientStub.close();
+
+        return ctxElements;
+    } catch (err) {
+        console.log('DB ERROR::', err);
+    }
+}
+
+
+
+/*
+   delete entity by uid
+*/
+async function DeleteNodeById(id) {
+    try {
+        const dgraphClientStub = await newClientStub();
+        const dgraphClient = await newClient(dgraphClientStub);
+
+        const txn = dgraphClient.newTxn();
+        try {
+            const deleteJsonObj = {
+                uid: id,
+            };
+
+            const mu = new dgraph.Mutation();
+            mu.setDeleteJson(deleteJsonObj);
+            const response = await txn.mutate(mu);
+            await txn.commit();
+        } finally {
+            await txn.discard();
+        }
+
+        await dgraphClientStub.close();
+    } catch (err) {
+        console.log('DB ERROR::', err);
+    }
+}
+
+
+/*
+   write model profiles into dgraph
+*/
+async function WriteJsonWithType(jsonData, dtype) {
+    try {
+        const dgraphClientStub = await newClientStub();
+        const dgraphClient = await newClient(dgraphClientStub);
+
+        if (dtype != "") {
+            jsonData["dgraph.type"] = dtype
+        }
+
+        const txn = dgraphClient.newTxn();
+        try {
+            const mu = new dgraph.Mutation();
+            mu.setSetJson(jsonData);
+            const response = await txn.mutate(mu);
+            await txn.commit();
+        } finally {
+            await txn.discard();
+        }
+
+        await dgraphClientStub.close();
+    } catch (err) {
+        console.log('DB ERROR::', err);
+    }
+}
+
+
+
 process.on('unhandledRejection', (reason, promise) => {
-    console.log('Retrying to connect to dgraph');
-    console.log(reason);
-    queryForEntity();
+    console.log('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
 
-async function queryForEntity() {
+
+/*
+   load all FogFlow internal entities from dgraph and then publish them into FogFlow broker
+*/
+async function LoadEntity() {
     const dgraphClientStub = await newClientStub();
     const dgraphClient = await newClient(dgraphClientStub);
-    //await setSchema(dgraphClient);
-    await queryData(dgraphClient);
+
+    await loadContextElements(dgraphClient);
+
     await dgraphClientStub.close();
 }
 
-module.exports = { db, queryForEntity }
+
+/*
+   retrieve all json objects with the specified data type
+*/
+async function QueryJsonWithType(dtype) {
+    const dgraphClientStub = await newClientStub();
+    const dgraphClient = await newClient(dgraphClientStub);
+
+    const query = `{
+        result(func: type(${dtype})) {
+           {
+                uid
+                expand(_all_)
+           }
+        }
+    }`;
+
+    const responseBody = await dgraphClient.newTxn().queryWithVars(query);
+
+    await dgraphClientStub.close();
+
+    return responseBody.getJson();
+}
+
+
+/*
+    clean up the entire graph database
+*/
+
+async function DropAll() {
+    const dgraphClientStub = await newClientStub();
+    const dgraphClient = await newClient(dgraphClientStub);
+
+    const op = new dgraph.Operation();
+    op.setDropAll(true);
+
+    await dgraphClient.alter(op);
+}
+
+
+/*
+   set the schema used by FogFlow
+*/
+const fogflow_schema = ` 
+
+name: string @index(term) .
+formattype: string @index(term) .
+description: string @index(term) .
+filepath: string @index(term) .
+url: string @index(term) .
+flavor: string @index(term) .
+inputdata: string @index(term) .
+version: string @index(term) .
+
+
+type Model {
+    name 
+    flavor 
+    inputdata 
+    version 
+    description 
+    filepath     
+}
+
+id: string @index(exact) .
+type: string @index(term) .
+isPattern: bool  . 
+value: string @index(term) .
+
+entityId: uid .
+attributes: [uid] .
+domainMetadata: [uid] .
+
+type EntityId {
+   id
+   type 
+   isPattern 
+}
+
+type Attribute {
+   name
+   type 
+   value 
+}
+
+type Metadata {
+   name
+   type 
+   value 
+}
+
+type ContextElement {
+    entityId 
+    attributes 
+    domainMetadata 
+}
+
+`;
+
+async function InitSchema() {
+    const dgraphClientStub = await newClientStub();
+    const dgraphClient = await newClient(dgraphClientStub);
+
+    const op = new dgraph.Operation();
+    op.setSchema(fogflow_schema);
+    await dgraphClient.alter(op);
+
+    await dgraphClientStub.close();
+}
+
+
+async function Init(){
+    try {
+        await InitSchema();
+        console.log("init schema")
+        await LoadEntity();
+        console.log("load entity")        
+    }catch(e) { 
+        console.error('==========' + e.details + '============='); 
+        console.log('Retrying to connect to dgraph');
+        setTimeout(Init, 2000);
+    }
+}
+
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.log('Retrying to connect to dgraph');
+    //Init();
+});
+
+
+module.exports = { Init, WriteEntity, DeleteEntity, DeleteNodeById, WriteJsonWithType, QueryJsonWithType, DropAll }

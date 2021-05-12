@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: discovery
+spec:
+  selector:
+    matchLabels:
+      run: discovery
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: discovery
+    spec:
+      containers:
+      - name: discovery
+        image: fogflow/discovery:k8s
+        ports:
+        - containerPort: 8090  
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap
+
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow                      
+  name: discovery
+  labels:
+    run: discovery
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8090
+      targetPort: 8090
+  selector:
+    run: discovery
+
+
+

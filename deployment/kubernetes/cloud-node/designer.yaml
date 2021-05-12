@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: designer
+spec:
+  selector:
+    matchLabels:
+      run: designer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: designer
+    spec:
+      containers:
+      - name: designer
+        image: fogflow/designer:k8s
+        ports:
+        - containerPort: 8080  
+        volumeMounts:
+        - name: config-json       
+          mountPath: /app/config.json
+          subPath: config.json                    
+          readOnly: true
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap               
+          
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow                      
+  name: designer
+  labels:
+    run: designer
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "8080"
+      port: 8080  
+      targetPort: 8080
+    - name: "1030"
+      port: 1030
+      targetPort: 1030     
+  selector:
+    run: designer
+
+
+

@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      run: rabbitmq
+  replicas: 1      
+  template:
+    metadata:
+      labels:
+        run: rabbitmq
+    spec:
+      containers:    
+      - name: rabbitmq
+        image: rabbitmq:3
+        ports:
+        - containerPort: 5672
+        env:
+        - name: RABBITMQ_DEFAULT_PASS
+          value: mypass
+        - name: RABBITMQ_DEFAULT_USER
+          value: admin          
+             
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow                      
+  name: rabbitmq
+  labels:
+    run: rabbitmq
+spec:
+  type: LoadBalancer
+  ports:  
+    - name: "5672"
+      port: 5672
+      targetPort: 5672
+  selector:
+    run: rabbitmq
+
+
+
