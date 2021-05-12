@@ -52,15 +52,18 @@ type Config struct {
 		Debug    string `json:"debug"`
 	} `json:"logging"`
 	Discovery struct {
-		HTTPPort  int `json:"http_port"`
-		HTTPSPort int `json:"https_port"`
+		HostIP    string `json:"host_ip"`
+		HTTPPort  int    `json:"http_port"`
+		HTTPSPort int    `json:"https_port"`
 	} `json:"discovery"`
 	Broker struct {
-		HTTPPort  int `json:"http_port"`
-		HTTPSPort int `json:"https_port"`
+		HostIP    string `json:"host_ip"`
+		HTTPPort  int    `json:"http_port"`
+		HTTPSPort int    `json:"https_port"`
 	} `json:"broker"`
 	Master struct {
-		AgentPort int `json:"ngsi_agent_port"`
+		HostIP    string `json:"host_ip"`
+		AgentPort int    `json:"ngsi_agent_port"`
 	} `json:"master"`
 	Worker struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
@@ -71,6 +74,7 @@ type Config struct {
 		CAdvisorPort int `json:"cadvisor_port"`
 	} `json:"worker"`
 	RabbitMQ struct {
+		HostIP   string `json:"host_ip"`
 		Port     int    `json:"port"`
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -96,11 +100,21 @@ func (c *Config) GetDiscoveryURL() string {
 		hostip = c.CoreSerivceIP
 	}
 
+	if c.Discovery.HostIP != "" {
+		hostip = c.Discovery.HostIP
+	}
+
 	return fmt.Sprintf("%s://%s:%d/ngsi9", protocol, hostip, port)
 }
 
 func (c *Config) GetBrokerURL4Task() string {
-	return "http://" + c.InternalIP + ":" + strconv.Itoa(c.Broker.HTTPPort) + "/ngsi10"
+	brokeIP := c.InternalIP
+
+	if c.Broker.HostIP != "" {
+		brokeIP = c.Broker.HostIP
+	}
+
+	return "http://" + brokeIP + ":" + strconv.Itoa(c.Broker.HTTPPort) + "/ngsi10"
 }
 
 func (c *Config) GetBrokerURL() string {
@@ -116,17 +130,34 @@ func (c *Config) GetBrokerURL() string {
 		hostip = c.ExternalIP
 	}
 
+	if c.Broker.HostIP != "" {
+		hostip = c.Broker.HostIP
+	}
+
 	return fmt.Sprintf("%s://%s:%d/ngsi10", protocol, hostip, port)
 }
 
-func (c *Config) GetMyAccessibleIP() string {
-	return c.InternalIP
+func (c *Config) GetMasterIP() string {
+	hostip := c.InternalIP
+	if c.ExternalIP != "" {
+		hostip = c.ExternalIP
+	}
+
+	if c.Master.HostIP != "" {
+		hostip = c.Master.HostIP
+	}
+
+	return hostip
 }
 
 func (c *Config) GetMessageBus() string {
 	hostip := c.InternalIP
 	if c.CoreSerivceIP != "" {
 		hostip = c.CoreSerivceIP
+	}
+
+	if c.RabbitMQ.HostIP != "" {
+		hostip = c.RabbitMQ.HostIP
 	}
 
 	messageBus := fmt.Sprintf("amqp://%s:%s@%s:%d/", c.RabbitMQ.Username, c.RabbitMQ.Password, hostip, c.RabbitMQ.Port)

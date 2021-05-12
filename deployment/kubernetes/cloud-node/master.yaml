@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: master
+spec:
+  selector:
+    matchLabels:
+      run: master
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: master
+    spec:
+      containers:
+      - name: master
+        image: fogflow/master:k8s
+        ports:
+        - containerPort: 1060
+        #readiness and liveness to check pod's Health
+        readinessProbe:
+          tcpSocket:
+            port: 1060
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 1060
+          initialDelaySeconds: 15
+          periodSeconds: 20          
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json            
+          readOnly: true
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap    
+          
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow                      
+  name: master
+  labels:
+    run: master
+spec:
+  ports:
+  - name: "1060"
+    port: 1060
+    targetPort: 1060
+  selector:
+    run: master
+
