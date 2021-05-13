@@ -1,0 +1,215 @@
+#!/bin/bash
+#
+#  Command Line Interface to start all services associated with the Getting-Started Tutorial
+#
+#  For this tutorial the commands are merely a convenience script to run docker-compose
+#
+
+set -e
+
+SCORPIO="http://scorpio:9090/scorpio/v1/info/"
+ORION="http://orion:1026/version"
+IOT_AGENT="http://iot-agent:4041/version"
+CONTEXT="https://fiware.github.io/data-models/context.jsonld"
+
+if (( $# != 1 )); then
+	echo "Illegal number of parameters"
+	echo "usage: services [create|orion|scorpio|stop]"
+	exit 1
+fi
+
+pause(){
+	printf " "
+	count="$1"
+	[ "$count" -gt 59 ] && printf "Waiting one minute " || printf " Waiting a few seconds ";
+	while [ "$count" -gt 0 ]
+	do
+		printf "."
+		sleep 3
+		count=$((count - 3))
+	done
+	echo ""
+}
+
+getHeartbeat(){
+	eval "response=$(docker run --network fiware_default --rm curlimages/curl -s -o /dev/null -w "%{http_code}" "$1")"
+}
+
+waitForOrion () {
+	echo -e "\n⏳ Waiting for \033[1;34mOrion-LD\033[0m to be available\n"
+	
+	while ! [ `docker inspect --format='{{.State.Health.Status}}' fiware-orion` == "healthy" ]
+	do
+		echo -e "\nContext Broker HTTP state: ${response} (waiting for 200)"
+		pause 6
+		getHeartbeat "${ORION}"
+	done
+}
+
+waitForScorpio () {
+	echo -e "\n⏳ Waiting for \033[1;34mScorpio\033[0m to respond\n"
+	getHeartbeat "${SCORPIO}"
+	while [ "${response}" -eq 000 ]
+	do
+		echo -e "Context Broker HTTP state: ${response} (waiting for 500)"
+		pause 60
+		getHeartbeat "${SCORPIO}"
+	done
+	echo -e "\n⏳ Waiting for all \033[1;34mScorpio\033[0m services to be fully available\n"
+	while [ "$response" -eq 500 ]
+	do
+		echo -e "Context Broker HTTP state: ${response} (waiting for 200)"
+		pause 60
+		getHeartbeat "${SCORPIO}"
+	done
+}
+
+waitForContext () {
+	echo -e "\n⏳ Waiting for \033[1m@context\033[0m to be available\n"
+	getHeartbeat "${CONTEXT}"
+	while [ "${response}" -eq 000 ]
+	do
+		echo -e "\n@context HTTP state: ${response} (waiting for 200)"
+		pause 3
+		getHeartbeat "${CONTEXT}"
+	done
+}
+
+waitForIoTAgent () {
+	echo -e "\n⏳ Waiting for \033[1;36mIoT-Agent\033[0m to be available\n"
+	while ! [ `docker inspect --format='{{.State.Health.Status}}' fiware-iot-agent` == "healthy" ]
+	do
+		echo -e "\nIoT Agent HTTP state: ${response} (waiting for 200)"
+		pause 3
+		getHeartbeat "${IOT_AGENT}"
+	done
+}
+
+waitForMongo () {
+	echo -e "\n⏳ Waiting for \033[1mMongoDB\033[0m to be available\n"
+	while ! [ `docker inspect --format='{{.State.Health.Status}}' db-mongo` == "healthy" ]
+	do 
+		sleep 1
+	done
+}
+
+loadData () {
+	echo ""
+	waitForContext
+	docker run --rm -v $(pwd)/import-data:/import-data \
+		--network fiware_default \
+		-e CONTEXT_BROKER=${CONTEXT_BROKER} \
+		-e TUTORIAL_DATA_MODELS_CONTEXT=${CONTEXT} \
+		--entrypoint /bin/ash curlimages/curl import-data
+}
+
+addDatabaseIndex () {
+	printf "Adding appropriate \033[1mMongoDB\033[0m indexes for \033[1;34mOrion\033[0m  ..."
+	docker exec  db-mongo mongo --eval '
+	conn = new Mongo();db.createCollection("orion");
+	db = conn.getDB("orion");
+	db.createCollection("entities");
+	db.entities.createIndex({"_id.servicePath": 1, "_id.id": 1, "_id.type": 1}, {unique: true});
+	db.entities.createIndex({"_id.type": 1});
+	db.entities.createIndex({"_id.id": 1});' > /dev/null
+
+	docker exec  db-mongo mongo --eval '
+	conn = new Mongo();db.createCollection("orion-openiot");
+	db = conn.getDB("orion-openiot");
+	db.createCollection("entities");
+	db.entities.createIndex({"_id.servicePath": 1, "_id.id": 1, "_id.type": 1}, {unique: true});
+	db.entities.createIndex({"_id.type": 1});
+	db.entities.createIndex({"_id.id": 1});' > /dev/null
+	echo -e " \033[1;32mdone\033[0m"
+}
+
+addIoTDatabaseIndex () {
+	printf "Adding appropriate \033[1mMongoDB\033[0m indexes for \033[1;36mIoT-Agent\033[0m  ..."
+	docker exec  db-mongo mongo --eval '
+	conn = new Mongo();
+	db = conn.getDB("iotagentul");
+	db.createCollection("devices");
+	db.devices.createIndex({"_id.service": 1, "_id.id": 1, "_id.type": 1});
+	db.devices.createIndex({"_id.type": 1});
+	db.devices.createIndex({"_id.id": 1});
+	db.createCollection("groups");
+	db.groups.createIndex({"_id.resource": 1, "_id.apikey": 1, "_id.service": 1});
+	db.groups.createIndex({"_id.type": 1});' > /dev/null
+	echo -e " \033[1;32mdone\033[0m"
+}
+
+stoppingContainers () {
+	echo "Stopping containers"
+	docker-compose --log-level ERROR -f docker-compose/orion-ld.yml -p fiware down -v --remove-orphans
+	docker-compose --log-level ERROR -f docker-compose/scorpio-aaio.yml -p fiware down -v --remove-orphans
+}
+
+displayServices () {
+	echo ""
+	docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" --filter name=$1-*
+	echo ""
+}
+
+command="$1"
+case "${command}" in
+	"help")
+		echo "usage: services [create|orion|scorpio|stop]"
+		;;
+	"orion")
+		export $(cat .env | grep "#" -v)
+		stoppingContainers
+		echo -e "Starting four containers \033[1;34mOrion\033[0m, \033[1;36mIoT-Agent\033[0m, \033[1mTutorial\033[0m and a \033[1mMongoDB\033[0m database."
+		echo -e "- \033[1;34mOrion\033[0m is the context broker"
+		echo -e "- \033[1;36mIoT-Agent\033[0m is configured for the UltraLight Protocol"
+		echo -e "- \033[1mTutorial\033[0m acts as a series of dummy IoT Sensors over HTTP"
+		echo ""
+		docker-compose --log-level ERROR -f docker-compose/orion-ld.yml -p fiware up -d --remove-orphans
+		waitForMongo
+		addDatabaseIndex
+		addIoTDatabaseIndex
+		displayServices fiware
+		waitForOrion
+		export CONTEXT_BROKER=orion:1026
+		loadData
+		waitForIoTAgent
+		;;
+	"scorpio")
+		export $(cat .env | grep "#" -v)
+		stoppingContainers
+		echo -e "Starting seven containers \033[1;34mScorpio\033[0m, \033[1mKafka\033[0m, \033[1mZookeeper\033[0m and a \033[1mPostgres\033[0m database, \033[1;36mIoT-Agent\033[0m, \033[1mTutorial\033[0m and a \033[1mMongoDB\033[0m database."
+		echo -e "- \033[1;34mScorpio\033[0m is the context broker"
+		echo -e "- \033[1;36mIoT-Agent\033[0m is configured for the UltraLight Protocol"
+		echo -e "- \033[1mTutorial\033[0m acts as a series of dummy IoT Sensors over HTTP"
+		echo ""
+		docker-compose --log-level ERROR -f docker-compose/scorpio-aaio.yml -p fiware up -d --remove-orphans
+		waitForMongo
+		addIoTDatabaseIndex
+		displayServices fiware
+		waitForScorpio
+		export CONTEXT_BROKER=scorpio:9090
+		loadData
+		waitForIoTAgent
+		;;
+	"stop")
+		export $(cat .env | grep "#" -v)
+		stoppingContainers
+		;;
+	"start")
+		export $(cat .env | grep "#" -v)
+		./services orion
+		;;
+	"create")
+		export $(cat .env | grep "#" -v)
+		echo "Pulling Docker images"
+		docker-compose --log-level ERROR -f docker-compose/orion-ld.yml pull
+		docker-compose --log-level ERROR -f docker-compose/scorpio-aaio.yml pull
+		;;
+	*)
+		echo "Command not Found."
+		echo "usage: services [create|orion|scorpio|stop]"
+		exit 127;
+		;;
+esac
+
+
+
