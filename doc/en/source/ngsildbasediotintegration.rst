@@ -80,9 +80,9 @@ The response will look similar to the following:
 		"version": "1.16.0"	
 	}
     
-# check if the FogFlow system is running properly
+# check if the IoT Device (Sensor, Actuator)is running properly
 	
-	Check the system status from the Device dashboard
+	Check the status from the Device dashboard
 
 	You can open the device dashboard in your web browser to see the current system status via the URL: **localhost:3000/device/monitor**
 	
@@ -227,37 +227,84 @@ Response
 .. code-block:: console 
 
 	{
-    		"id": "urn:ngsi-ld:Device:water001",
-    		"type": "Device",
-    		"on_status": {
-        		"type": "Property",
-        		"value": {
-            		"@type": "commandStatus",
-            		"@value": "OK"
-        		},
-        		"observedAt": "2020-09-14T15:27:11.066Z"
-    		},
-    		"on_info": {
-        		"type": "Property",
-        		"value": {
-            		"@type": "commandResult",
-            		"@value": " on OK"
-        		},
-        		"observedAt": "2020-09-14T15:27:11.066Z"
-    		},
-    		"controlledAsset": {
-        		"type": "Relationship",
-        		"object": "urn:ngsi-ld:Building:barn001",
-        		"observedAt": "2020-09-14T15:27:11.066Z"
-    		},
-    		"on": {
-        		"type": "command",
-        		"value": ""
-    		},
-    		"off": {
-        		"type": "command",
-        		"value": ""
-    		}
+		"@context": "https://fiware.github.io/data-models/context.jsonld",
+		"id": "urn:ngsi-ld:Device:water001",
+		"type": "Device",
+		"heartRate": {
+			"type": "Property",
+			"value": {
+				"@type": "Intangible",
+				"@value": null
+			},
+			"unitCode": "5K"
+		},
+		"status": {
+			"type": "Property",
+			"value": {
+				"@type": "Intangible",
+				"@value": null
+			}
+		},
+		"location": {
+			"type": "GeoProperty",
+			"value": {
+				"type": "Point",
+				"coordinates": [0, 0]
+			}
+		},
+		"controlledAsset": {
+			"object": "urn:ngsi-ld:Building:barn001",
+			"type": "Relationship",
+			"observedAt": "2021-05-14T09:28:58.878Z"
+		},
+		"category": {
+			"value": "sensor",
+			"type": "Property",
+			"observedAt": "2021-05-14T09:28:58.878Z"
+		},
+		"supportedProtocol": {
+			"value": "ul20",
+			"type": "Property",
+			"observedAt": "2021-05-14T09:28:58.878Z"
+		},
+		"on_status": {
+			"value": {
+				"@type": "commandStatus",
+				"@value": "OK"
+			},
+			"type": "Property",
+			"observedAt": "2021-05-14T09:28:58.878Z"
+		},
+		"on_info": {
+			"value": {
+				"@type": "commandResult",
+				"@value": " on OK"
+			},
+			"type": "Property",
+			"observedAt": "2021-05-14T09:28:58.878Z"
+		},
+		"off_status": {
+			"type": "Property",
+			"value": {
+				"@type": "commandStatus",
+				"@value": "UNKNOWN"
+			}	
+		},
+		"off_info": {
+			"type": "Property",
+			"value": {
+				"@type": "commandResult",
+				"@value": " "
+			}
+		},
+		"on": {
+			"type": "command",
+			"value": ""
+		},
+		"off": {
+			"type": "command",
+			"value": ""
+		}
 	}
 	
 The **observedAt** shows last the time any command associated with the entity has been invoked. The result of **on** command can be seen in the value of the **on_info** attribute.
