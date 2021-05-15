@@ -424,7 +424,7 @@ Note: For a details on fogfunction creation follow the `Document link`_ .
 How to Push the Generated Result back to the IoT Agent
 =============================================================
 
-**Step 9**: Fog Function do some data analytics in step no. 4 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
+**Step 9**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
 
 .. code-block:: console
 
@@ -453,7 +453,7 @@ How to Push the Generated Result back to the IoT Agent
 
 Note: Replace localhost with IP where Fogflow thinbroker is running and <orion-ld-brokerIP> with IP where orion-ld broker is running.
  
-**Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 5, Orion broker has subscribed for the analytical data.
+**Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
 **Step 11**:Use the CURL command to query entities of type "Device" from Orion broker.
