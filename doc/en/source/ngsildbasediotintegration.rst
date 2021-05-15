@@ -426,7 +426,7 @@ How to Push the Generated Result back to the IoT Agent
         curl -iX POST \
                   'http://localhost:8070/ngsi-ld/v1/subscriptions/' \
                   -H 'Content-Type: application/json' \
-		  -H 'Integration: true' \
+		  -H 'Integration: IoTI' \
                   -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
