@@ -34,7 +34,7 @@ Please clone the repository and create the necessary images like orion broker an
 
 Before you start the following steps, please check if your Orion-LD broker and FogFlow system is running properly.
 
-# check if the orion-ld broker is running
+check if the orion-ld broker is running
 
 .. code-block:: console
 
@@ -63,7 +63,7 @@ The response will look similar to the following:
 		"Next File Descriptor": 19
 	}
 
-# check if the IoT Agent broker is running
+check if the IoT Agent broker is running
 
 .. code-block:: console
 
@@ -80,7 +80,7 @@ The response will look similar to the following:
 		"version": "1.16.0"	
 	}
     
-# check if the IoT Device (Sensor, Actuator)is running properly
+check if the IoT Device (Sensor, Actuator)is running properly
 	
 	Check the status from the Device dashboard
 
@@ -90,7 +90,7 @@ The response will look similar to the following:
 
 .. figure:: figures/device.png
 
-# check if the FogFlow system is running properly
+check if the FogFlow system is running properly
 	
 	Check the system status from the FogFlow DashBoard
 
@@ -111,7 +111,7 @@ Invoking group provision is always the first step in connecting devices since it
 
 It is also possible to set up default commands and attributes for all anonymous devices as well, but this is not done within this tutorial as we will be provisioning each device separately.
 
-This example provisions an anonymous group of devices. It tells the IoT Agent that a series of devices will be sending messages to the IOTA_HTTP_PORT (where the IoT Agent is listening for Northbound communications)
+This example provisions an anonymous group of devices. It tells the IoT Agent that a series of devices will be sending messages to the IOTA_HTTP_PORT (where the IoT Agent is listening for Northbound communications data coming from the IOT device)
 
 .. code-block:: console   
 
@@ -162,8 +162,8 @@ sending GET or POST requests to:**http://iot-agent:7896/iot/d?i=<device_id>&k=4j
 
 **Step2** Provisioning an Actuator
 ----------------------------------
-The example below provisions a water with the `deviceId=water001`. The endpoint is
-`http://iot-sensors:3001/iot/water001` and it can accept the `on` command. The `transport=HTTP` attribute defines the
+The example below provisions a waterPump with the `deviceId=water001`. The endpoint is
+`http://iot-sensors:3001/iot/water001` and it can accept the "on" command. The `transport=HTTP` attribute defines the
 communications protocol to be used.
 
 .. code-block:: console  
@@ -453,10 +453,10 @@ How to Push the Generated Result back to the IoT Agent
 
 Note: Replace localhost with IP where Fogflow thinbroker is running and <orion-ld-brokerIP> with IP where orion-ld broker is running.
  
-**Step 10**:Thinbroker will notify the analytical data to NGSILD broker as in step No 5, NGSI-LD broker has subscribed for the analytical data.
+**Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 5, Orion broker has subscribed for the analytical data.
 
 
-**Step 11**:Use the CURL command to query entities of type "Device" from NGSILD broker.
+**Step 11**:Use the CURL command to query entities of type "Device" from Orion broker.
 
 
 .. code-block:: console
