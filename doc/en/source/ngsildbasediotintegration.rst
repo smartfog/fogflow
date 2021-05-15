@@ -194,6 +194,9 @@ communications protocol to be used.
 	}
 	'
 
+**Note:** To know about Fiware-Service and Fiware-ServicePath please click  `here`_
+
+.. _`here`: https://ngsi-ld-tutorials.readthedocs.io/en/latest/iot-agent.html#connecting-iot-devices
 
 **Step3** To see the state of the water sprinkler change through device monitor URL:**localhost:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
 
