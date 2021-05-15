@@ -151,6 +151,11 @@ This example provisions an anonymous group of devices. It tells the IoT Agent th
 	}'
 
 
+**Note:** To know about Fiware-Service and Fiware-ServicePath please click  `here`_
+
+.. _`here`: https://ngsi-ld-tutorials.readthedocs.io/en/latest/iot-agent.html#connecting-iot-devices
+
+
 In the example the IoT Agent is informed that the `/iot/d` endpoint will be used and that devices will authenticate
 themselves by including the token **4jggokgpepnvsb2uv4s40d59ov**. For an UltraLight IoT Agent this means devices will be
 sending GET or POST requests to:**http://iot-agent:7896/iot/d?i=<device_id>&k=4jggokgpepnvsb2uv4s40d59ov**
@@ -194,9 +199,6 @@ communications protocol to be used.
 	}
 	'
 
-**Note:** To know about Fiware-Service and Fiware-ServicePath please click  `here`_
-
-.. _`here`: https://ngsi-ld-tutorials.readthedocs.io/en/latest/iot-agent.html#connecting-iot-devices
 
 **Step3** To see the state of the water sprinkler change through device monitor URL:**localhost:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
 
