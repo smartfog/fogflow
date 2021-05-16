@@ -36,6 +36,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
 		value = "off"
 		onHasCreated = "true"
 		createDate = con_observation.split("T")
+		console.log("=====initial timer has been created======")
 	} else if (con_observation != "" && onHasCreated == "true") {
 		date = con_observation.split("T")
 		initiateUpdate = "true"
@@ -48,7 +49,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
 		console.log(date[0])
 		if (createDate[0] != date[0]) {
 			console.log("date is not equal")
-			updateEntity["command"] = {'type':'Property', 'value': value}
+			updateEntity["command"] = {"type":"Property", "value": value}
 			onHasCreated = "false"
 			initiateUpdate = "false"
 			gotUpdate = "true"
@@ -59,7 +60,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
 			console.log(parseInt(updateH[0]))
 			console.log(parseInt(createH[0]))
 			if (parseInt(updateH[0]) - parseInt(createH[0]) >= 1) {
-				updateEntity["command"] = {'type':'Property', 'value': value}
+				updateEntity["command"] = {"type":"Property", "value": value}
 				publish(updateEntity)
 				onHasCreated = "false"
 				initiateUpdate = "false"

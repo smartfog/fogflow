@@ -190,7 +190,7 @@ How to Push the Generated Result back to the NGSI-LD broker
         curl -iX POST \
                   'http://localhost:8070/ngsi-ld/v1/subscriptions/' \
                   -H 'Content-Type: application/json' \
-		  -H 'Integration: true' \
+		  -H 'Integration: NGSILDBroker' \
                   -H 'Accept: application/ld+json' \
                   -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
                   -d ' {
