@@ -94,7 +94,7 @@ check if the FogFlow system is running properly
 	
 	Check the system status from the FogFlow DashBoard
 
-	You can open the FogFlow dashboard in your web browser to see the current system status via the URL: **<FogFlow-BrokerIP>:80**
+	You can open the FogFlow dashboard in your web browser to see the current system status via the URL: **<FogFlow-DesignerIP>:80**
 	
 	Once you are able to access the FogFlow dashboard, you can see the following web page
 
