@@ -115,7 +115,7 @@ This example provisions an anonymous group of devices. It tells the IoT Agent th
 
 .. code-block:: console   
 
-	curl -iX POST 'http://localhost:4041/iot/services' \
+	curl -iX POST 'http://<IoT-AgentIP>:4041/iot/services' \
 	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
 	-H 'Content-Type: application/json' \
@@ -168,7 +168,7 @@ communications protocol to be used.
 
 .. code-block:: console  
 
-	curl -L -X POST 'http://localhost:4041/iot/devices' \
+	curl -L -X POST 'http://<IoT-AgentIP>:4041/iot/devices' \
     	-H 'fiware-service: openiot' \
     	-H 'fiware-servicepath: /' \
     	-H 'Content-Type: application/json' \
@@ -204,7 +204,7 @@ communications protocol to be used.
 
 .. code-block:: console 
 
-	curl -L -X PATCH 'http://localhost:4041/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
+	curl -L -X PATCH 'http://<IoT-AgentIP>:4041/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
     	-H 'fiware-service: openiot' \
     	-H 'fiware-servicepath: /' \
     	-H 'Content-Type: application/json' \
@@ -220,7 +220,7 @@ communications protocol to be used.
 
 .. code-block:: console 
 
-	curl -L -X GET 'http://localhost:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001' \
+	curl -L -X GET 'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001' \
    	-H 'NGSILD-Tenant: openiot' \
 	-H 'fiware-servicepath: /' \
    	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
@@ -324,7 +324,7 @@ How to Fetch data from Orion-LD to FogFlow
 .. code-block:: console    
 
 	curl -iX POST \
-		  'http://localhost:1026/ngsi-ld/v1/subscriptions' \
+		  'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/subscriptions' \
 		  -H 'Content-Type: application/json' \
 		  -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
@@ -350,7 +350,7 @@ How to Fetch data from Orion-LD to FogFlow
 
 .. code-block:: console 
 
-	curl -L -X PATCH 'http://localhost:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
+	curl -L -X PATCH 'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
 	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
 	-H 'Accept: application/ld+json' \
@@ -372,7 +372,7 @@ Use the CURL command to query entities of type "Device" from  FogFlow thinBroker
 .. code-block:: console    
 
 	curl -iX GET \
-		  'http://localhost:8070/ngsi-ld/v1/entities?type=Device' \
+		  'http://<fogflow_broker_IP>:8070/ngsi-ld/v1/entities?type=Device' \
 		  -H 'Content-Type: application/json' \
 		  -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
@@ -462,7 +462,7 @@ Note: Replace localhost with IP where Fogflow thinbroker is running and <orion-l
 .. code-block:: console
 
         curl -iX GET \
-                  'http://localhost:1026/ngsi-ld/v1/entities?type=Device' \
+                  'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities?type=Device' \
                   -H 'Content-Type: application/json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
