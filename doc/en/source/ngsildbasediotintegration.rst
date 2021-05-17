@@ -31,7 +31,7 @@ Please clone the repository and create the necessary images like orion broker an
     
     ./services stop
   
-**Note:** version of docker-compose should be greater than 1.21.*
+**Note:** version of docker-compose should be greater than 1.21.*.
 
 Before you start the following steps, please check if your Orion-LD broker and FogFlow system is running properly.
 
@@ -225,7 +225,7 @@ communications protocol to be used.
 	curl -L -X GET 'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001' \
    	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
-   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
         -H 'Content-Type: application/json' \
 
 Response
