@@ -226,7 +226,7 @@ communications protocol to be used.
    	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
    	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
-        -H 'Content-Type: application/json' \
+        -H 'Content-Type: application/json'
 
 Response
 -------------------
