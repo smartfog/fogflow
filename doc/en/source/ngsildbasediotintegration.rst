@@ -474,7 +474,7 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 **Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8). The status of FogFunction should be "off"
+**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8). The status of water001  should be "off"
 
 
 
