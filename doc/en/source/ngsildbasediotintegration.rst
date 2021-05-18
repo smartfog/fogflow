@@ -476,7 +476,7 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 
 **Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8). The status of water001  should be "off"
 
-
+.. figure:: figures/status.png
 
 
 
