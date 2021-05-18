@@ -2,6 +2,8 @@ kubectl delete -f nginx.yaml
 
 kubectl delete -f configmap.yaml
 
+kubectl delete -f serviceaccount.yaml
+
 kubectl delete -f discovery.yaml
 kubectl delete -f broker.yaml
 kubectl delete -f dgraph.yaml

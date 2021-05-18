@@ -27,8 +27,8 @@ spec:
       volumes:
       - name: dgraph
         hostPath: 
-          path: /Users/cheng/work/github/fogflow/yaml/cloud-node/dgraph        
-          
+          path: /root/kcheck/src/fogflow/deployment/kubernetes/cloud-node/dgraph        
+      serviceAccountName: default 
 ---          
           
 apiVersion: v1
