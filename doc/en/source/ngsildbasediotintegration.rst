@@ -2,7 +2,23 @@ Integrate FogFlow with NGSILD Based IoT agent
 ****************************************************
 
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
-on top of the raw data captured in the NGSI-LD IoT agent. The following diagram shows a simple example of how to do this in details, mainly including four aspects with 10 steps
+on top of the raw data captured in the NGSI-LD IoT agent.
+ 
+**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. IoT Agents should also be able to deal with security aspects of the FIWARE platform (authentication and authorization of the channel) and provide other common services to the device programmer.The north port of the IoT Agent is one such component which can communicate using NGSI-LD and the IoT Agent then translates the result so that all interactions beneath this port occur using the native protocol of the attached devices.IoT Agents already exist or are in development for many IoT communication protocols and data models. Examples include the following: 
+
+-   `IoTAgent-JSON`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
+-   `IoTAgent-LWM2M`_ - a bridge between the `Lightweight M2M`_ protocol and NGSI-LD
+-   `IoTAgent-UL`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
+-   `IoTagent-LoRaWAN`_ - a bridge between the `LoRaWAN`_ protocol and NGSI-LD
+
+.. _`IoTAgent-JSON`: https://fiware-iotagent-json.readthedocs.io/en/latest/
+.. _`IoTAgent-LWM2M`: https://fiware-iotagent-lwm2m.readthedocs.io/en/latest/
+.. _`Lightweight M2M`: https://www.omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/
+.. _`IoTAgent-UL`: https://fiware-iotagent-ul.readthedocs.io/en/latest
+.. _`IoTagent-LoRaWAN`: https://fiware-lorawan.readthedocs.io/en/latest/
+.. _`LoRaWAN`: https://www.thethingsnetwork.org/docs/lorawan/
+
+The following diagram shows a simple example of how to do this in details with **IoTAgent-UL**, mainly including four aspects with 10 steps
 
 * how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-2**)
 * how to fetch raw data from orion broker into the FogFlow system (**Step 4-5**)
@@ -226,7 +242,7 @@ communications protocol to be used.
    	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
    	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
-        -H 'Content-Type: application/json'
+        -H 'Content-Type: application/json' 
 
 Response
 -------------------
@@ -458,21 +474,9 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 **Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 11**:Use the CURL command to query entities of type "Device" from Orion broker.
+**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8). The status of water001  should be "off"
 
-
-.. code-block:: console
-
-        curl -iX GET \
-                  'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities?type=Device' \
-                  -H 'Content-Type: application/json' \
-		  -H 'fiware-service: openiot' \
-		  -H 'fiware-servicepath: /' \
-                  -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
-
-
-
+.. figure:: figures/status.png
 
 
 
