@@ -48,7 +48,6 @@ jobs:
             
     - name: Setting Up Environment
       run: |
-        sudo apt-get update
         sudo apt-get install jq
         sudo apt install python-pip
         pip -V

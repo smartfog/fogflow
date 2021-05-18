@@ -1444,8 +1444,8 @@ def test_case80():
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
 	time.sleep(5)
-	getURL=accumulatorURl+"/validateupsert"
-	rget = requests.post(getURL)
+	postURL=accumulatorURl+"/validateupsert"
+	rget = requests.post(postURL,json={"id" : "urn:ngsi-ld:Device:water080"})
 	print(rget.content)
         assert rget.content == "200"
 
