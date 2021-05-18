@@ -1,4 +1,3 @@
-
 from flask import Flask, abort, request
 import requests
 import json
@@ -7,20 +6,18 @@ app = Flask(__name__)
 myStatus = 'off'
 
 subId = []
-entityIdDict = {}
+entityIdDict = []
 # Getting notification for Quantumleap and sending response 200 to the
 # test module
 
 @app.route('/ngsi-ld/v1/entityOperations/upsert', methods=['POST'])
 def upsertNotification():
-    global entityIdDict
     print(dir(request))
     entities = request.get_json()
+    print(entities)
     entity = entities[0]
-    id = entity["id"]
-    print("id")
-    print(id)
-    entityIdDict[id] = 1
+    print(entity["id"])
+    entityIdDict.append(entity["id"])
     return "Done"
 
 
@@ -33,9 +30,12 @@ def upsertNotificationNew():
 
 @app.route('/validateupsert', methods=['POST'])
 def upsertNotificationvalidator():
-    global entityIdDict
+    data = request.get_json(force=True)
+    print(data)
+    pload1 = data["id"]
+    print(pload1)
     print(entityIdDict)
-    if entityIdDict['urn:ngsi-ld:Device:water080'] == 1:
+    if pload1 in entityIdDict:
          statusCode = "200"
     else :	
 	 statusCode = "404"
