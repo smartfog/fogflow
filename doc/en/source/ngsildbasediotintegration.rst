@@ -18,7 +18,7 @@ on top of the raw data captured in the NGSI-LD IoT agent.
 .. _`IoTagent-LoRaWAN`: https://fiware-lorawan.readthedocs.io/en/latest/
 .. _`LoRaWAN`: https://www.thethingsnetwork.org/docs/lorawan/
 
-The following diagram shows a simple example of how to do this in details, mainly including four aspects with 10 steps
+The following diagram shows a simple example of how to do this in details with **IoTAgent-UL**, mainly including four aspects with 10 steps
 
 * how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-2**)
 * how to fetch raw data from orion broker into the FogFlow system (**Step 4-5**)
