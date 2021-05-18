@@ -25,7 +25,7 @@ The following diagram shows a simple example of how to do this in details with *
 * how to use the serverless function in FogFlow to do customized data analytics (**Step 6**)
 * how to push the generate analytics results back to the IoT agent for further sharing (**Step 7-10**)
 
-.. figure:: figures/ngsildiotagent.png
+.. figure:: figures/ngsildiotagentIntegration.png
 
 Start Up
 ****************************************************
