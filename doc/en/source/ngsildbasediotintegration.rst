@@ -2,7 +2,23 @@ Integrate FogFlow with NGSILD Based IoT agent
 ****************************************************
 
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
-on top of the raw data captured in the NGSI-LD IoT agent. The following diagram shows a simple example of how to do this in details, mainly including four aspects with 10 steps
+on top of the raw data captured in the NGSI-LD IoT agent.
+ 
+**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. IoT Agents should also be able to deal with security aspects of the FIWARE platform (authentication and authorization of the channel) and provide other common services to the device programmer.The north port of the IoT Agent is one such component which can communicate using NGSI-LD and the IoT Agent then translates the result so that all interactions beneath this port occur using the native protocol of the attached devices.IoT Agents already exist or are in development for many IoT communication protocols and data models. Examples include the following: 
+
+-   `IoTAgent-JSON`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
+-   `IoTAgent-LWM2M`_ - a bridge between the `Lightweight M2M`_ protocol and NGSI-LD
+-   `IoTAgent-UL`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
+-   `IoTagent-LoRaWAN`_ - a bridge between the `LoRaWAN`_ protocol and NGSI-LD
+
+.. _`IoTAgent-JSON`: https://fiware-iotagent-json.readthedocs.io/en/latest/
+.. _`IoTAgent-LWM2M`: https://fiware-iotagent-lwm2m.readthedocs.io/en/latest/
+.. _`Lightweight M2M`: https://www.omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/
+.. _`IoTAgent-UL`: https://fiware-iotagent-ul.readthedocs.io/en/latest
+.. _`IoTagent-LoRaWAN`: https://fiware-lorawan.readthedocs.io/en/latest/
+.. _`LoRaWAN`: https://www.thethingsnetwork.org/docs/lorawan/
+
+The following diagram shows a simple example of how to do this in details, mainly including four aspects with 10 steps
 
 * how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-2**)
 * how to fetch raw data from orion broker into the FogFlow system (**Step 4-5**)
