@@ -4,7 +4,7 @@ Integrate FogFlow with NGSILD Based IoT agent
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
 on top of the raw data captured in the NGSI-LD IoT agent.
  
-**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. if someone want to know more about IoT Agent then can refer yxz_link.
+**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. if someone want to know more about IoT Agent then can refer `Link`_.
 There are several IoT Agent in the market which are in production or already workable. 
 
 -   `IoTAgent-JSON`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
@@ -12,6 +12,7 @@ There are several IoT Agent in the market which are in production or already wor
 -   `IoTAgent-UL`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
 -   `IoTagent-LoRaWAN`_ - a bridge between the `LoRaWAN`_ protocol and NGSI-LD
 
+.. _`Link`: https://ngsi-ld-tutorials.readthedocs.io/en/latest/iot-agent.html
 .. _`IoTAgent-JSON`: https://fiware-iotagent-json.readthedocs.io/en/latest/
 .. _`IoTAgent-LWM2M`: https://fiware-iotagent-lwm2m.readthedocs.io/en/latest/
 .. _`Lightweight M2M`: https://www.omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/
