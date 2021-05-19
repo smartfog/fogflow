@@ -4,7 +4,8 @@ Integrate FogFlow with NGSILD Based IoT agent
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
 on top of the raw data captured in the NGSI-LD IoT agent.
  
-**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. IoT Agents should also be able to deal with security aspects of the FIWARE platform (authentication and authorization of the channel) and provide other common services to the device programmer.The north port of the IoT Agent is one such component which can communicate using NGSI-LD and the IoT Agent then translates the result so that all interactions beneath this port occur using the native protocol of the attached devices.IoT Agents already exist or are in development for many IoT communication protocols and data models. Examples include the following: 
+**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. if someone want to know more about IoT Agent then can refer yxz_link.
+There are several IoT Agent in the market which are in production or already workable. 
 
 -   `IoTAgent-JSON`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
 -   `IoTAgent-LWM2M`_ - a bridge between the `Lightweight M2M`_ protocol and NGSI-LD
@@ -474,7 +475,7 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 **Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8). The status of water001  should be "off"
+**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
 .. figure:: figures/status.png
 
