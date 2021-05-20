@@ -439,7 +439,8 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 		ExpandOnce.Do(
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
-				fmt.Println("created object", ldE)
+				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				fmt.Println("created object", ldE,err)
 			})
 	} else {
 		fmt.Println("The loader object is already created")
@@ -454,7 +455,8 @@ func Compact_once() *ld.RFC7324CachingDocumentLoader {
 		CompactOnce.Do(
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
-				fmt.Println("created object", ldC)
+				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				fmt.Println("created object", ldC,err)
 			})
 	} else {
 		fmt.Println("The loader object is already created")
