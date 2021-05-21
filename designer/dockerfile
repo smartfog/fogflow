@@ -1,15 +1,9 @@
-FROM node:11-alpine
-
-WORKDIR /app
-
-ADD config.json /app
-ADD package.json /app
-
+FROM node:11-alpine as builder
+WORKDIR /go/src
+ADD /designer designer/
+WORKDIR /go/src/designer
 RUN npm install
 
-ADD main.js /app
-ADD dgraph.js /app
-ADD ./public /app/public
-
-
+FROM node:11-alpine
+COPY --from=builder /go/src/designer /app
 ENTRYPOINT [ "node", "main.js" ]
