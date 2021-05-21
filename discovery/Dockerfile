@@ -4,7 +4,6 @@ ADD /discovery discovery/
 ADD /common common/
 ADD go.mod .
 ADD go.sum .
-RUN ls
 WORKDIR /go/src/discovery
 RUN go get;
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o discovery
