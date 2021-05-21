@@ -1,4 +1,13 @@
-FROM alpine
-ADD broker  /
-CMD ["/broker"]
+FROM golang:1.16 AS builder
+WORKDIR /go/src/
+ADD /broker broker/
+ADD /common common/
+ADD go.mod .
+ADD go.sum .
+WORKDIR /go/src/broker
+RUN go get;
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o broker
 
+FROM scratch
+COPY --from=builder /go/src/broker/broker  /
+CMD ["/broker"]
