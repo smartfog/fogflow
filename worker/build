@@ -1,8 +1,6 @@
-go get
-
 #build the linux version (amd64) of worker
-CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo    -o worker
-docker build -t "fogflow/worker" .
+
+time docker build -f ./Dockerfile -t "multistage/worker:abc" ../
 
 
 #build the arm version of worker
