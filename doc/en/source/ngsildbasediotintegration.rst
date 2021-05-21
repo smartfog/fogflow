@@ -124,7 +124,7 @@ check if the FogFlow system is running properly
 How to Fetch data from IoT Agent to Orion-LD
 ================================================================
 
-**Step1** Provisioning a Service Group
+**Step 1** Provisioning a Service Group
 -----------------------------------------------------------------
 Invoking group provision is always the first step in connecting devices since it is always necessary to supply an authentication key with each measurement and the IoT Agent will not initially know which URL the context broker is responding on.
 
@@ -181,7 +181,7 @@ In the example the IoT Agent is informed that the `/iot/d` endpoint will be used
 themselves by including the token **4jggokgpepnvsb2uv4s40d59ov**. For an UltraLight IoT Agent this means devices will be
 sending GET or POST requests to:**http://iot-agent:7896/iot/d?i=<device_id>&k=4jggokgpepnvsb2uv4s40d59ov**
 
-**Step2** Provisioning an Actuator
+**Step 2** Provisioning an Actuator
 ----------------------------------
 The example below provisions a waterPump with the `deviceId=water001`. The endpoint is
 `http://iot-sensors:3001/iot/water001` and it can accept the "on" command. The `transport=HTTP` attribute defines the
@@ -220,7 +220,7 @@ communications protocol to be used.
 	}'
 
 
-**Step3** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
+**Step 3** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
 
 .. code-block:: console 
 
@@ -236,7 +236,14 @@ communications protocol to be used.
 	}'
 
 
-**step4** To verify the result from orion broker send the following request
+
+**step 4** To see the status of entity **urn:ngsi-ld:Device:water001** open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor** . The status should be "on".
+
+.. figure:: figures/status1.png
+
+
+
+**step 5** To verify the result from orion broker send the following request
 
 .. code-block:: console 
 
@@ -338,7 +345,7 @@ How to Fetch data from Orion-LD to FogFlow
 ================================================================
 
 
-**Step5** Issue a subscription to Orion-LD broker. 
+**Step 6** Issue a subscription to Orion-LD broker. 
 -------------------------------------------------------------------
 
 .. code-block:: console    
@@ -365,7 +372,7 @@ How to Fetch data from Orion-LD to FogFlow
                        }
  	           }'
 
-**Step6** send the below PATCH request to Enable Orion-Broker commands
+**Step 7** send the below PATCH request to Enable Orion-Broker commands
 -------------------------------------------------------------------
 
 .. code-block:: console 
@@ -383,7 +390,7 @@ How to Fetch data from Orion-LD to FogFlow
 
 	}'
 	
-**Step7** Check if FogFlow receives the subscribed entity. 
+**Step 8** Check if FogFlow receives the subscribed entity. 
 -------------------------------------------------------------------
 
 Use the CURL command to query entities of type "Device" from  FogFlow thinBroker. 
@@ -406,7 +413,7 @@ Note: Replace the localhost with IP where Orion-LD broker is running and <fogflo
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-**Step8** Please refer the steps below, to register fogfunction using dashboard.
+**Step 9** Please refer the steps below, to register fogfunction using dashboard.
 ------------------------------------------------------------------------------
 
 1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown and at last click on submit.
@@ -444,7 +451,7 @@ Note: For a details on fogfunction creation follow the `Document link`_ .
 How to Push the Generated Result back to the IoT Agent
 =============================================================
 
-**Step 9**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
+**Step 10**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
 
 .. code-block:: console
 
@@ -473,10 +480,10 @@ How to Push the Generated Result back to the IoT Agent
 
 Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and <orion-ld-brokerIP> with IP where orion-ld broker is running.
  
-**Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
+**Step 11**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
+**Step 12**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
 .. figure:: figures/status.png
 
