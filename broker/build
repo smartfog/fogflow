@@ -1,6 +1,6 @@
 #build the linux version (amd64) of broker
 
-time docker build -f ./Dockerfile -t "multistage/broker:abc" .
+time docker build -f ./Dockerfile -t "multistage/broker:abc" ../
 
 #build the arm version of broker
 #CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o broker_arm
