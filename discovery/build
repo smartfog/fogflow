@@ -1,11 +1,6 @@
-go get
-
 #build the linux version (amd64) of discovery
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o discovery
-docker build -t "fogflow/discovery" .
+time docker build -f ./Dockerfile -t "multistage/discovery:abc" ../
 
 #build the arm version of discovery
 #CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o discovery_arm
 #docker build -f Dockerfile4Arm -t "fogflow/discovery:arm"  .
-
-
