@@ -1,6 +1,4 @@
-#npm install
-
-docker build -t "fogflow/designer"  .
+time docker build -f ./dockerfile -t "multistage/designer:abc"  ../
 
 #it is not possible to build the designer docker image for arm after adding dgraph
 #docker build -f dockerfile4arm -t "fogflow/designer:arm"  .
