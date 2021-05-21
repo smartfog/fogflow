@@ -6,4 +6,5 @@ RUN npm install
 
 FROM node:11-alpine
 COPY --from=builder /go/src/designer /app
+WORKDIR /app/
 ENTRYPOINT [ "node", "main.js" ]
