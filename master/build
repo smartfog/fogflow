@@ -1,6 +1,6 @@
 #build the linux version (amd64) of master
 
-time docker -f ./Dockerfile build -t "multistage/master:abc" ../
+time docker build -f ./Dockerfile -t "multistage/master:abc" ../
 
 #build the arm version of master
 #CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o master_arm
