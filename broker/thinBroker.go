@@ -169,6 +169,30 @@ func (tb *ThinBroker) OnTimer() { // for every 2 second
 
 }
 
+func (tb *ThinBroker) NGSILDOnTimer() {
+	tb.ldSubscriptions_lock.Lock()
+	remainNGSILDItems := tb.tmpNGSIldNotifyCache
+	tb.tmpNGSIldNotifyCache = make([]string, 0)
+	tb.ldSubscriptions_lock.Unlock()
+
+	for _, sid := range remainNGSILDItems {
+                hasCachedNGSILDNotification := false
+                tb.ldSubscriptions_lock.Lock()
+                if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
+                       if ldSubscription.Subscriber.RequireReliability == true && len(ldSubscription.Subscriber.LDNotifyCache) > 0 {
+                                hasCachedNGSILDNotification = true
+                        }
+                }
+                tb.ldSubscriptions_lock.Unlock()
+
+                if hasCachedNGSILDNotification == true {
+                        elements := make([]map[string]interface{}, 0)
+                        tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+                }
+        }
+
+}
+
 func (tb *ThinBroker) sendHeartBeat() {
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	err := client.SendHeartBeat(&tb.myProfile)
@@ -850,7 +874,7 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 		} else {
 			elements = append(elements, *ctxElem)
 		}
-
+		fmt.Println("elements",elements)
 		go tb.sendReliableNotify(elements, sid)
 	}
 }
@@ -2488,6 +2512,14 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					deSerializedSubscription.Subscriber.IsInternal = false
 				}
+
+				if r.Header.Get("Require-Reliability") == "true" {
+					deSerializedSubscription.Subscriber.RequireReliability = true
+					deSerializedSubscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
+				} else {
+					deSerializedSubscription.Subscriber.RequireReliability = true
+				}
+
 				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
 				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
@@ -2509,12 +2541,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Subscriber.FiwareServicePath = ""
 				}
 
-				if r.Header.Get("Require-Reliability") == "true" {
-					deSerializedSubscription.Subscriber.RequireReliability = true
-					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
-				} else {
-					deSerializedSubscription.Subscriber.RequireReliability = false
-				}
 				// save subscription
 				for key, entity := range deSerializedSubscription.Entities {
 					if entity.ID != "" {
@@ -2908,25 +2934,28 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	tb.ldSubscriptions_lock.Unlock()
 	FiwareService := ldSubscription.Subscriber.FiwareService
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
+	fmt.Println("Elementd",elements)
 	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
-	notifyTime := time.Now().String()
+	//notifyTime := time.Now().String()
+	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 
 		tb.ldSubscriptions_lock.Lock()
 		if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
+			fmt.Println("ldsubscription",ldSubscription)
+			fmt.Println("reliabolity",ldSubscription.Subscriber.RequireReliability)
 			if ldSubscription.Subscriber.RequireReliability == true {
 				ldSubscription.Subscriber.LDNotifyCache = append(ldSubscription.Subscriber.LDNotifyCache, elements...)
-				ldSubscription.Notification.LastFailure = notifyTime
-				ldSubscription.Notification.Status = "failed"
+				//ldSubscription.Notification.LastFailure = notifyTime
+				//ldSubscription.Notification.Status = "failed"
 				tb.tmpNGSIldNotifyCache = append(tb.tmpNGSIldNotifyCache, sid)
 			}
 		}
 		tb.ldSubscriptions_lock.Unlock()
-		return
 	}
-	tb.updateLastSuccessParameters(notifyTime, sid)
-	INFO.Println("NOTIFY is sent to the subscriber, ", subscriberURL)
+	//tb.updateLastSuccessParameters(notifyTime, sid)
+	//INFO.Println("NOTIFY is sent to the subscriber, ", subscriberURL)
 }
 
 func (tb *ThinBroker) updateLastSuccessParameters(time string, sid string) {
