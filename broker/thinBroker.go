@@ -873,7 +873,6 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 		} else {
 			elements = append(elements, *ctxElem)
 		}
-		fmt.Println("elements", elements)
 		go tb.sendReliableNotify(elements, sid)
 	}
 }
@@ -2933,7 +2932,6 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	tb.ldSubscriptions_lock.Unlock()
 	FiwareService := ldSubscription.Subscriber.FiwareService
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
-	fmt.Println("Elementd", elements)
 	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
 	//notifyTime := time.Now().String()
 	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL)
