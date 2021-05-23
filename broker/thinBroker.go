@@ -142,7 +142,6 @@ func (tb *ThinBroker) OnTimer() { // for every 2 second
 	remainItems := tb.tmpNGSI10NotifyCache
 	tb.tmpNGSI10NotifyCache = make([]string, 0)
 	tb.subscriptions_lock.Unlock()
-
 	for _, sid := range remainItems {
 		hasCachedNotification := false
 		tb.subscriptions_lock.Lock()
@@ -176,20 +175,20 @@ func (tb *ThinBroker) NGSILDOnTimer() {
 	tb.ldSubscriptions_lock.Unlock()
 
 	for _, sid := range remainNGSILDItems {
-                hasCachedNGSILDNotification := false
-                tb.ldSubscriptions_lock.Lock()
-                if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
-                       if ldSubscription.Subscriber.RequireReliability == true && len(ldSubscription.Subscriber.LDNotifyCache) > 0 {
-                                hasCachedNGSILDNotification = true
-                        }
-                }
-                tb.ldSubscriptions_lock.Unlock()
+		hasCachedNGSILDNotification := false
+		tb.ldSubscriptions_lock.Lock()
+		if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
+			if ldSubscription.Subscriber.RequireReliability == true && len(ldSubscription.Subscriber.LDNotifyCache) > 0 {
+				hasCachedNGSILDNotification = true
+			}
+		}
+		tb.ldSubscriptions_lock.Unlock()
 
-                if hasCachedNGSILDNotification == true {
-                        elements := make([]map[string]interface{}, 0)
-                        tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
-                }
-        }
+		if hasCachedNGSILDNotification == true {
+			elements := make([]map[string]interface{}, 0)
+			tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+		}
+	}
 
 }
 
@@ -874,7 +873,7 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 		} else {
 			elements = append(elements, *ctxElem)
 		}
-		fmt.Println("elements",elements)
+		fmt.Println("elements", elements)
 		go tb.sendReliableNotify(elements, sid)
 	}
 }
@@ -2517,7 +2516,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Subscriber.RequireReliability = true
 					deSerializedSubscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 				} else {
-					deSerializedSubscription.Subscriber.RequireReliability = true
+					deSerializedSubscription.Subscriber.RequireReliability = false
 				}
 
 				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
@@ -2934,7 +2933,7 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	tb.ldSubscriptions_lock.Unlock()
 	FiwareService := ldSubscription.Subscriber.FiwareService
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
-	fmt.Println("Elementd",elements)
+	fmt.Println("Elementd", elements)
 	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
 	//notifyTime := time.Now().String()
 	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL)
@@ -2943,10 +2942,11 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 
 		tb.ldSubscriptions_lock.Lock()
 		if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
-			fmt.Println("ldsubscription",ldSubscription)
-			fmt.Println("reliabolity",ldSubscription.Subscriber.RequireReliability)
+			fmt.Println("ldsubscription", ldSubscription)
+			fmt.Println("reliabolity", ldSubscription.Subscriber.RequireReliability)
 			if ldSubscription.Subscriber.RequireReliability == true {
 				ldSubscription.Subscriber.LDNotifyCache = append(ldSubscription.Subscriber.LDNotifyCache, elements...)
+				fmt.Println("")
 				//ldSubscription.Notification.LastFailure = notifyTime
 				//ldSubscription.Notification.Status = "failed"
 				tb.tmpNGSIldNotifyCache = append(tb.tmpNGSIldNotifyCache, sid)
@@ -3333,12 +3333,12 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	var attr = r.PathParam("attr")
 	var newEid string
 	//if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		if r.Header.Get("fiware-service") != "" {
-			newEid = eid + "@" + r.Header.Get("fiware-service")
-			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-		} else {
-			newEid = eid + "@" + "default"
-		}
+	if r.Header.Get("fiware-service") != "" {
+		newEid = eid + "@" + r.Header.Get("fiware-service")
+		w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+	} else {
+		newEid = eid + "@" + "default"
+	}
 	//}
 	err := tb.ldDeleteEntityAttribute(newEid, attr /*req*/)
 
@@ -3461,7 +3461,7 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	return entities
 }
 func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService string) []interface{} {
-        var newEid string 
+	var newEid string
 	tb.ldEntities_lock.Lock()
 	var entities []interface{}
 
@@ -3557,10 +3557,10 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 					if entityMap["type"] == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
 						resultEntity4 := compactEntity.(map[string]interface{})
-                                                actualEId4:= getActualEntity(resultEntity4)
-                                                resultEntity4["id"] = actualEId4
-                                                //compactEntity := tb.createOriginalPayload(entityMap)
-                                                delete(resultEntity4, "fiwareServicePath")
+						actualEId4 := getActualEntity(resultEntity4)
+						resultEntity4["id"] = actualEId4
+						//compactEntity := tb.createOriginalPayload(entityMap)
+						delete(resultEntity4, "fiwareServicePath")
 						entities = append(entities, resultEntity4)
 						break
 					}
