@@ -340,7 +340,7 @@ How to Fetch data from Orion-LD to FogFlow
 ================================================================
 
 
-**Step 6** Issue a subscription to Orion-LD broker. 
+**Step 5** Issue a subscription to Orion-LD broker. 
 -------------------------------------------------------------------
 
 .. code-block:: console    
@@ -367,7 +367,7 @@ How to Fetch data from Orion-LD to FogFlow
                        }
  	           }'
 
-**Step 7** send the below PATCH request to Enable Orion-Broker commands
+**Step 6** send the below PATCH request to Enable Orion-Broker commands
 -------------------------------------------------------------------
 
 .. code-block:: console 
@@ -385,7 +385,7 @@ How to Fetch data from Orion-LD to FogFlow
 
 	}'
 	
-**Step 8** Check if FogFlow receives the subscribed entity. 
+**Step 7** Check if FogFlow receives the subscribed entity. 
 -------------------------------------------------------------------
 
 Use the CURL command to query entities of type "Device" from  FogFlow thinBroker. 
@@ -408,7 +408,7 @@ Note: Replace the localhost with IP where Orion-LD broker is running and <fogflo
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-**Step 9** Please refer the steps below, to register fogfunction using dashboard.
+**Step 8** Please refer the steps below, to register fogfunction using dashboard.
 ------------------------------------------------------------------------------
 
 1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown and at last click on submit.
