@@ -220,7 +220,18 @@ communications protocol to be used.
 	}'
 
 
-**Step 3** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
+**Step3** After Provisioning an Actuator the IoT Agent record the measurement of actuator on orion-broker . You can see the recorded measurement by retrieving the entity data from the orion broker by executing the following command.
+
+.. code-block:: console 
+
+	curl -L -X GET 'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001' \
+   	-H 'fiware-service: openiot' \
+	-H 'fiware-servicepath: /' \
+   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
+        -H 'Content-Type: application/json' 
+
+
+**Step 4** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
 
 .. code-block:: console 
 
@@ -237,7 +248,7 @@ communications protocol to be used.
 
 
 
-**step 4** To see the status of entity **urn:ngsi-ld:Device:water001** open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor** . The status should be "on".
+To verify the status of entity **urn:ngsi-ld:Device:water001** open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor** . The status should be "on".
 
 .. figure:: figures/status1.png
 
@@ -486,6 +497,7 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 **Step 12**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
 .. figure:: figures/status.png
+
 
 
 
