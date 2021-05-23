@@ -22,10 +22,10 @@ There are several IoT Agent in the market which are in production or already wor
 
 The following diagram shows a simple example of how to do this in details with **IoTAgent-UL**, mainly including four aspects with 10 steps
 
-* how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-2**)
-* how to fetch raw data from orion broker into the FogFlow system (**Step 4-5**)
-* how to use the serverless function in FogFlow to do customized data analytics (**Step 6**)
-* how to push the generate analytics results back to the IoT agent for further sharing (**Step 7-10**)
+* how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-4**)
+* how to fetch raw data from orion broker into the FogFlow system (**Step 5-7**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 8**)
+* how to push the generate analytics results back to the IoT agent for further sharing (**Step 9-11**)
 
 .. figure:: figures/ngsildiotagentIntegration.png
 
@@ -446,7 +446,7 @@ Note: For a details on fogfunction creation follow the `Document link`_ .
 How to Push the Generated Result back to the IoT Agent
 =============================================================
 
-**Step 10**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
+**Step 9**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
 
 .. code-block:: console
 
@@ -475,10 +475,10 @@ How to Push the Generated Result back to the IoT Agent
 
 Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and <orion-ld-brokerIP> with IP where orion-ld broker is running.
  
-**Step 11**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
+**Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 12**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
+**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
 .. figure:: figures/status.png
 
