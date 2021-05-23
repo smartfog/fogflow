@@ -220,7 +220,7 @@ communications protocol to be used.
 	}'
 
 
-**step 5** To verify the result from orion broker send the following request
+**step 3** After Provisioning an Actuator on IoT agent the IoT agent record a measurement of Actuator on orion-broker. To retrive the recorded measurement of actuater from context broker execute the following command. 
 
 .. code-block:: console 
 
@@ -262,42 +262,37 @@ Response
 			}
 		},
 		"controlledAsset": {
-			"object": "urn:ngsi-ld:Building:barn001",
 			"type": "Relationship",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"object": "urn:ngsi-ld:Building:barn001"
 		},
 		"category": {
-			"value": "sensor",
 			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"value": "sensor"
 		},
 		"supportedProtocol": {
-			"value": "ul20",
 			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"value": "ul20"
 		},
 		"on_status": {
+			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
-				"@value": "OK"
-			},
-			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+				"@value": "UNKNOWN"
+			}
 		},
 		"on_info": {
+			"type": "Property",
 			"value": {
 				"@type": "commandResult",
-				"@value": " on OK"
-			},
-			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+				"@value": " "
+			}
 		},
 		"off_status": {
 			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
 				"@value": "UNKNOWN"
-			}	
+			}
 		},
 		"off_info": {
 			"type": "Property",
@@ -316,8 +311,6 @@ Response
 		}
 	}
 	
-The **observedAt** shows last the time any command associated with the entity has been invoked. The result of **on** command can be seen in the value of the **on_info** attribute.
-
 
 **Step 4** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
 
@@ -488,6 +481,7 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 **Step 12**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
 .. figure:: figures/status.png
+
 
 
 
