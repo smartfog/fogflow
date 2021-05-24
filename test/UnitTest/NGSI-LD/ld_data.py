@@ -2091,7 +2091,7 @@ test89 = \
 
 ]
 
-//NIL in Property
+#NIL in Property
 subdata91=\
 {
            "id": "urn:ngsi-ld:Vehicle:AQP",
@@ -2123,7 +2123,7 @@ subdata91=\
              }
      }
 
-//null in property
+#null in property
 
 subdata92=\
 {
@@ -2156,7 +2156,7 @@ subdata92=\
              }
      }
 
-//Nil in Relationship Object
+#Nil in Relationship Object
 
 subdata93=\
 {
@@ -2189,11 +2189,11 @@ subdata93=\
              }
      }
 
-//Null in Relationship Object
+#Null in Relationship Object
 
 subdata94=\
 {
-           "id": "urn:ngsi-ld:Vehicle:AQQ",
+           "id": "urn:ngsi-ld:Vehicle:AXY",
            "type": "Vehicle",
            "brandName": {
                           "type": "Property",
