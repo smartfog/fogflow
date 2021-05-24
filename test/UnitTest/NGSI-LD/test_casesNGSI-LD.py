@@ -1554,3 +1554,52 @@ def test_case90():
 	rDel = requests.delete(delURL,headers=headers)
 	assert rDel.status_code == 404
 	assert rget.status_code == 200
+	
+	
+# testCase 91
+'''
+  To test create entity with Nil value in Property Attribute
+'''
+def test_case91():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata91),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+	
+# testCase 92
+'''
+  To test create entity with Null value in Property Attribute
+'''
+def test_case92():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata92),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+	
+# testCase 93
+'''
+  To test create entity with Nil value in Relationship Attribute
+'''
+def test_case93():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata93),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+	
+# testCase 94
+'''
+  To test create entity with Nil value in Property Attribute
+'''
+def test_case94():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata94),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
