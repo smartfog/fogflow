@@ -22,10 +22,10 @@ There are several IoT Agent in the market which are in production or already wor
 
 The following diagram shows a simple example of how to do this in details with **IoTAgent-UL**, mainly including four aspects with 10 steps
 
-* how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-2**)
-* how to fetch raw data from orion broker into the FogFlow system (**Step 4-5**)
-* how to use the serverless function in FogFlow to do customized data analytics (**Step 6**)
-* how to push the generate analytics results back to the IoT agent for further sharing (**Step 7-10**)
+* how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-4**)
+* how to fetch raw data from orion broker into the FogFlow system (**Step 5-7**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 8**)
+* how to push the generate analytics results back to the IoT agent for further sharing (**Step 9-11**)
 
 .. figure:: figures/ngsildiotagentIntegration.png
 
@@ -220,30 +220,7 @@ communications protocol to be used.
 	}'
 
 
-**Step 3** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
-
-.. code-block:: console 
-
-	curl -L -X PATCH 'http://<IoT-AgentIP>:4041/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
-    	-H 'fiware-service: openiot' \
-    	-H 'fiware-servicepath: /' \
-    	-H 'Content-Type: application/json' \
-	--data-raw '{
-
-        	"type": "Property",
-        	"value": " "
-
-	}'
-
-
-
-**step 4** To see the status of entity **urn:ngsi-ld:Device:water001** open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor** . The status should be "on".
-
-.. figure:: figures/status1.png
-
-
-
-**step 5** To verify the result from orion broker send the following request
+**step 3** IoT Agent records the measurement of Actuator after Provisioning the Actuator on it and forward the measurement to Orion. Execute the following command to retrieve the recorded measurement of actuator from Orion
 
 .. code-block:: console 
 
@@ -285,42 +262,37 @@ Response
 			}
 		},
 		"controlledAsset": {
-			"object": "urn:ngsi-ld:Building:barn001",
 			"type": "Relationship",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"object": "urn:ngsi-ld:Building:barn001"
 		},
 		"category": {
-			"value": "sensor",
 			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"value": "sensor"
 		},
 		"supportedProtocol": {
-			"value": "ul20",
 			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"value": "ul20"
 		},
 		"on_status": {
+			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
-				"@value": "OK"
-			},
-			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+				"@value": "UNKNOWN"
+			}
 		},
 		"on_info": {
+			"type": "Property",
 			"value": {
 				"@type": "commandResult",
-				"@value": " on OK"
-			},
-			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+				"@value": " "
+			}
 		},
 		"off_status": {
 			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
 				"@value": "UNKNOWN"
-			}	
+			}
 		},
 		"off_info": {
 			"type": "Property",
@@ -339,13 +311,36 @@ Response
 		}
 	}
 	
-The **observedAt** shows last the time any command associated with the entity has been invoked. The result of **on** command can be seen in the value of the **on_info** attribute.
+
+**Step 4** To observe the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
+
+.. code-block:: console 
+
+	curl -L -X PATCH 'http://<IoT-AgentIP>:4041/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
+    	-H 'fiware-service: openiot' \
+    	-H 'fiware-servicepath: /' \
+    	-H 'Content-Type: application/json' \
+	--data-raw '{
+
+        	"type": "Property",
+        	"value": " "
+
+	}'
+
+
+
+To verify the status of entity **urn:ngsi-ld:Device:water001** open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor** . The status should be "on".
+
+.. figure:: figures/status1.png
+
+
+
 
 How to Fetch data from Orion-LD to FogFlow 
 ================================================================
 
 
-**Step 6** Issue a subscription to Orion-LD broker. 
+**Step 5** Issue a subscription to Orion-LD broker. 
 -------------------------------------------------------------------
 
 .. code-block:: console    
@@ -372,7 +367,7 @@ How to Fetch data from Orion-LD to FogFlow
                        }
  	           }'
 
-**Step 7** send the below PATCH request to Enable Orion-Broker commands
+**Step 6** send the below PATCH request to Enable Orion-Broker commands
 -------------------------------------------------------------------
 
 .. code-block:: console 
@@ -390,7 +385,7 @@ How to Fetch data from Orion-LD to FogFlow
 
 	}'
 	
-**Step 8** Check if FogFlow receives the subscribed entity. 
+**Step 7** Check if FogFlow receives the subscribed entity. 
 -------------------------------------------------------------------
 
 Use the CURL command to query entities of type "Device" from  FogFlow thinBroker. 
@@ -413,7 +408,7 @@ Note: Replace the localhost with IP where Orion-LD broker is running and <fogflo
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-**Step 9** Please refer the steps below, to register fogfunction using dashboard.
+**Step 8** Please refer the steps below, to register fogfunction using dashboard.
 ------------------------------------------------------------------------------
 
 1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown and at last click on submit.
@@ -451,7 +446,7 @@ Note: For a details on fogfunction creation follow the `Document link`_ .
 How to Push the Generated Result back to the IoT Agent
 =============================================================
 
-**Step 10**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
+**Step 9**: Fog Function do some data analytics in step no. 6 and publish the analytics result on fogflow broker. Orion-LD  subscribes fogFlow broker for getting the analytics result and orion broker notify the result to the IoT agent.
 
 .. code-block:: console
 
@@ -480,12 +475,15 @@ How to Push the Generated Result back to the IoT Agent
 
 Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and <orion-ld-brokerIP> with IP where orion-ld broker is running.
  
-**Step 11**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
+**Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 12**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
+**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
 .. figure:: figures/status.png
+
+
+
 
 
 
