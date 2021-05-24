@@ -2131,7 +2131,7 @@ subdata92=\
            "type": "Vehicle",
            "brandName": {
                           "type": "Property",
-                          "value": null
+                          "value": "null"
             },
             "isParked": {
                           "type": "Relationship",
@@ -2201,7 +2201,7 @@ subdata94=\
             },
             "isParked": {
                           "type": "Relationship",
-                          "object": null,
+                          "object": "null",
                           "observedAt": "2017-07-29T12:00:04",
                           "providedBy": {
                                           "type": "Relationship",
