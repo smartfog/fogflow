@@ -220,7 +220,7 @@ communications protocol to be used.
 	}'
 
 
-**step 3** After Provisioning an Actuator on IoT agent the IoT agent record a measurement of Actuator on orion-broker. To retrive the recorded measurement of actuater from context broker execute the following command. 
+**step 3** IoT Agent records the measurement of Actuator after Provisioning the Actuator on it and forward the measurement to Orion. Execute the following command to retrieve the recorded measurement of actuator from Orion
 
 .. code-block:: console 
 
@@ -312,7 +312,7 @@ Response
 	}
 	
 
-**Step 4** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
+**Step 4** To observe the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
 
 .. code-block:: console 
 

@@ -2933,8 +2933,8 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	FiwareService := ldSubscription.Subscriber.FiwareService
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
 	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
-	//notifyTime := time.Now().String()
-	INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL)
+	notifyTime := time.Now().String()
+	//INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 
@@ -2944,16 +2944,16 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 			fmt.Println("reliabolity", ldSubscription.Subscriber.RequireReliability)
 			if ldSubscription.Subscriber.RequireReliability == true {
 				ldSubscription.Subscriber.LDNotifyCache = append(ldSubscription.Subscriber.LDNotifyCache, elements...)
-				fmt.Println("")
-				//ldSubscription.Notification.LastFailure = notifyTime
-				//ldSubscription.Notification.Status = "failed"
+				ldSubscription.Notification.LastFailure = notifyTime
+				ldSubscription.Notification.Status = "failed"
 				tb.tmpNGSIldNotifyCache = append(tb.tmpNGSIldNotifyCache, sid)
 			}
 		}
 		tb.ldSubscriptions_lock.Unlock()
+		return
 	}
-	//tb.updateLastSuccessParameters(notifyTime, sid)
-	//INFO.Println("NOTIFY is sent to the subscriber, ", subscriberURL)
+	tb.updateLastSuccessParameters(notifyTime, sid)
+	INFO.Println("NOTIFY is sent to the subscriber, ", subscriberURL)
 }
 
 func (tb *ThinBroker) updateLastSuccessParameters(time string, sid string) {
