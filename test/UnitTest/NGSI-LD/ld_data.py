@@ -2091,3 +2091,133 @@ test89 = \
 
 ]
 
+//NIL in Property
+subdata91=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AQP",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "Nil"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
+
+//null in property
+
+subdata92=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AQQ",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": null
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
+
+//Nil in Relationship Object
+
+subdata93=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AMNM",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "Mercer"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "nil",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
+
+//Null in Relationship Object
+
+subdata94=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AQQ",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "Mercedes"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": null,
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
