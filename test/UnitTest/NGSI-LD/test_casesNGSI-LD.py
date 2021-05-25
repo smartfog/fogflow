@@ -1440,11 +1440,14 @@ def test_case80():
         upsertURL=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
         headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
         rUpsert=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
+	print(rUpsert.status_code)
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
-	time.sleep(5)
-	postURL="http://127.0.0.1:8888"+"/validateupsert"
+	rUpsert2=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
+	print(rUpsert2.status_code)
+	time.sleep(10)
+	postURL="http://0.0.0.0:8888"+"/validateupsert"
 	rget = requests.post(postURL,json={"id" : "urn:ngsi-ld:Device:water080"})
 	print(rget.content)
         assert rget.content == "200"
