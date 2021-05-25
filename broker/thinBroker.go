@@ -2105,7 +2105,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		err := json.Unmarshal(reqBytes, &LDupdateCtxReq)
 
 		if err != nil {
-			err := errors.New("unable to decode orion update")
+			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -2453,7 +2453,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
 
 		if err != nil {
-			err := errors.New("not able to decode  orion update")
+			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
