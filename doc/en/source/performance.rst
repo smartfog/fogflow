@@ -7,7 +7,7 @@ Performance of NGSI-LD based thinBroker in FogFlow
 ================================================================
 
 
-Setup
+Experiement Setup
 -------------------
 
 to explain the system environment for the performance evaluation, such as how FogFlow is deployed and where is the test client,
