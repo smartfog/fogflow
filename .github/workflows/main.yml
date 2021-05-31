@@ -36,9 +36,6 @@ jobs:
         cd ../worker
         pwd
         sh build development
-	cd ../k8sWorker
-	pwd
-	sh build development
         echo "build master"
         cd ../master
         pwd
