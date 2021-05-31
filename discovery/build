@@ -16,6 +16,11 @@ case "${command}" in
                       CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o discovery
 		      time docker build -f ./Dockerfile_development -t "test/discovery:test" .
                       ;;
+	*)
+		      echo "Command not Found."
+		      echo "usage: ./build [multistage|development]"
+		      exit 127;
+		      ;;
 esac
 
 #build the arm version of discovery
