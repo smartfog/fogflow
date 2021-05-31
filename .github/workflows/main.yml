@@ -27,24 +27,23 @@ jobs:
         echo "build discovery"
         cd discovery
         pwd
-        sh build
+        sh build development
         echo "build broker"
         cd ../broker
         pwd
-        sh build
+        sh build development
         echo "build worker"
         cd ../worker
         pwd
-        sh build
+        sh build development
         echo "build master"
         cd ../master
         pwd
-        sh build
-    
+        sh build development 
         echo "build designer"
-        cd ../master
+        cd ../designer
         pwd
-        sh build
+        sh build 
             
     - name: Setting Up Environment
       run: |
