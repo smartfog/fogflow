@@ -1438,7 +1438,7 @@ def test_case79():
 
 def test_case80():
         upsertURL=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
-        headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json', 'Require-Reliability':'true','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
         rUpsert=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
 	print(rUpsert.status_code)
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
