@@ -1,6 +1,29 @@
+#!/bin/bash
 #build the linux version (amd64) of worker
 
-time docker build -f ./Dockerfile -t "multistage/worker:abc" ../
+if (( $# != 1 )); then
+	echo "Illegal number of parameters"
+	echo "usage: ./build [multistage|development]"
+	exit 1
+fi
+
+command="$1"
+case "${command}" in
+	"multistage")
+	             time docker build -f ./Dockerfile_multistage -t "test/worker:test" ../
+		     ;;
+	"development")
+		      go get
+		      CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo -o worker
+		      time docker build -f ./Dockerfile_development -t "test/worker:test" .
+		      ;;
+	*)
+		      echo "Command not Found."
+		      echo "usage: ./build [multistage|development]"
+		      exit 127;
+		      ;;	     
+esac
+                   
 
 
 #build the arm version of worker
