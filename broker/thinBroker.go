@@ -142,7 +142,6 @@ func (tb *ThinBroker) OnTimer() { // for every 2 second
 	remainItems := tb.tmpNGSI10NotifyCache
 	tb.tmpNGSI10NotifyCache = make([]string, 0)
 	tb.subscriptions_lock.Unlock()
-
 	for _, sid := range remainItems {
 		hasCachedNotification := false
 		tb.subscriptions_lock.Lock()
@@ -166,6 +165,30 @@ func (tb *ThinBroker) OnTimer() { // for every 2 second
 		tb.counter = 0
 	}
 	tb.counter++
+
+}
+
+func (tb *ThinBroker) NGSILDOnTimer() {
+	tb.ldSubscriptions_lock.Lock()
+	remainNGSILDItems := tb.tmpNGSIldNotifyCache
+	tb.tmpNGSIldNotifyCache = make([]string, 0)
+	tb.ldSubscriptions_lock.Unlock()
+
+	for _, sid := range remainNGSILDItems {
+		hasCachedNGSILDNotification := false
+		tb.ldSubscriptions_lock.Lock()
+		if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
+			if ldSubscription.Subscriber.RequireReliability == true && len(ldSubscription.Subscriber.LDNotifyCache) > 0 {
+				hasCachedNGSILDNotification = true
+			}
+		}
+		tb.ldSubscriptions_lock.Unlock()
+
+		if hasCachedNGSILDNotification == true {
+			elements := make([]map[string]interface{}, 0)
+			tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
+		}
+	}
 
 }
 
@@ -850,7 +873,6 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 		} else {
 			elements = append(elements, *ctxElem)
 		}
-
 		go tb.sendReliableNotify(elements, sid)
 	}
 }
@@ -2083,7 +2105,7 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		err := json.Unmarshal(reqBytes, &LDupdateCtxReq)
 
 		if err != nil {
-			err := errors.New("unable to decode orion update")
+			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -2431,7 +2453,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
 
 		if err != nil {
-			err := errors.New("not able to decode  orion update")
+			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -2488,6 +2510,14 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				} else {
 					deSerializedSubscription.Subscriber.IsInternal = false
 				}
+
+				if r.Header.Get("Require-Reliability") == "true" {
+					deSerializedSubscription.Subscriber.RequireReliability = true
+					deSerializedSubscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
+				} else {
+					deSerializedSubscription.Subscriber.RequireReliability = false
+				}
+
 				deSerializedSubscription.Status = "active"                  // others allowed: paused, expired
 				deSerializedSubscription.Notification.Format = "normalized" // other allowed: keyValues
 				deSerializedSubscription.Subscriber.BrokerURL = tb.MyURL
@@ -2509,12 +2539,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Subscriber.FiwareServicePath = ""
 				}
 
-				if r.Header.Get("Require-Reliability") == "true" {
-					deSerializedSubscription.Subscriber.RequireReliability = true
-					deSerializedSubscription.Subscriber.NotifyCache = make([]*ContextElement, 0)
-				} else {
-					deSerializedSubscription.Subscriber.RequireReliability = false
-				}
 				// save subscription
 				for key, entity := range deSerializedSubscription.Entities {
 					if entity.ID != "" {
@@ -2910,11 +2934,14 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 	FiwareServicePath := ldSubscription.Subscriber.FiwareServicePath
 	err := ldPostNotifyContext(elements, sid, subscriberURL, ldSubscription.Subscriber.Integration, FiwareService, FiwareServicePath, tb.SecurityCfg)
 	notifyTime := time.Now().String()
+	//INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL)
 	if err != nil {
 		INFO.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 
 		tb.ldSubscriptions_lock.Lock()
 		if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
+			fmt.Println("ldsubscription", ldSubscription)
+			fmt.Println("reliabolity", ldSubscription.Subscriber.RequireReliability)
 			if ldSubscription.Subscriber.RequireReliability == true {
 				ldSubscription.Subscriber.LDNotifyCache = append(ldSubscription.Subscriber.LDNotifyCache, elements...)
 				ldSubscription.Notification.LastFailure = notifyTime
@@ -3304,12 +3331,12 @@ func (tb *ThinBroker) LDDeleteEntityAttribute(w rest.ResponseWriter, r *rest.Req
 	var attr = r.PathParam("attr")
 	var newEid string
 	//if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		if r.Header.Get("fiware-service") != "" {
-			newEid = eid + "@" + r.Header.Get("fiware-service")
-			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-		} else {
-			newEid = eid + "@" + "default"
-		}
+	if r.Header.Get("fiware-service") != "" {
+		newEid = eid + "@" + r.Header.Get("fiware-service")
+		w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
+	} else {
+		newEid = eid + "@" + "default"
+	}
 	//}
 	err := tb.ldDeleteEntityAttribute(newEid, attr /*req*/)
 
@@ -3432,7 +3459,7 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	return entities
 }
 func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService string) []interface{} {
-        var newEid string 
+	var newEid string
 	tb.ldEntities_lock.Lock()
 	var entities []interface{}
 
@@ -3528,10 +3555,10 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 					if entityMap["type"] == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
 						resultEntity4 := compactEntity.(map[string]interface{})
-                                                actualEId4:= getActualEntity(resultEntity4)
-                                                resultEntity4["id"] = actualEId4
-                                                //compactEntity := tb.createOriginalPayload(entityMap)
-                                                delete(resultEntity4, "fiwareServicePath")
+						actualEId4 := getActualEntity(resultEntity4)
+						resultEntity4["id"] = actualEId4
+						//compactEntity := tb.createOriginalPayload(entityMap)
+						delete(resultEntity4, "fiwareServicePath")
 						entities = append(entities, resultEntity4)
 						break
 					}
