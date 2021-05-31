@@ -1,4 +1,26 @@
-time docker build -f ./dockerfile -t "multistage/designer:abc"  ../
+#!/bin/bash
+
+if (( $# != 1 )); then
+	echo "Illegal number of parameters"
+	echo "usage: ./build [multistage|development]"
+	exit 1
+fi
+
+command="$1"
+case "${command}" in
+	"multistage")
+		     time docker build -f ./Dockerfile_multistage -t "test/designer:test"  ../
+		     ;;
+	"development")
+		      npm install
+		      time docker build -f ./Dockerfile_development -t "test/designer:test" .
+		      ;;
+	*)
+		      echo "Command not Found."
+		      echo "usage: ./build [multistage|development]"
+		      exit 127;
+		      ;;
+esac
 
 #it is not possible to build the designer docker image for arm after adding dgraph
 #docker build -f dockerfile4arm -t "fogflow/designer:arm"  .
