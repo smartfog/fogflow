@@ -1,5 +1,22 @@
+#!/bin/bash
 #build the linux version (amd64) of discovery
-time docker build -f ./Dockerfile -t "multistage/discovery:abc" ../
+if (( $# != 1 )); then
+	echo "Illegal number of parameters"
+	echo "usage: ./build [multistage|development]"
+	exit 1
+fi
+
+command="$1"
+case "${command}" in
+	"multistage")
+		     time docker build -f ./Dockerfile_multistage -t "test/discovery:test" ../
+		     ;;
+	"development")
+		      go get
+                      CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o discovery
+		      time docker build -f ./Dockerfile_development -t "test/discovery:test" .
+                      ;;
+esac
 
 #build the arm version of discovery
 #CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o discovery_arm
