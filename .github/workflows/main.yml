@@ -36,6 +36,9 @@ jobs:
         cd ../worker
         pwd
         sh build development
+	cd ../k8sWorker
+	pwd
+	sh build development
         echo "build master"
         cd ../master
         pwd
@@ -44,10 +47,6 @@ jobs:
         cd ../designer
         pwd
         sh build development
-	echo "build k8sworker"
-	cd ../k8sworker
-	pwd
-	sh build development
             
     - name: Setting Up Environment
       run: |
