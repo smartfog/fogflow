@@ -44,6 +44,10 @@ jobs:
         cd ../designer
         pwd
         sh build development
+        echo "build k8sWorker"
+        cd ../k8sWorker
+        pwd
+        sh build development
             
     - name: Setting Up Environment
       run: |
