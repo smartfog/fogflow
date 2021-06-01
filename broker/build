@@ -1,8 +1,28 @@
-go get
-
+#!/bin/bash
 #build the linux version (amd64) of broker
-CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo   -o broker
-docker build -t "fogflow/broker" .
+
+if (( $# != 1 )); then
+	echo "Illegal number of parameters"
+	echo "usage: ./build [multistage|development]"
+	exit 1
+fi
+
+command="$1"
+case "${command}" in
+	"multistage")
+                     time docker build -f ./Dockerfile_multistage -t "test/broker:test" ../
+                     ;;
+        "development")
+                      go get
+                      CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o broker
+		      time docker build -f ./Dockerfile_development -t "test/broker:test" .
+                      ;;
+	*)
+		      echo "Command not Found."
+		      echo "usage: ./build [multistage|development]"
+		      exit 127;
+		      ;;
+esac
 
 #build the arm version of broker
 #CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o broker_arm
