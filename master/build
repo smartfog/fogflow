@@ -10,12 +10,12 @@ fi
 command="$1"
 case "${command}" in
 	"multistage")
-                     time docker build -f ./Dockerfile_multistage -t "test/master:test" ../
+                     time docker build -f ./Dockerfile_multistage -t "fogflow/master" ../
 		     ;;
 	"development")
                       go get
 		      CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo -o master
-		      time docker build -f ./Dockerfile_development -t "test/master:test" .
+		      time docker build -f ./Dockerfile_development -t "fogflow/master" .
 		      ;;
 	*)
 		      echo "Command not Found."

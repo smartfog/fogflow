@@ -1,0 +1,12 @@
+/docker
+/debug
+/doc
+/deployment
+/release
+/test
+/designer/node_modules
+/application
+/yaml
+/helm
+/helm_with_RBAC
+

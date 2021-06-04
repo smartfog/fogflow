@@ -1,8 +1,8 @@
 {
-    "my_hostip": "192.168.0.59",
+    "my_hostip": "host.docker.internal",
     "physical_location":{
-        "longitude": 139,
-        "latitude": 35
+        "longitude": 139.709059,
+        "latitude": 35.692221
     },
     "site_id": "001",
     "logging":{
@@ -12,7 +12,7 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 8060
+        "http_port": 8090
     },
     "broker": {
         "http_port": 8070
@@ -26,7 +26,7 @@
         "capacity": 8
     },
     "designer": {
-        "webSrvPort": 8088,
+        "webSrvPort": 8060,
         "agentPort": 1030               
     },    
     "rabbitmq": {
@@ -39,5 +39,5 @@
     },
     "persistent_storage": {
         "port": 9082
-    }     
+    } 
 }

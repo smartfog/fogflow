@@ -9,11 +9,11 @@ fi
 command="$1"
 case "${command}" in
 	"multistage")
-		     time docker build -f ./Dockerfile_multistage -t "test/designer:test"  ../
+		     time docker build -f ./Dockerfile_multistage -t "fogflow/designer"  ../
 		     ;;
 	"development")
 		      npm install
-		      time docker build -f ./Dockerfile_development -t "test/designer:test" .
+		      time docker build -f ./Dockerfile_development -t "fogflow/designer" .
 		      ;;
 	*)
 		      echo "Command not Found."

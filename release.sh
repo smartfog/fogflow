@@ -1,6 +1,7 @@
 # build the images of all FogFlow core components
-#./build.sh
+#./build.sh multistage
 
+# tag all docker images with the version number
 if [ $# -gt 0 ]; then
     VERSION=$1
     echo "releasing v${VERSION} to docker hub"
@@ -18,6 +19,4 @@ if [ $# -gt 0 ]; then
     docker push fogflow/master:${VERSION}
     docker push fogflow/worker:${VERSION}
     docker push fogflow/designer:${VERSION}
-fi 
-
-
+fi
