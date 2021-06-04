@@ -2,7 +2,7 @@ package main
 
 import (
 	"errors"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 	"strings"
 	"time"
 )
@@ -34,6 +34,11 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				interfaceArray := v.([]interface{})
 				if len(interfaceArray) > 0 {
 					mp := interfaceArray[0].(map[string]interface{})
+					_, oK := mp["@type"]
+					if oK == false {
+						err := errors.New("attribute type can not be nil!")
+						return nil, err
+					}
 					typ := mp["@type"].([]interface{})
 					if len(typ) > 0 {
 						if strings.Contains(typ[0].(string), "Property") {
@@ -44,7 +49,6 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 								entity[k] = property
 							}
 						} else if strings.Contains(typ[0].(string), "Relationship") {
-
 							relationship, err := sz.getRelationship(mp)
 							if err != nil {
 								return entity, err
@@ -56,12 +60,10 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 				}
 			}
 		}
-
 	}
 	entity["modifiedAt"] = time.Now().String()
 	return entity, nil
 }
-
 func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	subscription := LDSubscriptionRequest{}
 	for _, val := range expanded {
@@ -147,7 +149,7 @@ func (sz Serializer) getType(typ []interface{}) string {
 }
 
 func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string]interface{}, error) {
-
+	hasValueExist := false
 	Property := make(map[string]interface{})
 	for propertyField, fieldValue := range propertyMap {
 		if strings.Contains(propertyField, "@type") {
@@ -155,14 +157,15 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 				Property["type"] = sz.getType(fieldValue.([]interface{}))
 			}
 		} else if strings.Contains(propertyField, "hasValue") {
+			hasValueExist = true
 			if fieldValue != nil {
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
-				if Property["value"] == "nil" || Property["value"] == "" {
-					err := errors.New("Property value can not be nil!")
+				if Property["value"].([]interface{})[0] == "nil" || Property["value"].([]interface{})[0] == "Nil" || Property["value"].([]interface{})[0] == "Null" || Property["value"].([]interface{})[0] == "null"{
+					err := errors.New("Property value can not be null/nil !")
 					return Property, err
 				}
 			} else {
-				err := errors.New("Property value can not be nil!")
+				err := errors.New("Property value can not be null/nil !")
 				return Property, err
 			}
 		} else if strings.Contains(propertyField, "observedAt") {
@@ -215,11 +218,16 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		}
 	}
+	if hasValueExist == false{
+		err := errors.New("Property value can not be null/nil !")
+		return Property, err
+	}
 	//Property["modifiedAt"] = time.Now().String()
 	return Property, nil
 }
 
 func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (map[string]interface{}, error) {
+	hasObjectExist := false
 	Relationship := make(map[string]interface{})
 	for relationshipField, fieldValue := range relationshipMap {
 		if strings.Contains(relationshipField, "@type") {
@@ -227,21 +235,22 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 				Relationship["type"] = sz.getType(fieldValue.([]interface{}))
 			}
 		} else if strings.Contains(relationshipField, "hasObject") {
+			hasObjectExist = true
 			if fieldValue != nil {
 				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
-				if Relationship["object"] == "nil" || Relationship["object"] == "" {
-					err := errors.New("Relationship Object value can not be nil!")
+				if Relationship["object"] == "nil" || Relationship["object"] == "Nil" || Relationship["object"] == "null" || Relationship["object"] == "Null"{
+					err := errors.New("Relationship Object value can not be null/nil !")
 					return Relationship, err
 				}
 			} else {
-				err := errors.New("Relationship Object value can not be nil!")
+				err := errors.New("Relationship Object value can not be null/nil !")
 				return Relationship, err
 			}
 		} else if strings.Contains(relationshipField, "Object") {
 			if fieldValue != nil {
 				Relationship["object"] = sz.getValueFromArray(fieldValue.([]interface{})).(string)
 			} else {
-				err := errors.New("Relationship Object value can not be nil!")
+				err := errors.New("Relationship Object value can not be null/nil !")
 				return Relationship, err
 			}
 		} else if strings.Contains(relationshipField, "observedAt") {
@@ -289,6 +298,10 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 				}
 			}
 		}
+	}
+	if hasObjectExist == false{
+		err := errors.New("Relationship Object value can not be null/nil !")
+		return Relationship, err
 	}
 	//Relationship["modifiedAt"] = time.Now().String()
 	return Relationship, nil

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 func hash(s string) uint32 {
@@ -159,7 +159,6 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 
 	inputSubscription := flow.Subscriptions[subID]
 	entityID := registredEntity.ID
-
 	switch entityAction {
 	case "CREATE", "UPDATE":
 		//update context availability
@@ -241,7 +240,6 @@ func (flow *FogFlow) checkInputsOfTaskInstance(taskCfg *TaskConfig) bool {
 
 func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *InputSubscription) []*DeploymentAction {
 	groups := flow.getRelevantGroups(inputSubscription, entityID)
-
 	deploymentActions := make([]*DeploymentAction, 0)
 
 	for _, group := range groups {
@@ -835,26 +833,25 @@ func (tMgr *TaskMgr) selector2Subscription(inputSelector *InputStreamConfig, geo
 //
 // the main function to deal with data-driven and context aware task orchestration
 //
+
 func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction string, entityRegistration *EntityRegistration) {
 	INFO.Println("handle the change of stream availability")
 	INFO.Println(subID, entityAction, entityRegistration.ID)
 	INFO.Printf("received registration: %+v\r\n", entityRegistration)
-
 	tMgr.subID2FogFunc_lock.RLock()
 	if _, exist := tMgr.subID2FogFunc[subID]; exist == false {
 		INFO.Println("this subscripption is not issued by me")
 		tMgr.subID2FogFunc_lock.RUnlock()
 		return
 	}
-
 	funcName := tMgr.subID2FogFunc[subID]
-
 	tMgr.subID2FogFunc_lock.RUnlock()
 
 	// update the received context availability information
 	tMgr.fogFlows_lock.Lock()
 	defer tMgr.fogFlows_lock.Unlock()
-
+	fiwareServicePath := entityRegistration.FiwareServicePath
+	mgsFormat := entityRegistration.MsgFormat
 	fogflow := tMgr.fogFlows[funcName]
 	DEBUG.Printf("~~~~~~~ access the flow %+s, %+v ~~~~~~~~~~~~~~~~~\r\n", funcName, fogflow)
 
@@ -875,7 +872,7 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			INFO.Printf("add task %+v\r\n", deploymentAction.ActionInfo)
 
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
-
+			scheduledTaskInstance = SetFiwareServicePath(scheduledTaskInstance, fiwareServicePath, mgsFormat)
 			// figure out where to deploy this task instance
 			itemList := strings.Split(scheduledTaskInstance.ID, ".")
 			hashID := itemList[len(itemList)-1]

@@ -411,7 +411,7 @@ def test_getSubscription11():
 '''
   To test subscription for its if and else part : 1) for Destination Header
 '''
-def test_getSubscription12():
+'''def test_getSubscription12():
         #create an entity
         url=brokerIp+"/ngsi10/updateContext"
         headers={'Content-Type' : 'application/json'}
@@ -454,7 +454,7 @@ def test_getSubscription12():
 	#else:
 		#print("\nNot Validated")
         assert r.status_code == 200
-
+'''
 #testCase 13
 '''
   To test subscription for its if and else part : 2) for User - Agent Header

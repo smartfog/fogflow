@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/piprate/json-gold/ld"
-	. "github.com/smartfog/fogflow/common/constants"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/constants"
+	. "fogflow/common/ngsi"
+
 	"io/ioutil"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/piprate/json-gold/ld"
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
@@ -422,63 +425,156 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 // NGSI-LD starts here.
 
+var ExpandOnce sync.Once
+var CompactOnce sync.Once
+var ldE *ld.RFC7324CachingDocumentLoader
+var ldC *ld.RFC7324CachingDocumentLoader
+var expand_lock sync.RWMutex
+
+var compact_lock sync.RWMutex
+//creating expand singleton object for document loader
+
+func Expand_once() *ld.RFC7324CachingDocumentLoader {
+	if ldE == nil {
+		ExpandOnce.Do(
+			func() {
+				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
+				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				fmt.Println("created object", ldE,err)
+			})
+	} else {
+		fmt.Println("The loader object is already created")
+	}
+	return ldE
+}
+
+//creating compact  singleton object for document loader
+
+func Compact_once() *ld.RFC7324CachingDocumentLoader {
+	if ldC == nil {
+		CompactOnce.Do(
+			func() {
+				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
+				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				fmt.Println("created object", ldC,err)
+			})
+	} else {
+		fmt.Println("The loader object is already created")
+	}
+	return ldC
+}
+
 func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
+	cdl := Compact_once()
 	proc := ld.NewJsonLdProcessor()
-	options := ld.NewJsonLdOptions("")
-	compacted, err := proc.Compact(entity, context, options)
+	opts := ld.NewJsonLdOptions("")
+	opts.ProcessingMode = ld.JsonLd_1_1
+	opts.DocumentLoader = cdl
+	//options := ld.NewJsonLdOptions("")
+	compacted, err := proc.Compact(entity, context, opts)
 	return compacted, err
 }
 
 func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
 	elements := make(map[string]interface{})
-	for k ,_ := range element {
-		 if k != "modifiedAt" && k != "createdAt" && k != "observedAt" {
+	for k, _ := range element {
+		if k != "modifiedAt" && k != "createdAt" {
 			elements[k] = element[k]
 		}
 	}
 	return elements
 }
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration bool, httpsCfg *HTTPS) error {
+
+func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration string, fiwareService string, fiwareServicePath string, httpsCfg *HTTPS) error {
 	INFO.Println("NOTIFY: ", URL)
 	ldCompactedElems := make([]map[string]interface{}, 0)
 	for k, _ := range ldCtxElems {
-		resolved, _ := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
-	}
-	LdElementList := make([]interface{}, 0)
-	for _, ldEle := range ldCompactedElems {
-		element := make(map[string]interface{})
-		element["id"] = ldEle["id"]
-		element["type"] = ldEle["type"]
-		for k, _ := range ldEle {
-			if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-				attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
-				element[k] = attr
-			}
+		compact_lock.Lock()
+		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+		compact_lock.Unlock()
+		if err != nil {
+			continue
 		}
-		LdElementList = append(LdElementList, element)
+		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
 	}
 	var notifyCtxReq interface{}
 	var notifyURL string
-	if integration == true {
-		notifyCtxReq = LdElementList
-		notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
-	} else {
-		notifyCtxReq = &LDNotifyContextRequest{
-			SubscriptionId: subscriptionId,
-			Data:           LdElementList,
-			Type:           "Notification",
-			Id:             "fogflow:notification",
-			NotifyAt:       time.Now().String(),
+	var newBody []byte
+	if integration != "IoTI" {
+		LdElementList := make([]interface{}, 0)
+		for _, ldEle := range ldCompactedElems {
+			element := make(map[string]interface{})
+			id, _ := FiwareId(ldEle["id"].(string))
+			element["id"] = id
+			element["type"] = ldEle["type"]
+			for k, _ := range ldEle {
+				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
+					attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
+					element[k] = attr
+				}
+			}
+			LdElementList = append(LdElementList, element)
 		}
-		notifyURL = URL
+		if integration == "NGSILDBroker" {
+			notifyCtxReq = LdElementList
+			notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
+		} else {
+			notifyCtxReq = &LDNotifyContextRequest{
+				SubscriptionId: subscriptionId,
+				Data:           LdElementList,
+				Type:           "Notification",
+				Id:             "fogflow:notification",
+				NotifyAt:       time.Now().String(),
+			}
+			notifyURL = URL
+		}
+		body, err := json.Marshal(notifyCtxReq)
+		if err != nil {
+			return err
+		}
+		newBody = body
+		err = upsertRequest(newBody, notifyURL, fiwareService, fiwareServicePath, httpsCfg)
+		return err
+	} else {
+		var id string
+		//var updatedAttr string
+		for _, ldEle := range ldCompactedElems {
+			id, _ = FiwareId(ldEle["id"].(string))
+			var updateAttr string
+			result := make(map[string]interface{})
+			if val, ok := ldEle["command"]; ok {
+				commandResult := val.(map[string]interface{})
+				if _, ok := commandResult["value"]; ok {
+					updateAttr = commandResult["value"].(string)
+					result["type"] = "Property"
+					result["value"] = ""
+					notifyURL = URL + "/ngsi-ld/v1/entities/" + id + "/attrs/" + updateAttr
+					body, err := json.Marshal(result)
+					if err != nil {
+						return err
+					}
+					err = patchRequest(body, notifyURL, fiwareService, fiwareServicePath, httpsCfg)
+					return err
+				}
+			}
+		}
+		//commandResult := ldEle["command"]
 	}
-	body, err := json.Marshal(notifyCtxReq)
+	return nil
+}
+
+func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePath string, httpsCfg *HTTPS) error {
+	req, err := http.NewRequest("PATCH", URL, bytes.NewBuffer(body))
 	if err != nil {
 		return err
 	}
+	if fiwreService != "default" {
+		req.Header.Add("fiware-service", fiwreService)
+	}
+	if FiwareServicePath != "default" {
+		req.Header.Add("fiware-servicepath", FiwareServicePath)
+	}
 
-	req, err := http.NewRequest("POST", notifyURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
@@ -488,7 +584,38 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		client = httpsCfg.GetHTTPClient()
 	}
 	resp, err := client.Do(req)
-	fmt.Println(resp)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+
+	ioutil.ReadAll(resp.Body)
+
+	return nil
+}
+
+func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePath string, httpsCfg *HTTPS) error {
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	if err != nil {
+		return nil
+	}
+	if fiwreService != "default" {
+		req.Header.Add("fiware-service", fiwreService)
+	}
+	if FiwareServicePath != "default" {
+		req.Header.Add("fiware-servicepath", FiwareServicePath)
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+
+	client := &http.Client{}
+	if strings.HasPrefix(URL, "https") == true {
+		client = httpsCfg.GetHTTPClient()
+	}
+	resp, err := client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -563,7 +690,7 @@ func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
 	recCtxEleMap := recCtxEle.(map[string]interface{})
 	currCtxEleMap := currCtxEle.(map[string]interface{})
 	for attr, _ := range recCtxEleMap {
-		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" {
+		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" && attr != "fiwareServicePath" && attr != "msgFormat" {
 			if isNewLdAttribute(attr, currCtxEleMap) == true {
 				return true
 			}
@@ -582,9 +709,61 @@ func contentTypeValidator(cType string) error {
 		return err
 	}
 	cTypeInLower := strings.ToLower(cType)
-	if cTypeInLower != "application/json" && cTypeInLower != "application/ld + json" {
+	if cTypeInLower != "application/json" && cTypeInLower != "application/ld+json" {
 		err := errors.New("Unsupported content type. Allowed are application/json and application/ld+json.")
 		return err
 	}
 	return nil
+}
+
+func getActualEntity(resultEntity map[string]interface{}) string {
+	id := resultEntity["id"].(string)
+	idSplit := strings.Split(id, "@")
+	actualId := idSplit[0]
+	return actualId
+}
+
+func getIoTID(id string, fiwareService string) string {
+	Id := id + "@" + fiwareService
+	return Id
+}
+
+func unsubscribeContextLDProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
+	unsubscription := &UnsubscribeContextRequest{
+		SubscriptionId: sid,
+	}
+
+	body, err := json.Marshal(unsubscription)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeLDContext", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
+
+	client := httpsCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+
+	unsubscribeCtxResp := UnsubscribeContextResponse{}
+	err = json.Unmarshal(text, &unsubscribeCtxResp)
+	if err != nil {
+		return err
+	}
+
+	if unsubscribeCtxResp.StatusCode.Code == 200 {
+		return nil
+	} else {
+		err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
+		return err
+	}
 }

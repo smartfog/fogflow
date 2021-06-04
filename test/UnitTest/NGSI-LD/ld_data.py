@@ -215,7 +215,7 @@ subdata4b=\
 
 subdata4c=\
 {
-      "id": "urn:ngsi-ld:Vehicle:A3000",
+      "id": "urn:ngsi-ld:Vehicle:A3000b",
       "type": "Vehicle",
       "brandName1": {
                           "type": "Property",
@@ -672,22 +672,7 @@ subdata33=\
                                                                 "object": "urn:ngsi-ld:camera:c1"
                                                 }
                                 }
-                },
-                "@context": [
-                                {
-                                                "Vehicle": "http://example.org/vehicle/Vehicle",
-                                                "brandName": "http://example.org/vehicle/brandName",
-                                                "speed": "http://example.org/vehicle/speed",
-                                                "isParked": {
-                                                                "@type": "@id",
-                                                                "@id": "http://example.org/common/isParked"
-                                                },
-                                                "providedBy": {
-                                                                "@type": "@id",
-                                                                "@id": "http://example.org/common/providedBy"
-                                                }
-                                }
-                ]
+                }
 }
 
 # Payload to create nested entity with context in link header
@@ -829,6 +814,38 @@ subdata38=\
         }
     }
 }
+
+subdata38b=\
+{
+    "id": "urn:ngsi-ld:Vehicle:A3000b",
+    "type": "Vehicle",
+    "brandName": {
+        "type": "Property",
+        "value": "Mercedes"
+    },
+    "isParked": {
+        "type": "Relationship",
+        "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+        "observedAt": "2017-07-29T12:00:04",
+        "providedBy": {
+            "type": "Relationship",
+            "object": "urn:ngsi-ld:Person:Bob"
+        }
+    },
+    "speed": {
+        "type": "Property",
+        "value": 80
+    },
+    "createdAt": "2017-07-29T12:00:04",
+    "location": {
+        "type": "GeoProperty",
+        "value": {
+            "type": "Point",
+            "coordinates": [-8.5, 41.2]
+        }
+    }
+}
+
 
 subdata39=\
 {
@@ -1939,3 +1956,268 @@ subdata64=\
 }
 ]
 
+testData74=\
+ [{
+  	"id": "urn:ngsi-ld:Device:water001",
+  	"type": "Device",
+  	"on": {
+  		"type": "Property",
+  		"value": " "
+  	}
+  }]
+
+testData75=\
+ {
+        "id": "urn:ngsi-ld:Device:water001",
+        "type": "Device",
+        "on": {
+                "type": "Property",
+                "value": " "
+        }
+  }
+
+subData80 = \
+{
+                "type": "Subscription",
+                "entities": [{
+			"id":"urn:ngsi-ld:Device:water080",
+                       "type": "Device"
+                }],
+              "notification": {
+                  "format": "normalized",
+                  "endpoint": {
+                           "uri": "http://127.0.0.1:8888",
+                           "accept": "application/ld+json"
+                   }
+               }
+ }
+
+upsertMultipleCommand = \
+[
+  {
+  	"id": "urn:ngsi-ld:Device:water001",
+  	"type": "Device",
+  	"on1": {
+  		"type": "Property",
+  		"value": " "
+  	}
+   },
+   {
+        "id": "urn:ngsi-ld:Device:water002",
+        "type": "Device",
+        "on2": {
+                "type": "Property",
+                "value": " "
+        }
+   },
+   {
+        "id": "urn:ngsi-ld:Device:water003",
+        "type": "Device",
+        "on3": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+upsertCommand = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:water001",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+
+upsertCommand80 = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:water080",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+
+
+DelData= \
+ [{
+ 	"id": "urn:ngsi-ld:Vehicle:A109",
+ 	"type": "Device",
+ 	"brandName": {
+ 		"type": "Property",
+ 		"value": "xyzeee"
+ 	},
+ 	"isParked": {
+ 		"type": "Relationship",
+ 		"object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+ 		"providedBy": {
+ 			"type": "Relationship",
+ 			"object": "urn:ngsi-ld:Person:Bob"
+ 		}
+ 	},
+ 	"speed": {
+ 		"type": "Property",
+ 		"value": 30
+ 	},
+ 	"location": {
+ 		"type": "GeoProperty",
+ 		"value": {
+ 			"type": "Point",
+ 			"coordinates": [-8.5, 41.2]
+ 		}
+ 	}
+ }]
+test89 = \
+[
+  {
+        "id": "urn:ngsi-ld:Device:test89",
+        "type": "Device",
+        "on1": {
+                "type": "Property",
+                "value": " "
+        }
+   }
+
+]
+
+#NIL in Property
+subdata91=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AQP",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "Nil"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
+
+#null in property
+
+subdata92=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AQQ",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "null"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
+
+#Nil in Relationship Object
+
+subdata93=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AMNM",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "Mercer"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "nil",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }
+
+#Null in Relationship Object
+
+subdata94=\
+{
+           "id": "urn:ngsi-ld:Vehicle:AXY",
+           "type": "Vehicle",
+           "brandName": {
+                          "type": "Property",
+                          "value": "Mercedes"
+            },
+            "isParked": {
+                          "type": "Relationship",
+                          "object": "null",
+                          "observedAt": "2017-07-29T12:00:04",
+                          "providedBy": {
+                                          "type": "Relationship",
+                                          "object": "urn:ngsi-ld:Person:Bob"
+                           }
+             },
+             "speed": {
+                        "type": "Property",
+                        "value": 80
+              },
+             "createdAt": "2017-07-29T12:00:04",
+             "location": {
+                            "type": "GeoProperty",
+                            "value": {
+                                      "type": "Point",
+                                      "coordinates": [-8.5, 41.2]
+                            }
+             }
+     }

@@ -1,9 +1,11 @@
 package main
+
 import (
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
+	mux "github.com/gufranmirza/go-router"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,12 +13,13 @@ import (
 	"strconv"
 	"syscall"
 	"time"
-	mux "github.com/gufranmirza/go-router"
 )
+
 var previous_num = int(0)
 var current_num = int(0)
 var startTime = time.Now()
 var ticker *time.Ticker
+
 func main() {
 	myPort := flag.Int("p", 8066, "the port of this agent")
 	flag.Parse()
@@ -32,6 +35,7 @@ func main() {
 	signal.Notify(c, syscall.SIGTERM)
 	<-c
 }
+
 /*func onTimer() {
 	fmt.Println("timer")
 	if current_num != previous_num {
@@ -40,6 +44,7 @@ func main() {
 	previous_num = current_num
 }*/
 type publishContextFunc func(ctxObj map[string]interface{})
+
 // publish update on FogFlow broker
 func fogfunction(ctxObj map[string]interface{}, publish publishContextFunc) error {
 	//fmt.Println(ctxObj)
@@ -47,6 +52,7 @@ func fogfunction(ctxObj map[string]interface{}, publish publishContextFunc) erro
 	publish(ctxObj)
 	return nil
 }
+
 /*
 	convert request into map for processing
 */
@@ -71,6 +77,7 @@ func getStringInterfaceMap(r *http.Request) (map[string]interface{}, error) {
 		return nil, errors.New("EmptyPayload!")
 	}
 }
+
 /*
 	handler for receiving notification
 */

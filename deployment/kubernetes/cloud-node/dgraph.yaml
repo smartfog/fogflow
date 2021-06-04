@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: dgraph
+spec:
+  selector:
+    matchLabels:
+      run: dgraph
+  replicas: 1      
+  template:
+    metadata:
+      labels:
+        run: dgraph
+    spec:
+      containers:
+      - name: dgraph
+        image: dgraph/standalone
+        ports:
+        - containerPort: 6080
+        - containerPort: 8080
+        - containerPort: 9080
+        - containerPort: 8000
+        volumeMounts:
+        - name: dgraph 
+          mountPath: /dgraph 
+      volumes:
+      - name: dgraph
+        hostPath: 
+          path: /Users/cheng/work/github/fogflow/yaml/cloud-node/dgraph        
+          
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow                      
+  name: dgraph
+  labels:
+    run: dgraph
+spec:
+  type: LoadBalancer
+  ports:  
+    - name: "6080"
+      port: 6080
+      targetPort: 6080
+    - name: "8080"
+      port: 8082
+      targetPort: 8080
+    - name: "9080"
+      port: 9080
+      targetPort: 9080
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
+  selector:
+    run: dgraph
+
+
+

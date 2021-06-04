@@ -16,8 +16,8 @@ import (
 
 	"github.com/ant0ine/go-json-rest/rest"
 
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/config"
+	. "fogflow/common/ngsi"
 )
 
 func main() {
@@ -49,6 +49,7 @@ func main() {
 
 		// convenient ngsi9 API
 		rest.Get("/ngsi9/registration/#eid", iotDiscovery.getRegisteredEntity),
+		rest.Get("/ngsi9/ngsi-ld/registration/#eid", iotDiscovery.getRegisteredLDEntity),
 		rest.Get("/ngsi9/subscription/#sid", iotDiscovery.getSubscription),
 		rest.Get("/ngsi9/subscription", iotDiscovery.getSubscriptions),
 

@@ -7,11 +7,11 @@ import (
 	"sync"
 	"time"
 
-	. "github.com/smartfog/fogflow/common/communicator"
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/communicator"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 
-	. "github.com/smartfog/fogflow/common/config"
+	. "fogflow/common/config"
 )
 
 type Master struct {
@@ -90,9 +90,19 @@ func (master *Master) Start(configuration *Config) {
 	master.serviceMgr.Init()
 
 	// announce myself to the nearby IoT Broker
-	master.registerMyself()
+	for {
+		// announce myself to the nearby IoT Broker
+		err := master.registerMyself()
+		if err != nil {
+			INFO.Println("wait for the assigned broker to be ready")
+			time.Sleep(5 * time.Second)
+		} else {
+			INFO.Println("annouce myself to the nearby broker")
+			break
+		}
+	}
 
-	master.myURL = "http://" + configuration.GetMyAccessibleIP() + ":" + strconv.Itoa(configuration.Master.AgentPort)
+	master.myURL = "http://" + configuration.GetMasterIP() + ":" + strconv.Itoa(configuration.Master.AgentPort)
 
 	// start the NGSI agent
 	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort, SecurityCfg: master.cfg.HTTPS}
@@ -156,7 +166,7 @@ func (master *Master) Quit() {
 	INFO.Println("stop consuming the messages")
 }
 
-func (master *Master) registerMyself() {
+func (master *Master) registerMyself() error {
 	ctxObj := ContextObject{}
 
 	ctxObj.Entity.ID = master.id
@@ -172,9 +182,7 @@ func (master *Master) registerMyself() {
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	err := client.UpdateContextObject(&ctxObj)
-	if err != nil {
-		ERROR.Println(err)
-	}
+	return err
 }
 
 func (master *Master) unregisterMyself() {
@@ -226,9 +234,7 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 	if len(notifyCtxReq.ContextResponses) == 0 {
 		return
 	}
-
-	contextObj := CtxElement2Object(&(notifyCtxReq.ContextResponses[0].ContextElement))
-
+	contextObj := CtxElement2Object(&notifyCtxReq.ContextResponses[0].ContextElement)
 	switch stype {
 	// registry of an operator
 	case "Operator":
@@ -480,7 +486,6 @@ func (master *Master) queryWorkers() []*ContextObject {
 func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
 	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY=========")
 	DEBUG.Println(notifyCtxAvailReq)
-
 	subID := notifyCtxAvailReq.SubscriptionId
 
 	var action string
@@ -507,14 +512,16 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	entityRegistration := EntityRegistration{}
 
 	ctxObj := master.RetrieveContextEntity(entityId.ID)
-
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
+		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		entityRegistration.MsgFormat = entityId.MsgFormat
 	} else {
 		entityRegistration.ID = ctxObj.Entity.ID
 		entityRegistration.Type = ctxObj.Entity.Type
-
+		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		entityRegistration.MsgFormat = entityId.MsgFormat
 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
 		for attrName, attrValue := range ctxObj.Attributes {
 			attributeRegistration := ContextRegistrationAttribute{}

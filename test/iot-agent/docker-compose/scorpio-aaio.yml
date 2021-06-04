@@ -1,0 +1,167 @@
+# WARNING: Do not deploy this tutorial configuration directly to a production environment
+#
+# The tutorial docker-compose files have not been written for production deployment and will not 
+# scale. A proper architecture has been sacrificed to keep the narrative focused on the learning 
+# goals, they are just used to deploy everything onto a single Docker machine. All FIWARE components 
+# are running at full debug and extra ports have been exposed to allow for direct calls to services. 
+# They also contain various obvious security flaws - passwords in plain text, no load balancing,
+# no use of HTTPS and so on. 
+# 
+# This is all to avoid the need of multiple machines, generating certificates, encrypting secrets
+# and so on, purely so that a single docker-compose file can be read as an example to build on, 
+# not use directly. 
+# 
+# When deploying to a production environment, please refer to the Helm Repository
+# for FIWARE Components in order to scale up to a proper architecture:
+# 
+# see: https://github.com/FIWARE/helm-charts/
+#
+version: "3.5"
+
+services:
+  zookeeper:
+    image: zookeeper
+    hostname: zookeeper
+    container_name: zookeeper
+    networks:
+      - default
+    ports:
+      - "2181"
+  kafka:
+    image: wurstmeister/kafka
+    hostname: kafka
+    container_name: kafka
+    networks:
+      - default
+    ports:
+      - "9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_PORT: 9092
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+      
+  scorpio:
+    image: scorpiobroker/scorpio:scorpio-aaio_${SCORPIO_VERSION}
+    hostname: scorpio
+    container_name: fiware-scorpio
+    networks:
+      - default
+    ports:
+      - "${SCORPIO_PORT}:9090"
+    depends_on:
+      - kafka
+      - postgres
+    healthcheck:
+      test: curl --fail -s http://scorpio:${SCORPIO_PORT}/scorpio/v1/info/ || exit 1
+
+  postgres:
+    image: mdillon/postgis
+    hostname: postgres
+    container_name: db-postgres
+    networks:
+      - default
+    ports:
+      - "5432"
+    environment:
+      POSTGRES_USER: ngb
+      POSTGRES_PASSWORD: ngb
+      POSTGRES_DB: ngb
+
+
+  # IoT-Agent is configured for the UltraLight Protocol
+  iot-agent:
+    image: fiware/iotagent-ul:${ULTRALIGHT_VERSION}
+    hostname: iot-agent
+    container_name: fiware-iot-agent
+    depends_on:
+      - mongo-db
+    networks:
+      - default
+    expose:
+      - "${IOTA_NORTH_PORT}"
+      - "${IOTA_SOUTH_PORT}"
+    ports:
+      - "${IOTA_NORTH_PORT}:${IOTA_NORTH_PORT}" # localhost:4041
+      - "${IOTA_SOUTH_PORT}:${IOTA_SOUTH_PORT}" # localhost:7896
+    environment:
+      - IOTA_CB_HOST=scorpio # name of the context broker to update context
+      - IOTA_CB_PORT=${SCORPIO_PORT} # port the context broker listens on to update context
+      - IOTA_NORTH_PORT=${IOTA_NORTH_PORT}
+      - IOTA_REGISTRY_TYPE=mongodb #Whether to hold IoT device info in memory or in a database
+      - IOTA_LOG_LEVEL=DEBUG # The log level of the IoT Agent
+      - IOTA_TIMESTAMP=true # Supply timestamp information with each measurement
+      - IOTA_AUTOCAST=true # Ensure Ultralight number values are read as numbers not strings
+      - IOTA_MONGO_HOST=mongo-db # The host name of MongoDB
+      - IOTA_MONGO_PORT=${MONGO_DB_PORT} # The port mongoDB is listening on
+      - IOTA_MONGO_DB=iotagentul # The name of the database used in mongoDB
+      - IOTA_HTTP_PORT=${IOTA_SOUTH_PORT} # The port used for device traffic over HTTP
+      - IOTA_PROVIDER_URL=http://iot-agent:${IOTA_NORTH_PORT}
+      - IOTA_DEFAULT_RESOURCE=/iot/d
+
+      - IOTA_CB_NGSI_VERSION=ld # use NGSI-LD when sending updates for active attributes
+      - IOTA_JSON_LD_CONTEXT=https://fiware.github.io/tutorials.Step-by-Step/tutorials-context.jsonld
+      - IOTA_FALLBACK_TENANT=openiot
+    healthcheck:
+      interval: 5s
+
+   # Tutorial acts as a series of dummy IoT Sensors over HTTP
+  tutorial:
+    image: fiware/tutorials.context-provider
+    hostname: tutorial
+    container_name: fiware-tutorial
+    depends_on:
+      - scorpio
+      - iot-agent
+    networks:
+      default:
+        aliases:
+          - iot-sensors
+          - context-provider
+    expose:
+      - "${TUTORIAL_APP_PORT}"
+      - "${TUTORIAL_DUMMY_DEVICE_PORT}"
+    ports:
+      - "${TUTORIAL_APP_PORT}:${TUTORIAL_APP_PORT}" # localhost:3000
+      - "${TUTORIAL_DUMMY_DEVICE_PORT}:${TUTORIAL_DUMMY_DEVICE_PORT}" # localhost:3001
+    environment:
+      - "DEBUG=tutorial:*"
+      - "WEB_APP_PORT=${TUTORIAL_APP_PORT}" # Port used by the content provider proxy and web-app for viewing data
+      - "NGSI_VERSION=ngsi-ld"
+      - "NGSI_LD_PREFIX=urn:ngsi-ld:"
+      - "IOTA_HTTP_HOST=iot-agent"
+      - "IOTA_HTTP_PORT=${IOTA_SOUTH_PORT}"
+      - "DUMMY_DEVICES_PORT=${TUTORIAL_DUMMY_DEVICE_PORT}" # Port used by the dummy IOT devices to receive commands
+      - "DUMMY_DEVICES_TRANSPORT=HTTP" # Default transport used by dummy Io devices
+      - "DUMMY_DEVICES_API_KEY=4jggokgpepnvsb2uv4s40d59ov"
+      - "CONTEXT_BROKER=http://scorpio:${SCORPIO_PORT}/ngsi-ld/v1" # URL of the context broker to update context
+      - "OPENWEATHERMAP_KEY_ID=<ADD_YOUR_KEY_ID>"
+      - "TWITTER_CONSUMER_KEY=<ADD_YOUR_CONSUMER_KEY>"
+      - "TWITTER_CONSUMER_SECRET=<ADD_YOUR_CONSUMER_SECRET>"
+    healthcheck:
+      test: curl --fail -s http://tutorial:${TUTORIAL_APP_PORT}/version || exit 1
+  
+  # Database
+  mongo-db:
+    image: mongo:${MONGO_DB_VERSION}
+    hostname: mongo-db
+    container_name: db-mongo
+    expose:
+      - "${MONGO_DB_PORT}"
+    ports:
+      - "${MONGO_DB_PORT}:${MONGO_DB_PORT}" # localhost:27017
+    networks:
+      - default
+
+    volumes:
+      - mongo-db:/data
+
+
+networks:
+  default: ~
+
+volumes:
+  mongo-db: ~

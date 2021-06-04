@@ -57,6 +57,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     quantumleapIntegration.rst          
     wirecloudIntegration.rst
     k8sIntegration.rst
+    k8sIntegrationYAML.rst
     system_monitoring.rst
     https.rst
    
@@ -70,6 +71,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     context.rst
     api.rst
     build.rst
+    k8s_security_rbac.rst
     test.rst
 
 .. toctree::

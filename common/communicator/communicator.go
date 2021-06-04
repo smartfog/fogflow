@@ -9,7 +9,7 @@ import (
 
 	"github.com/streadway/amqp"
 
-	. "github.com/smartfog/fogflow/common/datamodel"
+	. "fogflow/common/datamodel"
 )
 
 type TaskProcessor interface {

@@ -97,15 +97,30 @@ You need to change the following IP addresses in config.json according to your o
 	please DO NOT use "127.0.0.1" as the IP address of **my_hostip**, because it is only accessible to a 
 	running task inside a docker container. 
 	
-	**Firewall rules:** to make your FogFlow web portal accessible, the following ports 80 and 5672 over TCP must be open and make them accessible to the edge node. 
-	Also, for the cloud node, you need to make sure that the firewall will not block the local access to the ports: 
-	8060 and 1030 for Designer, 8090 for Discovery, 8070 for Broker, 1060 for Master, 9082 for Dgraph, 5672 for Rabbitmq. 
-	Those are the used port numbers specified in the in the default configuration file config.json. 
+	**Firewall rules:** To make FogFlow web portal accessible and for its proper functioning, the following ports must be free and open over TCP in host machine. 
+	
+	.. code-block:: console
+
+		Component		Port
+
+		Discovery		8090 
+		Broker			8070
+		Dgraph			9082
+		Designer		8080
+		Nginx			  80
+		Rabbitmq		5672
+		Task			launched over any port internally
+
+
+	**Note : Task Instance is launched over dynamically assigned port, which is not predefined. So, users can possibly allow local ports using rule in his firewall. This will result in smooth functioning of Task Instances.**
+
+	**Above mentioned port number(s) are default port number(s)**. If user needs to change the port number(s), please make sure the change is consistence in all the configuration files named as **"config.json"**.
 
 	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
-	as my_hostip in the configuration file
+	as my_hostip in the configuration file.
 
-	If you need to change the port number(s), please make sure the change is consistence in all these three configuration files. 
+
+.. figure:: figures/portdiagram.png
 
 
 Start all Fogflow components 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 	"math"
 	"regexp"
 	"strings"

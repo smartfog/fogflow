@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: cloudworker
+spec:
+  selector:
+    matchLabels:
+      run: cloudworker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloudworker
+    spec:
+      containers:
+      - name: cloudworker
+        image: fogflow/worker:k8s
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json                
+          readOnly: true
+        - name: dockersock
+          mountPath: "/var/run/docker.sock"  
+        - name: tmp-folder
+          mountPath: /tmp
+          readOnly: true                    
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap     
+      - name: tmp-folder
+        hostPath:
+          path: /tmp
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock
+             
+          
+
+

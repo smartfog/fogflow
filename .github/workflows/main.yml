@@ -5,7 +5,7 @@ on: [push,pull_request]
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
 
@@ -14,6 +14,12 @@ jobs:
       with:
         go-version: 1.15
         
+    - name: Gosec - Code Analyser
+      continue-on-error: true
+      run: |
+        curl -sfL https://raw.githubusercontent.com/securego/gosec/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
+        gosec ./...
+        
     - name: Docker Build Job
       run: |
         export GOBIN=/home/runner/go/bin
@@ -21,39 +27,63 @@ jobs:
         echo "build discovery"
         cd discovery
         pwd
-        sh build
-
+        sh build development
         echo "build broker"
         cd ../broker
         pwd
-        sh build
-
+        sh build development
         echo "build worker"
         cd ../worker
         pwd
-        sh build
-
+        sh build development
         echo "build master"
         cd ../master
         pwd
-        sh build
-    
+        sh build development 
         echo "build designer"
-        cd ../master
+        cd ../designer
         pwd
-        sh build
-        
+        sh build development
+        echo "build k8sWorker"
+        cd ../k8sWorker
+        pwd
+        sh build development
+            
     - name: Setting Up Environment
       run: |
-        sudo apt-get update
         sudo apt-get install jq
-        sudo apt-get install python-pip
+        sudo apt install python-pip
         pip -V
         sudo pip install --upgrade pip
+        pip install setuptools
         pip install Flask
         pip install requests
         pip install -U pytest
+        pip install pytest-cov
+        pip install pyflakes
+        sudo npm install -g eslint
         sudo apt-get install curl
+        
+    - name: Running Linters [GoLint - a linter for golang, Pyflakes - a linter for python,  ESLint - for Javascript]
+      run: |
+        #For go directories
+        go get -u golang.org/x/lint/golint
+        export GOBIN=/home/runner/go/bin
+        cd discovery/
+        golint
+        cd ../broker
+        golint
+        cd ../master
+        golint
+        cd ../worker
+        golint
+        cd ../
+        
+        echo "For python files"
+        pyflakes . || true
+                        
+        echo "For Javascript files"
+        eslint . --no-eslintrc --format table || true
         
     - name: Launching Docker containers
       run: |
@@ -88,26 +118,27 @@ jobs:
       
         cd discovery/ 
         screen -d -m ./discovery
-
         cd ../broker/
         screen -d -m ./broker
-
         cd ../designer/
         screen -d -m node main.js
-
         cd ../test/UnitTest/
         screen -d -m python accumulator.py
-
+        
+        echo "NGSI-v2 Testing !!!"
         cd ../UnitTest/v2/
-        pytest -s -v
+        pytest -s -v test_casesNGSIv2.py
  
+        echo "NGSI-v1 Testing !!!"
         cd ../v1/
-        pytest -s -v
+        pytest -s -v test_casesNGSIv1.py
 
+        echo "NGSI-LD Testing !!!"
         cd ../NGSI-LD/
-        pytest -s -v 
+        pytest -s -v test_casesNGSI-LD.py
 
+        echo "Persistance Testing !!!"  
         cd ../persistance/
-        pytest -s -v 
+        pytest -s -v test_persistance.py 
 
-        echo "Testing Done !!!"
+        echo "Testing Done !!!!!"

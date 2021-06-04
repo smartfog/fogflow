@@ -208,7 +208,7 @@ function notify2execution() {
     });
 }
 
-// launched by FogFlow in the operation phase
+/*// launched by FogFlow in the operation phase
 function runInOperationMode() {
     console.log("======== OPERATION MODE===========");
 
@@ -229,7 +229,42 @@ function runInOperationMode() {
     } else {
         notify2execution()
     }
+}*/
+
+
+// launched by FogFlow in the operation phase
+function runInOperationMode() {
+    console.log("======== OPERATION MODE===========");
+
+    // apply the configuration
+    var adminCfg = process.env.adminCfg;
+    console.log(adminCfg)
+    if (adminCfg != undefined) {
+        try {
+                const commands = JSON.parse(adminCfg)
+                handleCmds(commands);
+        } catch (err) {
+                console.error(err)
+        }
+     }
+    // handle kubernates configration
+    else {
+            console.log("handling kubernates configration")
+            var brokerURL = process.env.brokerURL;
+            var command = {}
+            command["command"] = "CONNECT_BROKER"
+            command["url"] = brokerURL
+            connectBroker(command)
+    }
+
+    var syncMode = process.env.sync;
+    if (syncMode == 'yes') {
+        query2execution()
+    } else {
+        notify2execution()
+    }
 }
+
 
 // for the test during the development phase
 function runInTestMode() {

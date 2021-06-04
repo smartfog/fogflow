@@ -17,9 +17,9 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 
-	. "github.com/smartfog/fogflow/common/config"
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/config"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type taskContext struct {
@@ -388,20 +388,8 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.Subscriptions = make([]string, 0)
 
 	for _, inputStream := range task.Inputs {
-		NGSILD := e.queryForNGSILdEntity(inputStream.ID)
-		if NGSILD == 200 {
-			fmt.Println(&inputStream)
-			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
-			if err == nil {
-				DEBUG.Println("===========subID = ", subID)
-				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-				taskCtx.EntityID2SubID[inputStream.ID] = subID
-			} else {
-				ERROR.Println(err)
-			}
-		}
-		NGSIV1 := e.queryForNGSIV1Entity(inputStream.ID)
-		if NGSIV1 == 200 {
+		if inputStream.MsgFormat == "NGSIV1" {
+			DEBUG.Println("========Subscription for NGSIV1 task==========")
 			subID, err := e.subscribeInputStream(freePort, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
@@ -410,6 +398,17 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 			} else {
 				ERROR.Println(err)
 			}
+		}
+		if inputStream.MsgFormat == "NGSILD" {
+			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
+			if err == nil {
+				DEBUG.Println("===========subID = ", subID)
+				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+				taskCtx.EntityID2SubID[inputStream.ID] = subID
+			} else {
+				ERROR.Println(err)
+			}
+
 		}
 	}
 
@@ -424,31 +423,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	e.registerTask(task, freePort, containerId)
 
 	return true
-}
-
-//Query for NGSILD Entity with entityId
-func (e *Executor) queryForNGSILdEntity(eid string) int {
-	if eid == "" {
-		return 404
-	}
-	brokerURL := e.brokerURL
-	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
-	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	statusCode := client.QueryForNGSILDEntity(eid)
-	fmt.Println(statusCode)
-	return statusCode
-}
-
-// Query for NGSIV1 Entity with EntityId
-func (e *Executor) queryForNGSIV1Entity(eid string) int {
-	if eid == "" {
-		return 200
-	}
-	fmt.Println(e.brokerURL)
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	statusCode := client.QueryForNGSIV1Entity(eid)
-	fmt.Println(statusCode)
-	return statusCode
 }
 
 func (e *Executor) registerEndPointService(serviceName string, taskID string, operateName string, ipAddr string, port string, location PhysicalLocation) EntityId {
@@ -575,14 +549,19 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	LdSubscription := LDSubscriptionRequest{}
 
 	newEntity := EntityId{}
-
+	var Fs, Fsp, ID string
 	if len(inputStream.ID) > 0 { // for a specific context entity
 		newEntity.Type = inputStream.Type
-		newEntity.ID = inputStream.ID
-	} else { // for all context entities with a specific type
+		ID, Fs = FiwareId(inputStream.ID)
+		if Fs == "default" {
+			Fs = ""
+		}
+		newEntity.ID = ID
+		Fsp = inputStream.FiwareServicePath
+	} else {
 		newEntity.Type = inputStream.Type
 	}
-
+	fmt.Println("FS,FSP", Fs, Fsp)
 	LdSubscription.Entities = make([]EntityId, 0)
 	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
 	LdSubscription.Type = "Subscription"
@@ -594,7 +573,8 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	brokerURL := e.brokerURL
 	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
 	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	sid, err := client.SubscribeLdContext(&LdSubscription, true)
+	sid, err := client.SubscribeLdContext(&LdSubscription, true, Fs, Fsp)
+	fmt.Println("sid", sid)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err
@@ -800,10 +780,8 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 	if e.workerCfg.Worker.StartActualTask == false {
 		return
 	}
-	Id := flow.InputStream.ID
-	NGSILD := e.queryForNGSILdEntity(Id)
-	if NGSILD == 200 {
-		subID, err := e.subscribeLdInputStream(taskCtx.ListeningPort, &flow.InputStream)
+	if flow.InputStream.MsgFormat == "NGSIV1" {
+		subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
 		if err == nil {
 			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
 			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
@@ -812,9 +790,8 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 			ERROR.Println(err)
 		}
 	}
-	NGSIV1 := e.queryForNGSIV1Entity(Id)
-	if NGSIV1 == 200 {
-		subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
+	if flow.InputStream.MsgFormat == "NGSILD" {
+		subID, err := e.subscribeLdInputStream(taskCtx.ListeningPort, &flow.InputStream)
 		if err == nil {
 			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
 			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)

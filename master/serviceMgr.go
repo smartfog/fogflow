@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"sync"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/google/uuid"
 
-	. "github.com/smartfog/fogflow/common/datamodel"
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type TaskIntentRecord struct {
@@ -112,7 +112,7 @@ func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent
 		taskIntent := TaskIntent{}
 
 		// new random uid
-		u1, _ := uuid.NewV4()
+		u1, _ := uuid.NewUUID()
 		rid := u1.String()
 		taskIntent.ID = rid
 
@@ -167,7 +167,7 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 		taskIntent := TaskIntent{}
 
 		// new random uid
-		u1, _ := uuid.NewV4()
+		u1, _ := uuid.NewUUID()
 		rid := u1.String()
 		taskIntent.ID = rid
 
@@ -223,7 +223,7 @@ func (sMgr *ServiceMgr) intentPartition(taskIntent *TaskIntent) []*TaskIntentRec
 				intent := TaskIntent{}
 
 				// new random uid
-				u1, _ := uuid.NewV4()
+				u1, _ := uuid.NewUUID()
 				rid := u1.String()
 				intent.ID = rid
 
@@ -248,7 +248,7 @@ func (sMgr *ServiceMgr) intentPartition(taskIntent *TaskIntent) []*TaskIntentRec
 				intent := TaskIntent{}
 
 				// new random uid
-				u1, _ := uuid.NewV4()
+				u1, _ := uuid.NewUUID()
 				rid := u1.String()
 				intent.ID = rid
 
