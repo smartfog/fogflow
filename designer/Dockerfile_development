@@ -1,0 +1,15 @@
+FROM node:11-alpine
+
+WORKDIR /app
+
+ADD config.json /app
+ADD package.json /app
+
+RUN npm install
+
+ADD main.js /app
+ADD dgraph.js /app
+ADD ./public /app/public
+
+
+ENTRYPOINT [ "node", "main.js" ]

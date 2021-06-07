@@ -1438,13 +1438,16 @@ def test_case79():
 
 def test_case80():
         upsertURL=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
-        headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
+        headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json', 'Require-Reliability':'true','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
         rUpsert=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
+	print(rUpsert.status_code)
 	subscribeURL=brokerIp+"/ngsi-ld/v1/subscriptions/"
 	rSubscribe=requests.post(subscribeURL,data=json.dumps(ld_data.subData80),headers=headers)
         print(rSubscribe.status_code)
-	time.sleep(5)
-	postURL=accumulatorURl+"/validateupsert"
+	rUpsert2=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
+	print(rUpsert2.status_code)
+	time.sleep(10)
+	postURL="http://0.0.0.0:8888"+"/validateupsert"
 	rget = requests.post(postURL,json={"id" : "urn:ngsi-ld:Device:water080"})
 	print(rget.content)
         assert rget.content == "200"
@@ -1554,3 +1557,52 @@ def test_case90():
 	rDel = requests.delete(delURL,headers=headers)
 	assert rDel.status_code == 404
 	assert rget.status_code == 200
+	
+	
+# testCase 91
+'''
+  To test create entity with Nil value in Property Attribute
+'''
+def test_case91():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata91),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+	
+# testCase 92
+'''
+  To test create entity with Null value in Property Attribute
+'''
+def test_case92():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata92),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+	
+# testCase 93
+'''
+  To test create entity with Nil value in Relationship Attribute
+'''
+def test_case93():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata93),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+	
+# testCase 94
+'''
+  To test create entity with Nil value in Property Attribute
+'''
+def test_case94():
+        url=brokerIp+"/ngsi-ld/v1/entities/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata94),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400

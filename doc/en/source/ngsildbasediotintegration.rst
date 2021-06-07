@@ -2,14 +2,32 @@ Integrate FogFlow with NGSILD Based IoT agent
 ****************************************************
 
 This tutorial introduces how FogFlow could be utilized as an advanced data analytics framework to enable on-demand data analytics
-on top of the raw data captured in the NGSI-LD IoT agent. The following diagram shows a simple example of how to do this in details, mainly including four aspects with 10 steps
+on top of the raw data captured in the NGSI-LD IoT agent.
+ 
+**IOT AGENT:** An IoT Agent is a component that lets a group of devices send their data to and be managed from a Context Broker using their own native protocols. if someone want to know more about IoT Agent then can refer `Link`_.
+There are several IoT Agent in the market which are in production or already workable. 
 
-* how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-2**)
-* how to fetch raw data from orion broker into the FogFlow system (**Step 4-5**)
-* how to use the serverless function in FogFlow to do customized data analytics (**Step 6**)
-* how to push the generate analytics results back to the IoT agent for further sharing (**Step 7-10**)
+-   `IoTAgent-JSON`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
+-   `IoTAgent-LWM2M`_ - a bridge between the `Lightweight M2M`_ protocol and NGSI-LD
+-   `IoTAgent-UL`_ - a bridge between HTTP/MQTT messaging (with a JSON payload) and NGSI-LD
+-   `IoTagent-LoRaWAN`_ - a bridge between the `LoRaWAN`_ protocol and NGSI-LD
 
-.. figure:: figures/ngsildiotagent.png
+.. _`Link`: https://ngsi-ld-tutorials.readthedocs.io/en/latest/iot-agent.html
+.. _`IoTAgent-JSON`: https://fiware-iotagent-json.readthedocs.io/en/latest/
+.. _`IoTAgent-LWM2M`: https://fiware-iotagent-lwm2m.readthedocs.io/en/latest/
+.. _`Lightweight M2M`: https://www.omaspecworks.org/what-is-oma-specworks/iot/lightweight-m2m-lwm2m/
+.. _`IoTAgent-UL`: https://fiware-iotagent-ul.readthedocs.io/en/latest
+.. _`IoTagent-LoRaWAN`: https://fiware-lorawan.readthedocs.io/en/latest/
+.. _`LoRaWAN`: https://www.thethingsnetwork.org/docs/lorawan/
+
+The following diagram shows a simple example of how to do this in details with **IoTAgent-UL**, mainly including four aspects with 10 steps
+
+* how to fetch some raw data from an IoT Agent into the orion broker (**Step 1-4**)
+* how to fetch raw data from orion broker into the FogFlow system (**Step 5-7**)
+* how to use the serverless function in FogFlow to do customized data analytics (**Step 8**)
+* how to push the generate analytics results back to the IoT agent for further sharing (**Step 9-11**)
+
+.. figure:: figures/ngsildiotagentIntegration.png
 
 Start Up
 ****************************************************
@@ -106,7 +124,7 @@ check if the FogFlow system is running properly
 How to Fetch data from IoT Agent to Orion-LD
 ================================================================
 
-**Step1** Provisioning a Service Group
+**Step 1** Provisioning a Service Group
 -----------------------------------------------------------------
 Invoking group provision is always the first step in connecting devices since it is always necessary to supply an authentication key with each measurement and the IoT Agent will not initially know which URL the context broker is responding on.
 
@@ -163,7 +181,7 @@ In the example the IoT Agent is informed that the `/iot/d` endpoint will be used
 themselves by including the token **4jggokgpepnvsb2uv4s40d59ov**. For an UltraLight IoT Agent this means devices will be
 sending GET or POST requests to:**http://iot-agent:7896/iot/d?i=<device_id>&k=4jggokgpepnvsb2uv4s40d59ov**
 
-**Step2** Provisioning an Actuator
+**Step 2** Provisioning an Actuator
 ----------------------------------
 The example below provisions a waterPump with the `deviceId=water001`. The endpoint is
 `http://iot-sensors:3001/iot/water001` and it can accept the "on" command. The `transport=HTTP` attribute defines the
@@ -202,23 +220,7 @@ communications protocol to be used.
 	}'
 
 
-**Step3** To see the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
-
-.. code-block:: console 
-
-	curl -L -X PATCH 'http://<IoT-AgentIP>:4041/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
-    	-H 'fiware-service: openiot' \
-    	-H 'fiware-servicepath: /' \
-    	-H 'Content-Type: application/json' \
-	--data-raw '{
-
-        	"type": "Property",
-        	"value": " "
-
-	}'
-
-
-**step4** To verify the result from orion broker send the following request
+**step 3** IoT Agent records the measurement of Actuator after Provisioning the Actuator on it and forward the measurement to Orion. Execute the following command to retrieve the recorded measurement of actuator from Orion
 
 .. code-block:: console 
 
@@ -226,7 +228,7 @@ communications protocol to be used.
    	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
    	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
-        -H 'Content-Type: application/json'
+        -H 'Content-Type: application/json' 
 
 Response
 -------------------
@@ -260,42 +262,37 @@ Response
 			}
 		},
 		"controlledAsset": {
-			"object": "urn:ngsi-ld:Building:barn001",
 			"type": "Relationship",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"object": "urn:ngsi-ld:Building:barn001"
 		},
 		"category": {
-			"value": "sensor",
 			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"value": "sensor"
 		},
 		"supportedProtocol": {
-			"value": "ul20",
 			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+			"value": "ul20"
 		},
 		"on_status": {
+			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
-				"@value": "OK"
-			},
-			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+				"@value": "UNKNOWN"
+			}
 		},
 		"on_info": {
+			"type": "Property",
 			"value": {
 				"@type": "commandResult",
-				"@value": " on OK"
-			},
-			"type": "Property",
-			"observedAt": "2021-05-14T09:28:58.878Z"
+				"@value": " "
+			}
 		},
 		"off_status": {
 			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
 				"@value": "UNKNOWN"
-			}	
+			}
 		},
 		"off_info": {
 			"type": "Property",
@@ -314,13 +311,36 @@ Response
 		}
 	}
 	
-The **observedAt** shows last the time any command associated with the entity has been invoked. The result of **on** command can be seen in the value of the **on_info** attribute.
+
+**Step 4** To observe the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
+
+.. code-block:: console 
+
+	curl -L -X PATCH 'http://<IoT-AgentIP>:4041/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001/attrs/on' \
+    	-H 'fiware-service: openiot' \
+    	-H 'fiware-servicepath: /' \
+    	-H 'Content-Type: application/json' \
+	--data-raw '{
+
+        	"type": "Property",
+        	"value": " "
+
+	}'
+
+
+
+To verify the status of entity **urn:ngsi-ld:Device:water001** open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor** . The status should be "on".
+
+.. figure:: figures/status1.png
+
+
+
 
 How to Fetch data from Orion-LD to FogFlow 
 ================================================================
 
 
-**Step5** Issue a subscription to Orion-LD broker. 
+**Step 5** Issue a subscription to Orion-LD broker. 
 -------------------------------------------------------------------
 
 .. code-block:: console    
@@ -347,7 +367,7 @@ How to Fetch data from Orion-LD to FogFlow
                        }
  	           }'
 
-**Step6** send the below PATCH request to Enable Orion-Broker commands
+**Step 6** send the below PATCH request to Enable Orion-Broker commands
 -------------------------------------------------------------------
 
 .. code-block:: console 
@@ -365,7 +385,7 @@ How to Fetch data from Orion-LD to FogFlow
 
 	}'
 	
-**Step7** Check if FogFlow receives the subscribed entity. 
+**Step 7** Check if FogFlow receives the subscribed entity. 
 -------------------------------------------------------------------
 
 Use the CURL command to query entities of type "Device" from  FogFlow thinBroker. 
@@ -388,7 +408,7 @@ Note: Replace the localhost with IP where Orion-LD broker is running and <fogflo
 How to Program and Apply a Data Analytics Function 
 ================================================================
 
-**Step8** Please refer the steps below, to register fogfunction using dashboard.
+**Step 8** Please refer the steps below, to register fogfunction using dashboard.
 ------------------------------------------------------------------------------
 
 1. To register Operator, open fogflow dashboard. Select Operator Registry Tab from horizontal bar, select operator from menu on left and then click register button. Right click on workspace and select operator from drop down list and enter details as shown and at last click on submit.
@@ -458,18 +478,9 @@ Note: Replace fogflow_broker_IP with IP where Fogflow thinbroker is running and 
 **Step 10**:Thinbroker will notify the analytical data to Orion broker as in step No 9, Orion broker has subscribed for the analytical data.
 
 
-**Step 11**:Use the CURL command to query entities of type "Device" from Orion broker.
+**Step 11**:Open the device dashboard in your web browser by using URL: **<IoT-DeviceIP>:3000/device/monitor**. After 1 minut (its depend on FogFunction losic of step no 8.) the status of water001  should be "off"
 
-
-.. code-block:: console
-
-        curl -iX GET \
-                  'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities?type=Device' \
-                  -H 'Content-Type: application/json' \
-		  -H 'fiware-service: openiot' \
-		  -H 'fiware-servicepath: /' \
-                  -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+.. figure:: figures/status.png
 
 
 
