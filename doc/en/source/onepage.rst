@@ -120,7 +120,7 @@ You need to change the following IP addresses in config.json according to your o
 	as my_hostip in the configuration file.
 
 
-.. figure:: figures/portdiagram.png
+.. figure:: figures/Port_Diagram.png
 
 
 Start all Fogflow components 
