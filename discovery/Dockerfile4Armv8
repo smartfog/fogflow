@@ -1,4 +1,0 @@
-FROM scratch
-ADD discovery_arm64  /discovery
-CMD ["/discovery"]
-
