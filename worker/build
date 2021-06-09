@@ -3,7 +3,8 @@
 
 if (( $# != 1 )); then
 	echo "Illegal number of parameters"
-	echo "usage: ./build [multistage|development]"
+	echo "usage: ./build [multistage|development|arm|arm64]"
+	echo "For "development", "arm" or "arm64" options to work, golang must be setup in the system."
 	exit 1
 fi
 
@@ -17,19 +18,21 @@ case "${command}" in
 		      CGO_ENABLED=0  GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo -o worker
 		      time docker build -f ./Dockerfile_development -t "fogflow/worker" .
 		      ;;
+	"arm")
+		      go get
+		      CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo -o worker_arm
+		      time docker build -f Dockerfile4Arm -t "fogflow/worker:arm"  .
+		      ;;
+	"arm64")
+		      go get
+		      CGO_ENABLED=0  GOOS=linux GOARCH=arm64 go build  -a -installsuffix cgo -o worker_arm64
+		      time docker build -f Dockerfile4Armv8 -t "fogflow/worker:arm64"  .
+		      ;;
 	*)
 		      echo "Command not Found."
-		      echo "usage: ./build [multistage|development]"
+		      echo "usage: ./build [multistage|development|arm|arm64]"
+		      echo "For "development", "arm" or "arm64" options to work, golang must be setup in the system."
 		      exit 127;
 		      ;;	     
 esac
                    
-
-
-#build the arm version of worker
-#CGO_ENABLED=0  GOOS=linux GOARCH=arm go build  -a -installsuffix cgo    -o worker_arm
-#docker build -f Dockerfile4Arm -t "fogflow/worker:arm"  .
-
-#build worker for ARMv8
-#CGO_ENABLED=0  GOOS=linux GOARCH=arm64 go build  -a -installsuffix cgo    -o worker_arm64
-#docker build -f Dockerfile4Armv8 -t "fogflow/worker:arm64"  .
