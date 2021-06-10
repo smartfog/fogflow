@@ -275,12 +275,11 @@ Download the deployment script
 .. code-block:: console    
          
 	#download the deployment scripts
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/metricbeat.docker.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_stop.sh	
 	
-	#make them executable
-	chmod +x start.sh  stop.sh       
+  #make them executable
+	chmod +x edge_start.sh  edge_stop.sh       
 
 
 Download the default configuration file 
@@ -326,33 +325,6 @@ You can use the default setting for a simple test, but you need to change the fo
 	
     } 
 
-Change the Metricbeat configuration file accordingly
------------------------------------------------------------
-
-you need to change the following addresses in start.sh according to your own environment:
-
-- **output.elasticsearch.hosts**: It is the elasticsearch host IP address on which metricbeat will share the metric data.
-
-- change the details of Elasticsearch in metricbeat.docker.yml file as below:
-
-.. code-block:: json
-
-        name: "<155.54.239.141/edge02>"
-        metricbeat.modules:
-        - module: docker
-          #Docker module parameters to monitor based on user requirement,example as below
-          metricsets: ["cpu","memory","network"]
-          hosts: ["unix:///var/run/docker.sock"]
-          period: 10s
-          enabled: true
-        - module: system
-          #System module parameters to monitor based on user requirement, example as below
-          metricsets: ["cpu","load","memory","network"]
-          period: 10s
-
-        output.elasticsearch:
-          hosts: '155.54.239.141:9200'
-	  
 
 Start Edge node components
 -------------------------------------------------
@@ -362,10 +334,10 @@ Start Edge node components
 .. code-block:: console    
 
       #start both components in the same script
-      ./start.sh 
+      ./edge_start.sh 
     
       #if the edge node is ARM-basd, please attach arm as the command parameter
-      #./start.sh  arm
+      #./edge_start.sh  arm
       
 
 Stop Edge node components
@@ -374,7 +346,7 @@ Stop Edge node components
 .. code-block:: console    
 
 	#stop both components in the same script
-	./stop.sh 
+	./edge_stop.sh 
 
 
      
