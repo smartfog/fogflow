@@ -155,7 +155,27 @@ Download the metricbeat yml file for edge node.
             # the configuration file used by metric beat
             wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/core/http/grafana/metricbeat.docker.yml
 
-**Optional** Edit "name" in metricbeat.docker.yml file to add particular name for better identification of edge node.
+**Optional** - Edit "name" in metricbeat.docker.yml file to add particular name for better identification of edge node. Further user can update the output.elasticsearch.hosts in the metricbeat.docker.yml file.
+
+.. code-block:: json
+
+        name: "<155.54.239.141/edge02>"
+        metricbeat.modules:
+        - module: docker
+          #Docker module parameters to monitor based on user requirement,example as below
+          metricsets: ["cpu","memory","network"]
+          hosts: ["unix:///var/run/docker.sock"]
+          period: 10s
+          enabled: true
+        - module: system
+          #System module parameters to monitor based on user requirement, example as below
+          metricsets: ["cpu","load","memory","network"]
+          period: 10s
+
+        # User can update this while executing docker run command also. 
+        output.elasticsearch:
+          hosts: '155.54.239.141:9200'
+        
 
 Copy below Docker run command, edit and replace <Cloud_Public_IP> with IP/URL of elasticsearch in output.elasticsearch.hosts=["<Cloud_Public_IP>:9200"]>. This command will deploy metric beat on edge node.
 

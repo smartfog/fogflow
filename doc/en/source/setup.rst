@@ -61,21 +61,6 @@ You need to change the following IP addresses in config.json according to your o
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
-
-Change the IP configuration of elasticsearch and metricbeat accordingly
----------------------------------------------------------------------------
-
-You need to change the following IP addresses in docker-compose.yml according to your own environment.
-
-- **output.elasticsearch.hosts**: it is the host location of elasticsearch on which metricbeat shares data in csv format.
-
-Also need to change the following IP addresses in metricbeat.docker.yml according to your own environment.
-
-- **name**: It is the name given for uniqueness for cloud nodes from egde nodes on grafana metric dashboard. You can mention any name in place of IP address.
-
-- **hosts**: It is the host location of elasticsearh database, where metricbeat is going to share metric data.
-
-
 .. important:: 
 
 	please DO NOT use "127.0.0.1" as the IP address of **my_hostip** , because they will be used by a running task inside a docker container. 
@@ -111,86 +96,20 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 	docker ps -a
 	
-	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                 NAMES
-	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                       fogflow_nginx_1
-	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                 fogflow_cloud_worker_1
-	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                               fogflow_master_1
-	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp       fogflow_designer_1
-	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                               fogflow_cloud_broker_1
-	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp     fogflow_rabbitmq_1
-	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                               fogflow_discovery_1
-        399958d8d88a      grafana/grafana:6.5.0   "/run.sh"                29 seconds ago      Up 27 seconds       0.0.0.0:3003->3000/tcp                               fogflow_grafana_1
-        9f99315a1a1d      fogflow/elasticsearch:7.5.1 "/usr/local/bin/dock…" 32 seconds ago    Up 29 seconds       0.0.0.0:9200->9200/tcp, 0.0.0.0:9300->9300/tcp       fogflow_elasticsearch_1
-        57eac616a67e      fogflow/metricbeat:7.6.0 "/usr/local/bin/dock…"   32 seconds ago     Up 29 seconds                                                                  fogflow_metricbeat_1
-	
-	
+	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                                                          NAMES
+	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
+	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                                                         fogflow_cloud_worker_1
+	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
+	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
+	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
+	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                                            fogflow_rabbitmq_1
+	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
+	51eff4975621      dgraph/standalone       "/run.sh"                15 seconds ago      Up 9 seconds        0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
+
 .. important:: 
 
 	if you see any container is missing, you can run "docker ps -a" to check if any FogFlow component is terminated with some problem. If there is, you can further check its output log by running "docker logs [container ID]"
 
-
-- Check the system status from the FogFlow DashBoard
-
-You can open the FogFlow dashboard in your web browser to see the current system status via the URL: http://<coreservice_ip>/index.html
-
-.. important:: 
-
-	If the FogFlow cloud node is behind a gateway, you need to create a mapping from the gateway IP to the coreservice_ip and then access the FogFlow dashboard via the gateway IP;
-	If the FogFlow cloud node is a VM in a public cloud like Azure Cloud, Google Cloud, or Amazon Cloud, you need to access the FogFlow dashboard via the public IP of your VM;
-
-Once you are able to access the FogFlow dashboard, you can see the following web page
-
-.. figure:: figures/dashboard.png
-
-
-Configure Elasticsearch on Grafana Dashboard
--------------------------------------------------------------
-
-Grafana dashboard can be accessible on web browser to see the current system status via the URL: 
-http://<output.elasticsearch.hosts>:3003/. The default username and password for Grafana login are admin and admin respectively.
-
-
-- After successful login to grafana, click on "Create your first data source" on Home Dashboard to setup the source of data.
-- Select Elasticsearch from Add Data Sourch page. Now you are on page Data Sources/Elasticsearch same as below figure.
-
-
-.. figure:: figures/Elastic_config.png
-
-
-1. Put a name for the Data Source.
-2. In HTTP detail ,mention URL of your elasticsearch and Port. URL shall include HTTP. 
-3. In Access select Server(default). URL needs to be accessible from the Grafana backend/server.
-4. In Elasticsearch details, put @timestamp for Time field name. Here a default for the time field can be specified with the name of your Elasticsearch index. Use a time pattern for the index name or a wildcard.
-5. Select Elasticsearch Version.
-
-Then click on "Save & Test" button.
-
-Set up the Metricbeat
----------------------------------------------
-
-
-- Change the details of Elasticsearch in metricbeat.docker.yml file as below:
-
-
-.. code-block:: json
-
-        name: "<155.54.239.141_cloud>"
-        metricbeat.modules:
-        - module: docker
-          #Docker module parameters that has to be monitored based on user requirement, example as below
-          metricsets: ["cpu","memory","network"]
-          hosts: ["unix:///var/run/docker.sock"]
-          period: 10s
-          enabled: true
-        - module: system
-          #System module parameters that has to be monitored based on user requirement, example as below
-          metricsets: ["cpu","load","memory","network"]
-          period: 10s
-
-        output.elasticsearch:
-          hosts: '155.54.239.141:9200'
-	  
-	  
 	  
 Try out existing IoT services
 -------------------------------------
@@ -273,14 +192,13 @@ Download the deployment script
 -------------------------------------------------
 
 .. code-block:: console    
-         
-	#download the deployment scripts
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/start.sh
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/stop.sh 
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/metricbeat.docker.yml
+      
+  #download the deployment scripts
+  wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_start.sh
+  wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_stop.sh	
 	
-	#make them executable
-	chmod +x start.sh  stop.sh       
+  #make them executable
+  chmod +x edge_start.sh  edge_stop.sh       
 
 
 Download the default configuration file 
@@ -326,33 +244,6 @@ You can use the default setting for a simple test, but you need to change the fo
 	
     } 
 
-Change the Metricbeat configuration file accordingly
------------------------------------------------------------
-
-you need to change the following addresses in start.sh according to your own environment:
-
-- **output.elasticsearch.hosts**: It is the elasticsearch host IP address on which metricbeat will share the metric data.
-
-- change the details of Elasticsearch in metricbeat.docker.yml file as below:
-
-.. code-block:: json
-
-        name: "<155.54.239.141/edge02>"
-        metricbeat.modules:
-        - module: docker
-          #Docker module parameters to monitor based on user requirement,example as below
-          metricsets: ["cpu","memory","network"]
-          hosts: ["unix:///var/run/docker.sock"]
-          period: 10s
-          enabled: true
-        - module: system
-          #System module parameters to monitor based on user requirement, example as below
-          metricsets: ["cpu","load","memory","network"]
-          period: 10s
-
-        output.elasticsearch:
-          hosts: '155.54.239.141:9200'
-	  
 
 Start Edge node components
 -------------------------------------------------
@@ -362,10 +253,10 @@ Start Edge node components
 .. code-block:: console    
 
       #start both components in the same script
-      ./start.sh 
+      ./edge_start.sh 
     
       #if the edge node is ARM-basd, please attach arm as the command parameter
-      #./start.sh  arm
+      #./edge_start.sh  arm
       
 
 Stop Edge node components
@@ -374,7 +265,7 @@ Stop Edge node components
 .. code-block:: console    
 
 	#stop both components in the same script
-	./stop.sh 
+	./edge_stop.sh 
 
 
      
