@@ -1,4 +1,13 @@
-FROM scratch
-ADD worker	/
-CMD ["/worker"]
+FROM golang:1.16 AS builder
+WORKDIR /go/src/
+ADD /k8sWorker k8sWorker/
+ADD /common common/
+ADD go.mod .
+ADD go.sum .
+WORKDIR /go/src/k8sWorker
+RUN go get;
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o worker
 
+FROM scratch
+COPY --from=builder /go/src/k8sWorker/worker  /
+CMD ["/worker"]
