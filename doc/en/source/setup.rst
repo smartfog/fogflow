@@ -191,7 +191,7 @@ Download the deployment script
 -------------------------------------------------
 
 .. code-block:: console    
-         
+      
   #download the deployment scripts
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_start.sh
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_stop.sh	
