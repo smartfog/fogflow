@@ -40,13 +40,13 @@ Download the docker-compose file and the configuration files as below.
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.2/cloud/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/docker-compose.yml
 
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.2/cloud/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/config.json
 
 	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.2/cloud/nginx.conf
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/nginx.conf
 	
 
 Change the IP configuration accordingly

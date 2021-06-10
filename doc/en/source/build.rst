@@ -28,4 +28,4 @@ Install dependencies
 
 	.. code-block:: bash	
 		
-		./build multistage
+		./build.sh multistage
