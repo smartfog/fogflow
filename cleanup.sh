@@ -5,5 +5,5 @@ docker kill $(docker ps -q)
 docker rm $(docker ps -a -q)
 
 #remove all docker images
-docker rmi $(docker images -q)
+docker rmi -f $(docker images -q)
 
