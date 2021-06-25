@@ -2,7 +2,8 @@
 #build the linux version (amd64) of discovery
 if (( $# != 1 )); then
 	echo "Illegal number of parameters"
-	echo "usage: ./build [multistage|development]"
+	echo "usage: ./build [multistage|development|arm]"
+	echo "For "development" or  "arm" options to work, golang must be setup in the system." 
 	exit 1
 fi
 
@@ -16,13 +17,16 @@ case "${command}" in
                       CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build  -a -installsuffix cgo  -o discovery
 		      time docker build -f ./Dockerfile_development -t "fogflow/discovery" .
                       ;;
+	"arm")
+		      go get
+		      CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o discovery_arm
+		      time docker build -f Dockerfile4Arm -t "fogflow/discovery:arm"  .
+                      ;;
 	*)
 		      echo "Command not Found."
-		      echo "usage: ./build [multistage|development]"
+		      echo "usage: ./build [multistage|development|arm]"
+		      echo "For "development" or "arm" options to work, golang must be setup in the system."
 		      exit 127;
 		      ;;
 esac
 
-#build the arm version of discovery
-#CGO_ENABLED=0 GOOS=linux GOARCH=arm go build  -a -installsuffix cgo  -o discovery_arm
-#docker build -f Dockerfile4Arm -t "fogflow/discovery:arm"  .
