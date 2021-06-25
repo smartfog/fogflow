@@ -2,13 +2,9 @@ package main
 
 import (
 	"context"
-	//"encoding/json"
 	"fmt"
 
 	docker "github.com/fsouza/go-dockerclient"
-	//appsv1 "k8s.io/api/apps/v1"
-	//apiv1 "k8s.io/api/core/v1"
-	//coreV1 "k8s.io/api/core/v1"
         metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -27,11 +23,6 @@ func (p *delpod) deletepod(podId string) {
 		panic(err.Error())
 	}
 
-	/*iport, err := strconv.ParseInt(port, 10, 32)
-	pport := int32(iport)
-	if err != nil {
-		panic(err.Error())
-	}*/
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		panic(err.Error())
