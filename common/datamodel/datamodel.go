@@ -299,3 +299,10 @@ func SetFiwareServicePath(scheduledTaskInstance ScheduledTaskInstance, fiwareSer
 	scheduledTaskInstance.Inputs = newInputStream
 	return scheduledTaskInstance
 }
+
+func AddFiwareServicePath(flowInfo FlowInfo, fiwareServicePath string, msgFormat string) FlowInfo {
+        flowInfo.InputStream.FiwareServicePath = fiwareServicePath
+        flowInfo.InputStream.MsgFormat = msgFormat
+        return flowInfo
+}
+
