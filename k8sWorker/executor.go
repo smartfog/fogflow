@@ -674,7 +674,13 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 	e.taskMap_lock.Unlock()
 
 	//stop the container first
-	go e.client.StopContainer(containerID, 1)
+	//go e.client.StopContainer(containerID, 1)
+	p := delpod{}
+	p.deletepod(containerID)
+	//if err!=nil{
+	//	ERROR.Println(err)
+	//	return false
+	//}
 
 	INFO.Printf(" task %s  terminate from the container = %s\n", taskID, containerID)
 

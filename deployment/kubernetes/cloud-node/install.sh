@@ -2,6 +2,8 @@ mkdir -p dgraph
 
 kubectl  create namespace fogflow
 
+kubectl create -f serviceaccount.yaml
+
 kubectl create -f configmap.yaml
 
 kubectl create -f discovery.yaml

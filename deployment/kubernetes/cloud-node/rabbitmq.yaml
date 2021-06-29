@@ -23,7 +23,7 @@ spec:
           value: mypass
         - name: RABBITMQ_DEFAULT_USER
           value: admin          
-             
+      serviceAccountName: default     
 ---          
           
 apiVersion: v1

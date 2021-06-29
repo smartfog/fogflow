@@ -27,7 +27,7 @@ spec:
       - name: nginx-conf
         configMap:
           name: fogflow-configmap                   
-          
+      serviceAccountName: default    
 ---          
           
 apiVersion: v1
@@ -44,6 +44,6 @@ spec:
       targetPort: 80
   selector:
     run: nginx
-
+  externalIPs: [172.30.48.24]
 
 

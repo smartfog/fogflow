@@ -27,7 +27,7 @@ spec:
       - name: config-json 
         configMap:
           name: fogflow-configmap
-
+      serviceAccountName: default
 ---          
           
 apiVersion: v1
