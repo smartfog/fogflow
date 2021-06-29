@@ -918,6 +918,7 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			INFO.Printf("add input %+v\r\n", deploymentAction.ActionInfo)
 
 			flowInfo := deploymentAction.ActionInfo.(FlowInfo)
+			flowInfo = AddFiwareServicePath(flowInfo, fiwareServicePath, mgsFormat)
 			tMgr.master.AddInputEntity(flowInfo)
 
 		case "REMOVE_INPUT":
