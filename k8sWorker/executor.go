@@ -329,8 +329,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.Subscriptions = make([]string, 0)
 
 	for _, inputStream := range task.Inputs {
-		NGSILD := e.queryForNGSILdEntity(inputStream.ID)
-		if NGSILD == 200 {
+		if inputStream.MsgFormat == "NGSILD" {
 			fmt.Println(&inputStream)
 			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
 			if err == nil {
@@ -341,8 +340,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 				ERROR.Println(err)
 			}
 		}
-		NGSIV1 := e.queryForNGSIV1Entity(inputStream.ID)
-		if NGSIV1 == 200 {
+		if inputStream.MsgFormat == "NGSIV1" {
 			subID, err := e.subscribeInputStream(freePort, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
@@ -534,7 +532,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	LdSubscription.Type = "Subscription"
 	LdSubscription.WatchedAttributes = inputStream.AttributeList
 
-	LdSubscription.Notification.Endpoint.URI = "http://" + e.workerCfg.InternalIP + ":" + agentPort + "/notifyContext"
+	LdSubscription.Notification.Endpoint.URI = "http://fogflow-deployment-" + agentPort  + ":" + agentPort + "/notifyContext"
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", LdSubscription)
 	brokerURL := e.brokerURL
@@ -571,7 +569,7 @@ func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStre
 
 	subscription.Attributes = inputStream.AttributeList
 
-	subscription.Reference = "http://" + e.workerCfg.InternalIP + ":" + agentPort
+	subscription.Reference = "http://fogflow-deployment-" + agentPort + ":" + agentPort
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 
@@ -677,10 +675,6 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 	//go e.client.StopContainer(containerID, 1)
 	p := delpod{}
 	p.deletepod(containerID)
-	//if err!=nil{
-	//	ERROR.Println(err)
-	//	return false
-	//}
 
 	INFO.Printf(" task %s  terminate from the container = %s\n", taskID, containerID)
 
