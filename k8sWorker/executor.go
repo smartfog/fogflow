@@ -329,8 +329,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.Subscriptions = make([]string, 0)
 
 	for _, inputStream := range task.Inputs {
-		//NGSILD := e.queryForNGSILdEntity(inputStream.ID)
-		//if NGSILD == 200 {
 		if inputStream.MsgFormat == "NGSILD" {
 			fmt.Println(&inputStream)
 			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
@@ -342,8 +340,6 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 				ERROR.Println(err)
 			}
 		}
-		//NGSIV1 := e.queryForNGSIV1Entity(inputStream.ID)
-		//if NGSIV1 == 200 {
 		if inputStream.MsgFormat == "NGSIV1" {
 			subID, err := e.subscribeInputStream(freePort, &inputStream)
 			if err == nil {
@@ -679,10 +675,6 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 	//go e.client.StopContainer(containerID, 1)
 	p := delpod{}
 	p.deletepod(containerID)
-	//if err!=nil{
-	//	ERROR.Println(err)
-	//	return false
-	//}
 
 	INFO.Printf(" task %s  terminate from the container = %s\n", taskID, containerID)
 
