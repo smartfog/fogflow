@@ -50,7 +50,16 @@ Inorder to setup the components, please refer the steps below:
         run: nginx
     externalIPs: [172.30.48.24]  //edit this
    
-**Step 4** : Now, in order to deploy cloud-node components, use below command.
+**Step 4** : Now, edit **path** variable in dragph.yaml as per user's environment. The complete path is to be mentioned as shown below:
+
+.. code-block:: console
+
+    volumes:
+      - name: dgraph
+        hostPath: 
+          path: /root/kcheck/src/fogflow/deployment/kubernetes/cloud-node/dgraph      //This is to be updated as per user's own environment
+
+**Step 5** : Now, in order to deploy cloud-node components, use below command.
 
 .. code-block:: console
 

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: discovery
-        image: fogflow/discovery:3.2.6
+        image: pradumn99/discovery:Updated
         ports:
         - containerPort: 8090  
         volumeMounts:

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cloudworker
-        image: pradumn99/worker:done
+        image: pradumn99/k8sworker:Updated
         volumeMounts:
         - name: config-json       
           mountPath: /config.json
