@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cloudworker
-        image: fogflow/worker:k8s
+        image: pradumn99/worker:done
         volumeMounts:
         - name: config-json       
           mountPath: /config.json

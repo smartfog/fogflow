@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: designer
-        image: fogflow/designer:k8s
+        image: fogflow/designer:3.2.6
         ports:
         - containerPort: 8080  
         volumeMounts:

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: master
-        image: fogflow/master:k8s
+        image: fogflow/master:3.2.6
         ports:
         - containerPort: 1060
         #readiness and liveness to check pod's Health
