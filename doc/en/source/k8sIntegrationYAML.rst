@@ -54,7 +54,7 @@ Inorder to setup the components, please refer the steps below:
 
 .. code-block:: console
 
-    ./start.sh
+    ./install.sh
 
 Now verify the deployments using, 
 
@@ -74,3 +74,8 @@ Now verify the deployments using,
     nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
     rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
 
+In order to stop the deployments of Fogflow system, follow below commands:
+
+.. code-block:: console
+
+    ./uninstall.sh
