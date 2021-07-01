@@ -24,13 +24,11 @@ FogFlow cloud node components such as Dgraph, Discovery, Broker, Designer, Maste
 
 Inorder to setup the components, please refer the steps below:
 
-**Step 1** : Clone the github repository of Fogflow using this `link`_.
+**Step 1** : Clone the github repository of Fogflow using this `link`_ and traverse to **"deployment/kubernetes/cloud-node"** folder in Fogflow repository.
 
 .. _`link` : https://github.com/smartfog/fogflow
 
-**Step 2** : Now, traverse to **"deployment/kubernetes/cloud-node"** folder in Fogflow repository.
-  
-**Step 3** : Edit the **externalIPs** value in nginx.yaml as per user's environment.
+**Step 2** : Edit the **externalIPs** value in nginx.yaml as per user's environment.
 
 .. code-block:: console
 
@@ -50,7 +48,7 @@ Inorder to setup the components, please refer the steps below:
         run: nginx
     externalIPs: [172.30.48.24]  //edit this
    
-**Step 4** : Now, edit **path** variable in dragph.yaml as per user's environment. The complete path is to be mentioned as shown below:
+**Step 3** : Edit **path** variable in dragph.yaml as per user's environment. Please mention the complete path of **dgraph folder** as shown below:
 
 .. code-block:: console
 
@@ -59,7 +57,7 @@ Inorder to setup the components, please refer the steps below:
         hostPath: 
           path: /root/kcheck/src/fogflow/deployment/kubernetes/cloud-node/dgraph      //This is to be updated as per user's own environment
 
-**Step 5** : Now, in order to deploy cloud-node components, use below command.
+**Step 4** : Use below command to deploy the cloud-node components.
 
 .. code-block:: console
 
@@ -67,7 +65,7 @@ Inorder to setup the components, please refer the steps below:
 
 Now verify the deployments using, 
 
-1. Fogflow dashboard : In your browser, type for http://<externalIPs>:80 (externalIPs is the one mentioned in nginx.yaml file).
+1. Fogflow dashboard : In your browser, type for http://<externalIPs>:80 (externalIPs is the same one as mentioned in nginx.yaml file).
 
 2. Check for pods status, using **kubectl get pods --namespace=fogflow**
 
@@ -155,7 +153,9 @@ In order to launch a task instance associated with a fog function, follow below 
         }
     }'
 
-**Step 6:** To see the launched task instance inside kubernetes pod, follow below command:
+Note: Please edit this **(172.30.48.24)** IP address with the one, where fogflow is running. That is the **externalIPs** mentioned in nginx.yaml file.
+
+**Step 6:** To see the launched task instance inside kubernetes pod in cluster, follow below command:
 
 .. code-block:: console
 
