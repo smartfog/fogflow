@@ -100,7 +100,7 @@ In order to launch a task instance associated with a fog function, follow below 
 
 .. figure:: figures/operator_creation.png 
 
-**Step 3"** Register the following docker image, corresponding to the operator created in above step.
+**Step 3:** Register the following docker image, corresponding to the operator created in above step.
 
 .. code-block:: console
 
