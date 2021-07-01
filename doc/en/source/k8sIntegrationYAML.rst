@@ -153,7 +153,7 @@ In order to launch a task instance associated with a fog function, follow below 
         }
     }'
 
-Note: Please edit this **(172.30.48.24)** IP address with the one, where fogflow is running. That is the **externalIPs** mentioned in nginx.yaml file.
+**Note:** Please edit this **(172.30.48.24)** IP address with the one, where fogflow is running. That is the **externalIPs** mentioned in nginx.yaml file.
 
 **Step 6:** To see the launched task instance inside kubernetes pod in cluster, follow below command:
 
