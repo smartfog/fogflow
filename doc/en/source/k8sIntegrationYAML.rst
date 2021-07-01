@@ -110,7 +110,7 @@ In order to launch a task instance associated with a fog function, follow below 
 
    	To register the image, select DockerImage from left menu, under Operator Registry from dashboard and click register button.
 
-.. figure:: figures/docker_image_attachment2.png
+.. figure:: figures/dockerimage_attachment2.png
 
 **Step 4:** Now, to create a fogfunction, toggle on Fog Function in the horizontal bar on dashboard. Select Fog Function from left menu and click register button. Enter the name and description (optional) as shown. Right click in the workspace and select task and Entity stream from drop down list and configure details.
 
