@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: designer
-        image: pradumn99/designer:Updated
+        image: fogflow/designer:k8s
         ports:
         - containerPort: 8080  
         volumeMounts:

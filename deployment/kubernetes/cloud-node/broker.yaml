@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cloudbroker
-        image: pradumn99/broker:Updated
+        image: fogflow/broker:k8s
         ports:
         - containerPort: 8070  
         volumeMounts:

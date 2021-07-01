@@ -104,7 +104,7 @@ In order to launch a task instance associated with a fog function, follow below 
 
 .. code-block:: console
 
-	pradumn99/connection
+	fogflow/speedcheck:latest
    
   	The above operator will notify Fogflow, When speed of a vehicle goes beyond 50.
 
