@@ -35,6 +35,8 @@ The above graph depicts the variation of latency over number of threads (the rea
 
 .. figure:: figures/1.2upsertdata.png
 
+The above graph depicts the performance of fogflow and scorpio broker in Upsert requests. The graph is plotted between latency on Y axis and number of threads on X axis. On analysing the data, it depicts that with increasing number of threads and in turn on increased number of total requests the throughput value also increases in case of fogflow but on same data scorpio shows lower throughput as compared to fogflow. Thus, the fogflow Upsert API is better performer than scorpio broker's Upsert API requests.
+
 .. figure:: figures/1.2Subscription.png
 
 .. figure:: figures/1.2SubscriptionData.png
