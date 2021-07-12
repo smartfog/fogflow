@@ -27,6 +27,8 @@ Throughput and latency to create new entities
 
 .. figure:: figures/1.1NewData.png
 
+The above graph depicts the variation of latency over number of threads (the real time users). The Y axis represent latency and X axis represent number of threads. On analysing above data, it becomes evident that with increasing number of thread the total number of requests increases. The throughput in contrast to the increasing number of request indicates the good performance of fogflow for Upsert requests.
+
 .. figure:: figures/1.2NewUpsert.png
 
 .. figure:: figures/1.2upsertdata.png
