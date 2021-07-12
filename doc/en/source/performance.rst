@@ -25,8 +25,9 @@ Throughput and latency to create new entities
 
 .. figure:: figures/1.1.png
 
+.. figure:: figures/1.1NewData.png
 
-.. figure:: figures/1.2upsertdata.png
+.. figure:: figures/1.2NewUpsert.png
 
 .. figure:: figures/1.2upsertdata.png
 
