@@ -57,6 +57,9 @@ Throughput and latency to query entities
 
 .. figure:: figures/2.1SubBYIDData.png
 
+.. figure:: figures/2.3.png
+
+.. figure:: figures/2.3QueryCloudEdge.png
 
 Update Propagation from Context Producers to Context Consumer
 ------------------------------------------------------------------
