@@ -63,7 +63,7 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Subscription API is a better performer than Scorpio broker's Subscription API initially but gradually the graph of Fogflow rises which reflects the small increase in response time. Given the fact that fogflow subscriptions are interacting with fogflow component like fogflow discovery making it reliable but adding an extra tint of time in generating response gives it an edge over other brokers but trade's off quality over extra tint of response time. The reliability here is a key factor because of its distributed architecture that involves different edge nodes which is missing in scorpio btoker.
 
-**Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes**
+**Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes - Fogflow Upsert API**
 
 .. figure:: figures/1.3upsert.png
 
@@ -96,7 +96,7 @@ To compare response time of Fogflow Query API with Scorpio Broker Query API, we 
 *Hence, Fogflow Query API is far better in performance than Scorpio Broker Query API based on subscription ID*
 
 
-**To test how the performance of Query APIs can be scaled up with more FogFlow edge nodes**
+**Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes - Fogflow Query API**
 
 .. figure:: figures/2.3.png
 
