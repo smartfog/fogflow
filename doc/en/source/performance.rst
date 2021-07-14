@@ -22,12 +22,15 @@ Experiement Setup
 
 Throughput and latency to create new entities
 --------------------------------------------------
+To evaluate and analyse response time of Fogflow upsert API and SUbscritpion API, we have created 100000 entities by using different no of thread 10, 50,100, 200, 400,500. The following graph repersent response time on Y-axis and no of thread on X-axis.
 
-**To test the performance of Subscription and Upsert API in Fogflow** 
+**Performance Evaluation of Subscription and Upsert API in Fogflow** 
+
 
 .. figure:: figures/1.1.png
 
 .. figure:: figures/1.1NewData.png
+
 
 **Fogflow Upsert API**
 
@@ -50,7 +53,7 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Upsert API is a better performer than Scorpio broker's Upsert API. As shown in tabular data, it is evident that on icreasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow. For example on executing 500 threads with a sum total of 7500 requests, Fogflow has an average throughput of 1156.69/s whereas Scorpio broker on same number of thread has an average throughput of 222.73/s.
 
-*Hence Fogflow Upsert API is better performer than Scorpio Broker*
+*Hence Fogflow Upsert API is better in performance than Scorpio Broker Upsert API*
 
 **Fogflow Subscription API Vs. Scorpio Subscription API**
 
@@ -60,32 +63,46 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Subscription API is a better performer than Scorpio broker's Subscription API initially but gradually the graph of Fogflow rises which reflects the small increase in response time. Given the fact that fogflow subscriptions are interacting with fogflow component like fogflow discovery making it reliable but adding an extra tint of time in generating response gives it an edge over other brokers but trade's off quality over extra tint of response time. The reliability here is a key factor because of its distributed architecture that involves different edge nodes which is missing in scorpio btoker.
 
-**To test how the performance can be scaled up with more FogFlow edge nodes**
+**Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes**
 
 .. figure:: figures/1.3upsert.png
 
 .. figure:: figures/1.3upsertdata.png
 
-**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are interally connected to discovery. The requests made to edge node are registered with discovery directly than having to follow up a longer path through cloud broker. Thus, the Upsert API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 991.98/s for 100000 requests with 500 number of threads and edge node achieves 1743.3/s for same 100000 requests for 500 number of threads.
+**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are interally connected to discovery. The requests made to edge node are registered with discovery directly than having to follow up a longer path through cloud broker. Thus, the Upsert API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 991.98/s for 1,00,000 requests with 500 number of threads and edge node achieves 1743.3/s for same 1,00,000 requests for 500 number of threads.
 
 Throughput and latency to query entities
 --------------------------------------------------
+To compare response time of Fogflow Query API with Scorpio Broker Query API, we have created 1,00,000 entities by using different no of thread 10, 50,100, 200, 400,500. The following graph repersent response time on Y-axis and no of thread on X-axis. 
 
-**To compare the performance of Query APIs with the other NGSI-LD brokers**
+**Fogflow Query API Vs. Scorpio Query API - Query based on Entity ID**
 
 .. figure:: figures/2.1Id.png
 
 .. figure:: figures/2.1IDData.png
 
+**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Query API based on entity ID is a better performer than Scorpio broker's Query API based on entity ID. As shown in tabular data, it is evident that on icreasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow. For example on executing 500 threads with a sum total of 1,00,000 requests, Fogflow has an average throughput of 762.7/s whereas Scorpio broker on same number of thread has an average throughput of 311.22/s.
+
+*Hence Fogflow Query API is better in performance than Scorpio Broker Query API based on entity ID*
+
+**Fogflow Query API Vs. Scorpio Query API - Query based on Subscription ID**
+
 .. figure:: figures/2.1SubID.png
 
 .. figure:: figures/2.1SubBYIDData.png
+
+**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Query API based on subscription ID is a far better performer than Scorpio broker's Query API based on subscription ID. As shown in tabular data, it is evident that on icreasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow. For example on executing 500 threads with a sum total of 1,00,000 requests, Fogflow has an average throughput of 20567.6/s whereas Scorpio broker on same number of thread has an average throughput of 1240.8/s.
+
+*Hence, Fogflow Query API is far better in performance than Scorpio Broker Query API based on subscription ID*
+
 
 **To test how the performance of Query APIs can be scaled up with more FogFlow edge nodes**
 
 .. figure:: figures/2.3.png
 
 .. figure:: figures/2.3QueryCloudEdge.png
+
+**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are having the entities locally which are fetched. The requests made to edge node are directly responding with the entity details than having to follow up a longer path through cloud broker. Thus, the Query API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 766.70/s for 1,00,000 requests with 500 number of threads and edge node achieves 956.49/s for same 1,00,000 requests for 500 number of threads.
 
 Update Propagation from Context Producers to Context Consumer
 ------------------------------------------------------------------
