@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	. "fogflow/common/constants"
+//	. "fogflow/common/constants"
 	. "fogflow/common/ngsi"
 
 	"io/ioutil"
@@ -144,15 +144,17 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	if err != nil {
 		return "", err
 	}
+
 	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body)) // add NGSILD url
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 	req.Header.Add("Require-Reliability", "true")
-	req.Header.Add("Link", DEFAULT_CONTEXT)
+	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	// add link header
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
+	fmt.Println("rsp",resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}

@@ -695,6 +695,7 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 
 func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
+		fmt.Println("This is notification from anather broker")
 		var context []interface{}
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
@@ -709,18 +710,19 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		} else {
 			fiwareService = "default"
 		}
-
 		if err != nil {
 			err := errors.New("not able to decode  orion update")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		fmt.Println(notifyRequest)
 		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
 		Link := DEFAULT_CONTEXT
+		fmt.Println(notifyEleDatamap)
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
 			notifyData["@context"] = context
@@ -760,6 +762,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
+	fmt.Println("Notification comming from anather broker")
 	notifyCtxReq := NotifyContextRequest{}
 	err := r.DecodeJsonPayload(&notifyCtxReq)
 	if err != nil {
@@ -1542,7 +1545,7 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 		INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
 		INFO.Println("TO ngsi10 subscription, ", mainSubID)
 		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
-
+		fmt.Println("providing application",registration.ProvidingApplication)
 		if registration.ProvidingApplication == tb.MyURL {
 			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
@@ -1551,8 +1554,15 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 		} else {
 			//for matched entities provided by other IoT Brokers
 			newLDSubscription := LDSubscriptionRequest{}
+			fmt.Println("This is registration from other broker",registration)
 			newLDSubscription.Entities = registration.EntityIdList
-			newLDSubscription.Notification.Endpoint.URI = tb.MyURL
+			newLDSubscription.Type = "Subscription"
+			//newLDSubscription.Notification.Endpoint.URI = tb.MyURL
+			///ngsi-ld/v1/notifyContext/
+			MyLDURL  := strings.TrimSuffix(tb.MyURL, "/ngsi10")
+			MyLDURL = MyLDURL + "/ngsi-ld/v1/notifyContext/"
+			fmt.Println(MyLDURL)
+			newLDSubscription.Notification.Endpoint.URI = MyLDURL
 			newLDSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {
@@ -2359,6 +2369,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 		}
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
+	fmt.Println("Tbis is registration URL",tb.MyURL)
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxRegistrations = append(ctxRegistrations, ctxReg)
@@ -2551,9 +2562,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Subscriber.FiwareServicePath = ""
 				}
 
+				SubEntities := deSerializedSubscription.Entities
 				// save subscription
 				for key, entity := range deSerializedSubscription.Entities {
-					if entity.ID != "" {
+					if entity.ID != "" && strings.Contains(entity.ID, "@") == false {
 						entity.ID = entity.ID + "@" + fiwareService
 					}
 					if entity.IdPattern == "" && entity.ID == "" {
@@ -2564,7 +2576,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
-					for _, entity := range deSerializedSubscription.Entities {
+					for _, entity := range SubEntities {
 						tb.LDe2sub_lock.Lock()
 						tb.entityId2LDSubcriptions[entity.ID] = append(tb.entityId2LDSubcriptions[entity.ID], deSerializedSubscription.Id)
 						tb.LDe2sub_lock.Unlock()
