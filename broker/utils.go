@@ -139,13 +139,18 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptio
 	return nil
 }
 
-func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
+func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL string, httpsCfg *HTTPS, fiwareService string) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
 	}
 
 	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body)) // add NGSILD url
+
+	if fiwareService != "default" {
+                req.Header.Add("fiware-service", fiwareService)
+        }
+
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")

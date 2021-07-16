@@ -939,7 +939,10 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 	selectedAttributes := ldSubscription.Notification.Attributes
 	tb.ldSubscriptions_lock.RUnlock()
 	tb.ldEntities_lock.Lock()
+	fmt.Println("entities",entities)
 	for _, entity := range entities {
+		fmt.Println("Entity Id entity.ID",entity.ID)
+		fmt.Println(tb.ldEntities[entity.ID])
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
@@ -947,6 +950,7 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		}
 	}
 	tb.ldEntities_lock.Unlock()
+	fmt.Println("elements",elements)
 	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
 }
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
@@ -1552,9 +1556,16 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 				tb.notifyOneLDSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
 			}
 		} else {
-			//for matched entities provided by other IoT Brokers
 			newLDSubscription := LDSubscriptionRequest{}
-			fmt.Println("This is registration from other broker",registration)
+			var newID , FiwareService string
+			for index , entity := range registration.EntityIdList {
+				newID, FiwareService = FiwareId(entity.ID)
+				entity.ID = newID
+				fmt.Println("new entity :", entity)
+				registration.EntityIdList[index] = entity
+				break
+			}
+
 			newLDSubscription.Entities = registration.EntityIdList
 			newLDSubscription.Type = "Subscription"
 			//newLDSubscription.Notification.Endpoint.URI = tb.MyURL
@@ -1567,7 +1578,7 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 
 			if action == "CREATE" || action == "UPDATE" {
 				registration.ProvidingApplication = strings.TrimSuffix(registration.ProvidingApplication, "/ngsi10")
-				sid, err := subscriptionLDContextProvider(&newLDSubscription, registration.ProvidingApplication, tb.SecurityCfg)
+				sid, err := subscriptionLDContextProvider(&newLDSubscription, registration.ProvidingApplication, tb.SecurityCfg, FiwareService)
 				if err == nil {
 					INFO.Println("issue a new subscription ", sid)
 
@@ -2562,10 +2573,9 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					deSerializedSubscription.Subscriber.FiwareServicePath = ""
 				}
 
-				SubEntities := deSerializedSubscription.Entities
 				// save subscription
 				for key, entity := range deSerializedSubscription.Entities {
-					if entity.ID != "" && strings.Contains(entity.ID, "@") == false {
+					if entity.ID != ""/* && strings.Contains(entity.ID, "@") == false*/ {
 						entity.ID = entity.ID + "@" + fiwareService
 					}
 					if entity.IdPattern == "" && entity.ID == "" {
@@ -2576,7 +2586,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				tb.createSubscription(&deSerializedSubscription)
 				if deSerializedSubscription.Subscriber.IsInternal == true {
 					INFO.Println("internal subscription coming from another broker")
-					for _, entity := range SubEntities {
+					for _, entity := range deSerializedSubscription.Entities {
 						tb.LDe2sub_lock.Lock()
 						tb.entityId2LDSubcriptions[entity.ID] = append(tb.entityId2LDSubcriptions[entity.ID], deSerializedSubscription.Id)
 						tb.LDe2sub_lock.Unlock()
