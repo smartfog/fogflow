@@ -939,9 +939,9 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 	selectedAttributes := ldSubscription.Notification.Attributes
 	tb.ldSubscriptions_lock.RUnlock()
 	tb.ldEntities_lock.Lock()
-	fmt.Println("entities",entities)
+	fmt.Println("entities", entities)
 	for _, entity := range entities {
-		fmt.Println("Entity Id entity.ID",entity.ID)
+		fmt.Println("Entity Id entity.ID", entity.ID)
 		fmt.Println(tb.ldEntities[entity.ID])
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
@@ -950,7 +950,7 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		}
 	}
 	tb.ldEntities_lock.Unlock()
-	fmt.Println("elements",elements)
+	fmt.Println("elements", elements)
 	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
 }
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
@@ -1549,7 +1549,7 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 		INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
 		INFO.Println("TO ngsi10 subscription, ", mainSubID)
 		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
-		fmt.Println("providing application",registration.ProvidingApplication)
+		fmt.Println("providing application", registration.ProvidingApplication)
 		if registration.ProvidingApplication == tb.MyURL {
 			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
@@ -1557,28 +1557,16 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 			}
 		} else {
 			newLDSubscription := LDSubscriptionRequest{}
-			var newID , FiwareService string
-			for index , entity := range registration.EntityIdList {
-				newID, FiwareService = FiwareId(entity.ID)
-				entity.ID = newID
-				fmt.Println("new entity :", entity)
-				registration.EntityIdList[index] = entity
-				break
-			}
-
 			newLDSubscription.Entities = registration.EntityIdList
 			newLDSubscription.Type = "Subscription"
-			//newLDSubscription.Notification.Endpoint.URI = tb.MyURL
-			///ngsi-ld/v1/notifyContext/
-			MyLDURL  := strings.TrimSuffix(tb.MyURL, "/ngsi10")
+			MyLDURL := strings.TrimSuffix(tb.MyURL, "/ngsi10")
 			MyLDURL = MyLDURL + "/ngsi-ld/v1/notifyContext/"
-			fmt.Println(MyLDURL)
 			newLDSubscription.Notification.Endpoint.URI = MyLDURL
 			newLDSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 			if action == "CREATE" || action == "UPDATE" {
 				registration.ProvidingApplication = strings.TrimSuffix(registration.ProvidingApplication, "/ngsi10")
-				sid, err := subscriptionLDContextProvider(&newLDSubscription, registration.ProvidingApplication, tb.SecurityCfg, FiwareService)
+				sid, err := subscriptionLDContextProvider(&newLDSubscription, registration.ProvidingApplication, tb.SecurityCfg)
 				if err == nil {
 					INFO.Println("issue a new subscription ", sid)
 
@@ -2000,22 +1988,23 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 			cType := r.Header.Get("Content-Type")
 			cTypeInLower := strings.ToLower(cType)
 			Link := r.Header.Get("Link")
-			//if Link == "" {
-			//	fmt.Println("Link is blank")
-			//}
 			if cTypeInLower == "application/ld+json" {
 				contextInPayload = true
 			} else {
-				/*if link := r.Header.Get("Link"); link != "" {
-					linkMap := tb.extractLinkHeaderFields(link)
-					if linkMap["rel"] != DEFAULT_CONTEXT {
+				if link := r.Header.Get("Link"); link != "" {
+					link := extractLinkHeaderFields(link)
+					if link == "default" {
+						context = append(context, DEFAULT_CONTEXT)
+					} else {
+						context = append(context, link)
 					}
-				}*/
-				context = append(context, DEFAULT_CONTEXT)
+				} else {
+					context = append(context, DEFAULT_CONTEXT)
+				}
 			}
 			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 			fmt.Println(resolved)
-			fmt.Println("Err",err)
+			fmt.Println("Err", err)
 			if err != nil {
 
 				if err.Error() == "EmptyPayload!" {
@@ -2053,7 +2042,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 				// Deserialize the payload here.
 				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-				fmt.Println("err",err)
+				fmt.Println("err", err)
 				if err != nil {
 					problemSet := ProblemDetails{}
 					problemSet.Details = "Problem in deserialization"
@@ -2085,7 +2074,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				}
 			}
 		}
-		fmt.Println("Res",res)
+		fmt.Println("Res", res)
 		if res.Errors != nil && res.Success == nil {
 			w.WriteHeader(404)
 			w.WriteJson(&res)
@@ -2287,8 +2276,8 @@ func (tb *ThinBroker) UpdateLdContext2RemoteSite(updateCtxReq map[string]interfa
 	//client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: tb.SecurityCfg}
 	LDBrokerURL := strings.TrimSuffix(brokerURL, "/ngsi10")
 	if link != "" {
-                delete(updateCtxReq, "@context")
-        }
+		delete(updateCtxReq, "@context")
+	}
 	client := NGSI10Client{IoTBrokerURL: LDBrokerURL, SecurityCfg: tb.SecurityCfg}
 	client.CreateLDEntityOnRemote(updateCtxReq, link)
 }
@@ -2380,7 +2369,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 		}
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
-	fmt.Println("Tbis is registration URL",tb.MyURL)
+	fmt.Println("Tbis is registration URL", tb.MyURL)
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxRegistrations = append(ctxRegistrations, ctxReg)
@@ -2452,8 +2441,6 @@ func (tb *ThinBroker) createOriginalPayload(entity interface{}) interface{} {
 }*/
 
 func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Request) {
-	var context []interface{}
-	context = append(context, DEFAULT_CONTEXT)
 	//Also allow the header to json+ld for specific cases
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		var fiwareService string
@@ -2468,19 +2455,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			fiwareServicePath = "default"
 		}
-		fmt.Println(fiwareServicePath)
-		contextInPayload := true
-		//Get Link header if present
-		if link := r.Header.Get("Link"); link != "" {
-			contextInPayload = false                    // Context in Link header
-			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-			if linkMap["rel"] != DEFAULT_CONTEXT {
-				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
-			}
-		}
-
-		// Get an []interface object
-
+		fmt.Println(fiwareService,fiwareServicePath)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
 		var LDSubscribeCtxReq interface{}
 
@@ -2491,6 +2466,46 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		var context []interface{}
+		contextInPayload := false
+		cType := r.Header.Get("Content-Type")
+		cTypeInLower := strings.ToLower(cType)
+		if cTypeInLower == "application/ld+json" {
+			contextInPayload = true
+		} else {
+			if link := r.Header.Get("Link"); link != "" {
+				link := extractLinkHeaderFields(link)
+				if link == "default" {
+					context = append(context, DEFAULT_CONTEXT)
+				} else {
+					context = append(context, link)
+				}
+			} else {
+				context = append(context, DEFAULT_CONTEXT)
+			}
+		}
+		//Get Link header if present
+		/*if link := r.Header.Get("Link"); link != "" {
+			contextInPayload = false                    // Context in Link header
+			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+			if linkMap["rel"] != DEFAULT_CONTEXT {
+				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
+			}
+		}*/
+
+		// Get an []interface object
+
+		/*reqBytes, _ := ioutil.ReadAll(r.Body)
+		var LDSubscribeCtxReq interface{}
+
+		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
+
+		if err != nil {
+			err := errors.New("Unable to decode payload/message !")
+			rest.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}*/
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
 		if err != nil {
@@ -2575,7 +2590,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 
 				// save subscription
 				for key, entity := range deSerializedSubscription.Entities {
-					if entity.ID != ""/* && strings.Contains(entity.ID, "@") == false*/ {
+					if entity.ID != "" && strings.Contains(entity.ID, "@") == false {
 						entity.ID = entity.ID + "@" + fiwareService
 					}
 					if entity.IdPattern == "" && entity.ID == "" {
@@ -2779,9 +2794,14 @@ func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interfac
 }
 
 func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
-	linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+	newLink := extractLinkHeaderFields(link)  // Keys in returned map are: "link", "rel" and "type"
 	var context []interface{}
-	context = append(context, linkMap["rel"])
+
+	if newLink == "default" {
+		newLink = DEFAULT_CONTEXT 
+	}
+
+	context = append(context, newLink)
 
 	itemsMap := make(map[string]interface{})
 	itemsMap["@context"] = context
@@ -2836,7 +2856,7 @@ func (tb *ThinBroker) getStringInterfaceMap(ctx interface{}) (map[string]interfa
 	}
 }
 
-func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
+/*func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
 	mp := make(map[string]string)
 	linkArray := strings.Split(link, ";")
 
@@ -2854,7 +2874,7 @@ func (tb *ThinBroker) extractLinkHeaderFields(link string) map[string]string {
 	}
 
 	return mp
-}
+}*/
 
 func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 	inLocalBroker := true
@@ -3605,16 +3625,35 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 
 // Subscription
 func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-	var context []interface{}
+		//var context []interface{}
 	sid := r.PathParam("sid")
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		if link := r.Header.Get("Link"); link != "" {
-			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-			if linkMap["rel"] != DEFAULT_CONTEXT {
+		/*if link := r.Header.Get("Link"); link != "" {
+			link := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
+			if link != DEFAULT_CONTEXT {
 				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
 			}
 		}
-		context = append(context, DEFAULT_CONTEXT)
+		context = append(context, DEFAULT_CONTEXT)*/
+		var context []interface{}
+		contextInPayload := false
+		cType := r.Header.Get("Content-Type")
+		cTypeInLower := strings.ToLower(cType)
+		//Link := r.Header.Get("Link")
+		if cTypeInLower == "application/ld+json" {
+			contextInPayload = true
+		} else {
+			if link := r.Header.Get("Link"); link != "" {
+				link := extractLinkHeaderFields(link)
+				if link == "default" {
+					context = append(context, DEFAULT_CONTEXT)
+				} else {
+					context = append(context, link)
+				}
+			} else {
+				context = append(context, DEFAULT_CONTEXT)
+			}
+		}
 		tb.ldSubscriptions_lock.Lock()
 		if _, ok := tb.ldSubscriptions[sid]; ok == true {
 			tb.ldSubscriptions_lock.Unlock()
@@ -3628,7 +3667,7 @@ func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Reques
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-			resolved, err := tb.ExpandPayload(LDUpdateSubscribeCtxReq, context, false) // Context in Link header
+			resolved, err := tb.ExpandPayload(LDUpdateSubscribeCtxReq, context, contextInPayload) // Context in Link header
 
 			if err != nil {
 				if err.Error() == "EmptyPayload!" {
