@@ -685,7 +685,7 @@ def test_case41():
 	#create subscription 
 	#time.sleep(3)
 	url=brokerIp+"/ngsi-ld/v1/subscriptions/"
-        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        headers={'Content-Type' : 'application/json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata29),headers=headers)
         print(r.content)
         print(r.status_code)
@@ -816,7 +816,7 @@ def test_case46():
 def test_case47():
 	#time.sleep(3)
 	url=brokerIp+"/ngsi-ld/v1/subscriptions/"
-	headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+	headers={'Content-Type' : 'application/json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
 	r=requests.post(url,data=json.dumps(ld_data.subdata36),headers=headers)
         print(r.content)
         print(r.status_code)
@@ -1062,7 +1062,7 @@ def test_case53():
 def test_case54():
 	#time.sleep(3)
         url=brokerIp+"/ngsi-ld/v1/subscriptions/"
-        headers={'Content-Type' : 'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        headers={'Content-Type' : 'application/json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
         r=requests.post(url,data=json.dumps(ld_data.subdata45),headers=headers)
         print(r.content)
         print(r.status_code)
