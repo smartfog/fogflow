@@ -94,7 +94,6 @@ Note: Replace the localhost with IP where Orion-LD broker is running and <fogflo
 		-H 'Content-Type: application/json' \
 		-H 'Accept: application/ld+json' \
 		-H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-
 		-d '
 		[
 		{
@@ -195,7 +194,6 @@ How to Push the Generated Result back to the NGSI-LD broker
 		  -H 'Integration: NGSILDBroker' \
                   -H 'Accept: application/ld+json' \
                   -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
-
                   -d ' {
                         "type": "Subscription",
                         "entities": [{
