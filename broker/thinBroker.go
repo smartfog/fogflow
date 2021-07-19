@@ -2460,7 +2460,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-
+		fmt.Println("err",err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
