@@ -2485,29 +2485,10 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				context = append(context, DEFAULT_CONTEXT)
 			}
 		}
-		//Get Link header if present
-		/*if link := r.Header.Get("Link"); link != "" {
-			contextInPayload = false                    // Context in Link header
-			linkMap := tb.extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-			if linkMap["rel"] != DEFAULT_CONTEXT {
-				context = append(context, linkMap["rel"]) // Make use of "link" and "type" also
-			}
-		}*/
 
-		// Get an []interface object
-
-		/*reqBytes, _ := ioutil.ReadAll(r.Body)
-		var LDSubscribeCtxReq interface{}
-
-		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-
-		if err != nil {
-			err := errors.New("Unable to decode payload/message !")
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}*/
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
+		fmt.Println("err",err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
