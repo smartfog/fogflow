@@ -49,7 +49,7 @@ var NGSILDclient = (function() {
 	    headers: {
     		'content-type': 'application/json',
    		'Accept': 'application/ld+json',
-		'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
   },
             data: updateCtxElements
         }).then( function(response){
@@ -115,7 +115,7 @@ var NGSILDclient = (function() {
 	        headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
-                'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+                'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
   },
             data: subscribeCtxReq
         }).then( function(response){
