@@ -715,14 +715,12 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		fmt.Println(notifyRequest)
 		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
 		notifyEleDatamap := notifyElemtData.([]interface{})
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
 		Link := DEFAULT_CONTEXT
-		fmt.Println(notifyEleDatamap)
 		for _, data := range notifyEleDatamap {
 			notifyData := data.(map[string]interface{})
 			notifyData["@context"] = context
@@ -939,10 +937,7 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 	selectedAttributes := ldSubscription.Notification.Attributes
 	tb.ldSubscriptions_lock.RUnlock()
 	tb.ldEntities_lock.Lock()
-	fmt.Println("entities", entities)
 	for _, entity := range entities {
-		fmt.Println("Entity Id entity.ID", entity.ID)
-		fmt.Println(tb.ldEntities[entity.ID])
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
@@ -950,7 +945,6 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		}
 	}
 	tb.ldEntities_lock.Unlock()
-	fmt.Println("elements", elements)
 	go tb.sendReliableNotifyToNgsiLDSubscriber(elements, sid)
 }
 func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []EntityId, sid string, selectedAttributes []string) {
@@ -1549,7 +1543,6 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 		INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
 		INFO.Println("TO ngsi10 subscription, ", mainSubID)
 		INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
-		fmt.Println("providing application", registration.ProvidingApplication)
 		if registration.ProvidingApplication == tb.MyURL {
 			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
@@ -1956,7 +1949,6 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 // NGSI-LD starts from here.
 
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
-	fmt.Println("This is update request")
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
 	var fiwareService string
 	//var fiwareServicePath string
@@ -2003,8 +1995,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				}
 			}
 			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
-			fmt.Println(resolved)
-			fmt.Println("Err", err)
 			if err != nil {
 
 				if err.Error() == "EmptyPayload!" {
@@ -2042,7 +2032,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 				// Deserialize the payload here.
 				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-				fmt.Println("err", err)
 				if err != nil {
 					problemSet := ProblemDetails{}
 					problemSet.Details = "Problem in deserialization"
@@ -2069,12 +2058,10 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					}
 					deSerializedEntity["fiwareServicePath"] = fsp
 					res.Success = append(res.Success, deSerializedEntity["id"].(string))
-					fmt.Println("working on deserialization")
 					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
 				}
 			}
 		}
-		fmt.Println("Res", res)
 		if res.Errors != nil && res.Success == nil {
 			w.WriteHeader(404)
 			w.WriteJson(&res)
@@ -2285,7 +2272,6 @@ func (tb *ThinBroker) UpdateLdContext2RemoteSite(updateCtxReq map[string]interfa
 func (tb *ThinBroker) handleLdExternalUpdateContext(updateCtxReq map[string]interface{}, link string) {
 	eid := getId(updateCtxReq)
 	brokerURL := tb.queryOwnerOfLDEntity(eid)
-	fmt.Println(brokerURL)
 	if brokerURL == tb.myProfile.MyURL {
 		tb.UpdateLdContext2LocalSite(updateCtxReq)
 	} else {
@@ -2340,6 +2326,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
 	entityId.ID = elem["id"].(string)
+	_, fs := FiwareId(elem["id"].(string))
 	//}
 	//fmt.Println("Fs", Fs)
 	entityId.Type = elem["type"].(string)
@@ -2369,9 +2356,9 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 		}
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
-	fmt.Println("Tbis is registration URL", tb.MyURL)
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
+	ctxReg.FiwareService = fs
 	ctxRegistrations = append(ctxRegistrations, ctxReg)
 
 	registerCtxReq.ContextRegistrations = ctxRegistrations
@@ -2455,12 +2442,12 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			fiwareServicePath = "default"
 		}
-		fmt.Println(fiwareService,fiwareServicePath)
+		fmt.Println(fiwareService, fiwareServicePath)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-		fmt.Println("err",err)
+		fmt.Println("err", err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2488,7 +2475,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
-		fmt.Println("err",err)
+		fmt.Println("err", err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
@@ -2589,7 +2576,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					}
 					tb.notifyOneLDSubscriberWithCurrentStatus(deSerializedSubscription.Entities, deSerializedSubscription.Id)
 				} else {
-					tb.SubscribeLDContextAvailability(&deSerializedSubscription)
+					tb.SubscribeLDContextAvailability(&deSerializedSubscription, fiwareService)
 				}
 			}
 		}
@@ -2600,7 +2587,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 }
 
 // Subscribe to Discovery for context availabiltiy
-func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest) error {
+func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest, fiwareService string) error {
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
 	for key, entity := range subReq.Entities {
 		if entity.IdPattern != "" {
@@ -2608,6 +2595,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 		}
 		subReq.Entities[key] = entity
 	}
+	ctxAvailabilityRequest.FiwareService = fiwareService
 	ctxAvailabilityRequest.Entities = subReq.Entities
 	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
 	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
@@ -2775,11 +2763,11 @@ func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interfac
 }
 
 func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
-	newLink := extractLinkHeaderFields(link)  // Keys in returned map are: "link", "rel" and "type"
+	newLink := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
 	var context []interface{}
 
 	if newLink == "default" {
-		newLink = DEFAULT_CONTEXT 
+		newLink = DEFAULT_CONTEXT
 	}
 
 	context = append(context, newLink)
@@ -2975,8 +2963,6 @@ func (tb *ThinBroker) sendReliableNotifyToNgsiLDSubscriber(elements []map[string
 
 		tb.ldSubscriptions_lock.Lock()
 		if ldSubscription, exist := tb.ldSubscriptions[sid]; exist {
-			fmt.Println("ldsubscription", ldSubscription)
-			fmt.Println("reliabolity", ldSubscription.Subscriber.RequireReliability)
 			if ldSubscription.Subscriber.RequireReliability == true {
 				ldSubscription.Subscriber.LDNotifyCache = append(ldSubscription.Subscriber.LDNotifyCache, elements...)
 				ldSubscription.Notification.LastFailure = notifyTime
@@ -3531,7 +3517,6 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	}
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
-		fmt.Println("Entity", entity)
 		entityMap := entity.(map[string]interface{})
 		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
 			if entityMap["type"] == typ {
@@ -3606,7 +3591,7 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 
 // Subscription
 func (tb *ThinBroker) UpdateLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-		//var context []interface{}
+	//var context []interface{}
 	sid := r.PathParam("sid")
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		/*if link := r.Header.Get("Link"); link != "" {

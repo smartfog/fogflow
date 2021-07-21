@@ -7,7 +7,10 @@ import (
 	"strings"
 )
 
-func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) bool {
+func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
+	if subFiwareService != regFiwareService {
+		return false
+	}
 	// (1) check entityId part
 	entity := EntityId{}
 	if strings.HasPrefix(registration.Type, "https://uri.etsi.org/ngsi-ld/default-context/") {
@@ -38,7 +41,7 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	if matchMetadatas(registration.MetadataList, metaFilter) == false {
 		return false
 	}
-	// if all matched, return truei
+	// if all matched, return true
 	return true
 }
 
