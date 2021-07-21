@@ -139,7 +139,7 @@ Use the CURL command to query entities of type "Vehicle" from  FogFlow thinBroke
 		  'http://localhost:8070/ngsi-ld/v1/entities?type=Vehicle' \
 		  -H 'Content-Type: application/json' \
 		  -H 'Accept: application/ld+json' \
-		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
 
 Note: Replace localhost with the IP where fogflow thinbroker is running.
@@ -223,7 +223,7 @@ Note: Replace localhost with IP where Fogflow thinbroker is running and <orion-l
                   'http://localhost:1026/ngsi-ld/v1/entities?type=daresult' \
                   -H 'Content-Type: application/json' \
                   -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
 
 
