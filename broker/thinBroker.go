@@ -760,7 +760,6 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	}
 }
 func (tb *ThinBroker) NotifyContext(w rest.ResponseWriter, r *rest.Request) {
-	fmt.Println("Notification comming from anather broker")
 	notifyCtxReq := NotifyContextRequest{}
 	err := r.DecodeJsonPayload(&notifyCtxReq)
 	if err != nil {
@@ -1549,6 +1548,7 @@ func (tb *ThinBroker) handleNGSILDNotify(mainSubID string, notifyContextAvailabi
 				tb.notifyOneLDSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
 			}
 		} else {
+			//for matched entities provided by other IoT Brokers
 			newLDSubscription := LDSubscriptionRequest{}
 			newLDSubscription.Entities = registration.EntityIdList
 			newLDSubscription.Type = "Subscription"
