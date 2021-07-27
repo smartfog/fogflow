@@ -667,6 +667,7 @@ type EntityRegistration struct {
 	ProvidingApplication string
 	FiwareServicePath    string
 	MsgFormat            string
+	FiwareService	     string
 }
 
 func (registredEntity *EntityRegistration) GetLocation() Point {
@@ -738,6 +739,7 @@ type ContextRegistration struct {
 	ProvidingApplication          string                         `json:"providingApplication"`
 	FiwareServicePath             string
 	MsgFormat                     string
+	FiwareService		      string
 }
 
 type ContextRegistrationResponse struct {
@@ -879,6 +881,7 @@ type SubscribeContextAvailabilityRequest struct {
 	Duration       string      `json:"duration,omitempty"`
 	Restriction    Restriction `json:"restriction,omitempty"`
 	SubscriptionId string      `json:"subscriptionId,omitempty"`
+	FiwareService  string
 }
 
 type Subscribev2ContextAvailabilityRequest struct {

@@ -3,14 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	_ "github.com/lib/pq"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
-
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/google/uuid"
-	_ "github.com/lib/pq"
 
 	. "fogflow/common/ngsi"
 )
@@ -101,7 +100,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
-		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction) == true {
+		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction, subscription.FiwareService, registration.FiwareService) == true {
 			subscriberURL := subscription.Reference
 			subID := subscription.SubscriptionId
 			entities := make([]EntityId, 0)
@@ -174,7 +173,7 @@ func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *r
 }
 
 func (fd *FastDiscovery) handleQueryCtxAvailability(req *DiscoverContextAvailabilityRequest) []ContextRegistrationResponse {
-	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction)
+	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction, "")
 
 	// prepare the response
 	registrationList := make([]ContextRegistrationResponse, 0)
@@ -264,7 +263,7 @@ func (fd *FastDiscovery) UpdateLDContextAvailability(w rest.ResponseWriter, r *r
 
 // handle NGSI9 subscription based on the local database
 func (fd *FastDiscovery) handleSubscribeCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
-	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction)
+	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction, subReq.FiwareService)
 	if len(entityMap) > 0 {
 		fd.sendNotify(subReq.SubscriptionId, subReq.Reference, entityMap, "CREATE")
 	}

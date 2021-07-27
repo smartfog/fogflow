@@ -68,7 +68,7 @@ How to Fetch data from Orion-LD to FogFlow
 		  'http://localhost:1026/ngsi-ld/v1/subscriptions' \
 		  -H 'Content-Type: application/json' \
 		  -H 'Accept: application/ld+json' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 		  -d ' {
                  	"type": "Subscription",
                 	"entities": [{
@@ -93,7 +93,7 @@ Note: Replace the localhost with IP where Orion-LD broker is running and <fogflo
 		'http://localhost:1026/ngsi-ld/v1/entityOperations/upsert' \
 		-H 'Content-Type: application/json' \
 		-H 'Accept: application/ld+json' \
-		-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-c		    ontext.jsonld"; type="application/ld+json"' \
+		-H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 		-d '
 		[
 		{
@@ -139,7 +139,8 @@ Use the CURL command to query entities of type "Vehicle" from  FogFlow thinBroke
 		  'http://localhost:8070/ngsi-ld/v1/entities?type=Vehicle' \
 		  -H 'Content-Type: application/json' \
 		  -H 'Accept: application/ld+json' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
+
 
 Note: Replace localhost with the IP where fogflow thinbroker is running.
 
@@ -192,7 +193,7 @@ How to Push the Generated Result back to the NGSI-LD broker
                   -H 'Content-Type: application/json' \
 		  -H 'Integration: NGSILDBroker' \
                   -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
                   -d ' {
                         "type": "Subscription",
                         "entities": [{
@@ -222,6 +223,7 @@ Note: Replace localhost with IP where Fogflow thinbroker is running and <orion-l
                   'http://localhost:1026/ngsi-ld/v1/entities?type=daresult' \
                   -H 'Content-Type: application/json' \
                   -H 'Accept: application/ld+json' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'
+                  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
+
 
 

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	. "fogflow/common/constants"
+	//	. "fogflow/common/constants"
 	. "fogflow/common/ngsi"
 
 	"io/ioutil"
@@ -144,15 +144,20 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	if err != nil {
 		return "", err
 	}
+
 	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body)) // add NGSILD url
+
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 	req.Header.Add("Require-Reliability", "true")
-	req.Header.Add("Link", DEFAULT_CONTEXT)
+	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	// add link header
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
+	fmt.Println("rsp", resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -432,6 +437,7 @@ var ldC *ld.RFC7324CachingDocumentLoader
 var expand_lock sync.RWMutex
 
 var compact_lock sync.RWMutex
+
 //creating expand singleton object for document loader
 
 func Expand_once() *ld.RFC7324CachingDocumentLoader {
@@ -440,7 +446,7 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
 				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-				fmt.Println("created object", ldE,err)
+				fmt.Println("created object", ldE, err)
 			})
 	} else {
 		fmt.Println("The loader object is already created")
@@ -456,7 +462,7 @@ func Compact_once() *ld.RFC7324CachingDocumentLoader {
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
 				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-				fmt.Println("created object", ldC,err)
+				fmt.Println("created object", ldC, err)
 			})
 	} else {
 		fmt.Println("The loader object is already created")
@@ -577,8 +583,9 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	//	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
 		client = httpsCfg.GetHTTPClient()
@@ -609,7 +616,9 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
@@ -766,4 +775,19 @@ func unsubscribeContextLDProvider(sid string, ProviderURL string, httpsCfg *HTTP
 		err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
 		return err
 	}
+}
+
+func extractLinkHeaderFields(link string) string {
+	var splitLink string
+	linkArray := strings.Split(link, ";")
+	extractedLink := linkArray[0]
+	leftTrim := strings.TrimLeft(extractedLink, "<")
+	newlink := strings.TrimRight(leftTrim, ">")
+	if strings.HasPrefix(newlink, "http") {
+		splitLink = string(newlink)
+	} else {
+		splitLink = "default"
+	}
+
+	return splitLink
 }

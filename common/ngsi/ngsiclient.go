@@ -923,7 +923,6 @@ func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]
 }
 
 func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool, fs string , fsp string) (string, error) {
-	
 	body, err := json.Marshal(*sub)
 	if err != nil {
                 return "", err
@@ -935,9 +934,9 @@ func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireRe
         if fsp != "" {
                 req.Header.Add("fiware-servicepath", fsp)
         }
-	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
-	req.Header.Add("Link", "<{{link}}>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 	if requireReliability == true {
 		req.Header.Add("Require-Reliability", "true")
 	}
@@ -972,7 +971,7 @@ func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireRe
 
 func (nc *NGSI10Client) QueryForNGSILDEntity(eid string) int {
 	req, _ := http.NewRequest("GET", nc.IoTBrokerURL+"/ngsi-ld/v1/entities/"+eid, nil)
-	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("Content-Type", "application/ld+ijson")
 	req.Header.Add("Accept", "application/ld+json")
 	client := nc.SecurityCfg.GetHTTPClient()
 	resp, _ := client.Do(req)

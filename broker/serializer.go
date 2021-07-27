@@ -160,7 +160,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			hasValueExist = true
 			if fieldValue != nil {
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
-				if Property["value"].([]interface{})[0] == "nil" || Property["value"].([]interface{})[0] == "Nil" || Property["value"].([]interface{})[0] == "Null" || Property["value"].([]interface{})[0] == "null"{
+				if Property["value"].([]interface{})[0] == "nil" || Property["value"].([]interface{})[0] == "Nil" || Property["value"].([]interface{})[0] == "Null" || Property["value"].([]interface{})[0] == "null" {
 					err := errors.New("Property value can not be null/nil !")
 					return Property, err
 				}
@@ -218,7 +218,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		}
 	}
-	if hasValueExist == false{
+	if hasValueExist == false {
 		err := errors.New("Property value can not be null/nil !")
 		return Property, err
 	}
@@ -238,7 +238,7 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 			hasObjectExist = true
 			if fieldValue != nil {
 				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
-				if Relationship["object"] == "nil" || Relationship["object"] == "Nil" || Relationship["object"] == "null" || Relationship["object"] == "Null"{
+				if Relationship["object"] == "nil" || Relationship["object"] == "Nil" || Relationship["object"] == "null" || Relationship["object"] == "Null" {
 					err := errors.New("Relationship Object value can not be null/nil !")
 					return Relationship, err
 				}
@@ -299,7 +299,7 @@ func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (ma
 			}
 		}
 	}
-	if hasObjectExist == false{
+	if hasObjectExist == false {
 		err := errors.New("Relationship Object value can not be null/nil !")
 		return Relationship, err
 	}

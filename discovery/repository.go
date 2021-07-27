@@ -85,11 +85,16 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		if len(registration.ProvidingApplication) > 0 {
 			existRegistration.ProvidingApplication = registration.ProvidingApplication
 		}
+
+		//update existing FiwareServicePath
 		if len(registration.FiwareServicePath) > 0 {
 			existRegistration.FiwareServicePath = registration.FiwareServicePath
 		}
 		if len(registration.MsgFormat) > 0 {
 			existRegistration.MsgFormat = registration.MsgFormat
+		}
+		if len(registration.FiwareService) > 0 {
+			existRegistration.FiwareService = registration.FiwareService
 		}
 
 	} else {
@@ -119,8 +124,13 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		if len(registration.FiwareServicePath) > 0 {
 			entityRegistry.FiwareServicePath = registration.FiwareServicePath
 		}
+
 		if len(registration.MsgFormat) > 0 {
 			entityRegistry.MsgFormat = registration.MsgFormat
+		}
+
+		if len(registration.FiwareService) > 0 {
+			entityRegistry.FiwareService = registration.FiwareService
 		}
 
 		er.ctxRegistrationList[eid] = &entityRegistry
@@ -148,19 +158,17 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
         return er.ctxRegistrationList[eid]
 }*/
 
-func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
-	return er.queryEntitiesInMemory(entities, attributes, restriction)
+func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction, fiwareService string) map[string][]EntityId {
+	return er.queryEntitiesInMemory(entities, attributes, restriction, fiwareService)
 }
 
-func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
+func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attributes []string, restriction Restriction, subfiwareService string) map[string][]EntityId {
 	er.ctxRegistrationList_lock.RLock()
 	defer er.ctxRegistrationList_lock.RUnlock()
-
 	nearby := restriction.GetNearbyFilter()
-
 	candidates := make([]Candidate, 0)
 	for _, registration := range er.ctxRegistrationList {
-		if matchingWithFilters(registration, entities, attributes, restriction) == true {
+		if matchingWithFilters(registration, entities, attributes, restriction, subfiwareService, registration.FiwareService) == true {
 			candidate := Candidate{}
 			candidate.ID = registration.ID
 			candidate.Type = registration.Type
