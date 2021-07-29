@@ -37,7 +37,7 @@ spec:
     spec:
       containers:
       - image: dgraph/standalone
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: dgraph
         ports:
         - containerPort: 8000
@@ -45,16 +45,16 @@ spec:
         - containerPort: 9080
         - containerPort: 6080
         #readiness and liveness to check pod's Health
-        readinessProbe:
-          tcpSocket:
-            port: 8000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          tcpSocket:
-            port: 8000
-          initialDelaySeconds: 15
-          periodSeconds: 20
+        #readinessProbe:
+        #  tcpSocket:
+        #    port: 8000
+        #  initialDelaySeconds: 5
+        #  periodSeconds: 10
+        #livenessProbe:
+        #  tcpSocket:
+        #    port: 8000
+        #  initialDelaySeconds: 15
+        #  periodSeconds: 20
         resources:
         #CPU and memory limits for dgraph deployment
           limits:
@@ -65,15 +65,17 @@ spec:
             cpu: 1 
         volumeMounts:
         - name: dgraph 
-          mountPath: /mnt/dgraph 
+          mountPath: /dgraph 
           #Dgraph requires write permission           
           readOnly: false              
       restartPolicy: Always
+      #nodeSelector:
+      #  master: cloud
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: dgraph
         hostPath: 
-          path: {{ .Values.dgraph.hostPath.path }} 
+          path: /root/guppy/deployment/kubernetes/cloud-node/dgraph
 
 ---
 
@@ -96,7 +98,7 @@ spec:
     port: 8082
     targetPort: 8080
   - name: "9080"
-    port: 9082
+    port: 9080
     targetPort: 9080
   - name: "6080"
     port: 6080

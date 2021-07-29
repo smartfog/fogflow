@@ -35,9 +35,14 @@ spec:
       labels:
         io.kompose.service: designer
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 60s;']
       containers:
-      - image: fogflow/designer:latest
-        imagePullPolicy: Always 
+      - image: fogflow/designer:k8s
+        imagePullPolicy: IfNotPresent 
         name: designer
         ports:
         - containerPort: 8080
@@ -65,6 +70,8 @@ spec:
         - name: config-json
           mountPath: /app/config.json
       restartPolicy: Always
+     #nodeSelector:
+     #  master: cloud
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json

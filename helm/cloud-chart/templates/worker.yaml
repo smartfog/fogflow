@@ -41,9 +41,9 @@ spec:
         name: init-broker
         command: ['sh', '-c', 'sleep 80s;']
       containers:
-      - image: fogflow/worker:k8s
-        imagePullPolicy: Always 
-        name: cloud-worker
+      - image: fogflow/worker:newk8s
+        imagePullPolicy: IfNotPresent 
+        name: cloud-worker 
         #resources:
           #CPU and memory limits for dgraph deployment 
           #limits:
@@ -62,6 +62,8 @@ spec:
         - name: dockersock
           mountPath: "/var/run/docker.sock"  
       restartPolicy: Always
+      #nodeSelector:
+      #  master: cloud
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json 

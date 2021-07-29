@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "2"
+    #"helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
     io.kompose.service: discovery
@@ -36,8 +36,8 @@ spec:
         io.kompose.service: discovery
     spec:
       containers:
-      - image: fogflow/discovery:latest
-        imagePullPolicy: Always 
+      - image: fogflow/discovery:newk8s1
+        imagePullPolicy: IfNotPresent 
         name: discovery
         ports:
         - containerPort: 8090
@@ -65,6 +65,8 @@ spec:
           mountPath: /config.json
           readOnly: true
       restartPolicy: Always
+      #nodeSelector:
+      #  master: cloud
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json

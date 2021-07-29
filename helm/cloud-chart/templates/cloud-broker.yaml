@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "3"
+    #"helm.sh/hook-weight": "3"
   creationTimestamp: null
   labels:
     io.kompose.service: cloud-broker
@@ -35,12 +35,17 @@ spec:
       labels:
         io.kompose.service: cloud-broker
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 10s;']
       containers:
-      - image: fogflow/broker:latest
-        imagePullPolicy: Always 
+      - image: fogflow/broker:newk8s12
+        imagePullPolicy: IfNotPresent
         name: cloud-broker
         ports:
-        - containerPort: 8070
+        - containerPort: 8070 
         #readiness and liveness to check pod's Health 
         readinessProbe:
           tcpSocket:
@@ -65,6 +70,8 @@ spec:
           mountPath: /config.json
           readOnly: true
       restartPolicy: Always
+      #nodeSelector:
+      #  master: cloud
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
        - name: config-json

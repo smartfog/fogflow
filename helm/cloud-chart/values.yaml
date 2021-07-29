@@ -21,17 +21,17 @@ serviceAccount:
 #hostPath for dgraph volume mount
 dgraph:
   hostPath:
-    path: /dgraph
+    path: /root/dgraph
 
 #hostPath for config.json  
 configJson:
   hostPath:
-    path: /root/co-28/fogflow/helm/cloud-chart/config.json
+    path: /root/guppy/helm/cloud-chart/config.json
 
 #hostPath for nginx.conf 
 nginxConf:
   hostPath:
-    path: /root/co-28/fogflow/helm/cloud-chart/nginx.conf 
+    path: /root/guppy/helm/cloud-chart/nginx.conf 
 
 Service:
  spec: 
