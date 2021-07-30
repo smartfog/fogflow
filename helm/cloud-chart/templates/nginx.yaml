@@ -70,8 +70,6 @@ spec:
           mountPath: /etc/nginx/nginx.conf
           readOnly: true
       restartPolicy: Always
-      #nodeSelector:
-      #  master: cloud
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: nginx-conf 
