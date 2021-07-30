@@ -135,17 +135,16 @@ You need to change the following IP addresses in config.json according to your o
 Configure Namespace in Cloud Kubernetes Cluster
 -------------------------------------------------
 
-In order to launch fogflow components, user need to create a namespace. To create namespace in kubernetes cluster, use below command:
+In order to launch fogflow components, user need to create the namespace. To create namespace in kubernetes cluster, use below command:
 
 .. code-block:: console
 
-        $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow
-
-
+        $kubectl create ns fogflow 
+        
 Configure values.yaml File
 ---------------------------
 
-- User should provide name of the namespace created by him in previous step. 
+- User should provide name of the namespace created by him in previous step i.e. *fogflow*. 
 
 - User should provide name of serviceAccount as per requirement. 
 
@@ -169,13 +168,13 @@ Configure values.yaml File
       #are running all the time for the deployment
       replicaCount: 1
 
-      serviceAccount: default
-      #Specifies whether a service account should be created
+      serviceAccount: 
+        #Specifies whether a service account should be created
         create: true
-      #Annotations to add to the service account
+        #Annotations to add to the service account
         annotations: {}
-      #The name of the service account to use.
-      #If not set and create is true, a name is generated using the fullname template
+        #The name of the service account to use.
+        #If not set and create is true, a name is generated using the fullname template
         name: "fogflow-dns"
 
       #hostPath for dgraph volume mount
@@ -210,13 +209,14 @@ Add "--set" flag with helm install command to pass configuration from command li
 .. code-block:: console
  
           helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
-          //Namespace should be the one created in previous steps, for example "fogflow"
+          //Namespace should be the one created in previous steps, that is "fogflow"
           //externalIPs is the one as set in above steps.
 
 
 Refer Helm official `link`_ for more details
 
 .. _`link`: https://helm.sh/docs/helm/
+
 
 Validate the setup
 -------------------------------------------------------------
@@ -275,6 +275,28 @@ Create a task using link `task_Instance`_
 .. _`task_Instance`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html#define-a-dummy-fog-function 
 
 
+Remove Helm chart Deployment
+----------------------------------------
+
+To remove the helm chart that is deployed, do the following steps:
+
+**step 1** : To grab the name of helm deployed chart, use following command.
+
+.. code-block:: console
+        
+        $helm ls -n fogflow
+
+
+        NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
+        cloud-chart-1627645705  fogflow         1               2021-07-30 17:18:26.00598656 +0530 IST  deployed        fogflow-chart-0.3.0     1.16.0
+
+**Step 2** : To delete this chart, use below command.
+
+.. code-block:: console
+
+        $helm delete cloud-chart-1627645705 -n fogflow
+
+        //Here the name of chart is used as **helm delete <name of chart found in above step> -n fogflow**
 
 
 FogFlow Edge Node Kubernetes Support
