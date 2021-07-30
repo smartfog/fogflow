@@ -75,7 +75,7 @@ spec:
       volumes:
       - name: dgraph
         hostPath: 
-          path: /root/dgraph
+          path: {{ .Values.dgraph.hostPath.path }}
 
 ---
 
