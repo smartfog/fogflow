@@ -41,7 +41,7 @@ spec:
         name: init-broker
         command: ['sh', '-c', 'sleep 10s;']
       containers:
-      - image: fogflow/broker:newk8s12
+      - image: fogflow/broker:k8s
         imagePullPolicy: IfNotPresent
         name: cloud-broker
         ports:

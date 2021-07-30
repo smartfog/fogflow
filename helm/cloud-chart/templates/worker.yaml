@@ -41,7 +41,7 @@ spec:
         name: init-broker
         command: ['sh', '-c', 'sleep 80s;']
       containers:
-      - image: fogflow/worker:newk8s
+      - image: fogflow/worker:k8s
         imagePullPolicy: IfNotPresent 
         name: cloud-worker 
         #resources:
