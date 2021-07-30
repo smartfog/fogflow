@@ -146,7 +146,7 @@ Configure values.yaml File
 
 - User should provide name of the namespace created by him in previous step i.e. *fogflow*. 
 
-- User should provide name of serviceAccount as per requirement. 
+- User should provide name of serviceAccount as shown below i.e. *fogflow-dns*. 
 
 - User should configure the no. of replicaCount required.
 
@@ -231,14 +231,14 @@ There are two ways to check if the FogFlow cloud node has started correctly:
 		 
 		 
         NAME                           READY   STATUS              RESTARTS   AGE
-        cloud-broker-c78679dd8-gx5ds   1/1     Running             0          8s
-        cloud-worker-db94ff4f7-hwx72   1/1     Running             0          8s
-        designer-bf959f7b7-csjn5       1/1     Running             0          8s
-        dgraph-869f65597c-jrlqm        1/1     Running             0          8s
-        discovery-7566b87d8d-hhknd     1/1     Running             0          8s
-        master-86976888d5-drfz2        1/1     Running             0          8s
-        nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
-        rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
+        cloud-broker-c78679dd8-gx5ds   1/1     Running             0          80s
+        cloud-worker-db94ff4f7-hwx72   1/1     Running             0          90s
+        designer-bf959f7b7-csjn5       1/1     Running             0          80s
+        dgraph-869f65597c-jrlqm        1/1     Running             0          80s
+        discovery-7566b87d8d-hhknd     1/1     Running             0          70s
+        master-86976888d5-drfz2        1/1     Running             0          80s
+        nginx-69ff8d45f-xmhmt          1/1     Running             0          80s
+        rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          60s
 
 		
 - Check the system status from the FogFlow DashBoard
@@ -296,7 +296,7 @@ To remove the helm chart that is deployed, do the following steps:
 
         $helm delete cloud-chart-1627645705 -n fogflow
 
-        //Here the name of chart is used as **helm delete <name of chart found in above step> -n fogflow**
+        //Here the name of chart is used in the above command : helm delete <name of chart found in above step> -n fogflow
 
 
 FogFlow Edge Node Kubernetes Support
