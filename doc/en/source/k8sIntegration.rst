@@ -298,6 +298,12 @@ To remove the helm chart that is deployed, do the following steps:
 
         //Here the name of chart is used in the above command : helm delete <name of chart found in above step> -n fogflow
 
+**Step 3** : To release all the resources consumed by fogflow, use below command.
+
+.. code-block:: console
+
+        $kubectl delete ns fogflow
+
 
 FogFlow Edge Node Kubernetes Support
 -------------------------------------------
