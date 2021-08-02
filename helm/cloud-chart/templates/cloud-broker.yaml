@@ -35,12 +35,17 @@ spec:
       labels:
         io.kompose.service: cloud-broker
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 10s;']
       containers:
-      - image: fogflow/broker:latest
-        imagePullPolicy: Always 
+      - image: fogflow/broker:k8s
+        imagePullPolicy: IfNotPresent
         name: cloud-broker
         ports:
-        - containerPort: 8070
+        - containerPort: 8070 
         #readiness and liveness to check pod's Health 
         readinessProbe:
           tcpSocket:

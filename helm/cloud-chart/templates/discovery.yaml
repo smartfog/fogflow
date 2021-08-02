@@ -36,8 +36,8 @@ spec:
         io.kompose.service: discovery
     spec:
       containers:
-      - image: fogflow/discovery:latest
-        imagePullPolicy: Always 
+      - image: fogflow/discovery:k8s
+        imagePullPolicy: IfNotPresent 
         name: discovery
         ports:
         - containerPort: 8090

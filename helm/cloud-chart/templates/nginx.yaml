@@ -35,9 +35,14 @@ spec:
       labels:
         io.kompose.service: nginx
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 70s;']
       containers:
       - image: nginx:latest
-        imagePullPolicy: Always 
+        imagePullPolicy: IfNotPresent 
         name: nginx
         ports:
         - containerPort: 80

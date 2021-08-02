@@ -78,10 +78,11 @@ To install Helm, please refer `Install Helm`_
 
 .. _`Kubernetes Official Site`: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
-.. _`Install Kubernetes`: https://medium.com/@vishal.sharma./installing-configuring-kubernetes-cluster-on-ubuntu-18-04-lts-hosts-f37b959c8410
+.. _`Install Kubernetes`: https://loves.cloud/setting-up-a-kubernetes-cluster-on-ubuntu-18-04/
 
 .. _`Install Helm`: https://helm.sh/docs/intro/install/
 
+If there is an error regarding swap space, please use following command : **sudo swapoff -a**
 
 **There are two ways in which cloud components can be deployed in k8s environment:**
       
@@ -106,7 +107,7 @@ Download the Kubernetes file and the configuration files as below.
 .. code-block:: console
 
         # the Kubernetes yaml file to start all FogFlow components on the cloud node
-        wget https://raw.githubusercontent.com/smartfog/fogflow/RBAC_manual/helm/cloud-chart.zip
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm/cloud-chart.zip
 
 
 - Install unzip tool on system to extract files from **cloud-chart.zip**.
@@ -135,19 +136,18 @@ You need to change the following IP addresses in config.json according to your o
 Configure Namespace in Cloud Kubernetes Cluster
 -------------------------------------------------
 
-In order to launch fogflow components, user need to create a namespace. To create namespace in kubernetes cluster, use below command:
+In order to launch fogflow components, user need to create the namespace. To create namespace in kubernetes cluster, use below command:
 
-.. code-block::
+.. code-block:: console
 
-    $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow
-
-
+        $kubectl create ns fogflow 
+        
 Configure values.yaml File
 ---------------------------
 
-- User should provide name of the namespace created by him in previous step. 
+- User should provide name of the namespace created by him in previous step i.e. *fogflow*. 
 
-- User should provide name of serviceAccount as per requirement. 
+- User should provide name of serviceAccount as shown below i.e. *fogflow-dns*. 
 
 - User should configure the no. of replicaCount required.
 
@@ -169,19 +169,19 @@ Configure values.yaml File
       #are running all the time for the deployment
       replicaCount: 1
 
-      serviceAccount: default
-      #Specifies whether a service account should be created
+      serviceAccount: 
+        #Specifies whether a service account should be created
         create: true
-      #Annotations to add to the service account
+        #Annotations to add to the service account
         annotations: {}
-      #The name of the service account to use.
-      #If not set and create is true, a name is generated using the fullname template
+        #The name of the service account to use.
+        #If not set and create is true, a name is generated using the fullname template
         name: "fogflow-dns"
 
       #hostPath for dgraph volume mount
       dgraph:
         hostPath:
-          path: /mnt/dgraph
+          path: /root/dgraph
 
       #hostPath for config.json, add this path to cloud-chart directory
       configJson:
@@ -197,7 +197,7 @@ Configure values.yaml File
       Service:
        spec:
         externalIPs:
-        - XXX.XX.48.24
+        - XXX.XX.48.24  //e.g. 172.30.48.24
 
 
 Start all Fogflow components with Helm Chart
@@ -210,12 +210,14 @@ Add "--set" flag with helm install command to pass configuration from command li
 .. code-block:: console
  
           helm install ./cloud-chart --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
-          //Namespace should be the one created in previous steps, for example "fogflow"
+          //Namespace should be the one created in previous steps, that is "fogflow"
+          //externalIPs is the one as set in above steps.
 
 
 Refer Helm official `link`_ for more details
 
 .. _`link`: https://helm.sh/docs/helm/
+
 
 Validate the setup
 -------------------------------------------------------------
@@ -230,14 +232,14 @@ There are two ways to check if the FogFlow cloud node has started correctly:
 		 
 		 
         NAME                           READY   STATUS              RESTARTS   AGE
-        cloud-broker-c78679dd8-gx5ds   1/1     Running             0          8s
-        cloud-worker-db94ff4f7-hwx72   1/1     Running             0          8s
-        designer-bf959f7b7-csjn5       1/1     Running             0          8s
-        dgraph-869f65597c-jrlqm        1/1     Running             0          8s
-        discovery-7566b87d8d-hhknd     1/1     Running             0          8s
-        master-86976888d5-drfz2        1/1     Running             0          8s
-        nginx-69ff8d45f-xmhmt          1/1     Running             0          8s
-        rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          8s
+        cloud-broker-c78679dd8-gx5ds   1/1     Running             0          80s
+        cloud-worker-db94ff4f7-hwx72   1/1     Running             0          90s
+        designer-bf959f7b7-csjn5       1/1     Running             0          80s
+        dgraph-869f65597c-jrlqm        1/1     Running             0          80s
+        discovery-7566b87d8d-hhknd     1/1     Running             0          70s
+        master-86976888d5-drfz2        1/1     Running             0          80s
+        nginx-69ff8d45f-xmhmt          1/1     Running             0          80s
+        rabbitmq-85bf5f7d77-c74cd      1/1     Running             0          60s
 
 		
 - Check the system status from the FogFlow DashBoard
@@ -274,6 +276,34 @@ Create a task using link `task_Instance`_
 .. _`task_Instance`: https://fogflow.readthedocs.io/en/latest/intent_based_program.html#define-a-dummy-fog-function 
 
 
+Remove Helm chart Deployment
+----------------------------------------
+
+To remove the helm chart that is deployed, do the following steps:
+
+**step 1** : To grab the name of helm deployed chart, use following command.
+
+.. code-block:: console
+        
+        $helm ls -n fogflow
+
+
+        NAME                    NAMESPACE       REVISION        UPDATED                                 STATUS          CHART                   APP VERSION
+        cloud-chart-1627645705  fogflow         1               2021-07-30 17:18:26.00598656 +0530 IST  deployed        fogflow-chart-0.3.0     1.16.0
+
+**Step 2** : To delete this chart, use below command.
+
+.. code-block:: console
+
+        $helm delete cloud-chart-1627645705 -n fogflow
+
+        //Here the name of chart is used in the above command : helm delete <name of chart found in above step> -n fogflow
+
+**Step 3** : To release all the resources consumed by fogflow, use below command.
+
+.. code-block:: console
+
+        $kubectl delete ns fogflow
 
 
 FogFlow Edge Node Kubernetes Support

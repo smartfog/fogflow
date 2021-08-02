@@ -42,8 +42,8 @@ spec:
         command: ['sh', '-c', 'sleep 80s;']
       containers:
       - image: fogflow/worker:k8s
-        imagePullPolicy: Always 
-        name: cloud-worker
+        imagePullPolicy: IfNotPresent 
+        name: cloud-worker 
         #resources:
           #CPU and memory limits for dgraph deployment 
           #limits:

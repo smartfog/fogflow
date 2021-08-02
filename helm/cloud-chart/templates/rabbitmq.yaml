@@ -41,8 +41,8 @@ spec:
           value: mypass
         - name: RABBITMQ_DEFAULT_USER
           value: admin
-        image: rabbitmq:3
-        imagePullPolicy: Always 
+        image: rabbitmq:3.8
+        imagePullPolicy: IfNotPresent 
         name: rabbitmq
         ports:
         - containerPort: 5672
