@@ -44,17 +44,6 @@ spec:
         - containerPort: 8080
         - containerPort: 9080
         - containerPort: 6080
-        #readiness and liveness to check pod's Health
-        #readinessProbe:
-        #  tcpSocket:
-        #    port: 8000
-        #  initialDelaySeconds: 5
-        #  periodSeconds: 10
-        #livenessProbe:
-        #  tcpSocket:
-        #    port: 8000
-        #  initialDelaySeconds: 15
-        #  periodSeconds: 20
         resources:
         #CPU and memory limits for dgraph deployment
           limits:

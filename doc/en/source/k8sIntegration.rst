@@ -78,10 +78,11 @@ To install Helm, please refer `Install Helm`_
 
 .. _`Kubernetes Official Site`: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 
-.. _`Install Kubernetes`: https://medium.com/@vishal.sharma./installing-configuring-kubernetes-cluster-on-ubuntu-18-04-lts-hosts-f37b959c8410
+.. _`Install Kubernetes`: https://loves.cloud/setting-up-a-kubernetes-cluster-on-ubuntu-18-04/
 
 .. _`Install Helm`: https://helm.sh/docs/intro/install/
 
+If there is an error regarding swap space, please use following command : **sudo swapoff -a**
 
 **There are two ways in which cloud components can be deployed in k8s environment:**
       

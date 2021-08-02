@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    #"helm.sh/hook-weight": "3"
+    "helm.sh/hook-weight": "3"
   creationTimestamp: null
   labels:
     io.kompose.service: cloud-broker
