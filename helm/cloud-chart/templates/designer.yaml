@@ -69,12 +69,13 @@ spec:
         volumeMounts:
         - name: config-json
           mountPath: /app/config.json
+          subPath: config.json
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }}
+        configMap:
+          name: fogflow-configmap
 ---
 
 apiVersion: v1
