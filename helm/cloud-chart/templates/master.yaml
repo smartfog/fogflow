@@ -68,13 +68,14 @@ spec:
         volumeMounts:
         - name: config-json
           mountPath: /config.json
+          subPath: config.json
           readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }}
+        configMap:
+          name: fogflow-configmap
 
 ---
 

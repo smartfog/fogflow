@@ -122,16 +122,66 @@ Download the Kubernetes file and the configuration files as below.
 
 	
    
-Configure IP Addresses in config.json File
--------------------------------------------------------------
+Configure IP Addresses under config.json in configmap.yaml File
+---------------------------------------------------------------------
 
-You need to change the following IP addresses in config.json according to your own environment. The config.json file present in the above downloaded folder "cloud-chart"
+User need to change the following IP addresses in config.json according to their own environment. The config.json is present inside *configmap.yaml file* under *template folder* in the above downloaded folder named "cloud-chart" (i.e. /cloud-chart/templates/configmap.yaml ).
 
 - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
 
 - **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
 - **physical_location**: the geo-location of the FogFlow node;
 - **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
+
+.. code-block:: console 
+
+        apiVersion: v1
+        data:
+        config.json: |
+        {
+            "my_hostip": "172.30.48.24",
+            "physical_location":{
+                "longitude": 139.709059,
+                "latitude": 35.692221
+             },
+             "site_id": "001",
+             "logging":{
+                 "info":"stdout",
+                 "error":"stdout",
+                 "protocol": "stdout",
+                 "debug": "stdout"
+             },
+             "discovery": {
+                 "http_port": 8090
+             },
+             "broker": {
+                 "http_port": 8070
+             },     
+             "master": {
+                 "ngsi_agent_port": 1060    
+             },
+             "worker": {
+                 "container_autoremove": false,
+                 "start_actual_task": true,
+                 "capacity": 8
+             },
+             "designer": {
+                 "webSrvPort": 8080,
+                 "agentPort": 1030               
+             },    
+             "rabbitmq": {
+                 "port": 5672,
+                 "username": "admin",
+                 "password":"mypass"
+             },
+             "https": {
+                 "enabled" : false
+             },
+             "persistent_storage": {
+                 "port": 9080
+             } 
+        }
+
 
 Configure Namespace in Cloud Kubernetes Cluster
 -------------------------------------------------
@@ -151,7 +201,7 @@ Configure values.yaml File
 
 - User should configure the no. of replicaCount required.
 
-- User should provide absolute path for dgraph, configJson and nginxConf in values.yaml file as per the environment.
+- User should provide absolute path for dgraph in values.yaml file as per the environment.
 
 - User should provide externalIPs as per the environment.
 
@@ -182,16 +232,6 @@ Configure values.yaml File
       dgraph:
         hostPath:
           path: /root/dgraph
-
-      #hostPath for config.json, add this path to cloud-chart directory
-      configJson:
-        hostPath:
-          path: /home/necuser/fogflow/helm/cloud-chart/config.json
-
-      #hostPath for nginx.conf, add this path to cloud-chart directory
-      nginxConf:
-        hostPath:
-          path: /home/necuser/fogflow/helm/cloud-chart/config.json
 
       #External IP to expose cluster
       Service:
@@ -224,7 +264,7 @@ Validate the setup
 
 There are two ways to check if the FogFlow cloud node has started correctly: 
 
-- Check all the Pods are Up and Running using "kubectl get pods --namespace=<namespace_name>"
+- Check all the Pods are Up and Running using "kubectl get pods --namespace=fogflow"
 
 .. code-block:: console  
 

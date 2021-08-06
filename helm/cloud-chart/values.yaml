@@ -23,16 +23,6 @@ dgraph:
   hostPath:
     path: /root/dgraph
 
-#hostPath for config.json  
-configJson:
-  hostPath:
-    path: /root/guppy/helm/cloud-chart/config.json
-
-#hostPath for nginx.conf 
-nginxConf:
-  hostPath:
-    path: /root/guppy/helm/cloud-chart/nginx.conf 
-
 Service:
  spec: 
   externalIPs: 

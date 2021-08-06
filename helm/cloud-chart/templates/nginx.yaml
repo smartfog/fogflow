@@ -68,13 +68,14 @@ spec:
         volumeMounts:
         - name: nginx-conf
           mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
           readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
-      - name: nginx-conf 
-        hostPath:
-          path: {{ .Values.nginxConf.hostPath.path }} 
+      - name: nginx-conf
+        configMap:
+          name: fogflow-configmap
 ---
 
 apiVersion: v1
