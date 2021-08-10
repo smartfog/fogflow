@@ -8,9 +8,11 @@ import (
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
-	if subFiwareService != regFiwareService {
-		return false
-	}
+
+	if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
+                return false
+        }
+
 	// (1) check entityId part
 	entity := EntityId{}
 	if strings.HasPrefix(registration.Type, "https://uri.etsi.org/ngsi-ld/default-context/") {
