@@ -717,7 +717,12 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
-		notifyEleDatamap := notifyElemtData.([]interface{})
+		var notifyEleDatamap []interface{}
+		if notifyElemtData != nil {
+			notifyEleDatamap = notifyElemtData.([]interface{})
+		} else {
+			fmt.Println("nil data repersent entity has been deleted")
+		}
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
 		Link := DEFAULT_CONTEXT
