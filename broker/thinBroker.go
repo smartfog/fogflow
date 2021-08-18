@@ -717,7 +717,12 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 		notifyElement := notifyRequest.(map[string]interface{})
 		notifyElemtData := notifyElement["data"]
-		notifyEleDatamap := notifyElemtData.([]interface{})
+		var notifyEleDatamap []interface{}
+		if notifyElemtData != nil {
+			notifyEleDatamap = notifyElemtData.([]interface{})
+		} else {
+			fmt.Println("nil data repersent entity has been deleted")
+		}
 		notifyCtxResp := NotifyContextResponse{}
 		w.WriteJson(&notifyCtxResp)
 		Link := DEFAULT_CONTEXT
@@ -1387,19 +1392,31 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 	defer tb.subLinks_lock.RUnlock()
 
 	// check the request header
+	fmt.Println("======testing the code=====")
 	if r.Header.Get("User-Agent") != "lightweight-iot-broker" {
 		//for external subscription, we need to cancel all subscriptions to IoT Discovery and other Brokers
 		for index, otherSubID := range tb.main2Other[subID] {
 			if index == 0 {
 				tb.UnsubscribeContextAvailability(otherSubID)
 			} else {
-				unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
+				if _ , found := tb.subscriptions[otherSubID] ; found {
+					unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
+				}
+				if _ , found := tb.ldSubscriptions[otherSubID] ; found {
+					unsubscribeContextProvider(otherSubID, tb.ldSubscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
+				}
 			}
 		}
 	}
 
-	// remove the subscription from the map
-	delete(tb.subscriptions, subID)
+	// remove the ngsiv1 subscription from the map
+	if _ , found := tb.subscriptions[subID] ; found {
+		delete(tb.subscriptions, subID)
+	// remove the ngsild subscription from map 
+	} else if  _ , found := tb.ldSubscriptions[subID] ; found {
+                 delete(tb.ldSubscriptions, subID)
+	}
+
 }
 
 func (tb *ThinBroker) NotifyLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
