@@ -39,7 +39,7 @@ spec:
       - image: busybox:1.28
         imagePullPolicy: Always
         name: init-broker
-        command: ['sh', '-c', 'sleep 40s;']
+        command: ['sh', '-c', 'sleep 50s;']
       containers:
       - image: fogflow/master:k8s
         imagePullPolicy: IfNotPresent 
