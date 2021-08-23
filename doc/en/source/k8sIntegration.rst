@@ -457,7 +457,7 @@ To unzip the downloaded folder using following,
         $unzip edge-chart.zip
 
 
-**Step 1** : Edit the config.json file in edge-chart folder.
+**Step 1** : Configure the config.json inside *edgeconfigmap.yaml (/edge-chart/templates/edgeconfigmap.yaml)*  file in edge-chart folder.
 
  .. code-block:: console
    
@@ -470,13 +470,19 @@ To unzip the downloaded folder using following,
 
       #Eg. "my_hostip": "172.30.48.46"
 
-**Step 2** : Create a namespace in order to deploy edge-components in microk8s environment.
+      "site_id" : "002",
+      
+      #Increment this with every new edge node which is added
+
+
+**Step 2** : Create *fogflow namespace* in order to deploy edge-components in microk8s environment.
 
 .. code-block:: console
 
-        $microk8s.kubectl create ns <User_provided_name> //E.g. microk8s.kubectl create ns fogflow
+        $microk8s.kubectl create ns fogflow
 
-**Step 3** : Edit the namespace, serviceaccount name, externalIPs and path under configJson tag in values.yaml file inside edge-chart folder.
+
+**Step 3** : Edit serviceaccount name, externalIPs and replicaCount in values.yaml file inside edge-chart folder.
 
 .. code-block:: console
 
@@ -495,18 +501,10 @@ To unzip the downloaded folder using following,
         #If not set and create is true, a name is generated using the fullname template
         name: "fogflow-dns"
 
-        #hostPath for config.json  
-        configJson:
-        hostPath:
-        path: /root/new_fog/fogflow-helm/helm/edge-chart/config.json
-
-
         Service:
         spec: 
         externalIPs: 
         - 172.30.48.46 #The IP of Edge Node 
-
-Note: The value of **"namespace"** will be one which user specified while creating the namespace in previous steps. Value of **"externalIPs"** will be the IP of edge node and value of **"path"** under configJson will be equal to the path of host machine where config.json is present inside edge-chart.
 
 
 **Step 4** : To finally deploy chart, use the command as below.
