@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow
+  name: edgebroker01
+spec:
+  selector:
+    matchLabels:
+      run: edgebroker01
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: edgebroker01
+    spec:
+      containers:
+      - name: cloudbroker
+        image: pradumn99/broker:newk8s12
+        ports:
+        - containerPort: 8060
+        volumeMounts:
+        - name: config-json
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
+      volumes:
+      - name: config-json
+        configMap:
+          name: edge-configmap
+      serviceAccountName: edge
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: fogflow
+  name: edgebroker01
+  labels:
+    run: edgebroker01
+spec:
+  ports:
+  - port: 8060
+    protocol: TCP
+  selector:
+    run: edgebroker01
+  externalIPs: [172.30.48.46]
+

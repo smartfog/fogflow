@@ -55,4 +55,4 @@ spec:
     targetPort: 1060
   selector:
     run: master
-
+  externalIPs: [172.30.48.24]

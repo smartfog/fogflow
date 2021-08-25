@@ -43,5 +43,5 @@ spec:
     protocol: TCP
   selector:
     run: cloudbroker
-
+  externalIPs: [172.30.48.24]
 

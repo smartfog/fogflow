@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow
+  name: edgeworker01
+spec:
+  selector:
+    matchLabels:
+      run: edgeworker01
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: edgeworker01
+    spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 30s;']
+      containers:
+      - name: edgeworker01
+        image: pradumn99/worker:newk8s
+        volumeMounts:
+        - name: config-json
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
+        - name: dockersock
+          mountPath: "/var/run/docker.sock"
+        - name: tmp-folder
+          mountPath: /tmp
+          readOnly: true
+      volumes:
+      - name: config-json
+        configMap:
+          name: edge-configmap
+      - name: tmp-folder
+        hostPath:
+          path: /tmp
+      - name: dockersock
+        hostPath:
+          path: /var/run/docker.sock
+      serviceAccountName: edge
+
+
