@@ -15,7 +15,7 @@ spec:
     spec:
       containers:    
       - name: rabbitmq
-        image: rabbitmq:3
+        image: rabbitmq:3.8
         ports:
         - containerPort: 5672
         env:
@@ -41,6 +41,6 @@ spec:
       targetPort: 5672
   selector:
     run: rabbitmq
-
+  externalIPs: [172.30.48.24]
 
 

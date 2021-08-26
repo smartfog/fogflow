@@ -27,7 +27,7 @@ spec:
       volumes:
       - name: dgraph
         hostPath: 
-          path: /root/kcheck/src/fogflow/deployment/kubernetes/cloud-node/dgraph        
+          path: /root/help/src/Test/deployment/kubernetes/cloud-node/dgraph        
       serviceAccountName: default 
 ---          
           
@@ -55,6 +55,6 @@ spec:
       targetPort: 8000
   selector:
     run: dgraph
-
+  externalIPs: [172.30.48.24]
 
 

@@ -48,5 +48,5 @@ spec:
       targetPort: 1030     
   selector:
     run: designer
-
+  externalIPs: [172.30.48.24]
 

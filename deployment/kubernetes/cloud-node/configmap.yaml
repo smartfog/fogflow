@@ -2,6 +2,7 @@ apiVersion: v1
 data:
   config.json: |
         {
+            "my_hostip": "172.30.48.24",
             "physical_location":{
                 "longitude": 139.709059,
                 "latitude": 35.692221
@@ -14,15 +15,12 @@ data:
                 "debug": "stdout"
             },
             "discovery": {
-                "host_ip":"discovery",
                 "http_port": 8090
             },
-            "broker": {
-                "host_ip":"cloudbroker",              
+            "broker": {              
                 "http_port": 8070
             },     
-            "master": {
-                "host_ip":"master",                            
+            "master": {                        
                 "ngsi_agent_port": 1060    
             },
             "worker": {
@@ -30,13 +28,11 @@ data:
                 "start_actual_task": true,
                 "capacity": 8
             },
-            "designer": {
-                "host_ip":"designer",                            
+            "designer": {                       
                 "webSrvPort": 8080,
                 "agentPort": 1030               
             },    
-            "rabbitmq": {
-                "host_ip":"rabbitmq",                                          
+            "rabbitmq": {                                     
                 "port": 5672,
                 "username": "admin",
                 "password":"mypass"
@@ -44,8 +40,7 @@ data:
             "https": {
                 "enabled" : false
             },
-            "persistent_storage": {
-                "host_ip":"dgraph",                                                        
+            "persistent_storage": {                                                      
                 "port": 9080
             } 
         }
