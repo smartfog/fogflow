@@ -61,7 +61,7 @@ services:
         restart: always
                                         
     rabbitmq:
-        image: rabbitmq:3
+        image: rabbitmq:3.8
         ports:
             - 5672:5672
         environment:
