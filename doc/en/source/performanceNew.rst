@@ -48,9 +48,16 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 **Fogflow Upsert API Vs. Scorpio Upsert API**
 
-.. figure:: figures/1.2NewUpsert.png
+.. figure:: figures/com50.png
 
-.. figure:: figures/1.2upsertdata.png
+.. figure:: figures/com100.png
+
+.. figure:: figures/com200.png
+
+.. figure:: figures/com400.png
+
+.. figure:: figures/com500.png
+
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Upsert API is a better performer than Scorpio broker's Upsert API. As shown in tabular data, it is evident that on icreasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow. For example on executing 500 threads with a sum total of 7500 requests, Fogflow has an average throughput of 1156.69/s whereas Scorpio broker on same number of thread has an average throughput of 222.73/s.
 
