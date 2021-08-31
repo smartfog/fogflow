@@ -35,6 +35,11 @@ Throughput and latency to create new entities
 
 .. figure:: figures/upsertUpdate2.png
 
+**Subscription**
+
+.. figure:: figures/Subcreate1.png
+
+.. figure:: figures/subCreate2.png
 
 Performance Comparison between Fogflow and Scorpio Broker
 --------------------------------------------------------------
