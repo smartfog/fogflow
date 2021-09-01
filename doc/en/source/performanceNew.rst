@@ -32,24 +32,36 @@ Throughput and latency to create new entities
 .. figure:: figures/createdata.png
 
 **Analysis of Graphs**:
-The above graphs are plotted against create API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to gnerate real time environment. The line parallel to X axis is the mean of response time for all the entities created using Create API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
+The above graphs are plotted against Create API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to gnerate real time environment. The line parallel to X axis is the mean of response time for all the entities created using Create API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
 
-- *Image-1* corresponds to 20 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-2* corresponds to 50 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-3* corresponds to 100 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-4* corresponds to 200 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-5* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-6* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-1* corresponds to 20 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-2* corresponds to 50 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-3* corresponds to 100 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-4* corresponds to 200 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-5* corresponds to 400 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-6* corresponds to 500 threads (analogus to real time users) where each thread sends 200 requests
 
-From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 398.08/s as well as mean response time is 45.33 ms and on other hand for 1,00,000 the average throughput is 564.07/s and mean response time is 869.80 ms. These values depicts the good and efficient performance of create API in Fogflow. 
+From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 398.08/s as well as mean response time is 45.33 ms and on other hand for 1,00,000 the average throughput is 564.07/s and mean response time is 869.80 ms. These values depicts the good and efficient performance of Create API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Create requests and perform good in such scenario. 
 
-**update**
+**Update**
 
 .. figure:: figures/upsertUpdate1.png
 
 .. figure:: figures/upsertUpdate2.png
 
 .. figure:: figures/updateData.png 
+
+**Analysis of Graphs**:
+The above graphs are plotted against Update API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to stimulate real time environment. The line parallel to X axis is the mean of response time for all the entities updated using Update API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
+
+- *Image-1* corresponds to 20 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-2* corresponds to 50 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-3* corresponds to 100 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-4* corresponds to 200 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-5* corresponds to 400 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-6* corresponds to 500 threads (analogus to real time users) where each thread sends 200 requests
+
+From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 547.49/s as well as mean response time is 32.75 ms and on other hand for 1,00,000 the average throughput is 1007.56/s and mean response time is 483.26 ms. These values depicts the good and efficient performance of Update API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Update requests and perform good in such scenario. 
 
 **Subscription**
 
@@ -58,6 +70,17 @@ From the data in the above table it can be observed that with growing number of 
 .. figure:: figures/subCreate2.png
 
 .. figure:: figures/SubscriptionData.png
+
+**Analysis of Graphs**:
+The above graphs are plotted against Subscription API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to stimulate real time environment. The line parallel to X axis is the mean of response time for all the subscriptions created using Subscription API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
+
+- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
+
+From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 5000 requests the average throughput is 469.70/s as well as mean response time is 97.54 ms and on other hand for 50,000 the average throughput is 675.33/s and mean response time is 704.42 ms. These values depicts the good and efficient performance of Update API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Update requests and perform good in such scenario.
 
 Performance Comparison between Fogflow and Scorpio Broker
 --------------------------------------------------------------
