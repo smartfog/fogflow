@@ -113,9 +113,15 @@ For example on executing 5000 requests, Fogflow has an average throughput of 481
 
 **Fogflow Subscription API Vs. Scorpio Subscription API**
 
-.. figure:: figures/1.2Subscription.png
+.. figure:: figures/Comsub50.png
 
-.. figure:: figures/1.2SubscriptionData.png
+.. figure:: figures/Comsub100.png
+
+.. figure:: figures/Comsub200.png
+
+.. figure:: figures/Comsub400.png
+
+.. figure:: figures/Comsub500.png
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Subscription API is a better performer than Scorpio broker's Subscription API initially but gradually the graph of Fogflow rises which reflects the small increase in response time. Given the fact that fogflow subscriptions are interacting with fogflow component like fogflow discovery making it reliable but adding an extra tint of time in generating response gives it an edge over other brokers but trade's off quality over extra tint of response time. The reliability here is a key factor because of its distributed architecture that involves different edge nodes which is missing in scorpio btoker.
 
