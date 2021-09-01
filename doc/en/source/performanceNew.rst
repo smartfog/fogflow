@@ -41,7 +41,7 @@ The above graphs are plotted against create API in Fogflow. The Y axis in graph 
 - *Image-5* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
 - *Image-6* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
 
-From the data in the above 
+From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 398.08/s as well as mean response time is 45.33 ms and on other hand for 1,00,000 the average throughput is 564.07/s and mean response time is 869.80 ms. These values depicts the good and efficient performance of create API in Fogflow. 
 
 **update**
 
@@ -49,7 +49,7 @@ From the data in the above
 
 .. figure:: figures/upsertUpdate2.png
 
-.. figure:: figures/updateData.png
+.. figure:: figures/updateData.png 
 
 **Subscription**
 
