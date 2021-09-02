@@ -139,9 +139,16 @@ To compare response time of Fogflow Query API with Scorpio Broker Query API, we 
 
 **Fogflow Query API Vs. Scorpio Query API - Query based on Entity ID**
 
-.. figure:: figures/2.1Id.png
+.. figure:: figures/Query50.png
 
-.. figure:: figures/2.1IDData.png
+.. figure:: figures/Query100.png
+
+.. figure:: figures/Query200.png
+
+.. figure:: figures/Query400.png
+
+.. figure:: figures/Query500.png
+
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Query API based on entity ID is a better performer than Scorpio broker's Query API based on entity ID. As shown in tabular data, it is evident that on icreasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow. For example on executing 500 threads with a sum total of 1,00,000 requests, Fogflow has an average throughput of 762.7/s whereas Scorpio broker on same number of thread has an average throughput of 311.22/s.
 
