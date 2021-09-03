@@ -156,9 +156,15 @@ To compare response time of Fogflow Query API with Scorpio Broker Query API, we 
 
 **Fogflow Query API Vs. Scorpio Query API - Query based on Subscription ID**
 
-.. figure:: figures/2.1SubID.png
+.. figure:: figures/QuerySub50.png
 
-.. figure:: figures/2.1SubBYIDData.png
+.. figure:: figures/QuerySub100.png
+
+.. figure:: figures/QuerySub200.png
+
+.. figure:: figures/QuerySub400.png
+
+.. figure:: figures/QuerySub500.png
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Scorpio broker and orange marker represents Fogflow. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow broker's Query API based on subscription ID is a far better performer than Scorpio broker's Query API based on subscription ID. As shown in tabular data, it is evident that on icreasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow. For example on executing 500 threads with a sum total of 1,00,000 requests, Fogflow has an average throughput of 20567.6/s whereas Scorpio broker on same number of thread has an average throughput of 1240.8/s.
 
