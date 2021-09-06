@@ -146,7 +146,7 @@ For example on executing 5000 requests, Fogflow has an average throughput of 411
 
 Throughput and latency to query entities
 --------------------------------------------------
-To compare response time of Fogflow Query API with Scorpio Broker Query API, we have created 1,00,000 entities by using different no of thread 10, 50,100, 200, 400,500. The following graph repersent response time on Y-axis and no of thread on X-axis. 
+To compare response time of Fogflow Query API with Scorpio Broker Query API, we have created 1,00,000 entities by using different no of thread 50,100, 200, 400,500. The following graph repersent response time on Y-axis and no of thread on X-axis. 
 
 **Fogflow Query API Vs. Scorpio Query API - Query based on Entity ID**
 
@@ -163,11 +163,11 @@ To compare response time of Fogflow Query API with Scorpio Broker Query API, we 
 
 **Comparison Result** : The above graphs depicts comparison between two brokers i.e. the left graph represents Fogflow broker and right graph represents Scorpio broker. With a detailed analysis of the graphs based on response-time and timestamp, it is visible that Fogflow broker's Query API based on entity Id is a better performer than Scorpio broker's Query API based on entity Id. As shown in tabular data, it is evident that on increasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow.
 
-- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 200 requests
 
 For example on executing 10,000 requests, Fogflow has an average throughput of 338.60/s and a mean response time of 142.01 ms whereas Scorpio broker on same number of requests has an average throughput of 170.83/s and mean response time of 286.24 ms. This shows that Fogflow is able to handle the requests in better and efficient manner with a greater throughput and lesser mean response time than Scorpio broker. Similarly, increasing the number of requests as shown in table below the graphs, it can be observed that the throughput increases because Fogflow mainatins an index for these entites to fetch and display the details of entities in a quicker manner. For 1,00,000 requests, Fogflow gives a throughput of 527.94/s  and mean response time of 914.08 ms whereas Scorpio gives a throughput of 245.71/s and mean response time of 1969.42 ms. Overall fluctuations in response time for Fogflow and Scorpio broker is also a parameter that signifies the better performance of Fogflow when compared with Scorpio broker. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Subscription requests and perform good in such scenario.
 
@@ -187,11 +187,11 @@ For example on executing 10,000 requests, Fogflow has an average throughput of 3
 
 **Comparison Result** : The above graphs depicts comparison between two brokers i.e. the left graph represents Fogflow broker and right graph represents Scorpio broker. With a detailed analysis of the graphs based on response-time and timestamp, it is visible that Fogflow broker's Query API based on Subscription Id is a better performer than Scorpio broker's Query API based on Subscription Id. As shown in tabular data, it is evident that on increasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow.
 
-- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
+- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 50 requests
+- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 50 requests
+- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 50 requests
+- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 50 requests
+- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 50 requests
 
 For example on executing 2500 requests, Fogflow has an average throughput of 2394.63/s and a mean response time of 2.47 ms whereas Scorpio broker on same number of requests has an average throughput of 290.79/s and mean response time of 157.91 ms. This shows that Fogflow is able to handle the requests in better and efficient manner with a greater throughput and lesser mean response time than Scorpio broker. Similarly, increasing the number of requests as shown in table below the graphs, it can be observed that the throughput increases because Fogflow mainatins an index for these Id's to fetch and display the details of entities in a quicker manner. For 25,000 requests, Fogflow gives a throughput of 8925.38/s  and mean response time of 31.97 ms whereas Scorpio gives a throughput of 680.12/s and mean response time of 627.37 ms. Overall fluctuations in response time for Fogflow and Scorpio broker is also a parameter that signifies the better performance of Fogflow when compared with Scorpio broker. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Subscription requests and perform good in such scenario.
 
