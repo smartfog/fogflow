@@ -1399,10 +1399,10 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 			if index == 0 {
 				tb.UnsubscribeContextAvailability(otherSubID)
 			} else {
-				if _ , found := tb.subscriptions[otherSubID] ; found {
+				if _, found := tb.subscriptions[otherSubID]; found {
 					unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
 				}
-				if _ , found := tb.ldSubscriptions[otherSubID] ; found {
+				if _, found := tb.ldSubscriptions[otherSubID]; found {
 					unsubscribeContextProvider(otherSubID, tb.ldSubscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
 				}
 			}
@@ -1410,11 +1410,11 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 	}
 
 	// remove the ngsiv1 subscription from the map
-	if _ , found := tb.subscriptions[subID] ; found {
+	if _, found := tb.subscriptions[subID]; found {
 		delete(tb.subscriptions, subID)
-	// remove the ngsild subscription from map 
-	} else if  _ , found := tb.ldSubscriptions[subID] ; found {
-                 delete(tb.ldSubscriptions, subID)
+		// remove the ngsild subscription from map
+	} else if _, found := tb.ldSubscriptions[subID]; found {
+		delete(tb.ldSubscriptions, subID)
 	}
 
 }
@@ -2011,71 +2011,91 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					context = append(context, DEFAULT_CONTEXT)
 				}
 			}
-			resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
-			if err != nil {
-
-				if err.Error() == "EmptyPayload!" {
-					//res.Errors.Details  = "EmptyPayload is not allowed"
-					problemSet := ProblemDetails{}
-					problemSet.Details = "EmptyPayload is not allowed"
-					res.Errors = append(res.Errors, problemSet)
-					continue
-				}
-				if err.Error() == "Id can not be nil!" {
-					problemSet := ProblemDetails{}
-					problemSet.Details = "Id can not be nil!"
-					res.Errors = append(res.Errors, problemSet)
-					continue
-				}
-				if err.Error() == "Type can not be nil!" {
-					problemSet := ProblemDetails{}
-					problemSet.Details = "Type can not be nil!"
-					res.Errors = append(res.Errors, problemSet)
-					continue
-				}
-				if err.Error() == "@context is Empty" {
-					problemSet := ProblemDetails{}
-					problemSet.Details = "@context can not be nil if Content-Type is application/ld+json"
-					res.Errors = append(res.Errors, problemSet)
-					continue
-				}
-				//res.Errors.Details  = "Unknown"
-				problemSet := ProblemDetails{}
-				problemSet.Details = "Unkown!"
-				res.Errors = append(res.Errors, problemSet)
-				continue
+			ctxEle := ctx.(map[string]interface{})
+			_, ok1 := ctxEle["id"]
+			_, ok2 := ctxEle["@id"]
+			var Eid, brokerURL string
+			if ok1 == true {
+				Eid = ctxEle["id"].(string)
+			} else if ok2 == true {
+				Eid = ctxEle["@id"].(string)
+			}
+			if Eid == "" {
+				brokerURL = tb.myProfile.MyURL
 			} else {
-				sz := Serializer{}
-
-				// Deserialize the payload here.
-				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+				eid := Eid + fiwareService
+				brokerURL = tb.queryOwnerOfLDEntity(eid)
+			}
+			fmt.Println("+++++brokerURL+++", brokerURL)
+			if brokerURL != tb.myProfile.MyURL {
+				tb.UpdateLdContext2RemoteSite(ctx.(map[string]interface{}), brokerURL, Link)
+			} else {
+				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 				if err != nil {
-					problemSet := ProblemDetails{}
-					problemSet.Details = "Problem in deserialization"
-					res.Errors = append(res.Errors, problemSet)
-					continue
-				} else {
-					//Update createdAt value.
-					if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+
+					if err.Error() == "EmptyPayload!" {
+						//res.Errors.Details  = "EmptyPayload is not allowed"
 						problemSet := ProblemDetails{}
-						problemSet.Details = "Entity id must contain uri!"
+						problemSet.Details = "EmptyPayload is not allowed"
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					}
-					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
-					//deSerializedEntity["createdAt"] = time.Now().String()
-					// Store Context
-					deSerializedEntity["@context"] = context
-					var fsp string
-					if r.Header.Get("fiware-servicePath") != "" {
-						fsp = r.Header.Get("fiware-servicePath")
-					} else {
-						//deSerializedEntity["fiwareServicePath"] = "default"
-						fsp = "default"
+					if err.Error() == "Id can not be nil!" {
+						problemSet := ProblemDetails{}
+						problemSet.Details = "Id can not be nil!"
+						res.Errors = append(res.Errors, problemSet)
+						continue
 					}
-					deSerializedEntity["fiwareServicePath"] = fsp
-					res.Success = append(res.Success, deSerializedEntity["id"].(string))
-					tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
+					if err.Error() == "Type can not be nil!" {
+						problemSet := ProblemDetails{}
+						problemSet.Details = "Type can not be nil!"
+						res.Errors = append(res.Errors, problemSet)
+						continue
+					}
+					if err.Error() == "@context is Empty" {
+						problemSet := ProblemDetails{}
+						problemSet.Details = "@context can not be nil if Content-Type is application/ld+json"
+						res.Errors = append(res.Errors, problemSet)
+						continue
+					}
+					//res.Errors.Details  = "Unknown"
+					problemSet := ProblemDetails{}
+					problemSet.Details = "Unkown!"
+					res.Errors = append(res.Errors, problemSet)
+					continue
+				} else {
+					sz := Serializer{}
+
+					// Deserialize the payload here.
+					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+					if err != nil {
+						problemSet := ProblemDetails{}
+						problemSet.Details = "Problem in deserialization"
+						res.Errors = append(res.Errors, problemSet)
+						continue
+					} else {
+						//Update createdAt value.
+						if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+							problemSet := ProblemDetails{}
+							problemSet.Details = "Entity id must contain uri!"
+							res.Errors = append(res.Errors, problemSet)
+							continue
+						}
+						deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+						//deSerializedEntity["createdAt"] = time.Now().String()
+						// Store Context
+						deSerializedEntity["@context"] = context
+						var fsp string
+						if r.Header.Get("fiware-servicePath") != "" {
+							fsp = r.Header.Get("fiware-servicePath")
+						} else {
+							//deSerializedEntity["fiwareServicePath"] = "default"
+							fsp = "default"
+						}
+						deSerializedEntity["fiwareServicePath"] = fsp
+						res.Success = append(res.Success, deSerializedEntity["id"].(string))
+						tb.UpdateLdContext2LocalSite(deSerializedEntity)
+					}
 				}
 			}
 		}
@@ -2130,66 +2150,86 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 			return
 		}
 		//Get a resolved object ([]interface object)
-		resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
-		if err != nil {
-
-			if err.Error() == "EmptyPayload!" {
-				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
-				return
-			}
-			/*if err.Error() == "AlreadyExists!" {
-				rest.Error(w, "AlreadyExists!", 409)
-				return
-			}*/
-			if err.Error() == "Id can not be nil!" {
-				rest.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			if err.Error() == "Type can not be nil!" {
-				rest.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		ctxEle := LDupdateCtxReq.(map[string]interface{})
+		_, ok1 := ctxEle["id"]
+		_, ok2 := ctxEle["@id"]
+		var Eid, brokerURL string
+		if ok1 == true {
+			Eid = ctxEle["id"].(string)
+		} else if ok2 == true {
+			Eid = ctxEle["@id"].(string)
+		}
+		if Eid == "" {
+			brokerURL = tb.myProfile.MyURL
 		} else {
-			sz := Serializer{}
-
-			// Deserialize the payload here.
-			deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+			eid := Eid + fiwareService
+			brokerURL = tb.queryOwnerOfLDEntity(eid)
+		}
+		if brokerURL != tb.myProfile.MyURL {
+			w.WriteHeader(201)
+			tb.UpdateLdContext2RemoteSite(LDupdateCtxReq.(map[string]interface{}), brokerURL, Link)
+		} else {
+			resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 			if err != nil {
-				rest.Error(w, err.Error(), 400)
-				return
-			} else {
-				//Update createdAt value.
-				deSerializedEntity["createdAt"] = time.Now().String()
-				// Store Context
-				deSerializedEntity["@context"] = context
 
-				if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
-					rest.Error(w, "Entity id must contain uri!", 400)
+				if err.Error() == "EmptyPayload!" {
+					rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
 					return
 				}
-				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
-				deSerializedEntity["@context"] = context
-				w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
-				w.WriteHeader(201)
-				/*if r.Header.Get("fiware-servicePath") != "" {
-					deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
-				} else {
-					deSerializedEntity["fiwareServicePath"] = "default"
+				/*if err.Error() == "AlreadyExists!" {
+					rest.Error(w, "AlreadyExists!", 409)
+					return
 				}*/
-				var fsp string
-				if r.Header.Get("fiware-servicePath") != "" {
-					fsp = r.Header.Get("fiware-servicePath")
-				} else {
-					//deSerializedEntity["fiwareServicePath"] = "default"
-					fsp = "default"
+				if err.Error() == "Id can not be nil!" {
+					rest.Error(w, err.Error(), http.StatusBadRequest)
+					return
 				}
-				//if fiwareService != "default" && fsp == "default" {
-				//         fsp = "/"
-				// }
-				deSerializedEntity["fiwareServicePath"] = fsp
-				tb.handleLdExternalUpdateContext(deSerializedEntity, Link)
+				if err.Error() == "Type can not be nil!" {
+					rest.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				rest.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			} else {
+				sz := Serializer{}
+
+				// Deserialize the payload here.
+				deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+				if err != nil {
+					rest.Error(w, err.Error(), 400)
+					return
+				} else {
+					//Update createdAt value.
+					deSerializedEntity["createdAt"] = time.Now().String()
+					// Store Context
+					deSerializedEntity["@context"] = context
+
+					if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+						rest.Error(w, "Entity id must contain uri!", 400)
+						return
+					}
+					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+					deSerializedEntity["@context"] = context
+					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
+					w.WriteHeader(201)
+					/*if r.Header.Get("fiware-servicePath") != "" {
+						deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
+					} else {
+						deSerializedEntity["fiwareServicePath"] = "default"
+					}*/
+					var fsp string
+					if r.Header.Get("fiware-servicePath") != "" {
+						fsp = r.Header.Get("fiware-servicePath")
+					} else {
+						//deSerializedEntity["fiwareServicePath"] = "default"
+						fsp = "default"
+					}
+					//if fiwareService != "default" && fsp == "default" {
+					//         fsp = "/"
+					// }
+					deSerializedEntity["fiwareServicePath"] = fsp
+					tb.UpdateLdContext2LocalSite(deSerializedEntity)
+				}
 			}
 		}
 	} else {
