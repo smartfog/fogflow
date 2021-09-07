@@ -1967,13 +1967,20 @@ func (tb *ThinBroker) removeFiwareHeadersFromId(ctxElem *ContextElement, fiwareS
 
 func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	err := contentTypeValidator(r.Header.Get("Content-Type"))
-	var fiwareService string
+	var fiwareService, fsp string
 	//var fiwareServicePath string
 	if r.Header.Get("fiware-service") != "" {
 		fiwareService = r.Header.Get("fiware-service")
 	} else {
 		fiwareService = "default"
 	}
+	if r.Header.Get("fiware-servicePath") != "" {
+		fsp = r.Header.Get("fiware-servicePath")
+	} else {
+		//deSerializedEntity["fiwareServicePath"] = "default"
+		fsp = "default"
+	}
+
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -2015,20 +2022,25 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 			_, ok1 := ctxEle["id"]
 			_, ok2 := ctxEle["@id"]
 			var Eid, brokerURL string
+			fmt.Println("ok1", ok1)
+			fmt.Println("ok2", ok2)
 			if ok1 == true {
 				Eid = ctxEle["id"].(string)
 			} else if ok2 == true {
 				Eid = ctxEle["@id"].(string)
 			}
+			fmt.Println("Eid", Eid)
 			if Eid == "" {
 				brokerURL = tb.myProfile.MyURL
 			} else {
-				eid := Eid + fiwareService
+				eid := Eid + "@" + fiwareService
 				brokerURL = tb.queryOwnerOfLDEntity(eid)
 			}
-			fmt.Println("+++++brokerURL+++", brokerURL)
 			if brokerURL != tb.myProfile.MyURL {
-				tb.UpdateLdContext2RemoteSite(ctx.(map[string]interface{}), brokerURL, Link)
+				updateCtxReq := ctx.(map[string]interface{})
+				updateCtxReq["id"] = updateCtxReq["id"].(string) + "@" + fiwareService
+				updateCtxReq["fiwareServicePath"] = fsp
+				tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, Link)
 			} else {
 				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 				if err != nil {
@@ -2085,13 +2097,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 						//deSerializedEntity["createdAt"] = time.Now().String()
 						// Store Context
 						deSerializedEntity["@context"] = context
-						var fsp string
-						if r.Header.Get("fiware-servicePath") != "" {
-							fsp = r.Header.Get("fiware-servicePath")
-						} else {
-							//deSerializedEntity["fiwareServicePath"] = "default"
-							fsp = "default"
-						}
 						deSerializedEntity["fiwareServicePath"] = fsp
 						res.Success = append(res.Success, deSerializedEntity["id"].(string))
 						tb.UpdateLdContext2LocalSite(deSerializedEntity)
@@ -2119,12 +2124,19 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 	//Also allow the header to json+ld for specific cases
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
-		var fiwareService string
+		var fiwareService, fsp string
 		//var fiwareServicePath string
 		if r.Header.Get("fiware-service") != "" {
 			fiwareService = r.Header.Get("fiware-service")
 		} else {
 			fiwareService = "default"
+		}
+
+		if r.Header.Get("fiware-servicePath") != "" {
+			fsp = r.Header.Get("fiware-servicePath")
+		} else {
+			//deSerializedEntity["fiwareServicePath"] = "default"
+			fsp = "default"
 		}
 
 		var context []interface{}
@@ -2167,7 +2179,10 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 		}
 		if brokerURL != tb.myProfile.MyURL {
 			w.WriteHeader(201)
-			tb.UpdateLdContext2RemoteSite(LDupdateCtxReq.(map[string]interface{}), brokerURL, Link)
+			updateCtxReq := ctxEle
+			updateCtxReq["id"] = updateCtxReq["id"].(string) + "@" + fiwareService
+			updateCtxReq["fiwareServicePath"] = fsp
+			tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, Link)
 		} else {
 			resolved, err := tb.ExpandPayload(LDupdateCtxReq, context, contextInPayload)
 			if err != nil {
@@ -2212,21 +2227,6 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 					deSerializedEntity["@context"] = context
 					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
 					w.WriteHeader(201)
-					/*if r.Header.Get("fiware-servicePath") != "" {
-						deSerializedEntity["fiwareServicePath"] = r.Header.Get("fiware-servicePath")
-					} else {
-						deSerializedEntity["fiwareServicePath"] = "default"
-					}*/
-					var fsp string
-					if r.Header.Get("fiware-servicePath") != "" {
-						fsp = r.Header.Get("fiware-servicePath")
-					} else {
-						//deSerializedEntity["fiwareServicePath"] = "default"
-						fsp = "default"
-					}
-					//if fiwareService != "default" && fsp == "default" {
-					//         fsp = "/"
-					// }
 					deSerializedEntity["fiwareServicePath"] = fsp
 					tb.UpdateLdContext2LocalSite(deSerializedEntity)
 				}
@@ -2904,7 +2904,6 @@ func (tb *ThinBroker) getStringInterfaceMap(ctx interface{}) (map[string]interfa
 
 func (tb *ThinBroker) queryOwnerOfLDEntity(eid string) string {
 	inLocalBroker := true
-
 	tb.ldEntities_lock.RLock()
 	_, exist := tb.ldEntities[eid]
 	inLocalBroker = exist
