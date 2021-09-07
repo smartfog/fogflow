@@ -2022,14 +2022,11 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 			_, ok1 := ctxEle["id"]
 			_, ok2 := ctxEle["@id"]
 			var Eid, brokerURL string
-			fmt.Println("ok1", ok1)
-			fmt.Println("ok2", ok2)
 			if ok1 == true {
 				Eid = ctxEle["id"].(string)
 			} else if ok2 == true {
 				Eid = ctxEle["@id"].(string)
 			}
-			fmt.Println("Eid", Eid)
 			if Eid == "" {
 				brokerURL = tb.myProfile.MyURL
 			} else {
@@ -2072,7 +2069,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					}
 					//res.Errors.Details  = "Unknown"
 					problemSet := ProblemDetails{}
-					problemSet.Details = "Unkown!"
+					problemSet.Details = "Unknown!"
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				} else {
@@ -2082,7 +2079,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
 					if err != nil {
 						problemSet := ProblemDetails{}
-						problemSet.Details = "Problem in deserialization"
+						problemSet.Details = "Unknown!"
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					} else {
