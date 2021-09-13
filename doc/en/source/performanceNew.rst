@@ -138,9 +138,7 @@ For example on executing 5000 requests, Fogflow has an average throughput of 411
 
 **Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes - Fogflow Upsert API**
 
-.. figure:: figures/1.3upsert.png
-
-.. figure:: figures/1.3upsertdata.png
+.. figure:: figures/ScalUpsert.png
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are interally connected to discovery. The requests made to edge node are registered with discovery directly than having to follow up a longer path through cloud broker. Thus, the Upsert API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 991.98/s for 1,00,000 requests with 500 number of threads and edge node achieves 1743.3/s for same 1,00,000 requests for 500 number of threads.
 
@@ -199,9 +197,7 @@ For example on executing 2500 requests, Fogflow has an average throughput of 239
 
 **Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes - Fogflow Query API**
 
-.. figure:: figures/2.3.png
-
-.. figure:: figures/2.3QueryCloudEdge.png
+.. figure:: figures/ScaleQueryByID.png
 
 **Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are having the entities locally which are fetched. The requests made to edge node are directly responding with the entity details than having to follow up a longer path through cloud broker. Thus, the Query API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 766.70/s for 1,00,000 requests with 500 number of threads and edge node achieves 956.49/s for same 1,00,000 requests for 500 number of threads.
 
