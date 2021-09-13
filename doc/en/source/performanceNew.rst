@@ -256,6 +256,9 @@ This indicate that fogflow and the listner are both present in the different net
 **To measure how many updates can flow from the context producer to the subscriber per second**
 *******************************************************************************************************
 
+The Fogflow follows subscribe and publish architecture. The context consumer subscribes the Fogflow broker to receive notification regarding the data. So, for a subscription is Fogflow receiuves any entity update, it publishes that to the context subscriber. 
+
+Thus the Fogflow system and subscribers exchange notifications as per availability of data and per second there is approx 25 to 35 notification received on an average.
 
 **To compare the performance with the other NGSI-LD brokers**
 ********************************************************************
