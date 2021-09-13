@@ -237,6 +237,7 @@ Update Propagation from Context Producers to Context Consumer
 The architecture to measure the delay involves the fogflow system running in one network and the listner running in two variated networks:
 
 **- Same Network**
+
 This indicate that fogflow and the listner are both present in the same network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good and hence the result are as follows :
  
 *1. If document is already cached then the notification is recieved in this interval : 181.192µs to 10.60s*
@@ -244,6 +245,7 @@ This indicate that fogflow and the listner are both present in the same network 
 *2. If document is not cached then the notification is recieved in this interval of 3 seconds*
 
 **- Different Network**
+
 This indicate that fogflow and the listner are both present in the different network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good but because of separated network it is bit delayed and hence the result are as follows :
  
 *1. If document is already cached then the notification is recieved in this interval : 2ms to 34ms*
