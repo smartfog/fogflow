@@ -232,12 +232,32 @@ For example, the throughput for 20 threads (i.e. 4000 requests) in one Fogflow e
 Update Propagation from Context Producers to Context Consumer
 ------------------------------------------------------------------
 
-to measure the delay of context update from the moment sent by a context producer to the time received by a subscriber
+**To measure the delay of context update from the moment sent by a context producer to the time received by a subscriber**
+*********************************************************************************************************************************
+The architecture to measure the delay involves the fogflow system running in one network and the listner running in two variated networks:
 
-to measure how many updates can flow from the context producer to the subscriber per second
+**- Same Network**
+This indicate that fogflow and the listner are both present in the same network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good and hence the result are as follows :
+ 
+*1. If document is already cached then the notification is recieved in this interval : 181.192µs to 10.60s*
+*2. If document is not cached then the notification is recieved in this interval of 3 seconds*
 
-to compare the performance with the other NGSI-LD brokers
+**- Different Network**
+This indicate that fogflow and the listner are both present in the different network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good but because of separated network it is bit delayed and hence the result are as follows :
+ 
+*1. If document is already cached then the notification is recieved in this interval : 2ms to 34ms*
+*2. If document is not cached then the notification is recieved in this interval of 4 seconds*
 
-to test how the performance can be scaled up with more subscribers
+
+**To measure how many updates can flow from the context producer to the subscriber per second**
+*******************************************************************************************************
+
+
+**To compare the performance with the other NGSI-LD brokers**
+********************************************************************
+
+
+**To test how the performance can be scaled up with more subscribers**
+*************************************************************************
 
 
