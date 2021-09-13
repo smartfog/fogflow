@@ -24,6 +24,7 @@ Throughput and latency to create new entities
 --------------------------------------------------
 
 **Create**
+************
 
 .. figure:: figures/imgUpsertCreate.png
 
@@ -44,6 +45,7 @@ The above graphs are plotted against Create API in Fogflow. The Y axis in graph 
 From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 398.08/s as well as mean response time is 45.33 ms and on other hand for 1,00,000 the average throughput is 564.07/s and mean response time is 869.80 ms. These values depicts the good and efficient performance of Create API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Create requests and perform good in such scenario. 
 
 **Update**
+**************
 
 .. figure:: figures/upsertUpdate1.png
 
@@ -64,6 +66,7 @@ The above graphs are plotted against Update API in Fogflow. The Y axis in graph 
 From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 547.49/s as well as mean response time is 32.75 ms and on other hand for 1,00,000 the average throughput is 1007.56/s and mean response time is 483.26 ms. These values depicts the good and efficient performance of Update API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Update requests and perform good in such scenario. 
 
 **Subscription**
+*****************
 
 .. figure:: figures/Subcreate1.png
 
@@ -88,6 +91,7 @@ Performance Comparison between Fogflow and Scorpio Broker
 To compare response time of Fogflow upsert API with Scorpio Broker upsert API, we have created entities by using different no of thread 50,100, 200, 400, 500. The following graph repersent response time on Y-axis and timestamp on X-axis. 
 
 **Fogflow Upsert API Vs. Scorpio Upsert API**
+************************************************
 
 .. figure:: figures/com50.png
 
@@ -109,9 +113,10 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 For example on executing 5000 requests, Fogflow has an average throughput of 481.88/s whereas Scorpio broker on same number of requests has an average throughput of 119.97/s. Similarly, increasing the number of requests as shown in table below the graphs, it can be observed that the throughput increases. For 40,000 requests, Fogflow gives a throughput of 726.20/s whereas Scorpio gives a throughput of 166.77/s. Overall fluctuations in response time for Fogflow and Scorpio broker is also a parameter that signifies the better performance of Fogflow when compared with Scorpio broker. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Upsert requests and perform good in such scenario.
 
-*Hence Fogflow Upsert API is better in performance than Scorpio Broker Upsert API*
+*Hence Fogflow's Upsert API is better in performance than Scorpio Broker Upsert API*
 
 **Fogflow Subscription API Vs. Scorpio Subscription API**
+***************************************************************
 
 .. figure:: figures/Comsub50.png
 
@@ -133,20 +138,32 @@ For example on executing 5000 requests, Fogflow has an average throughput of 481
 
 For example on executing 5000 requests, Fogflow has an average throughput of 411.42/s and a mean response time of 118.5 ms whereas Scorpio broker on same number of requests has an average throughput of 129.31/s and mean response time of 359.55 ms. This shows that Fogflow is able to handle the requests in better and efficient manner with a greater throughput and lesser mean response time than Scorpio broker. Similarly, increasing the number of requests as shown in table below the graphs, it can be observed that the throughput increases. For 50,000 requests, Fogflow gives a throughput of 687.11/s  and mean response time of 703.5 ms whereas Scorpio gives a throughput of 327.75/s and mean response time of 1435.54 ms. Overall fluctuations in response time for Fogflow and Scorpio broker is also a parameter that signifies the better performance of Fogflow when compared with Scorpio broker. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Subscription requests and perform good in such scenario.
 
-*Hence Fogflow Subscription API is better in performance than Scorpio Broker Subscription API*
+*Hence Fogflow's Subscription API is better in performance than Scorpio Broker Subscription API*
 
 
 **Performance Enhancement by scaling up Fogflow with Multiple Edge Nodes - Fogflow Upsert API**
+******************************************************************************************************
 
 .. figure:: figures/ScalUpsert.png
 
-**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are interally connected to discovery. The requests made to edge node are registered with discovery directly than having to follow up a longer path through cloud broker. Thus, the Upsert API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 991.98/s for 1,00,000 requests with 500 number of threads and edge node achieves 1743.3/s for same 1,00,000 requests for 500 number of threads.
+**Analysis of Graphs** : The above graphs are combination of three graphs i.e. the blue marker represents Fogflow single Edge node, orange marker represents Fogflow two Edge nodes and green marker represents three Edge nodes. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow Single Edge node has a lower throughput. Further it can also be deduced that with the increase in number of edges the throughput increases. 
+
+- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 200 requests
+
+For example, the throughput for 20 threads (i.e. 4000 requests) in one Fogflow edge node is 1133.46/s and the mean is 14.71 ms whereas for 500 threads(i.e. 1,00,000 requests) the throughput is 1456.79/s and mean resposne time is 331.15 ms. Because of the fact that the increased number of edge brokers speed up the process because they all are interally connected to discovery evidently reflects in the graphs as well as the data populated in the above table. The requests made to edge node are registered with discovery directly than having to follow up a longer path through cloud broker. Thus, the Upsert API has an increased throughput on same number of thread as for multiple edge nodes. As shown in tabular data, the 2 edge nodes architecture achieves a throughput of 1880.58/s for 20 threads (i.e. 4000 requests) with a mean response time of 7.08 ms whereas for 500 threads (i.e. 1,00,000 requests) the throughput is 2812.30/s and mean response time is 158.58 ms. On further increasing the number of edge nodes i.e. within a three edge node architecture for 20 threads (i.e. 4000 requests) the acheived throughput is 2249.59/s and mean response time is 5.23 ms whereas for 500 threads (i.e. 1,00,000 requests) the achieved throughput is 4087.46/s and mean response time of 93.13 ms. Hence, Fogflow can handle larger simultaneous Upsert requests and perform good in a scenario where number of edge nodes are increased.
+
+*Hence Fogflow's Upsert API performs better on addition of new edge node in the architecture*
 
 Throughput and latency to query entities
 --------------------------------------------------
 To compare response time of Fogflow Query API with Scorpio Broker Query API, we have created 1,00,000 entities by using different no of thread 50,100, 200, 400,500. The following graph repersent response time on Y-axis and no of thread on X-axis. 
 
 **Fogflow Query API Vs. Scorpio Query API - Query based on Entity ID**
+****************************************************************************
 
 .. figure:: figures/Query50.png
 
@@ -172,6 +189,7 @@ For example on executing 10,000 requests, Fogflow has an average throughput of 3
 *Hence Fogflow Query API is better in performance than Scorpio Broker Query API based on entity ID*
 
 **Fogflow Query API Vs. Scorpio Query API - Query based on Subscription ID**
+******************************************************************************
 
 .. figure:: figures/QuerySub50.png
 
@@ -199,7 +217,17 @@ For example on executing 2500 requests, Fogflow has an average throughput of 239
 
 .. figure:: figures/ScaleQueryByID.png
 
-**Comparison Result** : The above graph is combination of two graphs i.e. the blue marker represents Fogflow Edge node and orange marker represents Fogflow cloud node. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow cloud node has a higher response time than Fogflow edge node because of the fact that the increased number of edge brokers speed up the process because they all are having the entities locally which are fetched. The requests made to edge node are directly responding with the entity details than having to follow up a longer path through cloud broker. Thus, the Query API has an increased throughput on same number of thread as for cloud. As shown in tabular data, the cloud achieves a throughput of 766.70/s for 1,00,000 requests with 500 number of threads and edge node achieves 956.49/s for same 1,00,000 requests for 500 number of threads.
+**Analysis of Graphs** : The above graphs are combination of three graphs i.e. the blue marker represents Fogflow single Edge node, orange marker represents Fogflow two Edge nodes and green marker represents three Edge nodes. With a detailed analysis of the response-time and number of thread graph, it is visible that Fogflow Single Edge node has a lower throughput. Further it can also be deduced that with the increase in number of edges the throughput increases. 
+
+- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 200 requests
+- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 200 requests
+
+For example, the throughput for 20 threads (i.e. 4000 requests) in one Fogflow edge node is 311.57/s and the mean is 60.00 ms whereas for 500 threads(i.e. 1,00,000 requests) the throughput is 527.94/s and mean resposne time is 914.08 ms. Because of the fact that the increased number of edge brokers speed up the process because they all are interally connected to discovery evidently reflects in the graphs as well as the data populated in the above table. The requests made to edge node are registered with discovery directly than having to follow up a longer path through cloud broker. Thus, the Upsert API has an increased throughput on same number of thread as for multiple edge nodes. As shown in tabular data, the two edge node architecture achieves a throughput of 1055.40/s for 20 threads (i.e. 4000 requests) with a mean response time of 13.98 ms whereas for 500 threads (i.e. 1,00,000 requests) the throughput is 1208.21/s and mean response time is 397.58 ms. On further increasing the number of edge nodes i.e. within a three edge node architecture for 20 threads (i.e. 4000 requests) the acheived throughput is 1506.45/s and mean response time is 10. 01 ms whereas for 500 threads (i.e. 1,00,000 requests) the achieved throughput is 1702.46/s and mean response time of 279.17 ms. Hence, Fogflow can handle larger simultaneous Query requests and perform good in a scenario where number of edge nodes are increased.
+
+*Hence Fogflow's Upsert API performs better on addition of new edge node in the architecture*
 
 Update Propagation from Context Producers to Context Consumer
 ------------------------------------------------------------------
