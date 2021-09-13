@@ -1,7 +1,5 @@
 {
-    "coreservice_ip": "192.168.0.59",
-    "external_ip": "192.168.0.59",
-    "my_hostip": "192.168.0.59",
+    "my_hostip": "192.168.131.39",
     "physical_location": {
         "longitude": 139,
         "latitude": 35
@@ -28,7 +26,7 @@
         "capacity": 8
     },
     "designer": {
-        "webSrvPort": 6666,
+        "webSrvPort": 8080,
         "agentPort": 1030
     },
     "rabbitmq": {
@@ -40,6 +38,6 @@
         "enabled": false
     },
     "persistent_storage": {
-        "port": 9080
+        "port": 9082
     }
 }

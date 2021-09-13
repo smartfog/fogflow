@@ -4,6 +4,7 @@ var https = require('https');
 const bodyParser = require('body-parser');
 var axios = require('axios')
 var dgraph = require('./dgraph.js');
+var amqp = require('./rabbitmq.js');
 var jsonParser = bodyParser.json();
 var config_fs_name = './config.json';
 
@@ -138,24 +139,35 @@ app.post('/intent', jsonParser, function(req, res) {
 app.post('/internal/updateContext', jsonParser, async function (req, res) {
     var updateContextReq = await req.body
 
-    console.log(updateContextReq);
+    console.log("****************** update",updateContextReq);
 
     //forward it to the cloud broker 
-    var response = await axios({
-        method: 'post',
-        url: cloudBrokerURL + '/updateContext',
-        data: updateContextReq
-    });
+    //vinod: start 
+    // var response = await axios({
+    //     method: 'post',
+    //     url: cloudBrokerURL + '/updateContext',
+    //     data: updateContextReq
+    // });
+    //vinod : stop
 
-    if (response.status == 200) {
-        if (updateContextReq.updateAction == "DELETE") {
-            await dgraph.DeleteEntity(updateContextReq);
-        } else if (updateContextReq.updateAction == "UPDATE") {
-            await dgraph.WriteEntity(updateContextReq)
-        }
+    // if (response.status == 200) {
+        
+    // }
+    if (updateContextReq.updateAction == "DELETE") {
+        var tmpVar = updateContextReq
+        amqp.amqpPubTest(updateContextReq)
+        await dgraph.DeleteEntity(tmpVar);
+        
+    } else if (updateContextReq.updateAction == "UPDATE") {
+        console.log("main js obj  ++++ ",updateContextReq)
+        amqp.amqpPubTest(updateContextReq)
+        //await dgraph.WriteEntity(updateContextReq)
+        var tmpVar = updateContextReq
+        await dgraph.DeleteEntity(tmpVar);
+        
     }
 
-    res.send(response.data)
+    res.send("")
 });
 
 // to remove an existing intent
@@ -197,7 +209,7 @@ app.get('/proxy', function(req, res) {
     }
 });
 */
-
+function sayHello() { return "hello " } 
 
 // handle the received results
 function handleNotify(req, ctxObjects, res) {

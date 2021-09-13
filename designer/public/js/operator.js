@@ -16,7 +16,6 @@ $(function() {
 
     initOperatorList();
     initDockerImageList();
-
     showOperator();
 
 
@@ -57,12 +56,20 @@ $(function() {
         var queryReq = {}
         queryReq.entities = [{ type: 'Operator', isPattern: true }];
 
-        client.queryContext(queryReq).then(function(operatorList) {
-            displayOperatorList(operatorList);
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+        displayOperatorListHardcoded(defaultOperatorList()) // vinod
+
+        // client.queryContext(queryReq).then(function(operatorList) {
+        //     console.log("show operator ",operatorList)
+        //     displayOperatorList(operatorList);
+        // }).catch(function(error) {
+        //     console.log(error);
+        //     console.log('failed to query context');
+        // });
+    }
+
+    // vinod: start
+    function displayOperatorListHardcoded(operatorList){
+        displayOperatorListNew(operatorList)
     }
 
     function queryOperatorList() {
@@ -89,6 +96,46 @@ $(function() {
         });
     }
 
+    //vinod: start
+    function displayOperatorListNew(operators) {
+        console.log("new operator list",operators)
+        if (operators == null || operators.length == 0) {
+            $('#operatorList').html('');
+            return
+        }
+
+        var html = '<table class="table table-striped table-bordered table-condensed">';
+
+        html += '<thead><tr>';
+        html += '<th>Operator</th>';
+        html += '<th>Name</th>';
+        html += '<th>Description</th>';
+        html += '<th>#Parameters</th>';
+        html += '<th>#Implementations</th>';
+        html += '</tr></thead>';
+
+        for (var i = 0; i < operators.length; i++) {
+            console.log("for loop ",operators[i].name)
+            // var entity = operators[i];
+
+            // var operator = entity.attributes.operator.value;
+
+            html += '<tr>';
+            html += '<td>' + operators[i].name + '</td>';
+            html += '<td>' + operators[i].name + '</td>';
+            html += '<td>' + operators[i].description + '</td>';
+            html += '<td>' + operators[i].parameters.length + '</td>';
+            html += '<td>' + 0 + '</td>';
+
+            html += '</tr>';
+        }
+
+        html += '</table>';
+
+        $('#operatorList').html(html);
+    }// vinod:end
+
+    
     function displayOperatorList(operators) {
         if (operators == null || operators.length == 0) {
             $('#operatorList').html('');
@@ -152,11 +199,12 @@ $(function() {
         });
     }
 
+
     function generateOperator(scene) {
         // construct the operator based on the design board
         var operator = boardScene2Operator(scene);
 
-        console.log(operator);
+        console.log("------------------op gen---",operator);
 
         // submit this operator
         submitOperator(operator, scene);
@@ -251,6 +299,89 @@ $(function() {
         });
     }
 
+    
+    //vinod : start
+    function defaultOperatorList(){
+        var operatorList = [{
+            name: "nodejs",
+            description: "",
+            parameters: []
+        }, {
+            name: "python",
+            description: "",
+            parameters: []
+        }, {
+            name: "iotagent",
+            description: "",
+            parameters: []
+        }, {
+            name: "counter",
+            description: "",
+            parameters: []
+        }, {
+            name: "anomaly",
+            description: "",
+            parameters: []
+        }, {
+            name: "facefinder",
+            description: "",
+            parameters: []
+        }, {
+            name: "connectedcar",
+            description: "",
+            parameters: []
+        }, {
+            name: "recommender",
+            description: "",
+            parameters: []
+        }, {
+            name: "privatesite",
+            description: "",
+            parameters: []
+        }, {
+            name: "publicsite",
+            description: "",
+            parameters: []
+        }, {
+            name: "pushbutton",
+            description: "",
+            parameters: []
+        }, {
+            name: "acoustic",
+            description: "",
+            parameters: []
+        }, {
+            name: "speaker",
+            description: "",
+            parameters: []
+        }, {
+            name: "dummy",
+            description: "",
+            parameters: []
+        }, {
+            name: "geohash",
+            description: "",
+            parameters: []
+        }, {
+            name: "converter",
+            description: "",
+            parameters: []
+        }, {
+            name: "predictor",
+            description: "",
+            parameters: []
+        }, {
+            name: "controller",
+            description: "",
+            parameters: []
+        }, {
+            name: "detector",
+            description: "",
+            parameters: []
+        }];
+       
+        return operatorList
+    } //vinod:end
 
     function initOperatorList() {
         var operatorList = [{
@@ -335,6 +466,7 @@ $(function() {
         queryReq.entities = [{ type: 'Operator', isPattern: true }];
         client.queryContext(queryReq).then(function(existingOperatorList) {
             if (existingOperatorList.length == 0) {
+                console.log("list operator ",operatorList)
                 for (var i = 0; i < operatorList.length; i++) {
                     submitOperator(operatorList[i], {});
                 }

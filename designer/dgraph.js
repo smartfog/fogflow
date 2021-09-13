@@ -262,6 +262,7 @@ async function loadContextElements(dgraphClient) {
 */
 async function WriteEntity(contextData) {
     try {
+        console.log("inside in write entity-----",contextData)
         const dgraphClientStub = await newClientStub();
         const dgraphClient = await newClient(dgraphClientStub);
 
