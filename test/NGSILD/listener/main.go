@@ -8,18 +8,21 @@ import (
 	mux "github.com/gufranmirza/go-router"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"time"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
-	"time"
+	 "sync"
 )
 
 var previous_num = int(0)
 var current_num = int(0)
 var startTime = time.Now()
 var ticker *time.Ticker
-
+var flagv = int(0)
+var count = int(0)
+var mutex   sync.Mutex
 func main() {
 	myPort := flag.Int("p", 8066, "the port of this agent")
 	flag.Parse()
@@ -27,13 +30,13 @@ func main() {
 	router.POST("/notifyContext", onNotify)
 	go http.ListenAndServe(":"+strconv.Itoa(*myPort), router)
 	fmt.Println("the subscriber is listening on port " + strconv.Itoa(*myPort))
+	c := make(chan os.Signal, 1)
+        signal.Notify(c, os.Interrupt)
+        signal.Notify(c, syscall.SIGTERM)
+        <-c
+
 	// start a timer to do something periodically
 	//ticker = time.NewTicker(time.Second)
-	startTime = time.Now()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	signal.Notify(c, syscall.SIGTERM)
-	<-c
 }
 
 /*func onTimer() {
@@ -85,15 +88,21 @@ func onNotify(w http.ResponseWriter, r *http.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
 		//var context []interface{}
 		//context = append(context, DEFAULT_CONTEXT)
-		fmt.Println(time.Since(startTime))
-		startTime = time.Now()
-		notifyElement, _ := getStringInterfaceMap(r)
-		notifyElemtData := notifyElement["data"]
-		notifyEleDatamap := notifyElemtData.([]interface{})
-		w.WriteHeader(200)
-		for _, data := range notifyEleDatamap {
-			notifyData := data.(map[string]interface{})
-			fmt.Println(notifyData)
+		 mutex.Lock()
+	         count = count + 1
+		 mutex.Unlock()
+
+		if flagv == 0 {
+			ticker = time.NewTicker(1 * time.Second)
+			flagv = 1
 		}
+		for _ = range ticker.C {
+			// execute in one sec
+			fmt.Println(count)
+			mutex.Lock()
+			count = 0
+			mutex.Unlock()
+		}
+		w.WriteHeader(200)
 	}
 }
