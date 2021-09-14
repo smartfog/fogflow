@@ -256,13 +256,34 @@ This indicate that fogflow and the listner are both present in the different net
 **To measure how many updates can flow from the context producer to the subscriber per second**
 *******************************************************************************************************
 
-The Fogflow follows subscribe and publish architecture. The context consumer subscribes the Fogflow broker to receive notification regarding the data. So, for a subscription is Fogflow receiuves any entity update, it publishes that to the context subscriber. 
+The Fogflow follows subscribe and publish architecture. The context consumer subscribes the Fogflow broker to receive notification regarding the data. So, if a subscription in Fogflow receives any updated entity  or newly create entity, it publishes that to the context subscriber in the form of notification payload. 
 
 Thus the Fogflow system and subscribers exchange notifications as per availability of data and per second there is approx 25 to 35 notification received on an average.
 
 **To compare the performance with the other NGSI-LD brokers**
 ********************************************************************
 
+When Fogflow is compared with NGSI-LD broker it can be observed that they are difference in their performance. Say, for example when Fogflow is compared with Scorpio broker to examine the delay of received notification, there are two considerations. One states that the Scorpio broker and Listner can be in same network with a cached and non-cached document. Other states that Scorpio broker and Listner can be in different. 
+
+**- Comparision between Fogflow and Scorpio broker : When either of brokers[Fogflow/Scorpio] and Listner are in same network**
+
+This indicate that either of the broker and the listner are both present in the same network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good and hence the result are as follows :
+
+.. figure:: figures/compare1.png
+
+
+**- Comparision between Fogflow and Scorpio broker : When either of brokers[Fogflow/Scorpio] and Listner are in different network**
+
+This indicate that either of the broker and the listner are both present in the different network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good but because of separated network it is bit delayed and hence the result are as follows :
+
+.. figure:: figures/compare2.png
+
+**To measure how many updates can flow from the Fogflow/Scorpio to the subscriber per second**
+
+Either of brokers follows subscribe and publish architecture. The context consumer(subscriber) subscribes the Fogflow broker to receive notification regarding the data. So, if a subscription in either broker receives any updated entity  or newly create entity, it publishes that to the context subscriber in the form of notification payload. 
+
+*The Fogflow system and subscribers exchange  25 to 35 notifications per second as per availability of data on an average*
+*The Scorpio system and subscribers exchange  10 to 28 notifications per second as per availability of data on an average*
 
 **To test how the performance can be scaled up with more subscribers**
 *************************************************************************
