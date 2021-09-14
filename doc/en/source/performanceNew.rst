@@ -270,14 +270,14 @@ When Fogflow is compared with NGSI-LD broker it can be observed that they are di
 This indicate that either of the broker and the listner are both present in the same network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good and hence the result are as follows :
 
 
-.. figure:: figures/compare1.png
+.. figure:: figures/compare1.PNG
 
 
 **- Comparision between Fogflow and Scorpio broker : When either of brokers[Fogflow/Scorpio] and Listner are in different network**
 
 This indicate that either of the broker and the listner are both present in the different network and the delay is measured in accordance to that. With the possibility of receiving context update, there arise two more possibilties. One possibility is the case when the document used by fogflow is cached in the architecture and thus the dealy is affected accordingly. Other possibility being that the document is not cached within the network. With caching the performance is good but because of separated network it is bit delayed and hence the result are as follows :
 
-.. figure:: figures/compare2.png
+.. figure:: figures/compare2.PNG
 
 
 **To measure how many updates can flow from the Fogflow/Scorpio to the subscriber per second**
