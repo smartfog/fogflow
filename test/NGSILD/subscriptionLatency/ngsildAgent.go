@@ -46,7 +46,7 @@ func UpdateLdContext(updateCtx []map[string]interface{}, IoTBrokerURL string) er
 	req, err := http.NewRequest("POST", IoTBrokerURL+"/ngsi-ld/v1/entityOperations/upsert", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
-	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	res, err := http.DefaultClient.Do(req)
 	if res != nil {
 		defer res.Body.Close()
@@ -68,7 +68,7 @@ func SubscribeContextRequestForNGSILD(sub map[string]interface{}, IoTBrokerURL s
 	req, err := http.NewRequest("POST", IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
-	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	res, err := http.DefaultClient.Do(req)
 	if res != nil {
 		defer res.Body.Close()
