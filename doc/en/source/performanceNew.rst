@@ -282,7 +282,7 @@ This indicate that either of the broker and the listner are both present in the 
 
 **To measure how many updates can flow from the Fogflow/Scorpio to the subscriber per second**
 
-Both brokers follows subscribe and publish architecture. The context consumer(subscriber) subscribes the Fogflow broker to receive notification regarding the data. So, if a subscription in either broker receives any updated entity  or newly create entity, it publishes that to the context subscriber in the form of notification payload. 
+Both Fogflow and Scorpio brokers follow subscribe and publish architecture. The context consumer(subscriber) subscribes the Fogflow broker to receive notification regarding the data. So, if a subscription in either broker receives any updated entity  or newly create entity, it publishes that to the context subscriber in the form of notification payload. 
 
 *The Fogflow system and subscribers exchange  25 to 35 notifications per second as per availability of data on an average*
 
