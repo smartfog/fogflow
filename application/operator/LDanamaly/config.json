@@ -1,0 +1,13 @@
+[{
+        "command": "CONNECT_BROKER",
+        "brokerURL": "http://127.0.0.1/ngsi10"
+    },
+    {
+        "command": "SET_INPUTS",
+        "type": "PowerPanel"
+    },
+    {
+        "command": "SET_INPUTS",
+        "type": "Rule"
+    }
+]
