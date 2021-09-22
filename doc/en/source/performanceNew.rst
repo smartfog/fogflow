@@ -14,7 +14,7 @@ Experiement Setup
 
 **FogFlow system:** FogFlow is deployed on one cloud node(4vCPUs, 16 GB RAM) and two edge node(4vCPUs, 8 GB RAM) in doker container.
 
-**Listener client:** Listner client is a VM which is deployed with 4cpu, 8GB RAM. It has functionality to measure the *time delay of context update from the moment sent by a context producer to the time received by a subscriber*
+**Listener client:** Listner client is a VM which is deployed with 4cpu, 8GB RAM. It has functionality to measure the *time delay of context update from the moment sent by a context producer to the time received by a subscriber*.
 
 **Testing tool:** Apache Jmeter tool is used to produce input for fogflow broker. JMeter is deployed on a VM with 8vCPU's and 8GB RAM.
 
