@@ -31,6 +31,8 @@ Fogflow allows the creation of entities either in v1 format or NGSI-LD format. T
 
 .. figure:: figures/imgUpsertCreate2.png
 
+The table shown below contains four rows; first one represents number of threads that are similar to real time user, second represents the total number of requests, third represents average throughput and fourth represents average response time. Further, table contains six column of data. Each column represents number thread. For example 20 threads is analogus to 20 people simultaneously sending 200 request and same applies to other number of threads. The table with data is populated below:
+
 .. figure:: figures/createdata.png
 
 **Analysis of Graphs**:
@@ -52,6 +54,8 @@ Fogflow allows the updation of already created entities either in v1 format or N
 .. figure:: figures/upsertUpdate1.png
 
 .. figure:: figures/upsertUpdate2.png
+
+The table shown below contains four rows; first row represents number of threads that are similar to real time user, second row represents the total number of requests, third row represents average throughput and fourth row represents average response time. Further, table contains six column of data. Each column represents number thread. For example 20 threads is analogus to 20 people simultaneously sending 200 request and same applies to other number of threads. The table with data is populated below:
 
 .. figure:: figures/updateData.png 
 
@@ -75,6 +79,8 @@ Fogflow supports subscription on the basis of entity type, entity id or entity i
 
 .. figure:: figures/subCreate2.png
 
+The table shown below contains four rows; first one represents number of threads that are similar to real time user, second represents the total number of requests, third represents average throughput and fourth represents average response time. Further, table contains five column of data. Each column represents number thread. For example 50 threads is analogus to 50 people simultaneously sending 100 request and same applies to other number of threads. The table with data is populated below:
+
 .. figure:: figures/SubscriptionData.png
 
 **Analysis of Graphs**:
@@ -96,13 +102,23 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 **Fogflow Upsert API Vs. Scorpio Upsert API**
 ************************************************
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 50 threads which resembles 50 users simultaneously sending 100 requests.
+
 .. figure:: figures/com50.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 100 threads which resembles 100 users simultaneously sending 100 requests.
 
 .. figure:: figures/com100.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 200 threads which resembles 200 users simultaneously sending 100 requests.
+
 .. figure:: figures/com200.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 400 threads which resembles 400 users simultaneously sending 100 requests.
+
 .. figure:: figures/com400.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 500 threads which resembles 500 users simultaneously sending 100 requests.
 
 .. figure:: figures/com500.png
 
@@ -121,13 +137,23 @@ For example on executing 5000 requests, Fogflow has an average throughput of 481
 **Fogflow Subscription API Vs. Scorpio Subscription API**
 ***************************************************************
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 50 threads which resembles 50 users simultaneously sending 100 requests.
+
 .. figure:: figures/Comsub50.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 100 threads which resembles 100 users simultaneously sending 100 requests.
 
 .. figure:: figures/Comsub100.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 200 threads which resembles 200 users simultaneously sending 100 requests.
+
 .. figure:: figures/Comsub200.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 400 threads which resembles 400 users simultaneously sending 100 requests.
+
 .. figure:: figures/Comsub400.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 500 threads which resembles 500 users simultaneously sending 100 requests.
 
 .. figure:: figures/Comsub500.png
 
@@ -167,14 +193,23 @@ To compare response time of Fogflow Query API with Scorpio Broker Query API, we 
 
 **Fogflow Query API Vs. Scorpio Query API - Query based on Entity ID**
 ****************************************************************************
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 50 threads which resembles 50 users simultaneously sending 200 requests.
 
 .. figure:: figures/Query50.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 100 threads which resembles 100 users simultaneously sending 200 requests.
+
 .. figure:: figures/Query100.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 200 threads which resembles 200 users simultaneously sending 200 requests.
 
 .. figure:: figures/Query200.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 400 threads which resembles 400 users simultaneously sending 200 requests.
+
 .. figure:: figures/Query400.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 500 threads which resembles 500 users simultaneously sending 200 requests.
 
 .. figure:: figures/Query500.png
 
@@ -194,13 +229,23 @@ For example on executing 10,000 requests, Fogflow has an average throughput of 3
 **Fogflow Query API Vs. Scorpio Query API - Query based on Subscription ID**
 ******************************************************************************
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 50 threads which resembles 50 users simultaneously sending 50 requests.
+
 .. figure:: figures/QuerySub50.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 100 threads which resembles 100 users simultaneously sending 50 requests.
 
 .. figure:: figures/QuerySub100.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 200 threads which resembles 200 users simultaneously sending 50 requests.
+
 .. figure:: figures/QuerySub200.png
 
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 400 threads which resembles 400 users simultaneously sending 50 requests.
+
 .. figure:: figures/QuerySub400.png
+
+The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 500 threads which resembles 500 users simultaneously sending 50 requests.
 
 .. figure:: figures/QuerySub500.png
 
