@@ -12,11 +12,11 @@ This tutorial introduces the performace evaluation of NGSILD based context manag
 Experiement Setup
 -------------------
 
-**FogFlow system:** To test the performance, FogFlow is deployed on one cloud node(4vCPUs, 16 GB RAM) and two edge node(4vCPUs, 8 GB RAM) in doker container.
+**FogFlow system:** FogFlow is deployed on one cloud node(4vCPUs, 16 GB RAM) and two edge node(4vCPUs, 8 GB RAM) in doker container.
 
-**Listener client:** To measure the delay of context update from the moment sent by a context producer to the time received by a subscriber we are using listener client. Listener client is deployed on a VM(4cpu, 8GB RAM)
+**Listener client:** Listner client is a VM which is deployed with 4cpu, 8GB RAM. It has functionality to measure the *time delay of context update from the moment sent by a context producer to the time received by a subscriber*
 
-**Testing tool:** TO produce the test data for fogflow broker we are using Apache JMeter testing tool. JMeter is deployed on a VM(8cpu, 8GB RAM)
+**Testing tool:** Apache Jmeter tool is used to produce input for fogflow broker. JMeter is deployed on a VM with 8vCPU's and 8GB RAM.
 
 
 
@@ -25,6 +25,7 @@ Throughput and latency to create new entities
 
 **Create**
 ************
+Fogflow allows the creation of entities either in v1 format or NGSI-LD format. These requests are made to Fogflow broker and in return Fogflow broker responds with either successful entity creation result or with any error if associated. Thus it forms the main backbone of Fogflow architectue that allows data creation.
 
 .. figure:: figures/imgUpsertCreate.png
 
@@ -46,6 +47,7 @@ From the data in the above table it can be observed that with growing number of 
 
 **Update**
 **************
+Fogflow allows the updation of already created entities either in v1 format or NGSI-LD format. These requests are made to Fogflow broker and in return Fogflow broker responds with either successful entity updation result or with any error if associated. Thus it forms the essential part of Fogflow architectue that allows data updation for already existing data.
 
 .. figure:: figures/upsertUpdate1.png
 
@@ -67,6 +69,7 @@ From the data in the above table it can be observed that with growing number of 
 
 **Subscription**
 *****************
+Fogflow supports subscription on the basis of entity type, entity id or entity id pattern for already created entities and even for entities which are to yet to be created either in v1 format or NGSI-LD format. These requests are made to Fogflow broker and in return Fogflow broker responds with either successful subscription creation with an subscription id in result or with any error if associated. Thus it forms the essential part of Fogflow architectue that allows to subscribe for data and later recieve notification with every update made to that entity.
 
 .. figure:: figures/Subcreate1.png
 
