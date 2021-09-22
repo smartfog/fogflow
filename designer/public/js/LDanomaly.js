@@ -28,7 +28,7 @@ $(function() {
     ngsiproxy.setNotifyHandler(handleNotify);
 
     //connect to the broker
-    var client = new NGSI10Client(config.brokerURL);
+    var client = new NGSILDclient(config.brokerURL);
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -76,9 +76,9 @@ $(function() {
         console.log(contextObj);
         curResult.push(contextObj);
 
-        if (contextObj.attributes.hasOwnProperty("time") && contextObj.attributes.hasOwnProperty("counter")) {
-            var time = contextObj.attributes.time.value;
-            var num = contextObj.attributes.counter.value;
+        if (contextObj.hasOwnProperty("time") && contextObj.hasOwnProperty("counter")) {
+            var time = contextObj.time.value;
+            var num = contextObj.counter.value;
             var point = [time, num];
             category_dataset[0].values.push(point);
 
