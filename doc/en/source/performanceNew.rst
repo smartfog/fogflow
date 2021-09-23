@@ -33,7 +33,7 @@ Fogflow allows the creation of entities either in v1 format or NGSI-LD format. T
 
 The table shown below contains four rows; first one represents number of threads that are similar to real time user, second represents the total number of requests, third represents average throughput and fourth represents average response time. Further, table contains six column of data. Each column represents number thread. For example 20 threads is analogus to 20 people simultaneously sending 200 request and same applies to other number of threads. The table with data is populated below:
 
-.. figure:: figures/createdata.png
+.. figure:: figures/Createdata.png
 
 **Analysis of Graphs**:
 The above graphs are plotted against Create API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to gnerate real time environment. The line parallel to X axis is the mean of response time for all the entities created using Create API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
