@@ -44,9 +44,9 @@ From the data in the above table it can be observed that with growing number of 
 **************
 Fogflow allows the updation of already created entities either in v1 format or NGSI-LD format. These requests are made to Fogflow broker and in return Fogflow broker responds with either successful entity updation result or with any error if associated. Thus it forms the essential part of Fogflow architectue that allows data updation for already existing data.
 
-.. figure:: figures/upsertUpdate1.png
+.. figure:: figures/UpdateUpsert1.png
 
-.. figure:: figures/upsertUpdate2.png
+.. figure:: figures/UpdateUpsert2.png
 
 The table shown below contains four rows; first row represents number of threads that are similar to real time user, second row represents the total number of requests, third row represents average throughput and fourth row represents average response time. Further, table contains six column of data. Each column represents number thread. For example 20 threads is analogus to 20 people simultaneously sending 200 request and same applies to other number of threads. The table with data is populated below:
 
