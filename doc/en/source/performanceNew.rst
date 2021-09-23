@@ -27,7 +27,7 @@ Throughput and Latency to Create, Update and Subscribe Entities
 ************
 Fogflow allows the creation of entities either in v1 format or NGSI-LD format. These requests are made to Fogflow broker and in return Fogflow broker responds with either successful entity creation result or with any error if associated. Thus it forms the main backbone of Fogflow architectue that allows data creation.
 
-.. figure:: figures/imgUpsertCreate.png
+.. figure:: figures/imgCreateUpsert.png
 
 .. figure:: figures/imgUpsertCreate2.png
 
