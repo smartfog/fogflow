@@ -63,7 +63,7 @@ Fogflow supports subscription on the basis of entity type, entity id or entity i
 
 .. figure:: figures/createSub1.png
 
-.. figure:: figures/CreateSub2.png
+.. figure:: figures/createSub2.png
 
 The table shown below contains four rows; first one represents number of threads that are similar to real time user, second represents the total number of requests, third represents average throughput and fourth represents average response time. Further, table contains five column of data. Each column represents number thread. For example 50 threads is analogus to 50 people simultaneously sending 100 request and same applies to other number of threads. The table with data is populated below:
 
