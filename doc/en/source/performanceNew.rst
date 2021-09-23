@@ -29,7 +29,7 @@ Fogflow allows the creation of entities either in v1 format or NGSI-LD format. T
 
 .. figure:: figures/imgCreateUpsert.png
 
-.. figure:: figures/imgUpsertCreate2.png
+.. figure:: figures/imgCreateUpsert2.png
 
 The table shown below contains four rows; first one represents number of threads that are similar to real time user, second represents the total number of requests, third represents average throughput and fourth represents average response time. Further, table contains six column of data. Each column represents number thread. For example 20 threads is analogus to 20 people simultaneously sending 200 request and same applies to other number of threads. The table with data is populated below:
 
@@ -37,13 +37,6 @@ The table shown below contains four rows; first one represents number of threads
 
 **Analysis of Graphs**:
 The above graphs are plotted against Create API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to gnerate real time environment. The line parallel to X axis is the mean of response time for all the entities created using Create API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
-
-- *Image-1* corresponds to 20 threads (analogus to real time users) where each thread sends 200 requests
-- *Image-2* corresponds to 50 threads (analogus to real time users) where each thread sends 200 requests
-- *Image-3* corresponds to 100 threads (analogus to real time users) where each thread sends 200 requests
-- *Image-4* corresponds to 200 threads (analogus to real time users) where each thread sends 200 requests
-- *Image-5* corresponds to 400 threads (analogus to real time users) where each thread sends 200 requests
-- *Image-6* corresponds to 500 threads (analogus to real time users) where each thread sends 200 requests
 
 From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 4000 requests the average throughput is 398.08/s as well as mean response time is 45.33 ms and on other hand for 1,00,000 the average throughput is 564.07/s and mean response time is 869.80 ms. These values depicts the good and efficient performance of Create API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Create requests and perform good in such scenario. 
 
