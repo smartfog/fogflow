@@ -61,9 +61,9 @@ From the data in the above table it can be observed that with growing number of 
 *****************
 Fogflow supports subscription on the basis of entity type, entity id or entity id pattern for already created entities and even for entities which are to yet to be created either in v1 format or NGSI-LD format. These requests are made to Fogflow broker and in return Fogflow broker responds with either successful subscription creation with an subscription id in result or with any error if associated. Thus it forms the essential part of Fogflow architectue that allows to subscribe for data and later recieve notification with every update made to that entity.
 
-.. figure:: figures/Subcreate1.png
+.. figure:: figures/createSub1.png
 
-.. figure:: figures/subCreate2.png
+.. figure:: figures/CreateSub2.png
 
 The table shown below contains four rows; first one represents number of threads that are similar to real time user, second represents the total number of requests, third represents average throughput and fourth represents average response time. Further, table contains five column of data. Each column represents number thread. For example 50 threads is analogus to 50 people simultaneously sending 100 request and same applies to other number of threads. The table with data is populated below:
 
@@ -71,12 +71,6 @@ The table shown below contains four rows; first one represents number of threads
 
 **Analysis of Graphs**:
 The above graphs are plotted against Subscription API in Fogflow. The Y axis in graph represents response time and X axis represents timestamp to stimulate real time environment. The line parallel to X axis is the mean of response time for all the subscriptions created using Subscription API. The graph shows the response time in contrast to each and every request that is handled by Fogflow broker. 
-
-- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
 
 From the data in the above table it can be observed that with growing number of threads the number of overall requests increases. For example in *Image-1* and from given data, it can be observed that for 5000 requests the average throughput is 469.70/s as well as mean response time is 97.54 ms and on other hand for 50,000 the average throughput is 675.33/s and mean response time is 704.42 ms. These values depicts the good and efficient performance of Update API in Fogflow. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Update requests and perform good in such scenario.
 
