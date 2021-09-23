@@ -84,7 +84,7 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 50 threads which resembles 50 users simultaneously sending 100 requests.
 
-.. figure:: figures/com50.png
+.. figure:: figures/com501.png
 
 The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 100 threads which resembles 100 users simultaneously sending 100 requests.
 
