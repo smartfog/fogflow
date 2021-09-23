@@ -84,7 +84,7 @@ To compare response time of Fogflow upsert API with Scorpio Broker upsert API, w
 
 The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 50 threads which resembles 50 users simultaneously sending 100 requests.
 
-.. figure:: figures/comp501.png
+.. figure:: figures/com50.png
 
 The graph and table shown below is a comparision made between Fogflow broker and Scorpio broker. The table shown below contains three rows; first row represents overall requests handled, second row represents average response time and third row represents average throughput. The table is populated for 100 threads which resembles 100 users simultaneously sending 100 requests.
 
@@ -103,12 +103,6 @@ The graph and table shown below is a comparision made between Fogflow broker and
 .. figure:: figures/com500.png
 
 **Comparison Result** : The above graphs depicts comparison between two brokers i.e. the left graph represents Fogflow broker and right graph represents Scorpio broker. With a detailed analysis of the graphs based on response-time and timestamp, it is visible that Fogflow broker's Upsert API is a better performer than Scorpio broker's Upsert API. As shown in tabular data, it is evident that on increasing the number of threads which utlimately increases number of requests are better handled in case of Fogflow.
-
-- *Image-1* corresponds to 50 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-2* corresponds to 100 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-3* corresponds to 200 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-4* corresponds to 400 threads (analogus to real time users) where each thread sends 100 requests
-- *Image-5* corresponds to 500 threads (analogus to real time users) where each thread sends 100 requests
 
 For example on executing 5000 requests, Fogflow has an average throughput of 481.88/s whereas Scorpio broker on same number of requests has an average throughput of 119.97/s. Similarly, increasing the number of requests as shown in table below the graphs, it can be observed that the throughput increases. For 40,000 requests, Fogflow gives a throughput of 726.20/s whereas Scorpio gives a throughput of 166.77/s. Overall fluctuations in response time for Fogflow and Scorpio broker is also a parameter that signifies the better performance of Fogflow when compared with Scorpio broker. Thus the data populated in table supports the analysis made on above graphs. Hence, Fogflow can handle larger simultaneous Upsert requests and perform good in such scenario.
 
