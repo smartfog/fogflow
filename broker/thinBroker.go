@@ -2077,6 +2077,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 					// Deserialize the payload here.
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+					fmt.Println("deSerializedEntity",deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
 						problemSet.Details = "Unknown!"
@@ -2392,8 +2393,11 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.EntityIdList = entities
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
+	metaData := ContextMetadata{}
+	ListOfmetaData := make([]ContextMetadata,0)
+	//metaData := make([]ContextMetadata,0)
 	for k, attr := range elem { // considering properties and relationships as attributes
-		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "@context" {
 			if k == "fiwareServicePath" {
 				ctxReg.FiwareServicePath = attr.(string)
 				continue
@@ -2401,7 +2405,18 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
 			typ := attrValue["type"].(string)
-			if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
+			if typ == "GeoProperty" || strings.HasSuffix(typ, "GeoProperty") == true{
+				geoAttr := attrValue["value"]
+				geoAttrValue := geoAttr.(LDLocationValue)
+				geoValueType := geoAttrValue.Type
+				geoValueCordinates := geoAttrValue.Coordinates
+				GeoType, GeoValue := getNGSIV1DomainMetaData(geoValueType,geoValueCordinates)
+				metaData.Name = k
+				metaData.Type = GeoType
+				metaData.Value = GeoValue
+				ListOfmetaData := append(ListOfmetaData,metaData)
+				fmt.Println(ListOfmetaData)
+			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
 				ctxRegAttr.Type = "Property"
 			} else if strings.Contains(typ, "Relationship") || strings.Contains(typ, "relationship") {
 				ctxRegAttr.Type = "Relationship"
@@ -2413,6 +2428,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxReg.FiwareService = fs
+	 ctxReg.Metadata = ListOfmetaData
 	ctxRegistrations = append(ctxRegistrations, ctxReg)
 
 	registerCtxReq.ContextRegistrations = ctxRegistrations
@@ -2501,7 +2517,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-		fmt.Println("err", err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2528,8 +2543,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		}
 
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
-
-		fmt.Println("err", err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
