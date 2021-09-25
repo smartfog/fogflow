@@ -1422,6 +1422,7 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 func (tb *ThinBroker) NotifyLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
 	notifyLDContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyLDContextAvailabilityReq)
+	fmt.Println("notifyLDContextAvailabilityReq",notifyLDContextAvailabilityReq)
 	if err != nil {
 		ERROR.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2414,8 +2415,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 				metaData.Name = k
 				metaData.Type = GeoType
 				metaData.Value = GeoValue
-				ListOfmetaData := append(ListOfmetaData,metaData)
-				fmt.Println(ListOfmetaData)
+				ListOfmetaData = append(ListOfmetaData,metaData)
 			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
 				ctxRegAttr.Type = "Property"
 			} else if strings.Contains(typ, "Relationship") || strings.Contains(typ, "relationship") {
