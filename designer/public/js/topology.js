@@ -42,12 +42,12 @@ $(function() {
     addMenuItem('Topology', 'Service Topology', showTopologies);
     addMenuItem('Intent', 'Service Intent', showIntents);
     addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
+    queryTopology();
 
     showTopologies();
 
     queryOperatorList();
 
-    queryTopology();
 
 
     $(window).on('hashchange', function() {
@@ -74,16 +74,21 @@ $(function() {
 
     function initTopologyExamples() {
         for (var i = 0; i < myToplogyExamples.length; i++) {
-            var example = myToplogyExamples[i];
-            submitTopology(example.topology, example.designboard);
+            var example = myToplogyExamples[i].topology;
+            var topology = {};
+            topology.attribute = example;
+            topology.internalType = 'Topology';
+            topology.updateAction = 'UPDATE';
+            submitTopology(topology, example.designboard);
         }
     }
 
     function queryTopology() {
+        console.log("query topology ")
         var queryReq = {}
-        queryReq.entities = [{ type: 'Topology', isPattern: true }];
-        client.queryContext(queryReq).then(function(topologyList) {
-            if (topologyList.length == 0) {
+        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(topologyList) {
+            if (topologyList.data.length == 0) {
                 initTopologyExamples();
             }
         }).catch(function(error) {
@@ -177,13 +182,13 @@ $(function() {
 
     function queryOperatorList() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
+        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
 
-        client.queryContext(queryReq).then(function(operators) {
-            for (var i = 0; i < operators.length; i++) {
-                var entity = operators[i];
-                var operator = entity.attributes.operator.value;
-                operatorList.push(operator.name);
+        clientDes.getContext(queryReq).then(function(operators) {
+            for (var i = 0; i < operators.data.length; i++) {
+                var entity = operators.data[i];
+                var operator = entity.name;
+                operatorList.push(operator);
             }
 
             // add it into the select list        
@@ -199,9 +204,17 @@ $(function() {
         var serviceDescription = $('#serviceDescription').val();
 
         var topology = {};
-        topology.name = topologyName;
-        topology.description = serviceDescription;
-        topology.tasks = generateTaskList(scene);
+        var attribute = {};
+        attribute.name = topologyName;
+        attribute.description = serviceDescription;
+        attribute.tasks = generateTaskList(scene);
+        topology.attribute = attribute;
+        topology.internalType = 'Topology';
+        topology.updateAction = 'UPDATE';
+
+        // topology.name = topologyName;
+        // topology.description = serviceDescription;
+        // topology.tasks = generateTaskList(scene);
 
         // submit the generated topology
         submitTopology(topology, scene);
@@ -314,29 +327,29 @@ $(function() {
     function submitTopology(topology, designboard) {
         console.log("==============test========");
         console.log(JSON.stringify(topology));
-        console.log(JSON.stringify(designboard));
+        // console.log(JSON.stringify(designboard));
 
-        var topologyCtxObj = {};
+        // var topologyCtxObj = {};
 
-        topologyCtxObj.entityId = {
-            id: 'Topology.' + topology.name,
-            type: 'Topology',
-            isPattern: false
-        };
+        // topologyCtxObj.entityId = {
+        //     id: 'Topology.' + topology.name,
+        //     type: 'Topology',
+        //     isPattern: false
+        // };
 
-        topologyCtxObj.attributes = {};
-        topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        topologyCtxObj.attributes.designboard = { type: 'object', value: designboard };
-        topologyCtxObj.attributes.template = { type: 'object', value: topology };
+        // topologyCtxObj.attributes = {};
+        // topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+        // topologyCtxObj.attributes.designboard = { type: 'object', value: designboard };
+        // topologyCtxObj.attributes.template = { type: 'object', value: topology };
 
-        topologyCtxObj.metadata = {};
+        // topologyCtxObj.metadata = {};
 
-        var geoScope = {};
-        geoScope.type = "global"
-        geoScope.value = "global"
-        topologyCtxObj.metadata.location = geoScope;
+        // var geoScope = {};
+        // geoScope.type = "global"
+        // geoScope.value = "global"
+        // topologyCtxObj.metadata.location = geoScope;
 
-        clientDes.updateContext(topologyCtxObj).then(function(data) {
+        clientDes.updateContext(topology).then(function(data) {
             console.log(data);
             // update the list of submitted topologies
             showTopologies();
@@ -363,9 +376,10 @@ $(function() {
 
     function updateTopologyList() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'Topology', isPattern: true }];
-        client.queryContext(queryReq).then(function(topologyList) {
-            displayTopologyList(topologyList);
+        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(topologyList) {
+            console.log("get topology list ",topologyList)
+            displayTopologyList(topologyList.data);
         }).catch(function(error) {
             console.log(error);
             console.log('failed to query context');
@@ -390,12 +404,12 @@ $(function() {
         for (var i = 0; i < topologies.length; i++) {
             var topology = topologies[i];
 
-            var topology_id = topology.entityId.id;
+            var topology_id = topology.name;
             html += '<tr>';
             html += '<td>' + topology_id;
             html += '</td>';
 
-            topology = topology.attributes.template.value;
+            topology = topology;
 
             html += '<td>' + topology.name + '</td>';
 
@@ -420,14 +434,14 @@ $(function() {
             var topology = topologies[i];
 
             // association handlers to the buttons
-            var editorButton = document.getElementById('editor-' + topology.entityId.id);
+            var editorButton = document.getElementById('editor-' + topology.name);
             editorButton.onclick = function(mytopology) {
                 return function() {
                     openTopologyEditor(mytopology);
                 };
             }(topology);
 
-            var deleteButton = document.getElementById('delete-' + topology.entityId.id);
+            var deleteButton = document.getElementById('delete-' + topology.name);
             deleteButton.onclick = function(mytopology) {
                 return function() {
                     deleteTopology(mytopology);
@@ -449,10 +463,9 @@ $(function() {
         });
 
         var queryReq = {}
-        queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-
-        client.queryContext(queryReq).then(function(intents) {
-            displayIntentList(intents);
+        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(intents) {
+            displayIntentList(intents.data);
         }).catch(function(error) {
             console.log(error);
             console.log('failed to query intent entities');
@@ -483,14 +496,14 @@ $(function() {
         for (var i = 0; i < intents.length; i++) {
             var entity = intents[i];
 
-            var intent = entity.attributes.intent.value;
+            var intent = entity;
 
             html += '<tr>';
-            html += '<td>' + entity.entityId.id;
+            html += '<td>' + entity.id;
             html += '</td>';
             html += '<td class="singlecolumn">';
-            html += '<button id="UPDATE-' + entity.entityId.id + '" type="button" class="btn btn-primary">Update</button>  ';
-            html += '<button id="DELETE-' + entity.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
+            html += '<button id="UPDATE-' + entity.id + '" type="button" class="btn btn-primary">Update</button>  ';
+            html += '<button id="DELETE-' + entity.id + '" type="button" class="btn btn-primary">Delete</button>';
             html += '</td>';
             html += '<td>' + intent.topology + '</td>';
             html += '<td>' + intent.stype + '</td>';
@@ -510,19 +523,19 @@ $(function() {
         // associate a click handler to generate device profile on request
         for (var i = 0; i < intents.length; i++) {
             var entity = intents[i];
-            var deleteButton = document.getElementById('DELETE-' + entity.entityId.id);
+            var deleteButton = document.getElementById('DELETE-' + entity.id);
             deleteButton.onclick = function(intentID) {
                 return function() {
                     removeIntent(intentID);
                 };
-            }(entity.entityId.id);
+            }(entity.id);
 
-            var updateButton = document.getElementById('UPDATE-' + entity.entityId.id);
+            var updateButton = document.getElementById('UPDATE-' + entity.id);
             updateButton.onclick = function(intentID) {
                 return function() {
                     updateIntent(intentID);
                 };
-            }(entity.entityId.id);
+            }(entity.id);
         }
     }
 
@@ -675,11 +688,11 @@ $(function() {
 
     function listAllTopologies() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'Topology', isPattern: true }];
-        client.queryContext(queryReq).then(function(topologyList) {
+        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(topologyList) {
             var topologySelect = document.getElementById('topologyItems');
-            for (var i = 0; i < topologyList.length; i++) {
-                var topology = topologyList[i].attributes.template.value;
+            for (var i = 0; i < topologyList.data.length; i++) {
+                var topology = topologyList.data[i];
                 topologySelect.options[topologySelect.options.length] = new Option(topology.name, topology.name);
             }
         }).catch(function(error) {
@@ -705,9 +718,10 @@ $(function() {
 
     function submitIntent() {
         var intent = {};
+        var attribute = {};
 
         var topology = $('#topologyItems option:selected').val();
-        intent.topology = topology;
+        attribute.topology = topology;
         /*
                 var sType = $('#SType option:selected').val();
                 intent.stype = sType;
@@ -732,13 +746,13 @@ $(function() {
             exclusiveResourceUsage = true;
         }
 
-        intent.priority = {
+        attribute.priority = {
             'exclusive': exclusiveResourceUsage,
             'level': priorityLevel
         };
 
         var slo = $('#SLO option:selected').val();
-        intent.qos = slo;
+        attribute.qos = slo;
 
         var scope = $('#geoscope option:selected').val();
 
@@ -746,41 +760,41 @@ $(function() {
         if (scope == 'custom') {
             operationScope.scopeType = geoscope.type;
             operationScope.scopeValue = geoscope.value;
-            intent.geoscope = operationScope;
+            attribute.geoscope = operationScope;
         } else {
             operationScope.scopeType = scope;
             operationScope.scopeValue = scope;
-            intent.geoscope = operationScope;
+            attribute.geoscope = operationScope;
         }
 
-        var intentCtxObj = {};
 
         var sid = $("#SID").text();
+        attribute.id = sid;
+        // intentCtxObj.entityId = {
+        //     id: sid,
+        //     type: 'ServiceIntent',
+        //     isPattern: false
+        // };
 
-        intentCtxObj.entityId = {
-            id: sid,
-            type: 'ServiceIntent',
-            isPattern: false
-        };
+        // intentCtxObj.attributes = {};
+        // intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+        // intentCtxObj.attributes.intent = { type: 'object', value: intent };
 
-        intentCtxObj.attributes = {};
-        intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        intentCtxObj.attributes.intent = { type: 'object', value: intent };
-
-        intentCtxObj.metadata = {};
-        var geoScope = {};
-        if (scope == 'custom') {
-            geoScope.type = geoscope.type
-            geoScope.value = geoscope.value
-        } else {
-            geoScope.type = scope
-            geoScope.value = scope
-        }
-        intentCtxObj.metadata.location = geoScope;
-
-        console.log(JSON.stringify(intentCtxObj));
-
-        clientDes.updateContext(intentCtxObj).then(function(data) {
+        // intentCtxObj.metadata = {};
+        // var geoScope = {};
+        // if (scope == 'custom') {
+        //     geoScope.type = geoscope.type
+        //     geoScope.value = geoscope.value
+        // } else {
+        //     geoScope.type = scope
+        //     geoScope.value = scope
+        // }
+        // intentCtxObj.metadata.location = geoScope;
+        intent.attribute = attribute;
+        intent.internalType = "ServiceIntent";
+        intent.updateAction = "UPDATE";
+        console.log("service intent ", intent);
+        clientDes.updateContext(intent).then(function(data) {
             console.log(data);
             // update the list of submitted intents
             showIntents();
@@ -934,9 +948,9 @@ $(function() {
 
         html += '<thead><tr>';
         html += '<th>ID</th>';
-        html += '<th>Type</th>';
         html += '<th>Service</th>';
         html += '<th>Task</th>';
+        html += '<th>Type</th>';
         html += '<th>Worker</th>';
         html += '<th>port</th>';
         html += '<th>status</th>';
@@ -967,6 +981,5 @@ $(function() {
 
         $('#content').html(html);
     }
-
 
 });

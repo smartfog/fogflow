@@ -102,11 +102,12 @@ $(function() {
     addMenuItem('FogFunction', 'Fog Function', showFogFunctions);
     addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
 
+   
+    queryFogFunctions();
     showFogFunctions();
-
     queryOperatorList();
 
-    queryFogFunctions();
+    
 
 
     $(window).on('hashchange', function() {
@@ -136,17 +137,17 @@ $(function() {
             var fogfunction = myFogFunctionExamples[i];
 
             var functionCtxObj = {};
-            functionCtxObj.entityId = {
-                id: 'FogFunction.' + fogfunction.name,
-                type: 'FogFunction',
-                isPattern: false
-            };
-            functionCtxObj.attributes = {};
-            functionCtxObj.attributes.name = { type: 'string', value: fogfunction.name };
-            functionCtxObj.attributes.topology = { type: 'object', value: fogfunction.topology };
-            functionCtxObj.attributes.designboard = { type: 'object', value: fogfunction.designboard };
-            functionCtxObj.attributes.intent = { type: 'object', value: fogfunction.intent };
-            functionCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+            
+            functionCtxObj.attribute = {};
+            functionCtxObj.attribute.id = 'FogFunction.' + fogfunction.name
+            functionCtxObj.attribute.name = fogfunction.name ;
+            functionCtxObj.attribute.topology =fogfunction.topology ;
+            functionCtxObj.attribute.designboard = fogfunction.designboard ;
+            functionCtxObj.attribute.intent = fogfunction.intent ;
+            functionCtxObj.attribute.status =  'enabled';
+            functionCtxObj.updateAction = 'UPDATE';
+            functionCtxObj.internalType = 'FogFunction';
+
 
             submitFogFunction(functionCtxObj);
         }
@@ -154,10 +155,11 @@ $(function() {
 
     function queryFogFunctions() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'FogFunction', isPattern: true }];
-        client.queryContext(queryReq).then(function(fogFunctionList) {
-            if (fogFunctionList.length == 0) {
+        queryReq = { internalType: "FogFunction", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(fogFunctionList) {
+            if (fogFunctionList.data.length == 0) {
                 initFogFunctionExamples();
+                //showFogFunctions();
             }
         }).catch(function(error) {
             console.log(error);
@@ -236,13 +238,14 @@ $(function() {
 
     function queryOperatorList() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
+        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
 
-        client.queryContext(queryReq).then(function(operators) {
+        clientDes.getContext(queryReq).then(function(operators) {
+            operators = operators.data
             for (var i = 0; i < operators.length; i++) {
                 var entity = operators[i];
-                var operator = entity.attributes.operator.value;
-                operatorList.push(operator.name);
+                
+                operatorList.push(entity.name);
             }
 
             // add it into the select list        
@@ -253,7 +256,8 @@ $(function() {
     }
 
     function boardScene2Topology(scene) {
-        // step 1: construct the service topology object       
+        // step 1: construct the service topology object   
+        var attribute = {}    
         var topologyName = $('#serviceName').val();
         var serviceDescription = $('#serviceDescription').val();
 
@@ -276,29 +280,40 @@ $(function() {
         };
 
         // step 3: create this fog function            
-        var functionCtxObj = {};
-        functionCtxObj.entityId = {
-            id: 'FogFunction.' + topologyName,
-            type: 'FogFunction',
-            isPattern: false
-        };
-        functionCtxObj.attributes = {};
-        functionCtxObj.attributes.name = { type: 'string', value: topologyName };
-        functionCtxObj.attributes.topology = { type: 'object', value: topology };
-        functionCtxObj.attributes.designboard = { type: 'object', value: scene };
-        functionCtxObj.attributes.intent = { type: 'object', value: intent };
-        functionCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+        // var functionCtxObj = {};
+        // functionCtxObj.entityId = {
+        //     id: 'FogFunction.' + topologyName,
+        //     type: 'FogFunction',
+        //     isPattern: false
+        // };
+        // functionCtxObj.attributes = {};
+        // functionCtxObj.attributes.name = { type: 'string', value: topologyName };
+        // functionCtxObj.attributes.topology = { type: 'object', value: topology };
+        // functionCtxObj.attributes.designboard = { type: 'object', value: scene };
+        // functionCtxObj.attributes.intent = { type: 'object', value: intent };
+        // functionCtxObj.attributes.status = { type: 'string', value: 'enabled' };
 
-        functionCtxObj.metadata = {};
-        var geoScope = {};
-        geoScope.type = "global"
-        geoScope.value = "global"
-        functionCtxObj.metadata.location = geoScope;
+        // functionCtxObj.metadata = {};
+        // var geoScope = {};
+        // geoScope.type = "global"
+        // geoScope.value = "global"
+        // functionCtxObj.metadata.location = geoScope;
+        var fogfunction = {};
+        attribute.id = 'FogFunction.' + topologyName;
+        attribute.name = topologyName;
+        attribute.topology = topology;
+        attribute.intent = intent;
+        attribute.designboard = scene;
+        attribute.status = 'enabled';
+        
+        fogfunction.attribute = attribute;
+        fogfunction.updateAction = 'UPDATE';
+        fogfunction.internalType = 'FogFunction';
 
         console.log("=============submit a fog function=============");
-        console.log(JSON.stringify(functionCtxObj));
+        console.log(JSON.stringify(fogfunction));
 
-        return clientDes.updateContext(functionCtxObj).then(function(data1) {
+        return clientDes.updateContext(fogfunction).then(function(data1) {
             console.log(data1);
             showFogFunctions();
         }).catch(function(error) {
@@ -307,15 +322,7 @@ $(function() {
     }
 
     function submitFogFunction(functionCtxObj) {
-        console.log("=============submit a fog function=============");
-        console.log(JSON.stringify(functionCtxObj));
-
-        functionCtxObj.metadata = {};
-        var geoScope = {};
-        geoScope.type = "global"
-        geoScope.value = "global"
-        functionCtxObj.metadata.location = geoScope;
-
+       
         return clientDes.updateContext(functionCtxObj).then(function(data1) {
             console.log(data1);
         }).catch(function(error) {
@@ -445,8 +452,8 @@ $(function() {
 
     function updateFogFunctionList() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'FogFunction', isPattern: true }];
-        client.queryContext(queryReq).then(function(functionList) {
+        queryReq={ internalType: "FogFunction", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(functionList) {
             displayFunctionList(functionList);
         }).catch(function(error) {
             console.log(error);
@@ -455,7 +462,7 @@ $(function() {
     }
 
     function displayFunctionList(fogFunctions) {
-        if (fogFunctions == null || fogFunctions.length == 0) {
+        if (fogFunctions.data == null || fogFunctions.data.length == 0) {
             return
         }
 
@@ -469,23 +476,23 @@ $(function() {
         html += '<th>Intent</th>';
         html += '</tr></thead>';
 
-        for (var i = 0; i < fogFunctions.length; i++) {
-            var fogfunction = fogFunctions[i];
+        for (var i = 0; i < fogFunctions.data.length; i++) {
+            var fogfunction = fogFunctions.data[i];
 
             html += '<tr>';
-            html += '<td>' + fogfunction.entityId.id;
+            html += '<td>' + fogfunction.id;
             html += '</td>';
 
-            html += '<td>' + fogfunction.attributes.name.value + '</td>';
+            html += '<td>' + fogfunction.name + '</td>';
 
             html += '<td class="singlecolumn">';
-            html += '<button id="editor-' + fogfunction.entityId.id + '" type="button" class="btn btn-primary btn-separator">view</button>';
-            html += '<button id="delete-' + fogfunction.entityId.id + '" type="button" class="btn btn-primary btn-separator">delete</button>';
+            html += '<button id="editor-' + fogfunction.id + '" type="button" class="btn btn-primary btn-separator">view</button>';
+            html += '<button id="delete-' + fogfunction.id + '" type="button" class="btn btn-primary btn-separator">delete</button>';
             html += '</td>';
 
-            html += '<td>' + JSON.stringify(fogfunction.attributes.topology.value) + '</td>';
+            html += '<td>' + JSON.stringify(fogfunction.topology) + '</td>';
 
-            html += '<td>' + JSON.stringify(fogfunction.attributes.intent.value) + '</td>';
+            html += '<td>' + JSON.stringify(fogfunction.intent) + '</td>';
 
             html += '</tr>';
         }
@@ -495,18 +502,18 @@ $(function() {
         $('#functionList').html(html);
 
         // associate a click handler to the editor button
-        for (var i = 0; i < fogFunctions.length; i++) {
-            var fogfunction = fogFunctions[i];
-
+        for (var i = 0; i < fogFunctions.data.length; i++) {
+            var fogfunction = fogFunctions.data[i];
+            //console.log("")
             // association handlers to the buttons
-            var editorButton = document.getElementById('editor-' + fogfunction.entityId.id);
+            var editorButton = document.getElementById('editor-' + fogfunction.id);
             editorButton.onclick = function(myFogFunction) {
                 return function() {
                     openFogFunctionEditor(myFogFunction);
                 };
             }(fogfunction);
 
-            var deleteButton = document.getElementById('delete-' + fogfunction.entityId.id);
+            var deleteButton = document.getElementById('delete-' + fogfunction.id);
             deleteButton.onclick = function(myFogFunction) {
                 return function() {
                     deleteFogFunction(myFogFunction);
@@ -518,7 +525,7 @@ $(function() {
     function deleteFogFunction(fogfunction) {
         // delete this fog function
         var functionEntity = {
-            id: fogfunction.entityId.id,
+            id: fogfunction.id,
             type: 'FogFunction',
             isPattern: false
         };

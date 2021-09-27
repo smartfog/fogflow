@@ -58,19 +58,35 @@ var NGSI10Client = (function() {
     
     // update context 
     NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
-        contextElement = JSONObject2CtxElement(ctxObj);
+        // contextElement = JSONObject2CtxElement(ctxObj);
         
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'UPDATE'
+        // var updateCtxReq = {};
+        // updateCtxReq.contextElements = [];
+        // updateCtxReq.contextElements.push(contextElement)
+        // updateCtxReq.updateAction = 'UPDATE'
          
-		console.log(updateCtxReq);
+		// console.log(updateCtxReq);
 		      
         return axios({
             method: 'post',
             url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            data: ctxObj
+        }).then( function(response){
+            if (response.status == 200) {
+                return response.data;
+            } else {
+                return null;
+            }
+        });
+    };
+
+    // get context from dgraph
+    NGSI10Client.prototype.getContext = function getContext(ctxObj) {
+		console.log("+++++++++++++++++++++++ ",ctxObj);
+        return axios({
+            method: 'post',
+            url: this.brokerURL + '/getContext',
+            data: ctxObj
         }).then( function(response){
             if (response.status == 200) {
                 return response.data;

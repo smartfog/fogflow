@@ -41,10 +41,15 @@ function string2json(data){
 }
 
 async function amqpPubTest(msg, exchange_) {
-
+  console.log("inside in amqp ",msg.attribute)
   //payData = string2json(msg.contextElements)
-  console.log("inside in amqp ",msg.contextElements[0].attributes)
-  send ={'Type': 'Operator', 'RoutingKey': 'Operator.', 'From': 'designer', 'PayLoad': (msg.contextElements[0])}
+  if (msg.attribute == undefined){
+    return
+  }
+  if (msg.attribute.hasOwnProperty("designboard")) delete msg.attribute.designboard;
+  console.log("final amqp msg ** ",msg.attribute)
+  send ={'Type': msg.internalType, 'RoutingKey': 'Operator.', 'From': 'designer', 'PayLoad': msg.attribute}
+  return
   amqp.connect(RABBIT_URL, opt,function (error0, connection) {
     if (error0) {
       throw error0;
@@ -80,94 +85,4 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   window.amqpPubTest = amqpPubTest;
 }
 
-amqpPubTest("test")
-
-// var amqp = require('amqplib/callback_api');
-// process.env.CLOUDAMQP_URL = 'amqp://localhost';
-
-// var exchange = 'logs';
-// var pubChannel = null;
-
-// // if the connection is closed or fails to be established at all, we will reconnect
-// var amqpConn = null;
-// async function start() {
-//   amqp.connect(process.env.CLOUDAMQP_URL + "?heartbeat=60", function(err, conn) {
-//     if (err) {
-//       console.error("[AMQP]", err.message);
-//       return setTimeout(start, 7000);
-//     }
-//     conn.on("error", function(err) {
-//       if (err.message !== "Connection closing") {
-//         console.error("[AMQP] conn error", err.message);
-//       }
-//     });
-//     conn.on("close", function() {
-//       console.error("[AMQP] reconnecting");
-//       return setTimeout(start, 7000);
-//     });
-
-//     console.log("[AMQP] connected");
-//     amqpConn = conn;
-//     pubChannel = conn;
-//     //whenConnected();
-//   });
-// }
-
-// function whenConnected() {
-//   startPublisher();
-// }
-
-// var offlinePubQueue = [];
-// function startPublisher() {
-//   amqpConn.createConfirmChannel(function(err, ch) {
-//     if (closeOnErr(err)) return;
-//     ch.on("error", function(err) {
-//       console.error("[AMQP] channel error", err.message);
-//     });
-//     ch.on("close", function() {
-//       console.log("[AMQP] channel closed");
-//     });
-
-//     pubChannel = ch;
-//     while (true) {
-//       var m = offlinePubQueue.shift();
-// 			console.log('M = ', m);
-//       if (!m) break;
-//       publish(m[0], m[1], m[2]);
-//     }
-//   });
-// }
-
-// // method to publish a message, will queue messages internally if the connection is down and resend later
-// function publish(exchange, routingKey, content) {
-//   try {
-//     start()
-//     console.log("---------------")
-//     pubChannel.publish(exchange, routingKey, content, { persistent: true },
-//                        function(err, ok) {
-//                          if (err) {
-//                            console.error("[AMQP] publish", err);
-//                            offlinePubQueue.push([exchange, routingKey, content]);
-//                            pubChannel.connection.close();
-//                          }
-//                        });
-//   } catch (e) {
-//     console.error("[AMQP] publish", e.message);
-//     offlinePubQueue.push([exchange, routingKey, content]);
-//   }
-// }
-
-// function closeOnErr(err) {
-//   if (!err) return false;
-//   console.error("[AMQP] error", err);
-//   amqpConn.close();
-//   return true;
-// }
-
-// setTimeout(function() {
-//   publish("", "jobs", new Buffer("work work work"));
-// }, 3000);
-
-// publish(exchange,'',Buffer.from("hello world"));
-
-
+//amqpPubTest("test")

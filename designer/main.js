@@ -136,9 +136,21 @@ app.post('/intent', jsonParser, function(req, res) {
   api to create fogFlow internal entities
 */
 
-app.post('/internal/updateContext', jsonParser, async function (req, res) {
-    var updateContextReq = await req.body
+function getResult(filterBy, objList) {
+    var arr = [];
+    for(var i in objList){
+            var fType = objList[i]['internalType'];
+            if (fType != undefined && filterBy == fType){
+                    arr.push(JSON.parse(objList[i].attribute));
+                    continue;
+            }
+    }
+    return arr;
+  }
 
+app.post('/internal/updateContext', jsonParser, async function (req, res) {
+    //var updateContextReq = await req.body
+    let updateContextReq = Object.assign({}, await req.body);
     console.log("****************** update",updateContextReq);
 
     //forward it to the cloud broker 
@@ -154,20 +166,30 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
         
     // }
     if (updateContextReq.updateAction == "DELETE") {
-        var tmpVar = updateContextReq
         amqp.amqpPubTest(updateContextReq)
+        let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
         await dgraph.DeleteEntity(tmpVar);
+
         
     } else if (updateContextReq.updateAction == "UPDATE") {
         console.log("main js obj  ++++ ",updateContextReq)
-        amqp.amqpPubTest(updateContextReq)
-        //await dgraph.WriteEntity(updateContextReq)
-        var tmpVar = updateContextReq
-        await dgraph.DeleteEntity(tmpVar);
+        await amqp.amqpPubTest(updateContextReq)
+        let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
+        await dgraph.WriteEntity(tmpVar)
         
     }
+    var dgraphOp = await dgraph.QueryJsonWithType("Operator")
+    //console.log("dgraph data ********* ", getResult("Operator",dgraphOp.contextElements));
 
     res.send("")
+});
+
+app.post('/internal/getContext', jsonParser, async function (req, res) {
+    var queryContext = await req.body
+    console.log("get internal type ",queryContext)
+    var dgraphOp = await dgraph.QueryJsonWithType(queryContext.internalType)
+    console.log("dgraph data ********* ", getResult(queryContext.internalType,dgraphOp.contextElements));
+    res.send({data:getResult(queryContext.internalType,dgraphOp.contextElements)})
 });
 
 // to remove an existing intent

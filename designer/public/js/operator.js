@@ -13,9 +13,7 @@ $(function() {
 
     addMenuItem('Operator', 'Operator', showOperator);
     addMenuItem('DockerImage', 'Docker Image', showDockerImage);
-
     initOperatorList();
-    initDockerImageList();
     showOperator();
 
 
@@ -54,37 +52,46 @@ $(function() {
         });
 
         var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
-
-        displayOperatorListHardcoded(defaultOperatorList()) // vinod
-
-        // client.queryContext(queryReq).then(function(operatorList) {
-        //     console.log("show operator ",operatorList)
-        //     displayOperatorList(operatorList);
-        // }).catch(function(error) {
-        //     console.log(error);
-        //     console.log('failed to query context');
-        // });
+        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(operators) {
+            console.log("show operator ",operators);
+            displayOperatorList(operators)
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to query context');
+        });
     }
 
-    // vinod: start
-    function displayOperatorListHardcoded(operatorList){
-        displayOperatorListNew(operatorList)
+    function initOperatorList(){
+        var queryReq = {}
+        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(opList) {
+            console.log("inside init operator list ",opList);
+            if (opList.data.length == 0) {
+                console.log("inside init operator list ******* ",opList);
+                for (var i = 0; i < defaultOperatorList().length; i++) { 
+                    opObj = defaultOperatorList()[i];
+                    var operator ={} 
+                    var attribute = opObj;
+                    operator.attribute = attribute;
+                    operator.updateAction = "UPDATE"
+                    operator.internalType = "Operator"
+                    submitOperator(operator,"")
+                }
+            }
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to query fog functions');
+        });
     }
 
     function queryOperatorList() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
-
-        client.queryContext(queryReq).then(function(operators) {
-            for (var i = 0; i < operators.length; i++) {
-                var entity = operators[i];
-                var operator = entity.attributes.operator.value;
-
+        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(operators) {
+            for (var i = 0; i < operators.data.length; i++) {
                 var option = document.createElement("option");
-
-                option.text = operator.name;
-
+                option.text = operators.data[i].name; 
                 var operatorList = document.getElementById("OperatorList");
                 operatorList.add(option);
             }
@@ -97,7 +104,8 @@ $(function() {
     }
 
     //vinod: start
-    function displayOperatorListNew(operators) {
+    function displayOperatorList(operators) {
+        operators = operators.data
         console.log("new operator list",operators)
         if (operators == null || operators.length == 0) {
             $('#operatorList').html('');
@@ -116,9 +124,6 @@ $(function() {
 
         for (var i = 0; i < operators.length; i++) {
             console.log("for loop ",operators[i].name)
-            // var entity = operators[i];
-
-            // var operator = entity.attributes.operator.value;
 
             html += '<tr>';
             html += '<td>' + operators[i].name + '</td>';
@@ -134,44 +139,6 @@ $(function() {
 
         $('#operatorList').html(html);
     }// vinod:end
-
-    
-    function displayOperatorList(operators) {
-        if (operators == null || operators.length == 0) {
-            $('#operatorList').html('');
-            return
-        }
-
-        var html = '<table class="table table-striped table-bordered table-condensed">';
-
-        html += '<thead><tr>';
-        html += '<th>Operator</th>';
-        html += '<th>Name</th>';
-        html += '<th>Description</th>';
-        html += '<th>#Parameters</th>';
-        html += '<th>#Implementations</th>';
-        html += '</tr></thead>';
-
-        for (var i = 0; i < operators.length; i++) {
-            var entity = operators[i];
-
-            var operator = entity.attributes.operator.value;
-
-            html += '<tr>';
-            html += '<td>' + entity.entityId.id + '</td>';
-            html += '<td>' + operator.name + '</td>';
-            html += '<td>' + operator.description + '</td>';
-            html += '<td>' + operator.parameters.length + '</td>';
-            html += '<td>' + 0 + '</td>';
-
-            html += '</tr>';
-        }
-
-        html += '</table>';
-
-        $('#operatorList').html(html);
-    }
-
 
     function showOperatorEditor() {
         $('#info').html('to specify an operator');
@@ -202,8 +169,11 @@ $(function() {
 
     function generateOperator(scene) {
         // construct the operator based on the design board
-        var operator = boardScene2Operator(scene);
-
+        var operator ={} 
+        var attribute = boardScene2Operator(scene);
+        operator.attribute = attribute;
+        operator.updateAction = "UPDATE"
+        operator.internalType = "Operator"
         console.log("------------------op gen---",operator);
 
         // submit this operator
@@ -211,26 +181,7 @@ $(function() {
     }
 
     function submitOperator(operator, designboard) {
-        var operatorObj = {};
-
-        operatorObj.entityId = {
-            id: operator.name,
-            type: 'Operator',
-            isPattern: false
-        };
-
-        operatorObj.attributes = {};
-        operatorObj.attributes.designboard = { type: 'object', value: designboard };
-        operatorObj.attributes.operator = { type: 'object', value: operator };
-
-        operatorObj.metadata = {};
-        var geoScope = {};
-        geoScope.type = "global"
-        geoScope.value = "global"
-        operatorObj.metadata.location = geoScope;
-
-
-        clientDes.updateContext(operatorObj).then(function(data) {
+        clientDes.updateContext(operator).then(function(data) {
             showOperator();
         }).catch(function(error) {
             console.log('failed to submit the defined operator');
@@ -285,6 +236,7 @@ $(function() {
     }
 
     function showDockerImage() {
+        console.log("show docker +++++")
         $('#info').html('list of docker images in the docker registry');
 
         var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
@@ -383,101 +335,9 @@ $(function() {
         return operatorList
     } //vinod:end
 
-    function initOperatorList() {
-        var operatorList = [{
-            name: "nodejs",
-            description: "",
-            parameters: []
-        }, {
-            name: "python",
-            description: "",
-            parameters: []
-        }, {
-            name: "iotagent",
-            description: "",
-            parameters: []
-        }, {
-            name: "counter",
-            description: "",
-            parameters: []
-        }, {
-            name: "anomaly",
-            description: "",
-            parameters: []
-        }, {
-            name: "facefinder",
-            description: "",
-            parameters: []
-        }, {
-            name: "connectedcar",
-            description: "",
-            parameters: []
-        }, {
-            name: "recommender",
-            description: "",
-            parameters: []
-        }, {
-            name: "privatesite",
-            description: "",
-            parameters: []
-        }, {
-            name: "publicsite",
-            description: "",
-            parameters: []
-        }, {
-            name: "pushbutton",
-            description: "",
-            parameters: []
-        }, {
-            name: "acoustic",
-            description: "",
-            parameters: []
-        }, {
-            name: "speaker",
-            description: "",
-            parameters: []
-        }, {
-            name: "dummy",
-            description: "",
-            parameters: []
-        }, {
-            name: "geohash",
-            description: "",
-            parameters: []
-        }, {
-            name: "converter",
-            description: "",
-            parameters: []
-        }, {
-            name: "predictor",
-            description: "",
-            parameters: []
-        }, {
-            name: "controller",
-            description: "",
-            parameters: []
-        }, {
-            name: "detector",
-            description: "",
-            parameters: []
-        }];
+  
 
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
-        client.queryContext(queryReq).then(function(existingOperatorList) {
-            if (existingOperatorList.length == 0) {
-                console.log("list operator ",operatorList)
-                for (var i = 0; i < operatorList.length; i++) {
-                    submitOperator(operatorList[i], {});
-                }
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query the operator list');
-        });
-    }
-
-    function initDockerImageList() {
+    function defaultDockerImageList() {
         var imageList = [{
             name: "fogflow/nodejs",
             tag: "latest",
@@ -634,19 +494,7 @@ $(function() {
             prefetched: false
         }];
 
-        var queryReq = {}
-        queryReq.entities = [{ type: 'DockerImage', isPattern: true }];
-        client.queryContext(queryReq).then(function(existingImageList) {
-            if (existingImageList.length == 0) {
-                for (var i = 0; i < imageList.length; i++) {
-                    addDockerImage(imageList[i]);
-                }
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query the image list');
-        });
-
+        return imageList;
     }
 
     function addDockerImage(image) {
@@ -767,31 +615,16 @@ $(function() {
 
         //register a new docker image
         var newImageObject = {};
-
-        newImageObject.entityId = {
-            id: image + ':' + tag,
-            type: 'DockerImage',
-            isPattern: false
-        };
-
-        newImageObject.attributes = {};
-        newImageObject.attributes.image = { type: 'string', value: image };
-        newImageObject.attributes.tag = { type: 'string', value: tag };
-        newImageObject.attributes.hwType = { type: 'string', value: hwType };
-        newImageObject.attributes.osType = { type: 'string', value: osType };
-        newImageObject.attributes.operator = { type: 'string', value: operatorName };
-
-        if (prefetched == true) {
-            newImageObject.attributes.prefetched = { type: 'boolean', value: true };
-        } else {
-            newImageObject.attributes.prefetched = { type: 'boolean', value: false };
-        }
-
-        newImageObject.metadata = {};
-        newImageObject.metadata.operator = {
-            type: 'string',
-            value: operatorName
-        };
+        var attribute = {};
+        attribute.name = image
+        attribute.hwType = hwType
+        attribute.osType = osType
+        attribute.operater = operatorName
+        attribute.prefetched = prefetched
+        attribute.tag = tag
+        newImageObject.attribute = attribute
+        newImageObject.internalType = "DockerImage"
+        newImageObject.updateAction = "UPDATE"
 
         clientDes.updateContext(newImageObject).then(function(data) {
             console.log(data);
@@ -807,9 +640,12 @@ $(function() {
 
     function updateDockerImageList() {
         var queryReq = {}
-        queryReq.entities = [{ type: 'DockerImage', isPattern: true }];
+        queryReq = { internalType: "DockerImage", updateAction: "UPDATE" };
 
-        client.queryContext(queryReq).then(function(imageList) {
+        clientDes.getContext(queryReq).then(function(imageList) {
+            imageList = imageList.data
+            imageList.push(...defaultDockerImageList());
+            console.log("get docker image list ",imageList)
             displayDockerImageList(imageList);
         }).catch(function(error) {
             console.log(error);
@@ -836,18 +672,19 @@ $(function() {
 
         for (var i = 0; i < images.length; i++) {
             var dockerImage = images[i];
+            console.log("test9999999999999999999 ",dockerImage.hasOwnProperty("operatorName")?dockerImage.operatorName:dockerImage.operater);
 
             html += '<tr>';
-            html += '<td>' + dockerImage.attributes.operator.value + '</td>';
-            html += '<td>' + dockerImage.attributes.image.value + '</td>';
-            html += '<td>' + dockerImage.attributes.tag.value + '</td>';
-            html += '<td>' + dockerImage.attributes.hwType.value + '</td>';
-            html += '<td>' + dockerImage.attributes.osType.value + '</td>';
+            html += '<td>' + dockerImage.operatorName + '</td>';
+            html += '<td>' + dockerImage.name + '</td>';
+            html += '<td>' + dockerImage.tag + '</td>';
+            html += '<td>' + dockerImage.hwType + '</td>';
+            html += '<td>' + dockerImage.osType + '</td>';
 
-            if (dockerImage.attributes.prefetched.value == true) {
-                html += '<td><font color="red"><b>' + dockerImage.attributes.prefetched.value + '</b></font></td>';
+            if (dockerImage.prefetched == true) {
+                html += '<td><font color="red"><b>' + dockerImage.prefetched + '</b></font></td>';
             } else {
-                html += '<td>' + dockerImage.attributes.prefetched.value + '</td>';
+                html += '<td>' + dockerImage.prefetched + '</td>';
             }
 
             html += '</tr>';

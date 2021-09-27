@@ -228,31 +228,16 @@ async function sendPostRequestToBroker(contextElement) {
 
 async function loadContextElements(dgraphClient) {
     const query = `{
-        contextElements(func: has(entityId)) {
+        contextElements(func: type(ContextData)) {
            {
-                  entityId{
-                        id
-                        type
-                        isPattern
-                  }
-                  attributes{
-                        name
-                        type
-                        value
-                  }
-                  domainMetadata{
-                        name
-                        type
-                        value
-                        location
-                  }
+            expand(_all_)
               }
            }
     }`;
 
     responseBody = await dgraphClient.newTxn().queryWithVars(query);
     const responsData = responseBody.getJson();
-        
+    console.log("all data---- ",responsData)
     sendPostRequestToBroker(responsData)
 }
 
@@ -260,23 +245,26 @@ async function loadContextElements(dgraphClient) {
 /*
    write entity data into dgraph
 */
-async function WriteEntity(contextData) {
+async function WriteEntity(contextData1) {
+    var contextData = contextData1;
+    contextData.attribute = JSON.stringify(contextData.attribute)
+    console.log("write entity *** ",contextData)
     try {
         console.log("inside in write entity-----",contextData)
         const dgraphClientStub = await newClientStub();
         const dgraphClient = await newClient(dgraphClientStub);
 
-        if ('contextElements' in contextData) {
-            contextData = contextData['contextElements']
-            contextData = contextData[0]
-        }
+        // if ('contextElements' in contextData) {
+        //     contextData = contextData['contextElements']
+        //     contextData = contextData[0]
+        // }
 
-        await resolveAttributes(contextData)
-        await resolveDomainMetaData(contextData)
+        // await resolveAttributes(contextData)
+        // await resolveDomainMetaData(contextData)
 
-        contextData["dgraph.type"] = "ContextElement"
+        contextData["dgraph.type"] = "ContextData"
 
-        console.log(contextData);
+        // console.log(contextData);
 
         await createData(dgraphClient, contextData);
         await dgraphClientStub.close();
@@ -434,20 +422,31 @@ async function LoadEntity() {
 /*
    retrieve all json objects with the specified data type
 */
-async function QueryJsonWithType(dtype) {
+
+
+/** {
+    result(func: type(${dtype})) {
+        {
+             uid
+             expand(_all_)
+        }
+     }
+ } */
+async function QueryJsonWithType(internalType) {
+    internalType = 'Operator'
     const dgraphClientStub = await newClientStub();
     const dgraphClient = await newClient(dgraphClientStub);
 
     const query = `{
-        result(func: type(${dtype})) {
+        contextElements(func: type(ContextData)) {
            {
-                uid
-                expand(_all_)
+            expand(_all_)
+              }
            }
-        }
     }`;
 
     const responseBody = await dgraphClient.newTxn().queryWithVars(query);
+    //console.log("inside in query --- ",responseBody.getJson())
 
     await dgraphClientStub.close();
 
@@ -483,48 +482,17 @@ url: string @index(term) .
 flavor: string @index(term) .
 inputdata: string @index(term) .
 version: string @index(term) .
+attribute: string @index(term) .
+internalType: string @index(term) .
+updateAction: string @index(term) .
 
 
-type Model {
-    name 
-    flavor 
-    inputdata 
-    version 
-    description 
-    filepath     
-}
 
-id: string @index(exact) .
-type: string @index(term) .
-isPattern: bool  . 
-value: string @index(term) .
 
-entityId: uid .
-attributes: [uid] .
-domainMetadata: [uid] .
-
-type EntityId {
-   id
-   type 
-   isPattern 
-}
-
-type Attribute {
-   name
-   type 
-   value 
-}
-
-type Metadata {
-   name
-   type 
-   value 
-}
-
-type ContextElement {
-    entityId 
-    attributes 
-    domainMetadata 
+type ContextData {
+    attribute
+    internalType
+    updateAction
 }
 
 `;
