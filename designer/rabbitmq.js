@@ -49,7 +49,7 @@ async function amqpPubTest(msg, exchange_) {
   if (msg.attribute.hasOwnProperty("designboard")) delete msg.attribute.designboard;
   console.log("final amqp msg ** ",msg.attribute)
   send ={'Type': msg.internalType, 'RoutingKey': 'Operator.', 'From': 'designer', 'PayLoad': msg.attribute}
-  return
+  //return
   amqp.connect(RABBIT_URL, opt,function (error0, connection) {
     if (error0) {
       throw error0;

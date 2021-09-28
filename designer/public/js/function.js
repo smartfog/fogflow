@@ -244,7 +244,7 @@ $(function() {
             operators = operators.data
             for (var i = 0; i < operators.length; i++) {
                 var entity = operators[i];
-                
+                if (Object.keys(entity).length === 0) continue;
                 operatorList.push(entity.name);
             }
 

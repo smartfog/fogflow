@@ -14,6 +14,7 @@ $(function() {
     addMenuItem('Operator', 'Operator', showOperator);
     addMenuItem('DockerImage', 'Docker Image', showDockerImage);
     initOperatorList();
+    initDockerImageList();
     showOperator();
 
 
@@ -90,6 +91,7 @@ $(function() {
         queryReq = { internalType: "Operator", updateAction: "UPDATE" };
         clientDes.getContext(queryReq).then(function(operators) {
             for (var i = 0; i < operators.data.length; i++) {
+                if (Object.keys(operators.data[i]).length === 0) continue;
                 var option = document.createElement("option");
                 option.text = operators.data[i].name; 
                 var operatorList = document.getElementById("OperatorList");
@@ -107,7 +109,7 @@ $(function() {
     function displayOperatorList(operators) {
         operators = operators.data
         console.log("new operator list",operators)
-        if (operators == null || operators.length == 0) {
+        if (operators == undefined || operators.length == 0) {
             $('#operatorList').html('');
             return
         }
@@ -123,6 +125,7 @@ $(function() {
         html += '</tr></thead>';
 
         for (var i = 0; i < operators.length; i++) {
+            if (Object.keys(operators[i]).length === 0) continue;
             console.log("for loop ",operators[i].name)
 
             html += '<tr>';
@@ -177,6 +180,7 @@ $(function() {
         console.log("------------------op gen---",operator);
 
         // submit this operator
+        if(operator)
         submitOperator(operator, scene);
     }
 
@@ -497,6 +501,37 @@ $(function() {
         return imageList;
     }
 
+    function initDockerImageList(){
+        var queryReq = {}
+        queryReq = { internalType: "DockerImage", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(doList) {
+            if (doList.data.length == 0) {
+                for (var i = 0; i < defaultDockerImageList().length; i++) { 
+                    dockerObj = defaultDockerImageList()[i];
+                    var newImageObject = {};
+                    var attribute = {};
+                    attribute.name = dockerObj.name;
+                    attribute.hwType = dockerObj.hwType;
+                    attribute.osType = dockerObj.osType;
+                    attribute.operatorName = dockerObj.operatorName;
+                    attribute.prefetched = dockerObj.prefetched;
+                    attribute.tag = dockerObj.tag;
+                    newImageObject.attribute = attribute;
+                    newImageObject.internalType = "DockerImage"
+                    newImageObject.updateAction = "UPDATE"
+
+                    clientDes.updateContext(newImageObject).then(function(data) {
+                        console.log(data);
+                    }).catch(function(error) {
+                        console.log('failed to register the new device object');
+                    });
+                }
+            }
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to query fog functions');
+        });
+    }
     function addDockerImage(image) {
         //register a new docker image
         var newImageObject = {};
@@ -644,7 +679,6 @@ $(function() {
 
         clientDes.getContext(queryReq).then(function(imageList) {
             imageList = imageList.data
-            imageList.push(...defaultDockerImageList());
             console.log("get docker image list ",imageList)
             displayDockerImageList(imageList);
         }).catch(function(error) {
