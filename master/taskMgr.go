@@ -154,22 +154,25 @@ func (flow *FogFlow) Init() {
 //
 func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction string, registredEntity *EntityRegistration) []*DeploymentAction {
 	if _, exist := flow.Subscriptions[subID]; exist == false {
+
+		fmt.Println(" ************** Inside false************")
 		return nil
 	}
 
 	inputSubscription := flow.Subscriptions[subID]
+	fmt.Println("********* inputSubscription***********",inputSubscription)
 	entityID := registredEntity.ID
 	switch entityAction {
 	case "CREATE", "UPDATE":
 		//update context availability
 		if _, exist := inputSubscription.ReceivedEntityRegistrations[entityID]; exist {
-			DEBUG.Println("update an existing entity")
+			fmt.Println("update an existing entity")
 			//update context availability
 			existEntityRegistration := inputSubscription.ReceivedEntityRegistrations[entityID]
 			existEntityRegistration.Update(registredEntity)
 		} else {
 			inputSubscription.ReceivedEntityRegistrations[entityID] = registredEntity
-			DEBUG.Println("create new entity")
+			fmt.Println("create new entity")
 		}
 
 		//update the group keyvalue table for orchestration
@@ -203,7 +206,9 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 // for all required and subscribed context availability
 //
 func (flow *FogFlow) checkInputAvailability() bool {
+	fmt.Println("****** flow.Subscriptions **********",flow.Subscriptions)
 	for _, inputSubscription := range flow.Subscriptions {
+		fmt.Println("****** inputSubscription *******",inputSubscription.ReceivedEntityRegistrations)
 		if len(inputSubscription.ReceivedEntityRegistrations) == 0 {
 			return false
 		}
@@ -484,7 +489,7 @@ func (flow *FogFlow) updateGroupedKeyValueTable(sub *InputSubscription, entityID
 		}
 	}
 
-	DEBUG.Printf("unique key table %+v\r\n", flow.UniqueKeys)
+	fmt.Printf("unique key table %+v\r\n", flow.UniqueKeys)
 }
 
 func (flow *FogFlow) getRelevantGroups(sub *InputSubscription, entityID string) []GroupInfo {
@@ -859,6 +864,8 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 		return
 	}
 
+	fmt.Println("***** subid, entityAction, entityregistration***********",subID,entityAction, entityRegistration)
+
 	deploymentActions := fogflow.MetadataDrivenTaskOrchestration(subID, entityAction, entityRegistration)
 
 	if deploymentActions == nil || len(deploymentActions) == 0 {
@@ -879,7 +886,9 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			// find out the worker close to the available inputs
 			locations := fogflow.getLocationOfInputs(hashID)
+			fmt.Println("**** Locations ******",locations)
 			selectedWorkerID := tMgr.master.SelectWorker(locations)
+			fmt.Println("**** selectedWorkerID ******",selectedWorkerID)
 
 			if selectedWorkerID == "" {
 				ERROR.Println("==NOT ABLE TO FIND A WORKER FOR THIS TASK===")
@@ -890,8 +899,10 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			// find out which implementation image to be used by the assigned worker
 			operator := scheduledTaskInstance.OperatorName
+			fmt.Println(" * * * * * Inside taskmgr *  * * * ",operator)
 			workerID := scheduledTaskInstance.WorkerID
 			scheduledTaskInstance.DockerImage = tMgr.master.DetermineDockerImage(operator, workerID)
+			fmt.Println(" * * * * * Inside taskmgr docker image*  * * * ",scheduledTaskInstance.DockerImage)
 
 			// carry the paramemters associated with this operator
 			scheduledTaskInstance.Parameters = tMgr.master.GetOperatorParamters(operator)
