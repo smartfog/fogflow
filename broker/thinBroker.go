@@ -544,13 +544,14 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		tb.ldEntities_lock.Lock()
 		for _, eid := range LDQueryContext.Entities {
-			EID := eid.ID + fiwareService
+			EID := eid.ID
 			if element, exist := tb.ldEntities[EID]; exist {
 				matchedCtxElement = append(matchedCtxElement, element)
 			}
 		}
 		tb.ldEntities_lock.Unlock()
 	} else {
+		fmt.Println("LDQueryContext",LDQueryContext)
 		entityMap := tb.ldDiscoveryEntities(LDQueryContext)
 		fmt.Println(fiwareService,fiwareServicePath ,entityMap)
 		for providerURL, entityList := range entityMap {
@@ -579,7 +580,7 @@ func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) 
         discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
         //discoverCtxAvailabilityReq.Attributes = attributes
         //discoverCtxAvailabilityReq.Restriction = restriction
-
+	fmt.Println("discoverCtxAvailabilityReq",discoverCtxAvailabilityReq)
         client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
         registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
 
@@ -600,16 +601,20 @@ func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) 
 
 func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs string, fsp string) []interface{} {
 	newEntityList := make([]EntityId,0)
-	for index , entity := range ids {
+	fmt.Println("ids",ids)
+	for _ , entity := range ids {
 		id := entity.ID
 		idSplit := strings.Split(id, "@")
+		fmt.Println("idSplit",idSplit)
 		entity.ID = idSplit[0]
-		newEntityList[index] = entity
+		//fmt.Println("index",index)
+		fmt.Println("entity",entity)
+		newEntityList = append(newEntityList,entity)
 	}
         queryCtxLDReq := LDQueryContextRequest{}
         queryCtxLDReq.Entities = newEntityList
 	queryCtxLDReq.Type = "Query"
-
+	fmt.Println("queryCtxLDReq",queryCtxLDReq)
         client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
         ctxElementList, _ := client.InternalLDQueryContext(&queryCtxLDReq,fs,fsp)
         return ctxElementList

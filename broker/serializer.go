@@ -637,6 +637,8 @@ func (sz Serializer)resolveEntity(entityobj interface{}, fs string)(EntityId) {
 		entity.ID  = sz.getEntityId(val, fs)
 	} else if val, ok := entitymap["id"]; ok == true {
 		entity.ID = sz.getEntityId(val,fs)
+	} else {
+		entity.IsPattern = true
 	}
 	if val, ok := entitymap["@type"]; ok == true {
                 entity.Type = sz.getEntityType(val)
