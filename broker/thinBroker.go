@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"reflect"
 
 	. "fogflow/common/config"
 	. "fogflow/common/constants"
@@ -502,6 +503,118 @@ func (tb *ThinBroker) discoveryEntities(ids []EntityId, attributes []string, res
 
 	return result
 }
+
+func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
+	reqBytes, _ := ioutil.ReadAll(r.Body)
+	var LDqueryCtxReq  interface{}
+	err := json.Unmarshal(reqBytes, &LDqueryCtxReq)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var fiwareService, fiwareServicePath string
+        if r.Header.Get("fiware-service") != "" {
+                        fiwareService = r.Header.Get("fiware-service")
+                } else {
+                        fiwareService = "default"
+                }
+	if r.Header.Get("fiware-servicepath") != "" {
+                        fiwareServicePath = r.Header.Get("fiware-servicepath")
+                } else {
+                        fiwareServicePath = "default"
+                }
+
+	//fsp := r.Header.Get("fiware-servicepath")
+	cType := r.Header.Get("Content-Type")
+	link := r.Header.Get("Link")
+	context, contextInpayload := extractcontext(cType, link)
+	fmt.Println(context, contextInpayload)
+	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
+	LDQueryContext := LDQueryContextRequest{}
+	var resolveError error 
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		sz := Serializer{}
+		LDQueryContext, resolveError = sz.uploadQueryContext(resolved,fiwareService)
+		fmt.Println(resolveError)
+	}
+	matchedCtxElement := make([]interface{}, 0)
+
+	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
+		tb.ldEntities_lock.Lock()
+		for _, eid := range LDQueryContext.Entities {
+			EID := eid.ID + fiwareService
+			if element, exist := tb.ldEntities[EID]; exist {
+				matchedCtxElement = append(matchedCtxElement, element)
+			}
+		}
+		tb.ldEntities_lock.Unlock()
+	} else {
+		entityMap := tb.ldDiscoveryEntities(LDQueryContext)
+		fmt.Println(fiwareService,fiwareServicePath ,entityMap)
+		for providerURL, entityList := range entityMap {
+			if providerURL == tb.MyURL {
+				for _ ,eid := range entityList {
+					tb.ldEntities_lock.Lock()
+					if element, exist := tb.ldEntities[eid.ID]; exist {
+						matchedCtxElement = append(matchedCtxElement, element)
+					}
+					tb.ldEntities_lock.Unlock()
+				}
+			} else {
+				elements := tb.fetchLDEntities(entityList, providerURL,fiwareService,fiwareServicePath)
+				matchedCtxElement = append(matchedCtxElement, elements...)
+			}
+		}
+
+	}
+	w.WriteHeader(200)
+	w.WriteJson(matchedCtxElement)
+
+}
+
+func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) map[string][]EntityId {
+        discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
+        discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
+        //discoverCtxAvailabilityReq.Attributes = attributes
+        //discoverCtxAvailabilityReq.Restriction = restriction
+
+        client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+        registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
+
+        result := make(map[string][]EntityId)
+        for _, registration := range registrationList {
+                reference := registration.ProvidingApplication
+                entities := registration.EntityIdList
+                if entityList, exist := result[reference]; exist {
+                        result[reference] = append(result[reference], entityList...)
+                } else {
+                        result[reference] = make([]EntityId, 0)
+                        result[reference] = append(result[reference], entities...)
+                }
+        }
+
+        return result
+}
+
+func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs string, fsp string) []interface{} {
+	newEntityList := make([]EntityId,0)
+	for index , entity := range ids {
+		id := entity.ID
+		idSplit := strings.Split(id, "@")
+		entity.ID = idSplit[0]
+		newEntityList[index] = entity
+	}
+        queryCtxLDReq := LDQueryContextRequest{}
+        queryCtxLDReq.Entities = newEntityList
+	queryCtxLDReq.Type = "Query"
+
+        client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
+        ctxElementList, _ := client.InternalLDQueryContext(&queryCtxLDReq,fs,fsp)
+        return ctxElementList
+}
+
 
 func (tb *ThinBroker) fetchEntities(ids []EntityId, providerURL string) []ContextElement {
 	queryCtxReq := QueryContextRequest{}
@@ -1422,7 +1535,6 @@ func (tb *ThinBroker) UnsubscribeContext(w rest.ResponseWriter, r *rest.Request)
 func (tb *ThinBroker) NotifyLDContextAvailability(w rest.ResponseWriter, r *rest.Request) {
 	notifyLDContextAvailabilityReq := NotifyContextAvailabilityRequest{}
 	err := r.DecodeJsonPayload(&notifyLDContextAvailabilityReq)
-	fmt.Println("notifyLDContextAvailabilityReq",notifyLDContextAvailabilityReq)
 	if err != nil {
 		ERROR.Println(err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2078,7 +2190,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 					// Deserialize the payload here.
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-					fmt.Println("deSerializedEntity",deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
 						problemSet.Details = "Unknown!"
@@ -2394,11 +2505,8 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.EntityIdList = entities
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
-	metaData := ContextMetadata{}
-	ListOfmetaData := make([]ContextMetadata,0)
-	//metaData := make([]ContextMetadata,0)
 	for k, attr := range elem { // considering properties and relationships as attributes
-		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "@context" {
+		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
 			if k == "fiwareServicePath" {
 				ctxReg.FiwareServicePath = attr.(string)
 				continue
@@ -2406,17 +2514,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
 			typ := attrValue["type"].(string)
-			if typ == "GeoProperty" || strings.HasSuffix(typ, "GeoProperty") == true{
-				geoAttr := attrValue["value"]
-				geoAttrValue := geoAttr.(LDLocationValue)
-				geoValueType := geoAttrValue.Type
-				geoValueCordinates := geoAttrValue.Coordinates
-				GeoType, GeoValue := getNGSIV1DomainMetaData(geoValueType,geoValueCordinates)
-				metaData.Name = k
-				metaData.Type = GeoType
-				metaData.Value = GeoValue
-				ListOfmetaData = append(ListOfmetaData,metaData)
-			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
+			if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
 				ctxRegAttr.Type = "Property"
 			} else if strings.Contains(typ, "Relationship") || strings.Contains(typ, "relationship") {
 				ctxRegAttr.Type = "Relationship"
@@ -2428,7 +2526,6 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxReg.FiwareService = fs
-	 ctxReg.Metadata = ListOfmetaData
 	ctxRegistrations = append(ctxRegistrations, ctxReg)
 
 	registerCtxReq.ContextRegistrations = ctxRegistrations
@@ -2517,6 +2614,7 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
+		fmt.Println("err", err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2543,6 +2641,8 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		}
 
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
+
+		fmt.Println("err", err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
@@ -2716,14 +2816,18 @@ func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, cont
 		if _, ok := itemsMap["type"]; ok == true {
 			payloadType = itemsMap["type"].(string)
 		} else if _, ok := itemsMap["@type"]; ok == true {
-			typ := itemsMap["@type"].([]interface{})
-			payloadType = typ[0].(string)
+			if reflect.ValueOf(itemsMap["@type"]).Kind() == reflect.String {
+				payloadType = itemsMap["@type"].(string)
+			} else {
+				typ := itemsMap["@type"].([]interface{})
+				payloadType = typ[0].(string)
+			}
 		}
 		if payloadType == "" {
 			err := errors.New("Type can not be nil!")
 			return nil, err
 		}
-		if payloadType != "ContextSourceRegistration" && payloadType != "Subscription" {
+		if payloadType != "ContextSourceRegistration" && payloadType != "Subscription" && payloadType != "Query" {
 			// Payload is of Entity Type
 			// Check if some other broker is registered for providing this entity or not
 			var entityId string
