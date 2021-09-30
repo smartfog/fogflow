@@ -4,7 +4,6 @@ import (
 	"errors"
 	. "fogflow/common/ngsi"
 	"strings"
-	"fmt"
 	"time"
 )
 
@@ -666,7 +665,6 @@ func (sz Serializer) uploadQueryContext(expanded interface{},fs string) (LDQuery
 	}
 	ngsildQueryContext.Type = typ
 	for key, value := range QueryData {
-		fmt.Println(key,value)
 		if strings.Contains( key, "attrs") {
 			ngsildQueryContext.Attributes, _ = sz.getQueryAttributes(value.([]interface{}))
 		} else if strings.Contains( key, "entities") {
@@ -675,6 +673,5 @@ func (sz Serializer) uploadQueryContext(expanded interface{},fs string) (LDQuery
                         continue
                 }
 	}
-	fmt.Println(ngsildQueryContext)
 	return ngsildQueryContext, nil
 }

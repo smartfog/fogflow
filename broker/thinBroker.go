@@ -528,16 +528,15 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	cType := r.Header.Get("Content-Type")
 	link := r.Header.Get("Link")
 	context, contextInpayload := extractcontext(cType, link)
-	fmt.Println(context, contextInpayload)
 	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
 	LDQueryContext := LDQueryContextRequest{}
-	var resolveError error 
+	//var resolveError error 
 	if err != nil {
-		fmt.Println(err)
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return 
 	} else {
 		sz := Serializer{}
-		LDQueryContext, resolveError = sz.uploadQueryContext(resolved,fiwareService)
-		fmt.Println(resolveError)
+		LDQueryContext, _ = sz.uploadQueryContext(resolved,fiwareService)
 	}
 	matchedCtxElement := make([]interface{}, 0)
 
@@ -551,9 +550,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 		tb.ldEntities_lock.Unlock()
 	} else {
-		fmt.Println("LDQueryContext",LDQueryContext)
 		entityMap := tb.ldDiscoveryEntities(LDQueryContext)
-		fmt.Println(fiwareService,fiwareServicePath ,entityMap)
 		for providerURL, entityList := range entityMap {
 			if providerURL == tb.MyURL {
 				for _ ,eid := range entityList {
@@ -605,16 +602,13 @@ func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs str
 	for _ , entity := range ids {
 		id := entity.ID
 		idSplit := strings.Split(id, "@")
-		fmt.Println("idSplit",idSplit)
 		entity.ID = idSplit[0]
 		//fmt.Println("index",index)
-		fmt.Println("entity",entity)
 		newEntityList = append(newEntityList,entity)
 	}
         queryCtxLDReq := LDQueryContextRequest{}
         queryCtxLDReq.Entities = newEntityList
 	queryCtxLDReq.Type = "Query"
-	fmt.Println("queryCtxLDReq",queryCtxLDReq)
         client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
         ctxElementList, _ := client.InternalLDQueryContext(&queryCtxLDReq,fs,fsp)
         return ctxElementList
