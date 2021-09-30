@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"fmt"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -1317,4 +1318,54 @@ func FiwareId(id string) (string, string) {
 }
 
 
+func  changeInv1cordinates(Latitude interface{}, Longitude interface{}) interface{}{
+        v1point := Point{}
+        v1point.Latitude = Latitude.(float64)
+        v1point.Longitude = Longitude.(float64)
+        return v1point
+}
+
+
+func resolvePolygon(location interface{}) interface{}{
+        OuterArray := location.([][]interface{})
+        fmt.Println(OuterArray)
+        ListOfV1Points := make([]interface{}, 0)
+        for point := 0 ; point < len(OuterArray) ; point = point+1 {
+                points := OuterArray[point]
+                v1Points := changeInv1cordinates(points[0],points[1])
+                ListOfV1Points = append(ListOfV1Points,v1Points)
+        }
+        return ListOfV1Points
+}
+
+
+func resolveMultipont(location interface{}) interface{}{
+        multipointArray:= location.([]float64)
+        ListOfV1Points := make([]interface{}, 0)
+        for point := 0 ; point < len(multipointArray); point = point + 2 {
+                v1Points := changeInv1cordinates(multipointArray[point],multipointArray[point])
+                ListOfV1Points = append(ListOfV1Points,v1Points)
+        }
+        return ListOfV1Points
+}
+
+func GetNGSIV1DomainMetaData(typ string , location interface{}) (string, interface{}) {
+        var valuetyp string
+        var points interface{}
+        if  strings.HasSuffix(typ, "Point") == true && strings.HasSuffix(typ, "MultiPoint") == false {
+                valuetyp = "point"
+                cordinates := location.([]float64)
+                points = changeInv1cordinates(cordinates[0],cordinates[1])
+        } else if strings.HasSuffix(typ, "Polygon") == true {
+                valuetyp = "polygon"
+                points = resolvePolygon(location.(interface{}))
+        } else if strings.HasSuffix(typ, "MultiPoint") == true {
+                valuetyp = "multiPoint"
+                points = resolveMultipont(location)
+        }
+	fmt.Println("valuetyp","points")
+	fmt.Println(valuetyp,points)
+        return valuetyp, points
+}
+        
 

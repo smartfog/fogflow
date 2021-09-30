@@ -504,6 +504,7 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 		//entityRegistration := EntityRegistration{}
 		for _, entity := range registration.EntityIdList {
 			// convert context registration to entity registration
+			fmt.Println("entity.MsgFormat",entity.MsgFormat)
 			if entity.MsgFormat == "NGSILD" {
 				entityRegistration := master.ldContextRegistration2EntityRegistration(&entity, &registration)
 				go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
@@ -555,6 +556,8 @@ func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityI
 		entityRegistration.MetadataList = make(map[string]ContextMetadata)
 		entityRegistration.MsgFormat = entityId.MsgFormat
 		for key , attr := range ldCtcObj {
+			fmt.Println("key",key)
+			fmt.Println("attr",attr)
 			if key == "id" {
 				entityRegistration.ID = entityId.ID
 			} else if key == "type" {
@@ -569,9 +572,13 @@ func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityI
 					attributeRegistration.Type = attrmap["type"].(string)
 					 entityRegistration.AttributesList[key] = attributeRegistration
 				} else {
-					//attrmap := attr.(map[string]interface{})
+					metaData := attr.(map[string]interface{})
 					cm := ContextMetadata{}
 					cm.Name = key
+					matadataCordinate := metaData["value"].(map[string]interface{})
+					points , typ := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string),matadataCordinate["coordinates"])
+					cm.Type = typ.(string)
+					cm.Value = points
 					entityRegistration.MetadataList[key] = cm
 				}
 			}
