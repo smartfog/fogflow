@@ -1040,7 +1040,6 @@ func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs
 		return nil, err
 	}
 	BrokerURL := strings.TrimSuffix(nc.IoTBrokerURL, "/ngsi10")
-	fmt.Println("nc.IoTBrokerURL",nc.IoTBrokerURL)
 	req, err := http.NewRequest("POST", BrokerURL+"/ngsi-ld/v1/entityOperations/query", bytes.NewBuffer(body))
 	if fs != "default" {
                 req.Header.Add("fiware-service", fs)
@@ -1064,18 +1063,50 @@ func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
-
 	var queryCtxResp  []interface{}
 	err = json.Unmarshal(text, &queryCtxResp)
 	if err != nil {
 		return nil, err
 	}
-
-	/*ctxElements := make([]ContextElement, 0)
-	for _, contextElementResponse := range queryCtxResp.ContextResponses {
-		ctxElements = append(ctxElements, contextElementResponse.ContextElement)
-	}*/
-	fmt.Println("queryCtxResp",queryCtxResp)
 	return queryCtxResp, nil
+}
+
+func (nc *NGSI10Client) QueryLdContext(query * LDQueryContextRequest, fs,fsp string) ([]interface{}, error) {
+	body, err := json.Marshal(*query)
+	if err != nil {
+		return nil, err
+	}
+	BrokerURL := strings.TrimSuffix(nc.IoTBrokerURL, "/ngsi10")
+	req, err := http.NewRequest("POST", BrokerURL+"/ngsi-ld/v1/entityOperations/query", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	if fs != "default" {
+                req.Header.Add("fiware-service", fs)
+        }
+
+        if fsp != "" {
+                req.Header.Add("fiware-servicepath", fsp)
+        }
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return nil, err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+	var queryCtxResp  []interface{}
+        err = json.Unmarshal(text, &queryCtxResp)
+        if err != nil {
+                return nil, err
+        }
+        fmt.Println("queryCtxResp",queryCtxResp)
+        return queryCtxResp, nil
+
 }
 
