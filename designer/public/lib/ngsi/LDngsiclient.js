@@ -73,10 +73,11 @@ var NGSILDclient = (function() {
 	    headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
             },
             url: this.brokerURL + '/ngsi-ld/v1/entities/' + entityId
         }).then( function(response){
-            if (response.status == 204) {
+            if (response.status == 200) {
                 return response.data;
             } else {
                 return null;
@@ -87,11 +88,12 @@ var NGSILDclient = (function() {
     // query context
     NGSILDclient.prototype.queryContext = function queryContext(id) {        
         return axios({
-            method: 'get',
-            url: this.brokerURL + '/ngsi-ld/v1/entities/' + id,
+            method: 'post',
+            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/query'
 	          headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
   },
             //data: queryCtxReq
         }).then( function(response){

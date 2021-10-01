@@ -61,9 +61,12 @@ $(function() {
 
     function subscribeResult() {
         var subscribeCtxReq = {};
+	subscribeCtxReq.type = "Subscription"
+	
         subscribeCtxReq.entities = [{ type: 'Stat', isPattern: true }];
-        subscribeCtxReq.reference = 'http://' + config.agentIP + ':' + config.agentPort;
-
+        subscribeCtxReq.notification.endpoint.uri = 'http://' + config.agentIP + ':' + config.agentPort + 'notifyContext';
+	subscribeCtxReq.notification.format = "normalized"
+	console.log("subscribeCtxReq data for topology",subscribeCtxReq)
         client.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
             console.log(subscriptionId);
             ngsiproxy.reportSubID(subscriptionId);
@@ -74,6 +77,7 @@ $(function() {
 
     function handleNotify(contextObj) {
         console.log(contextObj);
+	console.log("Received notification data",contextObj)
         curResult.push(contextObj);
 
         if (contextObj.hasOwnProperty("time") && contextObj.hasOwnProperty("counter")) {
@@ -91,7 +95,8 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
+	queryReq.type = "Query"
+        queryReq.entities = [{ id: 'urn:Topology.anomaly-detection', type: 'Topology', isPattern: false }];
 
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
@@ -108,9 +113,10 @@ $(function() {
 
     function checkIntent() {
         var queryReq = {};
+	queryReq.type = "Query"
         queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
-
+	console.log("Query request",queryReq)
+        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
@@ -158,14 +164,14 @@ $(function() {
         var topologyCtxObj = {};
 
         topologyCtxObj.entityId = {
-            id: 'Topology.' + topology.name,
+            id: 'urn:Topology.' + topology.name,
             type: topology.name,
             isPattern: false
         };
 
-        topologyCtxObj.attributes = {};
-        topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        topologyCtxObj.attributes.template = { type: 'object', value: topology };
+        topologyCtxObj = {};
+        topologyCtxObj.status = { type: 'Property', value: 'enabled' };
+        topologyCtxObj.template = { type: 'Property', value: topology };
 
         client.updateContext(topologyCtxObj).then(function(data) {
             console.log(data);
