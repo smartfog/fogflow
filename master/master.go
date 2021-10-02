@@ -558,6 +558,7 @@ func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityI
 		for key , attr := range ldCtcObj {
 			fmt.Println("key",key)
 			fmt.Println("attr",attr)
+			if key != "modifiedAt" && key != "createdAt" && key != "observationSpace" && key != "operationSpace" &&  key != "@context" &&  key  != "fiwareServicePath" {
 			if key == "id" {
 				entityRegistration.ID = entityId.ID
 			} else if key == "type" {
@@ -576,12 +577,13 @@ func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityI
 					cm := ContextMetadata{}
 					cm.Name = key
 					matadataCordinate := metaData["value"].(map[string]interface{})
-					points , typ := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string),matadataCordinate["coordinates"])
-					cm.Type = typ.(string)
+					typ, points := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string),matadataCordinate["coordinates"])
+					cm.Type = typ
 					cm.Value = points
 					entityRegistration.MetadataList[key] = cm
 				}
 			}
+		}
 		}
 	}
 

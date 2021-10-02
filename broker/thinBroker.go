@@ -567,8 +567,22 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 	}
+	queryContextResponse := make([]interface{}, 0)
+	for _, val := range matchedCtxElement {
+		responseEle := val.(map[string]interface{})
+		delete(responseEle, fiwareServicePath)
+		eid := responseEle["id"]
+		actualEid := strings.split(eid,"@")
+		responseEle["id"] = actualEid[0]
+		returnvalue , err := compactData(responseEle,responseEle["@context"])
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		queryContextResponse = append(queryContextResponse,returnvalue)
+	}
 	w.WriteHeader(200)
-	w.WriteJson(matchedCtxElement)
+	w.WriteJson(queryContextResponse)
 
 }
 

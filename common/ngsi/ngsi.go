@@ -1354,7 +1354,7 @@ func GetNGSIV1DomainMetaData(typ string , location interface{}) (string, interfa
         var points interface{}
         if  strings.HasSuffix(typ, "Point") == true && strings.HasSuffix(typ, "MultiPoint") == false {
                 valuetyp = "point"
-                cordinates := location.([]float64)
+                cordinates := location.([]interface{})
                 points = changeInv1cordinates(cordinates[0],cordinates[1])
         } else if strings.HasSuffix(typ, "Polygon") == true {
                 valuetyp = "polygon"
@@ -1362,7 +1362,10 @@ func GetNGSIV1DomainMetaData(typ string , location interface{}) (string, interfa
         } else if strings.HasSuffix(typ, "MultiPoint") == true {
                 valuetyp = "multiPoint"
                 points = resolveMultipont(location)
-        }
+        } else {
+		valuetyp = typ
+		points = location
+	}
 	fmt.Println("valuetyp","points")
 	fmt.Println(valuetyp,points)
         return valuetyp, points
