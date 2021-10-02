@@ -5,6 +5,7 @@ import (
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type Serializer struct{}
@@ -611,12 +612,15 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, err
 
 func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, error) {
 	attributesList := make([]string, 0)
-	var err error
+	if len(attributes) <= 0 {
+		err := errors.New("Zero length attribute list is not allowed")
+		return attributesList, err
+	}
 	for _, value := range attributes {
 		valuemap := value.(map[string]interface{})
 		attributesList = append(attributesList, valuemap["@value"].(string))
 	}
-	return attributesList, err
+	return attributesList, nil
 }
 func (sz Serializer) getEntityId(id interface{}, fs string) string {
 	ID := id.(string) + "@" + fs
@@ -645,13 +649,21 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	}
 	return entity
 }
-func (sz Serializer) getQueryEntities(entities []interface{}, fs string) []EntityId {
+func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error){
 	entitiesList := make([]EntityId, 0)
+	if len(entities) <=0 {
+		err := errors.New("Zero length Entity List is not allowed")
+		return entitiesList, err
+	}
 	for _, val := range entities {
 		entity := sz.resolveEntity(val, fs)
-		entitiesList = append(entitiesList, entity)
+		if entity.ID == "" && entity.Type == "" {
+			continue
+		} else {
+			entitiesList = append(entitiesList, entity)
+		}
 	}
-	return entitiesList
+	return entitiesList, nil
 }
 
 // serialize NGSIld
@@ -664,14 +676,23 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 		return ngsildQueryContext, err
 	}
 	ngsildQueryContext.Type = typ
+	fmt.Println("QueryData",QueryData)
+	var newErr error
 	for key, value := range QueryData {
 		if strings.Contains(key, "attrs") {
-			ngsildQueryContext.Attributes, _ = sz.getQueryAttributes(value.([]interface{}))
+			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
+			if newErr != nil {
+				break
+			}
 		} else if strings.Contains(key, "entities") {
-			ngsildQueryContext.Entities = sz.getQueryEntities(value.([]interface{}), fs)
+			ngsildQueryContext.Entities,newErr = sz.getQueryEntities(value.([]interface{}), fs)
+			if newErr != nil {
+				break
+			}
 		} else {
 			continue
 		}
 	}
-	return ngsildQueryContext, nil
+	fmt.Println("ngsildQueryContext,err",ngsildQueryContext,err)
+	return ngsildQueryContext, newErr
 }
