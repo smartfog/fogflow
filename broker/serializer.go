@@ -2,10 +2,10 @@ package main
 
 import (
 	"errors"
-	. "fogflow/common/ngsi"
 	"strings"
 	"time"
-	"fmt"
+
+	. "fogflow/common/ngsi"
 )
 
 type Serializer struct{}
@@ -649,9 +649,11 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	}
 	return entity
 }
-func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error){
+
+//get Entities
+func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error) {
 	entitiesList := make([]EntityId, 0)
-	if len(entities) <=0 {
+	if len(entities) <= 0 {
 		err := errors.New("Zero length Entity List is not allowed")
 		return entitiesList, err
 	}
@@ -666,7 +668,7 @@ func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]Enti
 	return entitiesList, nil
 }
 
-// serialize NGSIld
+// serialize NGSIld Query
 func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQueryContextRequest, error) {
 	ngsildQueryContext := LDQueryContextRequest{}
 	expandedArray := expanded.([]interface{})
@@ -676,7 +678,6 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 		return ngsildQueryContext, err
 	}
 	ngsildQueryContext.Type = typ
-	fmt.Println("QueryData",QueryData)
 	var newErr error
 	for key, value := range QueryData {
 		if strings.Contains(key, "attrs") {
@@ -685,7 +686,7 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 				break
 			}
 		} else if strings.Contains(key, "entities") {
-			ngsildQueryContext.Entities,newErr = sz.getQueryEntities(value.([]interface{}), fs)
+			ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
 			if newErr != nil {
 				break
 			}
@@ -693,6 +694,5 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 			continue
 		}
 	}
-	fmt.Println("ngsildQueryContext,err",ngsildQueryContext,err)
 	return ngsildQueryContext, newErr
 }

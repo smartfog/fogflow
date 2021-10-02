@@ -531,17 +531,16 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	context, contextInpayload := extractcontext(cType, link)
 	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
 	LDQueryContext := LDQueryContextRequest{}
-	fmt.Println("Expand error",err)
 	var resolveError error
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	} else {
 		sz := Serializer{}
-		LDQueryContext,resolveError = sz.uploadQueryContext(resolved, fiwareService)
+		LDQueryContext, resolveError = sz.uploadQueryContext(resolved, fiwareService)
 		if resolveError != nil {
-		      rest.Error(w, resolveError.Error(), 400)
-		      return
+			rest.Error(w, resolveError.Error(), 400)
+			return
 		}
 	}
 	matchedCtxElement := make([]interface{}, 0)
