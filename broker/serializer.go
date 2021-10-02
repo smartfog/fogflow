@@ -590,16 +590,15 @@ func (sz Serializer) afterString(str string, markingStr string) string {
 	return str[liAdjusted:len(str)]
 }
 
-
 // get NGSILD type
 
-func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string ,error) {
+func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, error) {
 	var typ string
 	var err error
-	if val , ok  := QueryData["@type"]; ok == true {
+	if val, ok := QueryData["@type"]; ok == true {
 		valueResult := val.([]interface{})
 		typ = valueResult[0].(string)
-	} else if val , ok  := QueryData["type"]; ok == true {
+	} else if val, ok := QueryData["type"]; ok == true {
 		valueResult := val.([]interface{})
 		typ = valueResult[0].(string)
 	} else {
@@ -610,54 +609,55 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string ,err
 
 // get NGSILD attributes
 
-func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string ,error) {
-	attributesList := make([]string,0)
+func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, error) {
+	attributesList := make([]string, 0)
 	var err error
-	for _,value := range attributes {
+	for _, value := range attributes {
 		valuemap := value.(map[string]interface{})
 		attributesList = append(attributesList, valuemap["@value"].(string))
 	}
 	return attributesList, err
 }
-func (sz Serializer) getEntityId(id interface{}, fs string) string{
-	ID := id.(string)+"@"+fs
+func (sz Serializer) getEntityId(id interface{}, fs string) string {
+	ID := id.(string) + "@" + fs
 	return ID
 }
 
-func (sz Serializer) getEntityType(typ interface{}) string{
+func (sz Serializer) getEntityType(typ interface{}) string {
 	Etype := typ.([]interface{})
 	return Etype[0].(string)
 }
 
-func (sz Serializer)resolveEntity(entityobj interface{}, fs string)(EntityId) {
+func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	entity := EntityId{}
 	entitymap := entityobj.(map[string]interface{})
 	if val, ok := entitymap["@id"]; ok == true {
-		entity.ID  = sz.getEntityId(val, fs)
+		entity.ID = sz.getEntityId(val, fs)
 	} else if val, ok := entitymap["id"]; ok == true {
-		entity.ID = sz.getEntityId(val,fs)
+		entity.ID = sz.getEntityId(val, fs)
 	} else {
 		entity.IsPattern = true
 	}
 	if val, ok := entitymap["@type"]; ok == true {
-                entity.Type = sz.getEntityType(val)
-        } else if val, ok := entitymap["type"]; ok == true {
-                entity.Type = sz.getEntityType(val)
-        }
+		entity.Type = sz.getEntityType(val)
+	} else if val, ok := entitymap["type"]; ok == true {
+		entity.Type = sz.getEntityType(val)
+	}
 	return entity
 }
-func (sz Serializer)getQueryEntities(entities []interface{}, fs string)([]EntityId) {
-        entitiesList := make([]EntityId,0)
+func (sz Serializer) getQueryEntities(entities []interface{}, fs string) []EntityId {
+	entitiesList := make([]EntityId, 0)
 	for _, val := range entities {
 		entity := sz.resolveEntity(val, fs)
 		entitiesList = append(entitiesList, entity)
 	}
 	return entitiesList
 }
+
 // serialize NGSIld
-func (sz Serializer) uploadQueryContext(expanded interface{},fs string) (LDQueryContextRequest,error) {
+func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQueryContextRequest, error) {
 	ngsildQueryContext := LDQueryContextRequest{}
-        expandedArray := expanded.([]interface{})
+	expandedArray := expanded.([]interface{})
 	QueryData := expandedArray[0].(map[string]interface{})
 	typ, err := sz.getQueryType(QueryData)
 	if err != nil {
@@ -665,13 +665,13 @@ func (sz Serializer) uploadQueryContext(expanded interface{},fs string) (LDQuery
 	}
 	ngsildQueryContext.Type = typ
 	for key, value := range QueryData {
-		if strings.Contains( key, "attrs") {
+		if strings.Contains(key, "attrs") {
 			ngsildQueryContext.Attributes, _ = sz.getQueryAttributes(value.([]interface{}))
-		} else if strings.Contains( key, "entities") {
-                        ngsildQueryContext.Entities = sz.getQueryEntities(value.([]interface{}),fs)
-                } else {
-                        continue
-                }
+		} else if strings.Contains(key, "entities") {
+			ngsildQueryContext.Entities = sz.getQueryEntities(value.([]interface{}), fs)
+		} else {
+			continue
+		}
 	}
 	return ngsildQueryContext, nil
 }

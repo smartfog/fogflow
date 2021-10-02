@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
-	"reflect"
 
 	. "fogflow/common/config"
 	. "fogflow/common/constants"
@@ -506,23 +506,24 @@ func (tb *ThinBroker) discoveryEntities(ids []EntityId, attributes []string, res
 
 func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	reqBytes, _ := ioutil.ReadAll(r.Body)
-	var LDqueryCtxReq  interface{}
+	var LDqueryCtxReq interface{}
 	err := json.Unmarshal(reqBytes, &LDqueryCtxReq)
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	var fiwareService, fiwareServicePath string
-        if r.Header.Get("fiware-service") != "" {
-                        fiwareService = r.Header.Get("fiware-service")
-                } else {
-                        fiwareService = "default"
-                }
+
+	if r.Header.Get("fiware-service") != "" {
+		fiwareService = r.Header.Get("fiware-service")
+	} else {
+		fiwareService = "default"
+	}
 	if r.Header.Get("fiware-servicepath") != "" {
-                        fiwareServicePath = r.Header.Get("fiware-servicepath")
-                } else {
-                        fiwareServicePath = "default"
-                }
+		fiwareServicePath = r.Header.Get("fiware-servicepath")
+	} else {
+		fiwareServicePath = "default"
+	}
 
 	//fsp := r.Header.Get("fiware-servicepath")
 	cType := r.Header.Get("Content-Type")
@@ -530,13 +531,13 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	context, contextInpayload := extractcontext(cType, link)
 	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
 	LDQueryContext := LDQueryContextRequest{}
-	//var resolveError error 
+	//var resolveError error
 	if err != nil {
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return 
+		return
 	} else {
 		sz := Serializer{}
-		LDQueryContext, _ = sz.uploadQueryContext(resolved,fiwareService)
+		LDQueryContext,  = sz.uploadQueryContext(resolved, fiwareService)
 	}
 	matchedCtxElement := make([]interface{}, 0)
 
@@ -553,7 +554,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		entityMap := tb.ldDiscoveryEntities(LDQueryContext)
 		for providerURL, entityList := range entityMap {
 			if providerURL == tb.MyURL {
-				for _ ,eid := range entityList {
+				for _, eid := range entityList {
 					tb.ldEntities_lock.Lock()
 					if element, exist := tb.ldEntities[eid.ID]; exist {
 						matchedCtxElement = append(matchedCtxElement, element)
@@ -561,7 +562,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 					tb.ldEntities_lock.Unlock()
 				}
 			} else {
-				elements := tb.fetchLDEntities(entityList, providerURL,fiwareService,fiwareServicePath)
+				elements := tb.fetchLDEntities(entityList, providerURL, fiwareService, fiwareServicePath)
 				matchedCtxElement = append(matchedCtxElement, elements...)
 			}
 		}
@@ -570,64 +571,62 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	queryContextResponse := make([]interface{}, 0)
 	for _, val := range matchedCtxElement {
 		responseEle := val.(map[string]interface{})
-		delete(responseEle, fiwareServicePath)
-		eid := responseEle["id"]
-		actualEid := strings.split(eid,"@")
+		delete(responseEle, "fiwareServicePath")
+		eid := responseEle["id"].(string)
+		actualEid := strings.Split(eid, "@")
 		responseEle["id"] = actualEid[0]
-		returnvalue , err := compactData(responseEle,responseEle["@context"])
+		returnvalue, err := compactData(responseEle, responseEle["@context"])
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
-		queryContextResponse = append(queryContextResponse,returnvalue)
+		queryContextResponse = append(queryContextResponse, returnvalue)
 	}
 	w.WriteHeader(200)
 	w.WriteJson(queryContextResponse)
-
 }
 
 func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) map[string][]EntityId {
-        discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
-        discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
-        //discoverCtxAvailabilityReq.Attributes = attributes
-        //discoverCtxAvailabilityReq.Restriction = restriction
-	fmt.Println("discoverCtxAvailabilityReq",discoverCtxAvailabilityReq)
-        client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
-        registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
+	discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
+	discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
+	//discoverCtxAvailabilityReq.Attributes = attributes
+	//discoverCtxAvailabilityReq.Restriction = restriction
+	fmt.Println("discoverCtxAvailabilityReq", discoverCtxAvailabilityReq)
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
 
-        result := make(map[string][]EntityId)
-        for _, registration := range registrationList {
-                reference := registration.ProvidingApplication
-                entities := registration.EntityIdList
-                if entityList, exist := result[reference]; exist {
-                        result[reference] = append(result[reference], entityList...)
-                } else {
-                        result[reference] = make([]EntityId, 0)
-                        result[reference] = append(result[reference], entities...)
-                }
-        }
+	result := make(map[string][]EntityId)
+	for _, registration := range registrationList {
+		reference := registration.ProvidingApplication
+		entities := registration.EntityIdList
+		if entityList, exist := result[reference]; exist {
+			result[reference] = append(result[reference], entityList...)
+		} else {
+			result[reference] = make([]EntityId, 0)
+			result[reference] = append(result[reference], entities...)
+		}
+	}
 
-        return result
+	return result
 }
 
 func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs string, fsp string) []interface{} {
-	newEntityList := make([]EntityId,0)
-	fmt.Println("ids",ids)
-	for _ , entity := range ids {
+	newEntityList := make([]EntityId, 0)
+	fmt.Println("ids", ids)
+	for _, entity := range ids {
 		id := entity.ID
 		idSplit := strings.Split(id, "@")
 		entity.ID = idSplit[0]
 		//fmt.Println("index",index)
-		newEntityList = append(newEntityList,entity)
+		newEntityList = append(newEntityList, entity)
 	}
-        queryCtxLDReq := LDQueryContextRequest{}
-        queryCtxLDReq.Entities = newEntityList
+	queryCtxLDReq := LDQueryContextRequest{}
+	queryCtxLDReq.Entities = newEntityList
 	queryCtxLDReq.Type = "Query"
-        client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
-        ctxElementList, _ := client.InternalLDQueryContext(&queryCtxLDReq,fs,fsp)
-        return ctxElementList
+	client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
+	ctxElementList, _ := client.InternalLDQueryContext(&queryCtxLDReq, fs, fsp)
+	return ctxElementList
 }
-
 
 func (tb *ThinBroker) fetchEntities(ids []EntityId, providerURL string) []ContextElement {
 	queryCtxReq := QueryContextRequest{}

@@ -71,7 +71,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		//create and update
 
 		//Query context for NGSILD
-                rest.Post("/ngsi-ld/v1/entityOperations/query", broker.LDQueryContext),
+		rest.Post("/ngsi-ld/v1/entityOperations/query", broker.LDQueryContext),
 
 		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
 
