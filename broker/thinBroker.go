@@ -537,7 +537,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		return
 	} else {
 		sz := Serializer{}
-		LDQueryContext,  = sz.uploadQueryContext(resolved, fiwareService)
+		LDQueryContext,_  = sz.uploadQueryContext(resolved, fiwareService)
 	}
 	matchedCtxElement := make([]interface{}, 0)
 
