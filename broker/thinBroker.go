@@ -2206,7 +2206,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 					// Deserialize the payload here.
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-					fmt.Println("deSerializedEntity",deSerializedEntity)
+					fmt.Println("deSerializedEntity", deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
 						problemSet.Details = "Unknown!"

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
-	"strings"
 
 	. "fogflow/common/communicator"
 	. "fogflow/common/datamodel"
@@ -504,7 +504,7 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 		//entityRegistration := EntityRegistration{}
 		for _, entity := range registration.EntityIdList {
 			// convert context registration to entity registration
-			fmt.Println("entity.MsgFormat",entity.MsgFormat)
+			fmt.Println("entity.MsgFormat", entity.MsgFormat)
 			if entity.MsgFormat == "NGSILD" {
 				entityRegistration := master.ldContextRegistration2EntityRegistration(&entity, &registration)
 				go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
@@ -517,8 +517,8 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 	}
 }
 
-func (master *Master) RetrieveContextLdEntity(eid string,fsp string) interface{} {
-	query :=  LDQueryContextRequest{}
+func (master *Master) RetrieveContextLdEntity(eid string, fsp string) interface{} {
+	query := LDQueryContextRequest{}
 
 	query.Entities = make([]EntityId, 0)
 	query.Type = "Query"
@@ -529,7 +529,7 @@ func (master *Master) RetrieveContextLdEntity(eid string,fsp string) interface{}
 	query.Entities = append(query.Entities, entity)
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	ctxObjects, err := client.QueryLdContext(&query,idSplit[1],fsp)
+	ctxObjects, err := client.QueryLdContext(&query, idSplit[1], fsp)
 	if err == nil && ctxObjects != nil && len(ctxObjects) > 0 {
 		return ctxObjects[0]
 	} else {
@@ -544,7 +544,7 @@ func (master *Master) RetrieveContextLdEntity(eid string,fsp string) interface{}
 func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
 	entityRegistration := EntityRegistration{}
 
-	ctxObj := master.RetrieveContextLdEntity(entityId.ID,entityId.FiwareServicePath)
+	ctxObj := master.RetrieveContextLdEntity(entityId.ID, entityId.FiwareServicePath)
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
@@ -555,35 +555,33 @@ func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityI
 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
 		entityRegistration.MetadataList = make(map[string]ContextMetadata)
 		entityRegistration.MsgFormat = entityId.MsgFormat
-		for key , attr := range ldCtcObj {
-			fmt.Println("key",key)
-			fmt.Println("attr",attr)
-			if key != "modifiedAt" && key != "createdAt" && key != "observationSpace" && key != "operationSpace" &&  key != "@context" &&  key  != "fiwareServicePath" {
-			if key == "id" {
-				entityRegistration.ID = entityId.ID
-			} else if key == "type" {
-				entityRegistration.Type = ldCtcObj[key].(string)
-			} else if key == "FiwareServicePath" {
-				entityRegistration.FiwareServicePath = ldCtcObj[key].(string)
-			} else {
-				attrmap := attr.(map[string]interface{})
-				if attrmap["type"] != "GeoProperty" {
-					attributeRegistration := ContextRegistrationAttribute{}
-					attributeRegistration.Name = key
-					attributeRegistration.Type = attrmap["type"].(string)
-					 entityRegistration.AttributesList[key] = attributeRegistration
+		for key, attr := range ldCtcObj {
+			if key != "modifiedAt" && key != "createdAt" && key != "observationSpace" && key != "operationSpace" && key != "@context" && key != "fiwareServicePath" {
+				if key == "id" {
+					entityRegistration.ID = entityId.ID
+				} else if key == "type" {
+					entityRegistration.Type = ldCtcObj[key].(string)
+				} else if key == "FiwareServicePath" {
+					entityRegistration.FiwareServicePath = ldCtcObj[key].(string)
 				} else {
-					metaData := attr.(map[string]interface{})
-					cm := ContextMetadata{}
-					cm.Name = key
-					matadataCordinate := metaData["value"].(map[string]interface{})
-					typ, points := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string),matadataCordinate["coordinates"])
-					cm.Type = typ
-					cm.Value = points
-					entityRegistration.MetadataList[key] = cm
+					attrmap := attr.(map[string]interface{})
+					if attrmap["type"] != "GeoProperty" {
+						attributeRegistration := ContextRegistrationAttribute{}
+						attributeRegistration.Name = key
+						attributeRegistration.Type = attrmap["type"].(string)
+						entityRegistration.AttributesList[key] = attributeRegistration
+					} else {
+						metaData := attr.(map[string]interface{})
+						cm := ContextMetadata{}
+						cm.Name = key
+						matadataCordinate := metaData["value"].(map[string]interface{})
+						typ, points := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string), matadataCordinate["coordinates"])
+						cm.Type = typ
+						cm.Value = points
+						entityRegistration.MetadataList[key] = cm
+					}
 				}
 			}
-		}
 		}
 	}
 

@@ -2,10 +2,9 @@ package main
 
 import (
 	"errors"
+	. "fogflow/common/ngsi"
 	"strings"
 	"time"
-
-	. "fogflow/common/ngsi"
 )
 
 type Serializer struct{}
@@ -134,6 +133,8 @@ func (sz Serializer) getType(typ []interface{}) string {
 		Type1 = typ[0].(string)
 		if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
 			Type = "GeoProperty"
+		} else if strings.Contains(Type1, "Point") || strings.Contains(Type1, "point") {
+			Type = "Point"
 		} else if strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship") {
 			Type = "Relationship"
 		} else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
@@ -405,15 +406,15 @@ func (sz Serializer) getUnitCode(unitCode []interface{}) string {
 }
 
 //LOCATION
-func (sz Serializer) getLocation(location []interface{}) map[string]interface{} {
-	Location := make(map[string]interface{},0)
+func (sz Serializer) getLocation(location []interface{}) LDLocation {
+	Location := LDLocation{}
 	if len(location) > 0 {
 		locationMap := location[0].(map[string]interface{})
 		for k, v := range locationMap {
 			if strings.Contains(k, "@type") {
-				Location["type"] = sz.getType(v.([]interface{}))
+				Location.Type = sz.getType(v.([]interface{}))
 			} else if strings.Contains(k, "hasValue") {
-				Location["type"] = sz.getLocationValue(v.([]interface{}))
+				Location.Value = sz.getLocationValue(v.([]interface{}))
 			}
 		}
 	}
@@ -463,14 +464,14 @@ func (sz Serializer) getPointLocation(coordinates []interface{}) []float64 {
 	return Coordinates
 }
 
-func (sz Serializer) getArrayofCoordinates(coordinates []interface{}) [][]interface{} {
-	var Coordinates [][]interface{} //Array contains point coordinates with longitude & latitude values in order
+func (sz Serializer) getArrayofCoordinates(coordinates []interface{}) [][]float64 {
+	var Coordinates [][]float64 //Array contains point coordinates with longitude & latitude values in order
 	for i := 0; i < len(coordinates); i = i + 2 {
-		var coord []interface{}
+		var coord []float64
 		fCor := coordinates[i].(map[string]interface{})
 		sCor := coordinates[i+1].(map[string]interface{})
-		coord = append(coord, fCor["@value"])//.(float64))
-		coord = append(coord, sCor["@value"])//.(float64))
+		coord = append(coord, fCor["@value"].(float64))
+		coord = append(coord, sCor["@value"].(float64))
 		Coordinates = append(Coordinates, coord)
 	}
 	return Coordinates

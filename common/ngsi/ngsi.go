@@ -1323,11 +1323,10 @@ func changeInv1cordinates(Latitude interface{}, Longitude interface{}) interface
 }
 
 func resolvePolygon(location interface{}) interface{} {
-	OuterArray := location.([][]interface{})
-	fmt.Println(OuterArray)
+	OuterArray := location.([]interface{})
 	ListOfV1Points := make([]interface{}, 0)
 	for point := 0; point < len(OuterArray); point = point + 1 {
-		points := OuterArray[point]
+		points := OuterArray[point].([]interface{})
 		v1Points := changeInv1cordinates(points[0], points[1])
 		ListOfV1Points = append(ListOfV1Points, v1Points)
 	}
@@ -1359,7 +1358,7 @@ func GetNGSIV1DomainMetaData(typ string, location interface{}) (string, interfac
 		points = resolveMultipont(location)
 	} else {
 		valuetyp = typ
-		points = changeInv1cordinates(0,0)
+		points = changeInv1cordinates(float64(0),float64(0))
 	}
 	return valuetyp, points
 }
