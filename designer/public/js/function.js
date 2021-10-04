@@ -147,7 +147,7 @@ $(function() {
             functionCtxObj.attribute.status =  'enabled';
             functionCtxObj.updateAction = 'UPDATE';
             functionCtxObj.internalType = 'FogFunction';
-
+             console.log("init fog function ----- ",functionCtxObj);
 
             submitFogFunction(functionCtxObj);
         }
@@ -225,11 +225,11 @@ $(function() {
     function openFogFunctionEditor(fogfunction) {
         console.log(fogfunction);
 
-        if (fogfunction && fogfunction.attributes.designboard) {
-            CurrentScene = fogfunction.attributes.designboard.value;
+        if (fogfunction && fogfunction.designboard) {
+            CurrentScene = fogfunction.designboard;
             showFogFunctionEditor();
 
-            var topology = fogfunction.attributes.topology.value;
+            var topology = fogfunction.topology;
             $('#serviceName').val(topology.name);
             $('#serviceDescription').val(topology.description);
         }
@@ -509,6 +509,7 @@ $(function() {
             var editorButton = document.getElementById('editor-' + fogfunction.id);
             editorButton.onclick = function(myFogFunction) {
                 return function() {
+                    console.log("editor buttion ",myFogFunction);
                     openFogFunctionEditor(myFogFunction);
                 };
             }(fogfunction);
@@ -516,6 +517,7 @@ $(function() {
             var deleteButton = document.getElementById('delete-' + fogfunction.id);
             deleteButton.onclick = function(myFogFunction) {
                 return function() {
+                    console.log("delete buttion ",myFogFunction);
                     deleteFogFunction(myFogFunction);
                 };
             }(fogfunction);
@@ -523,16 +525,16 @@ $(function() {
     }
 
     function deleteFogFunction(fogfunction) {
+        console.log("delete function ",fogfunction.uid);
         // delete this fog function
-        var functionEntity = {
-            id: fogfunction.id,
-            type: 'FogFunction',
-            isPattern: false
-        };
-
+        var functionEntity = {};
+        var attribute = {id :fogfunction.id};
+        functionEntity.attribute = attribute
+        functionEntity.updateAction = 'DELETE';
+        functionEntity.internalType = 'FogFunction';
+        functionEntity.uid = fogfunction.uid
         console.log("delete a fog function");
         console.log(functionEntity);
-
         clientDes.deleteContext(functionEntity).then(function(data) {
             console.log(data);
             showFogFunctions();

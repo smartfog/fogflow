@@ -139,9 +139,14 @@ app.post('/intent', jsonParser, function(req, res) {
 function getResult(filterBy, objList) {
     var arr = [];
     for(var i in objList){
+            if (Object.keys(objList[i].attribute).length === 0) {
+                console.log("aaaa",objList[i]);
+                continue;}
             var fType = objList[i]['internalType'];
             if (fType != undefined && filterBy == fType){
-                    arr.push(JSON.parse(objList[i].attribute));
+                    attrObj = JSON.parse(objList[i].attribute) 
+                    attrObj.uid= objList[i].uid
+                    arr.push(attrObj);
                     continue;
             }
     }
@@ -153,44 +158,30 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
     let updateContextReq = Object.assign({}, await req.body);
     console.log("****************** update",updateContextReq);
 
-    //forward it to the cloud broker 
-    //vinod: start 
-    // var response = await axios({
-    //     method: 'post',
-    //     url: cloudBrokerURL + '/updateContext',
-    //     data: updateContextReq
-    // });
-    //vinod : stop
 
-    // if (response.status == 200) {
-        
-    // }
     if (updateContextReq.updateAction == "DELETE") {
+        console.log("delete entity is ",updateContextReq);
         amqp.amqpPubTest(updateContextReq)
         let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
-        await dgraph.DeleteEntity(tmpVar);
+        await dgraph.DeleteNodeById(tmpVar.uid);
 
         
     } else if (updateContextReq.updateAction == "UPDATE") {
         console.log("main js obj  ++++ ",updateContextReq)
-        await amqp.amqpPubTest(updateContextReq)
+       /// await amqp.amqpPubTest(updateContextReq)
         let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
         await dgraph.WriteEntity(tmpVar)
         
     }
-    var dgraphOp = await dgraph.QueryJsonWithType("Operator")
-    //console.log("dgraph data ********* ", getResult("Operator",dgraphOp.contextElements));
-
     res.send("")
 });
 
 app.post('/internal/getContext', jsonParser, async function (req, res) {
     var queryContext = await req.body
-    console.log("get internal type ",queryContext)
     var dgraphOp = await dgraph.QueryJsonWithType(queryContext.internalType)
-    console.log("dgraph data ********* ", getResult(queryContext.internalType,dgraphOp.contextElements));
     res.send({data:getResult(queryContext.internalType,dgraphOp.contextElements)})
 });
+
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res) {

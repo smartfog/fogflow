@@ -339,7 +339,40 @@ async function QueryNodeByEntityId(eid) {
     }
 }
 
+/*
+   query entity by uid
+*/
+async function QueryNodeByActionType(internalType) {
+    try {
+        const dgraphClientStub = await newClientStub();
+        const dgraphClient = await newClient(dgraphClientStub);
 
+        console.log("query context elements by internal type: " + internalType)
+
+        const query = `query all($internalType: string) {
+            contextElements(func: has(ContextData)) {
+               {
+                    uid
+                    ContextData @filter(ge(internalType, $internalType)) {
+                        internalType
+                    }                     
+               }
+            }
+        }`;
+        const vars = { $internalType: internalType };
+        const responseBody = await dgraphClient.newTxn().queryWithVars(query, vars);
+
+        console.log(responseBody.getJson())
+
+        ctxElements = responseBody.getJson().contextElements;
+
+        await dgraphClientStub.close();
+
+        return ctxElements;
+    } catch (err) {
+        console.log('DB ERROR::', err);
+    }
+}
 
 /*
    delete entity by uid
@@ -433,6 +466,7 @@ async function LoadEntity() {
      }
  } */
 async function QueryJsonWithType(internalType) {
+    console.log("&&&&&&&&&&&&&&&&&&&&&& in query ---");
     internalType = 'Operator'
     const dgraphClientStub = await newClientStub();
     const dgraphClient = await newClient(dgraphClientStub);
@@ -440,6 +474,7 @@ async function QueryJsonWithType(internalType) {
     const query = `{
         contextElements(func: type(ContextData)) {
            {
+               uid
             expand(_all_)
               }
            }
@@ -529,4 +564,4 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 
-module.exports = { Init, WriteEntity, DeleteEntity, DeleteNodeById, WriteJsonWithType, QueryJsonWithType, DropAll }
+module.exports = { Init, WriteEntity, DeleteEntity, DeleteNodeById, WriteJsonWithType, QueryJsonWithType, DropAll, QueryNodeByActionType }

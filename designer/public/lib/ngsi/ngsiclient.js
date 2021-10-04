@@ -98,18 +98,19 @@ var NGSI10Client = (function() {
     
     // delete context 
     NGSI10Client.prototype.deleteContext = function deleteContext(entityId) {
-        var contextElement = {};
-        contextElement.entityId = entityId
         
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'DELETE'
+        // var contextElement = {};
+        // contextElement.entityId = entityId
+        
+        // var updateCtxReq = {};
+        // updateCtxReq.contextElements = [];
+        // updateCtxReq.contextElements.push(contextElement)
+        // updateCtxReq.updateAction = 'DELETE'
         
         return axios({
             method: 'post',
             url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            data: entityId
         }).then( function(response){
             if (response.status == 200) {
                 return response.data;
@@ -120,7 +121,8 @@ var NGSI10Client = (function() {
     };    
     
     // query context
-    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {   
+    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {  
+        console.log("queryContext url *** ",this.brokerURL); 
         return axios({
             method: 'post',
             url: this.brokerURL + '/queryContext',

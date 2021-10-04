@@ -77,6 +77,7 @@ $(function() {
             var example = myToplogyExamples[i].topology;
             var topology = {};
             topology.attribute = example;
+            topology.attribute.designboard = myToplogyExamples[i].designboard;
             topology.internalType = 'Topology';
             topology.updateAction = 'UPDATE';
             submitTopology(topology, example.designboard);
@@ -152,11 +153,11 @@ $(function() {
     }
 
     function openTopologyEditor(topologyEntity) {
-        if (topologyEntity.attributes.designboard) {
-            CurrentScene = topologyEntity.attributes.designboard.value;
+        if (topologyEntity.designboard) {
+            CurrentScene = topologyEntity.designboard;
             showTopologyEditor();
 
-            var topology = topologyEntity.attributes.template.value;
+            var topology = topologyEntity;
 
             $('#serviceName').val(topology.name);
             $('#serviceDescription').val(topology.description);
@@ -164,13 +165,20 @@ $(function() {
     }
 
     function deleteTopology(topologyEntity) {
-        var entityid = {
-            id: topologyEntity.entityId.id,
-            type: 'Topology',
-            isPattern: false
-        };
+        console.log("delete topology entity ",topologyEntity);
 
-        clientDes.deleteContext(entityid).then(function(data) {
+        // var entityid = {
+        //     id: topologyEntity.entityId.id,
+        //     type: 'Topology',
+        //     isPattern: false
+        // };
+        var topEntity = {};
+        var attribute = {id: topologyEntity.name}
+        topEntity.attribute = attribute
+        topEntity.updateAction = 'DELETE';
+        topEntity.internalType = 'Topology';
+        topEntity.uid = topologyEntity.uid
+        clientDes.deleteContext(topEntity).then(function(data) {
             console.log(data);
             updateTopologyList();
         }).catch(function(error) {
@@ -208,6 +216,7 @@ $(function() {
         attribute.name = topologyName;
         attribute.description = serviceDescription;
         attribute.tasks = generateTaskList(scene);
+        attribute.designboard = scene;
         topology.attribute = attribute;
         topology.internalType = 'Topology';
         topology.updateAction = 'UPDATE';
@@ -326,7 +335,7 @@ $(function() {
 
     function submitTopology(topology, designboard) {
         console.log("==============test========");
-        console.log(JSON.stringify(topology));
+        console.log("save in db topology   ",JSON.stringify(topology));
         // console.log(JSON.stringify(designboard));
 
         // var topologyCtxObj = {};
@@ -528,14 +537,14 @@ $(function() {
                 return function() {
                     removeIntent(intentID);
                 };
-            }(entity.id);
+            }(entity);
 
             var updateButton = document.getElementById('UPDATE-' + entity.id);
             updateButton.onclick = function(intentID) {
                 return function() {
                     updateIntent(intentID);
                 };
-            }(entity.id);
+            }(entity);
         }
     }
 
@@ -653,13 +662,15 @@ $(function() {
         showIntent();
     }
 
-    function removeIntent(eid) {
-        var entityid = {
-            id: eid,
-            isPattern: false
-        };
-
-        client.deleteContext(entityid).then(function(data) {
+    function removeIntent(intentObj) {
+        console.log("service intent is ",intentObj)
+        var sInent = {};
+        var attribute = {id:intentObj.id}
+        sInent.attribute = attribute
+        sInent.updateAction = 'DELETE';
+        sInent.internalType = 'ServiceIntent';
+        sInent.uid = intentObj.uid
+        clientDes.deleteContext(sInent).then(function(data) {
             console.log('remove the service intent');
             // show the updated intent list
             showIntents();
@@ -676,7 +687,7 @@ $(function() {
         var queryReq = {}
         queryReq.entities = [{ id: eid, isPattern: false }];
 
-        client.queryContext(queryReq).then(function(data) {
+        clientDes.getContext(queryReq).then(function(data) {
             console.log('update this service intent');
             showIntent(data[0]);
         }).catch(function(error) {
