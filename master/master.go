@@ -25,6 +25,7 @@ type Master struct {
 	discoveryURL string
 
 	communicator *Communicator
+	communicator2 *Communicator
 	ticker       *time.Ticker
 	agent        *NGSIAgent
 
@@ -132,6 +133,28 @@ func (master *Master) Start(configuration *Config) {
 		}
 	}()
 
+	go func() {
+                cfg1 := MessageBusConfig{}
+                cfg1.Broker = configuration.GetMessageBus()
+                cfg1.Exchange = "Op"
+                cfg1.ExchangeType = "topic"
+                cfg1.DefaultQueue = "Operator"
+                cfg1.BindingKeys = []string{"Operator.", "heartbeat.*"}
+
+                // create the communicator with the broker info and topics
+                master.communicator2 = NewCommunicator(&cfg1)
+                for {
+                        retry, err := master.communicator2.StartConsuming("Operator", master)
+                        if retry {
+                                INFO.Printf("Going to retry launching the rabbitmq. Error: %v", err)
+                        } else {
+                                INFO.Printf("stop retrying")
+                                break
+                        }
+                }
+        }()
+
+
 	master.prevNumOfTask = 0
 	master.curNumOfTasks = 0
 
@@ -145,7 +168,7 @@ func (master *Master) Start(configuration *Config) {
 	}()
 
 	// subscribe to the update of required context information
-	master.triggerInitialSubscriptions()
+	//master.triggerInitialSubscriptions()
 }
 
 func (master *Master) onTimer() {
@@ -163,7 +186,7 @@ func (master *Master) Quit() {
 	master.ticker.Stop()
 	INFO.Println("stop the timer")
 	master.communicator.StopConsuming()
-	INFO.Println("stop consuming the messages")
+	INFO.Println("stop consuming the message")
 }
 
 func (master *Master) registerMyself() error {
@@ -198,14 +221,14 @@ func (master *Master) unregisterMyself() {
 	}
 }
 
-func (master *Master) triggerInitialSubscriptions() {
+/*func (master *Master) triggerInitialSubscriptions() {
 	master.subscribeContextEntity("Operator")
 	master.subscribeContextEntity("DockerImage")
 	master.subscribeContextEntity("Topology")
 	master.subscribeContextEntity("FogFunction")
 	master.subscribeContextEntity("ServiceIntent")
 	master.subscribeContextEntity("TaskIntent")
-}
+}*/
 
 func (master *Master) subscribeContextEntity(entityType string) {
 	subscription := SubscribeContextRequest{}
@@ -234,19 +257,21 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 	if len(notifyCtxReq.ContextResponses) == 0 {
 		return
 	}
+	fmt.Println(" %%%%%%%%%%%%%%%%% notify %%%%%%%%%%%%%%",notifyCtxReq.ContextResponses[0].ContextElement)
 	contextObj := CtxElement2Object(&notifyCtxReq.ContextResponses[0].ContextElement)
 	switch stype {
 	// registry of an operator
 	case "Operator":
-		master.handleOperatorRegistration(contextObj)
+		fmt.Println(" ***** Operastor registry ********",contextObj)
+		//master.handleOperatorRegistration(contextObj)
 
 	// registry of a docker image
 	case "DockerImage":
-		master.handleDockerImageRegistration(contextObj)
+		//master.handleDockerImageRegistration(contextObj)
 
 	// topology to define service template
 	case "Topology":
-		master.handleTopologyUpdate(contextObj)
+		//master.handleTopologyUpdate(contextObj)
 
 	// fog function that includes a pair of topology and intent
 	case "FogFunction":
@@ -254,18 +279,19 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 
 	// service orchestration
 	case "ServiceIntent":
-		master.serviceMgr.handleServiceIntentUpdate(contextObj)
+		//master.serviceMgr.handleServiceIntentUpdate(contextObj)
 
 	// task orchestration
 	case "TaskIntent":
-		master.taskMgr.handleTaskIntentUpdate(contextObj)
+		//master.taskMgr.handleTaskIntentUpdate(contextObj)
 	}
 }
 
 //
 // to handle the registry of operator
 //
-func (master *Master) handleOperatorRegistration(operatorCtxObj *ContextObject) {
+
+/*func (master *Master) handleOperatorRegistration(operatorCtxObj *ContextObject) {
 	INFO.Println(operatorCtxObj)
 
 	if operatorCtxObj.IsEmpty() {
@@ -275,7 +301,9 @@ func (master *Master) handleOperatorRegistration(operatorCtxObj *ContextObject) 
 
 	var operator = Operator{}
 	jsonText, _ := json.Marshal(operatorCtxObj.Attributes["operator"].Value.(map[string]interface{}))
+	fmt.Println("**** jsonText *****",jsonText)
 	err := json.Unmarshal(jsonText, &operator)
+	fmt.Println("**** Unmarshal Operator inside function *****",operator)
 	if err != nil {
 		ERROR.Println("failed to read the given operator")
 	} else {
@@ -283,12 +311,35 @@ func (master *Master) handleOperatorRegistration(operatorCtxObj *ContextObject) 
 		master.operatorList[operator.Name] = operator
 		master.operatorList_lock.Unlock()
 	}
+}*/
+
+//start: Pradumn
+func (master *Master) handleOperatorRegistration(msg json.RawMessage) {
+	INFO.Println(string(msg))
+	//fmt.Println(len(msg))
+	var operator = Operator{}
+        err := json.Unmarshal(msg, &operator)
+	if(len(msg) <= 2 || len(operator.Name) == 0) {
+		//does not handle the removal of operator
+                return
+        }
+	INFO.Println("Operator : ",&operator)
+
+	if err!=nil {
+		ERROR.Println("failed to read the given operator")
+	}else {
+		master.operatorList_lock.Lock()
+                master.operatorList[operator.Name] = operator
+                master.operatorList_lock.Unlock()
+	}
 }
+//End: Pradumn
+
 
 //
 // to handle the management of docker images
 //
-func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextObject) {
+/*func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextObject) {
 	INFO.Println(dockerImageCtxObj)
 
 	if dockerImageCtxObj.IsEmpty() {
@@ -303,7 +354,9 @@ func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextOb
 	dockerImage.TargetedHWType = dockerImageCtxObj.Attributes["hwType"].Value.(string)
 	dockerImage.TargetedOSType = dockerImageCtxObj.Attributes["osType"].Value.(string)
 	dockerImage.Prefetched = dockerImageCtxObj.Attributes["prefetched"].Value.(bool)
-
+	
+	fmt.Println("********* dockerImage *********",dockerImage)
+	
 	master.dockerImageList_lock.Lock()
 	master.dockerImageList[dockerImage.OperatorName] = append(master.dockerImageList[dockerImage.OperatorName], dockerImage)
 	master.dockerImageList_lock.Unlock()
@@ -312,7 +365,38 @@ func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextOb
 		// inform all workers to prefetch this docker image in advance
 		master.prefetchDockerImages(dockerImage)
 	}
-}
+}*/
+
+//Start: Pradumn
+func (master *Master) handleDockerImageRegistration(msg json.RawMessage) {
+	if(len(msg) <=2) {
+		//does not handle the removal of dockerImage
+		return
+	}
+	INFO.Println(string(msg))
+
+	var dockerImage = DockerImage{}
+        err := json.Unmarshal(msg, &dockerImage)
+	fmt.Println("***** dockerImage operator name ****",dockerImage.OperatorName)
+	if(len(dockerImage.OperatorName) == 0 || len(dockerImage.ImageName) == 0 || len(dockerImage.ImageTag) == 0 || len(dockerImage.TargetedHWType) == 0 || len(dockerImage.TargetedOSType) == 0) {
+                //does not handle the removal of dockerImage
+                return
+        }
+        INFO.Println("dockerImage : ",&dockerImage)
+
+        if err!=nil {
+                ERROR.Println("failed to read the given dockerImage")
+	}else {
+		master.dockerImageList_lock.Lock()
+	        master.dockerImageList[dockerImage.OperatorName] = append(master.dockerImageList[dockerImage.OperatorName], dockerImage)
+		master.dockerImageList_lock.Unlock()
+	}
+	if dockerImage.Prefetched == true {
+                // inform all workers to prefetch this docker image in advance
+                master.prefetchDockerImages(dockerImage)
+        }
+  }
+
 
 func (master *Master) prefetchDockerImages(image DockerImage) {
 	master.workerList_lock.RLock()
@@ -362,11 +446,13 @@ func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) 
 	topology := Topology{}
 
 	topologyJsonText, err := json.Marshal(fogfunctionCtxObj.Attributes["topology"].Value.(map[string]interface{}))
+	fmt.Println("*********topologyJsonText*************",topologyJsonText)
 	if err != nil {
 		ERROR.Println("the topology object is not defined")
 		return
 	}
 	err = json.Unmarshal(topologyJsonText, &topology)
+	fmt.Println("*********topology*************",topology)
 	if err != nil {
 		ERROR.Println("the topology object is not correctly defined")
 		return
@@ -380,6 +466,7 @@ func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) 
 		return
 	}
 	err = json.Unmarshal(intentJsonText, &intent)
+	fmt.Println("*********intent*************",intent)
 	if err != nil {
 		ERROR.Println("the intent object is not correctly defined")
 		return
@@ -403,6 +490,7 @@ func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) 
 	// handle the associated service intent
 	master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
 
+	fmt.Println("******* inside  handle fog function ***********",fogfunction)
 	// create or update this fog function
 	master.fogfunctionList_lock.Lock()
 	master.fogfunctionList[fogfunction.Id] = &fogfunction
@@ -414,7 +502,7 @@ func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) 
 //
 // to update the topology list
 //
-func (master *Master) handleTopologyUpdate(topologyCtxObj *ContextObject) {
+/*func (master *Master) handleTopologyUpdate(topologyCtxObj *ContextObject) {
 	INFO.Println(topologyCtxObj)
 
 	if topologyCtxObj.IsEmpty() {
@@ -445,6 +533,8 @@ func (master *Master) handleTopologyUpdate(topologyCtxObj *ContextObject) {
 		INFO.Println(topology)
 
 		topology.Id = topologyCtxObj.Entity.ID
+		fmt.Println("****** topology.Id *****",topology.Id)
+		fmt.Println("****** topogoly ko handle karna hai *********",&topology)
 
 		master.topologyList_lock.Lock()
 		master.topologyList[topology.Name] = &topology
@@ -452,6 +542,71 @@ func (master *Master) handleTopologyUpdate(topologyCtxObj *ContextObject) {
 
 		INFO.Println(topology)
 	}
+
+}*/
+
+//start:Pradumn
+func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
+	INFO.Println(string(msg))
+
+	/*if(len(msg) <= 2{
+		 master.topologyList_lock.Lock()
+
+                var eid = topologyCtxObj.Entity.ID
+
+                // find which one has this id
+                for _, topology := range master.topologyList {
+                        if topology.Id == eid {
+                                var name = topology.Name
+                                delete(master.topologyList, name)
+                                break
+                        }
+                }
+
+                master.topologyList_lock.Unlock()
+
+                return
+        }*/
+
+	topology := Topology{}
+        err := json.Unmarshal(msg, &topology)
+	fmt.Println("***** len(topology.Tasks)*****",len(topology.Tasks))
+	fmt.Println("******* unmarshalled topology********",&topology)
+
+	if(len(topology.Name) !=0 && len(topology.Tasks) == 0) {
+                 master.topologyList_lock.Lock()
+
+                var eid = "Topology." + topology.Name
+
+                // find which one has this id
+                for _, topologyToCheck := range master.topologyList {
+                        if topologyToCheck.Id == eid {
+                                var name = topologyToCheck.Name
+                                delete(master.topologyList, name)
+                                break
+                        }
+                }
+
+                master.topologyList_lock.Unlock()
+
+                return
+        }
+
+
+	if err == nil {
+                INFO.Println(topology)
+
+                topology.Id = "Topology." + topology.Name
+                fmt.Println("****** topology.Id *****",topology.Id)
+                fmt.Println("****** topogoly ko handle karna hai *********",&topology)
+
+                master.topologyList_lock.Lock()
+                master.topologyList[topology.Name] = &topology
+                master.topologyList_lock.Unlock()
+
+                INFO.Println(topology)
+        }
+
 
 }
 
@@ -608,6 +763,29 @@ func (master *Master) unsubscribeContextAvailability(sid string) {
 // to deal with the communication between master and workers via rabbitmq
 //
 func (master *Master) Process(msg *RecvMessage) error {
+
+	//contextObj := CtxElement2Object(string(msg.PayLoad))
+	//fmt.Println("***** Printing received message *****",msg)
+	//Op := Operator{}
+	//constEl := ContextElement{}
+	//jT, err1 := json.Marshal(msg.PayLoad.attributes["operator"].Value.(string))
+	//jT, err1 := json.Marshal(msg.PayLoad)
+	//fmt.Println("******* JT or err1**********",jT,err1)
+	//err := json.Unmarshal(msg.PayLoad, &constEl)
+	//jj, _ := json.Marshal(constEl.Attributes["operator"].Value.(map[string]interface{}))
+	//err2 := json.Unmarshal(jj,&Op)
+	//fmt.Println("***** err, constEl ********",err,constEl)
+	
+	//constOb := CtxElement2Object(&constEl)
+	//fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
+	
+	//jj, _ := json.Marshal(constOb.Attributes["operator"].Value.(map[string]interface{}))
+        //err2 := json.Unmarshal(jj,&Op)
+	
+	//fmt.Println("***** msg ********",string(msg.PayLoad))
+	//if err2 == nil {
+	//	fmt.Println(" **** OPERATOR *********", Op)
+	//}
 	//INFO.Println("type ", msg.Type)
 
 	switch msg.Type {
@@ -624,6 +802,92 @@ func (master *Master) Process(msg *RecvMessage) error {
 		if err == nil {
 			master.onTaskUpdate(msg.From, &update)
 		}
+
+	case "Operator":
+		//constEl := ContextElement{}
+		//err := json.Unmarshal(msg.PayLoad, &constEl)
+		//fmt.Println("***** err, constEl ********",err,constEl)
+		//constOb := CtxElement2Object(&constEl)
+	        //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
+		//fmt.Println(string(msg.PayLoad));
+		//fmt.Println("***** msg size **********",len(msg.PayLoad));
+		//var operator = Operator{}
+		//err := json.Unmarshal(msg.PayLoad, &operator)
+		//fmt.Println("&&&&&&&&& operator and error &&&&&&&&",operator,err)
+
+		master.handleOperatorRegistration(msg.PayLoad)
+
+	case "DockerImage":
+		//constEl := ContextElement{}
+                //err := json.Unmarshal(msg.PayLoad, &constEl)
+                //fmt.Println("***** err, constEl ********",err,constEl)
+                //constOb := CtxElement2Object(&constEl)
+                //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
+
+		//var dockerImage = DockerImage{}
+		//err := json.Unmarshal(msg.PayLoad, &dockerImage)
+		//fmt.Println("&&&&&&&&& dockerImage and error &&&&&&&&",dockerImage,err)
+		//if dockerImage.Prefetched == true {
+                // inform all workers to prefetch this docker image in advance
+                //master.prefetchDockerImages(dockerImage)
+		//}
+
+
+		master.handleDockerImageRegistration(msg.PayLoad)
+
+	case "FogFunction":
+		//constEl := ContextElement{}
+                //err := json.Unmarshal(msg.PayLoad, &constEl)
+                //fmt.Println("***** err, constEl ********",err,constEl)
+                //constOb := CtxElement2Object(&constEl)
+                //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
+		//master.handleFogFunctionUpdate(constOb)
+		
+		fmt.Println("**** received msg ********",msg.PayLoad)
+		/*var sol = msg.PayLoad
+		var topology = Topology{}
+		err := json.Unmarshal(msg.PayLoad.attributes.topology, &topology)
+		fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&topology,err)
+		
+		var intent = ServiceIntent{}
+		err2 := json.Unmarshal(msg.PayLoad.attributes.intent, &intent)
+		fmt.Println("&&&&&&&&& intent from fogfunction and error &&&&&&&&",&topology,err2)
+		intent.ID = msg.PayLoad.attributes.id
+		fmt.Println("**** intent id *******",intent.ID)
+
+		var fogfunction = FogFunction{}
+		fogfunction.Id =  msg.PayLoad.attributes.id
+		fogfunction.Name = msg.PayLoad.attributes.name
+		fogfunction.Topology = topology
+		fogfunction.Intent = intent
+		fmt.Println("&&&&&&&&& fogfunction &&&&&&&&",&fogfunction)*/
+		
+		var fogfunction = FogFunction{}
+		err := json.Unmarshal(msg.PayLoad, &fogfunction)
+		fogfunction.Intent.ID = fogfunction.Id
+		fmt.Println("&&&&&&&&& topology and name &&&&&&&&",&fogfunction.Topology, &fogfunction.Topology.Name)
+		master.topologyList_lock.Lock()
+		master.topologyList[fogfunction.Topology.Name] = &fogfunction.Topology
+		master.topologyList_lock.Unlock()
+		master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
+		fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&fogfunction,err)
+
+
+	case "Topology":
+                /*constEl := ContextElement{}
+                err := json.Unmarshal(msg.PayLoad, &constEl)
+                fmt.Println("***** err, constEl ********",err,constEl)
+                constOb := CtxElement2Object(&constEl)
+                fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)*/
+
+		//var topology = Topology{}
+		//err := json.Unmarshal(msg.PayLoad, &topology)
+		//fmt.Println("&&&&&&&&& topology and error &&&&&&&&",&topology,err)
+		master.handleTopologyUpdate(msg.PayLoad)
+
+	case "ServiceIntent": 
+		master.serviceMgr.handleServiceIntentUpdate(msg.PayLoad)
+
 	}
 
 	return nil
@@ -633,6 +897,7 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	master.workerList_lock.Lock()
 
 	workerID := profile.WID
+	fmt.Println("**** workerID and profile ******",workerID,profile)
 	if worker, exist := master.workers[workerID]; exist {
 		worker.Capacity = profile.Capacity
 	} else {
@@ -741,7 +1006,7 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 
 	master.dockerImageList_lock.RLock()
 	for _, image := range master.dockerImageList[operatorName] {
-		DEBUG.Println(image)
+		fmt.Println("*****image*******",image)
 		DEBUG.Println(wProfile)
 
 		hwType := "X86"
@@ -786,7 +1051,7 @@ func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
 func (master *Master) SelectWorker(locations []Point) string {
 	master.workerList_lock.RLock()
 	defer master.workerList_lock.RUnlock()
-
+	fmt.Println("&&&& len(locations) &&&&&&&&&",len(locations))
 	if len(locations) == 0 {
 		for _, worker := range master.workers {
 			return worker.WID
@@ -795,11 +1060,13 @@ func (master *Master) SelectWorker(locations []Point) string {
 	}
 
 	DEBUG.Printf("points: %+v\r\n", locations)
+	fmt.Println("&&&& master.workers &&&&&&",master.workers)
 
 	// select the workers with the closest distance and also the worker is currently not overloaded
 	closestWorkerID := ""
 	closestTotalDistance := uint64(18446744073709551615)
 	for _, worker := range master.workers {
+		fmt.Println("***** master.worker *******",worker)
 		INFO.Printf("check worker %+v\r\n", worker)
 
 		// if this worker is already overloaded, check the next one
