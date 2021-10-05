@@ -50,7 +50,10 @@ exports.handler = function(contextEntity, publish, query, subscribe) {
     console.log("contextEntity",contextEntity);
 
     // do the internal data processing
-    if (type == 'PowerPanel') {
+    if (type == "PowerPanelNew") {
+	console.log("Enter into powerpanel")
+	console.log("contextEntity.usage",contextEntity.usage)
+	
         var watts = contextEntity.usage.value;
         var deviceID = contextEntity.id;
         var shopID = contextEntity.shop.value;
@@ -65,7 +68,7 @@ exports.handler = function(contextEntity, publish, query, subscribe) {
             anomaly['when'] = now.toISOString();
             anomaly['whichpanel'] = deviceID;
             anomaly['whichshop'] = shopID;
-            anomaly['where'] = location;
+            //anomaly['where'] = location;
             anomaly['usage'] = watts;
 
             var updateEntity = {};
@@ -84,10 +87,10 @@ exports.handler = function(contextEntity, publish, query, subscribe) {
                 type: 'Property',
                 value: anomaly['whichshop']
             };
-            updateEntity.where = {
+            /*updateEntity.where = {
                 type: 'Property',
                 value: anomaly['where']
-            };
+            };*/
             updateEntity.usage = {
                 type: 'Property',
                 value: anomaly['usage']
@@ -98,11 +101,12 @@ exports.handler = function(contextEntity, publish, query, subscribe) {
                 type: 'string',
                 value: anomaly['whichshop']
             };*/
-
+	    console.log("publish")
+            console.log("updateEntity",updateEntity)
             publish(updateEntity)
         }
     } else if (type == 'Rule') {
-        threshold = threshold.value;
+        threshold = contextEntity.threshold.value;
         console.log('update the threshold to ', threshold);
     }
 };

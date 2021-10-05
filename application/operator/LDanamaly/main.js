@@ -8,6 +8,7 @@ var fs = require('fs');
 
 var NGSILDclient = null;
 var brokerURL;
+var output = {}
 var outputs = [];
 var input = {};
 var threshold = 30;
@@ -45,6 +46,7 @@ function handleCmds(commands) {
 }
 
 function handleCmd(commandObj) {
+    console.log("commandObj",commandObj)
     if (commandObj.command == 'CONNECT_BROKER') {
         connectBroker(commandObj);
     } else if (commandObj.command == 'SET_INPUTS') {
@@ -75,14 +77,21 @@ function setInputs(cmd) {
 }
 
 
-function setOutputs(cmd) {
+/*function setOutputs(cmd) {
     var outputStream = {};
     outputStream.id = cmd.id;
     outputStream.type = cmd.type;
-
     outputs.push(outputStream);
+    console.log(outputs)
 
     console.log('output has been set: ', cmd);
+}*/
+
+function setOutputs(cmd) {
+    output.id = cmd.id;
+    output.type = cmd.type;
+
+    console.log('output has been set: ', output);
 }
 
 //
@@ -125,10 +134,20 @@ function subscribe(subscribeCtxReq) {
 // publish context entities: 
 //
 function publish(ctxUpdate) {
+
     if (NGSILDclient == null) {
         console.log("=== broker is not configured for your update");
         return
     }
+
+    if ('id' in output && 'type' in output) {
+   	console.log("outputs",output)
+        ctxUpdate.id = "urn:ngsi-ld:"+output.id;
+        ctxUpdate.type = output.type;
+        //ctxUpdate.entityId.isPattern = false;
+    }
+
+    console.log(ctxUpdate);
 
     NGSILDclient.updateContext(ctxUpdate).then(function(data) {
         console.log('======send update======');

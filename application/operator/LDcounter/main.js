@@ -79,21 +79,19 @@ function updateContext(stat)
         
     var ctxObj = {};
    
-    ctxObj = {};
     
     var outputStream = outputs[0];
-    
-    ctxObj.id = outputStream.id;
+    console.log("outputStream",outputStream)
+    ctxObj.id = 'urn:ngsi-ld:'+outputStream.id;
     ctxObj.type = outputStream.type;
     //ctxObj.entityId.isPattern = false;    
     
-    ctxObj = {};
             
     ctxObj.time = {        
         type: 'Property',
         value: stat.time
     };
-    ctxObj.attributes.counter = {
+    ctxObj.counter = {
         type: 'Property',
         value: stat.counter
     };  
@@ -149,10 +147,11 @@ function connectBroker(cmd) {
 
 function setOutputs(cmd) 
 {
+    console.log("cmd",cmd)
     var outputStream = {};
     outputStream.id = cmd.id;
     outputStream.type = cmd.type;
-
+    console.log("outputStream",outputStream)
     outputs.push(outputStream);
 
     console.log('output has been set: ', cmd);

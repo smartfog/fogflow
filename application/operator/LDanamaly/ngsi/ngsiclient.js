@@ -16,7 +16,7 @@ function JSONObject2CtxElement(ctxObj) {
     ctxElement['type'] = ctxObj['type']
     
     for( key in ctxObj) {
-	if( key != 'id' && key != 'type' && key != 'modifiedAt' && key != 'createdAt' && key != 'observationSpace' && key != 'operationSpace' && key != 'location' && key != '@context') {
+	if( key != 'id' && key != 'type' && key != 'modifiedAt' && key != 'createdAt' && key != 'observationSpace' && key != 'operationSpace' &&  key != '@context') {
             ctxElement[key] = ctxObj[key]
 	}
     }
@@ -43,6 +43,7 @@ var NGSILDclient = (function() {
    
         const updateCtxElements = []
 	updateCtxElements.push(updateCtxReq)
+	console.log("updateCtxElements",updateCtxElements)
         return axios({
             method: 'post',
             url: this.brokerURL + '/ngsi-ld/v1/entityOperations/upsert',
@@ -53,6 +54,7 @@ var NGSILDclient = (function() {
   },
             data: updateCtxElements
         }).then( function(response){
+	    console.log("response",response)
             if (response.status == 204) {
 		console.log("Successfully updated")
                 return response.data;
