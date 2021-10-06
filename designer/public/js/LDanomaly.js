@@ -16,7 +16,6 @@ $(function() {
     var chart;
     var MARGIN = { top: 30, right: 20, bottom: 60, left: 80 };
 
-
     addMenuItem('Topology', showTopology);
     addMenuItem('Management', showMgt);
     addMenuItem('Tasks', showTasks);
@@ -63,16 +62,23 @@ $(function() {
         var subscribeCtxReq = {};
 	subscribeCtxReq.type = "Subscription"
 	
-        subscribeCtxReq.entities = [{ type: 'Stat', isPattern: true }];
-        subscribeCtxReq.notification.endpoint.uri = 'http://' + config.agentIP + ':' + config.agentPort + 'notifyContext';
-	subscribeCtxReq.notification.format = "normalized"
+        subscribeCtxReq.entities = [{ type: 'ldStat', isPattern: true }];
+
+	subscribeCtxReq.notification = {}
+	endPoint = {}
+        subscribeCtxReq.notification.format = "normalized"
+	
+	endPoint.uri = 'http://' + config.agentIP + ':' + config.agentPort + 'notifyContext';
+	endPoint.accept = "application/ld+json"
+	subscribeCtxReq.notification.endpoint = endPoint
 	console.log("subscribeCtxReq data for topology",subscribeCtxReq)
         client.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
             console.log(subscriptionId);
             ngsiproxy.reportSubID(subscriptionId);
         }).catch(function(error) {
             console.log('failed to subscribe context');
-        });
+	)};
+        
     }
 
     function handleNotify(contextObj) {

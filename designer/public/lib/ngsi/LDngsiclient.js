@@ -89,7 +89,7 @@ var NGSILDclient = (function() {
     NGSILDclient.prototype.queryContext = function queryContext(id) {        
         return axios({
             method: 'post',
-            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/query'
+            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/query',
 	          headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
@@ -121,8 +121,8 @@ var NGSILDclient = (function() {
   },
             data: subscribeCtxReq
         }).then( function(response){
-            if (response.status == 200) {
-                return response.data.subscribeResponse.subscriptionId;
+            if (response.status == 201) {
+                return response.subscribeResponse.subscriptionId;
             } else {
                 return null;
             }
@@ -216,7 +216,7 @@ if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
     module.exports.CtxElement2JSONObject = CtxElement2JSONObject;
     module.exports.JSONObject2CtxElement = JSONObject2CtxElement;    
 } else {
-    window.NGSI10Client = NGSI10Client;  
+    window.NGSILDclient = NGSILDclient
     window.NGSI9Client = NGSI9Client;
     window.CtxElement2JSONObject = CtxElement2JSONObject;
     window.JSONObject2CtxElement = JSONObject2CtxElement;
