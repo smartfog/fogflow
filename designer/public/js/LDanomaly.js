@@ -29,7 +29,7 @@ $(function() {
 
     //connect to the broker
     var client = new NGSILDclient(config.LdbrokerURL);
-
+    var client2 = new NGSI10Client(config.brokerURL);
     subscribeResult();
     checkTopology();
     checkIntent();

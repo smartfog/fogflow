@@ -40,13 +40,13 @@ config.agentPort = globalConfigFile.designer.agentPort;
 
 config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';
-
+config.LdbrokerURL = './ngsi-ld';
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 
 
 console.log(config);
 
-dgraph.Init();
+//dgraph.Init();
 
 function uuid() {
     var uuid = "",
@@ -147,13 +147,13 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
         data: updateContextReq
     });
 
-    if (response.status == 200) {
+    /*if (response.status == 200) {
         if (updateContextReq.updateAction == "DELETE") {
             await dgraph.DeleteEntity(updateContextReq);
         } else if (updateContextReq.updateAction == "UPDATE") {
             await dgraph.WriteEntity(updateContextReq)
         }
-    }
+    }*/
 
     res.send(response.data)
 });
@@ -228,7 +228,7 @@ var io = require('socket.io').listen(webServer);
 io.on('connection', function(client) {
     console.log('a client is connecting');
     client.on('subscriptions', function(subList) {
-        console.log(subList);
+	console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
             sid = subList[i];
             subscriptions[sid] = client;
