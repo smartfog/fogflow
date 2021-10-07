@@ -16,6 +16,7 @@ $(function() {
     var chart;
     var MARGIN = { top: 30, right: 20, bottom: 60, left: 80 };
 
+
     addMenuItem('Topology', showTopology);
     addMenuItem('Management', showMgt);
     addMenuItem('Tasks', showTasks);
@@ -27,7 +28,8 @@ $(function() {
     ngsiproxy.setNotifyHandler(handleNotify);
 
     //connect to the broker
-    var client = new NGSILDclient(config.brokerURL);
+    var client = new NGSILDclient(config.LdbrokerURL);
+
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -60,35 +62,34 @@ $(function() {
 
     function subscribeResult() {
         var subscribeCtxReq = {};
-	subscribeCtxReq.type = "Subscription"
-	
-        subscribeCtxReq.entities = [{ type: 'ldStat', isPattern: true }];
+        subscribeCtxReq.type = "Subscription"
 
-	subscribeCtxReq.notification = {}
-	endPoint = {}
+        subscribeCtxReq.entities = [{ type: 'ldStat' }];
+
+        subscribeCtxReq.notification = {}
+        endPoint = {}
         subscribeCtxReq.notification.format = "normalized"
-	
-	endPoint.uri = 'http://' + config.agentIP + ':' + config.agentPort + 'notifyContext';
-	endPoint.accept = "application/ld+json"
-	subscribeCtxReq.notification.endpoint = endPoint
-	console.log("subscribeCtxReq data for topology",subscribeCtxReq)
+
+        endPoint.uri = 'http://' + config.agentIP + ':' + config.agentPort + '/notifyContext';
+        endPoint.accept = "application/ld+json"
+        subscribeCtxReq.notification.endpoint = endPoint
+        console.log("subscribeCtxReq data for topology",subscribeCtxReq)
         client.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
-            console.log(subscriptionId);
+            console.log("SubscriptionID",subscriptionId);
             ngsiproxy.reportSubID(subscriptionId);
         }).catch(function(error) {
             console.log('failed to subscribe context');
-	)};
-        
+        });
+
     }
 
     function handleNotify(contextObj) {
         console.log(contextObj);
-	console.log("Received notification data",contextObj)
         curResult.push(contextObj);
 
-        if (contextObj.hasOwnProperty("time") && contextObj.hasOwnProperty("counter")) {
-            var time = contextObj.time.value;
-            var num = contextObj.counter.value;
+        if (contextObj.attributes.hasOwnProperty("time") && contextObj.attributes.hasOwnProperty("counter")) {
+            var time = contextObj.attributes.time.value;
+            var num = contextObj.attributes.counter.value;
             var point = [time, num];
             category_dataset[0].values.push(point);
 
@@ -101,10 +102,9 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-	queryReq.type = "Query"
-        queryReq.entities = [{ id: 'urn:Topology.anomaly-detection', type: 'Topology', isPattern: false }];
+        queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
 
-        client.queryContext(queryReq).then(function(resultList) {
+        client.QueryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
                 curTopology = resultList[0];
@@ -119,11 +119,10 @@ $(function() {
 
     function checkIntent() {
         var queryReq = {};
-	queryReq.type = "Query"
         queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-	console.log("Query request",queryReq)
-        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
-        client.queryContext(queryReq).then(function(resultList) {
+        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
+
+        client.QueryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
                 curIntent = resultList[0];
@@ -170,14 +169,14 @@ $(function() {
         var topologyCtxObj = {};
 
         topologyCtxObj.entityId = {
-            id: 'urn:Topology.' + topology.name,
+            id: 'Topology.' + topology.name,
             type: topology.name,
             isPattern: false
         };
 
-        topologyCtxObj = {};
-        topologyCtxObj.status = { type: 'Property', value: 'enabled' };
-        topologyCtxObj.template = { type: 'Property', value: topology };
+        topologyCtxObj.attributes = {};
+        topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+        topologyCtxObj.attributes.template = { type: 'object', value: topology };
 
         client.updateContext(topologyCtxObj).then(function(data) {
             console.log(data);
@@ -321,7 +320,7 @@ $(function() {
         queryReq.entities = [{ type: 'Task', isPattern: true }];
         queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=anomaly-detection' }] }
 
-        client.queryContext(queryReq).then(function(taskList) {
+        client.QueryContext(queryReq).then(function(taskList) {
             console.log(taskList);
             displayTaskList(taskList);
         }).catch(function(error) {
@@ -476,7 +475,7 @@ $(function() {
     }
 
 
-    function publishThreshold() {
+    /*function publishThreshold() {
         console.log('update the defined threshold for anomaly detection ', RuleSet.threshold);
 
         var ruleCtxObj = {};
@@ -489,6 +488,27 @@ $(function() {
 
         ruleCtxObj.attributes = {};
         ruleCtxObj.attributes.threshold = { type: 'integer', value: RuleSet.threshold };
+
+        client.updateContext(ruleCtxObj).then(function(data) {
+            console.log(data);
+        }).catch(function(error) {
+            console.log('failed to update the threshold for anomaly detection');
+        });
+    }*/
+
+       function publishThreshold() {
+        console.log('update the defined threshold for anomaly detection ', RuleSet.threshold);
+
+        var ruleCtxObj = {};
+
+        /*ruleCtxObj = {
+            id: 'urn:ngsi-ld:Stream.Rule.01',
+            type: 'Rule',
+            isPattern: false
+        };*/
+        ruleCtxObj.id = 'urn:ngsi-ld:Stream.Rule.01'
+        ruleCtxObj.type = 'Rule'
+        ruleCtxObj.threshold = { type: 'Property', value: RuleSet.threshold };
 
         client.updateContext(ruleCtxObj).then(function(data) {
             console.log(data);

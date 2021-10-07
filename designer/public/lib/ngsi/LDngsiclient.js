@@ -45,7 +45,7 @@ var NGSILDclient = (function() {
 	updateCtxElements.push(updateCtxReq)
         return axios({
             method: 'post',
-            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/upsert',
+            url: this.brokerURL + '/v1/entityOperations/upsert',
 	    headers: {
     		'content-type': 'application/json',
    		'Accept': 'application/ld+json',
@@ -53,6 +53,7 @@ var NGSILDclient = (function() {
   },
             data: updateCtxElements
         }).then( function(response){
+	    console.log("response",response)
             if (response.status == 204) {
 		console.log("Successfully updated")
                 return response.data;
@@ -77,7 +78,7 @@ var NGSILDclient = (function() {
             },
             url: this.brokerURL + '/ngsi-ld/v1/entities/' + entityId
         }).then( function(response){
-            if (response.status == 200) {
+            if (response.status == 201) {
                 return response.data;
             } else {
                 return null;
@@ -86,16 +87,16 @@ var NGSILDclient = (function() {
     };    
     
     // query context
-    NGSILDclient.prototype.queryContext = function queryContext(id) {        
+    NGSILDclient.prototype.queryContext = function queryContext(queryCtxReq) {        
         return axios({
             method: 'post',
-            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/query',
+            url: this.brokerURL + '/v1/entityOperations/query',
 	          headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
 		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
   },
-            //data: queryCtxReq
+            data: queryCtxReq
         }).then( function(response){
             //console.log(response);
             if (response.status == 200) {
@@ -110,10 +111,11 @@ var NGSILDclient = (function() {
     };    
         
     // subscribe context
-    NGSILDclient.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
+    NGSILDclient.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) { 
+	console.log(subscribeCtxReq)
         return axios({
             method: 'post',
-            url:    this.brokerURL + '/ngsi-ld/v1/subscriptions/',
+            url: this.brokerURL + '/v1/subscriptions/',
 	        headers: {
                 'content-type': 'application/json',
                 'Accept': 'application/ld+json',
@@ -121,9 +123,12 @@ var NGSILDclient = (function() {
   },
             data: subscribeCtxReq
         }).then( function(response){
+	    console.log("response",response)
             if (response.status == 201) {
-                return response.subscribeResponse.subscriptionId;
+		//console.log("response.subscribeResponse.subscriptionId",response.subscribeResponse.subscriptionId)
+                return response.data.subscribeResponse.subscriptionId;
             } else {
+		console.log("response")
                 return null;
             }
         });
