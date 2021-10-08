@@ -483,6 +483,7 @@ $(function() {
 
 
     function displayIntentList(intents) {
+        console.log("display service intent ** ",intents);
         if (intents == null || intents.length == 0) {
             $('#intentList').html('');
             return
@@ -549,6 +550,7 @@ $(function() {
     }
 
     function showIntent(intentEntity) {
+        console.log("show service intent -- ",intentEntity);
         var html = '<div id="intentRegistration" class="form-horizontal"><fieldset>';
 
         html += '<div class="control-group hidediv"><label class="control-label hidediv" for="input01">ID</label>';
@@ -606,11 +608,11 @@ $(function() {
 
             $("#SID").text(sid);
         } else {
-            var sid = intentEntity.entityId.id;
+            var sid = intentEntity.id;
             $("#SID").text(sid);
 
             console.log(intentEntity);
-            var intent = intentEntity.attributes["intent"].value;
+            var intent = intentEntity;//intentEntity.attributes["intent"].value;
             console.log(intent);
 
             $('#topologyItems').val(intent.topology);
@@ -685,11 +687,10 @@ $(function() {
         console.log(eid);
 
         var queryReq = {}
-        queryReq.entities = [{ id: eid, isPattern: false }];
-
+        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
         clientDes.getContext(queryReq).then(function(data) {
             console.log('update this service intent');
-            showIntent(data[0]);
+            showIntent(data.data[0]);
         }).catch(function(error) {
             console.log('failed to delete this service intent');
         });

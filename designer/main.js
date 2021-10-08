@@ -48,7 +48,7 @@ config.webSrvPort = globalConfigFile.designer.webSrvPort
 console.log(config);
 
 dgraph.Init();
-
+amqp.amqpConnection();
 function uuid() {
     var uuid = "",
         i, random;
@@ -167,8 +167,9 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
 
         
     } else if (updateContextReq.updateAction == "UPDATE") {
-        console.log("main js obj  ++++ ",updateContextReq)
-       /// await amqp.amqpPubTest(updateContextReq)
+        //console.log("main js obj  ++++ ",updateContextReq)
+        let tmpVar1 = JSON.parse(JSON.stringify(updateContextReq));
+        await amqp.amqpPubTest(tmpVar1)
         let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
         await dgraph.WriteEntity(tmpVar)
         

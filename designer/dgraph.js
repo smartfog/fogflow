@@ -250,7 +250,7 @@ async function WriteEntity(contextData1) {
     contextData.attribute = JSON.stringify(contextData.attribute)
     console.log("write entity *** ",contextData)
     try {
-        console.log("inside in write entity-----",contextData)
+       // console.log("inside in write entity-----",contextData)
         const dgraphClientStub = await newClientStub();
         const dgraphClient = await newClient(dgraphClientStub);
 
