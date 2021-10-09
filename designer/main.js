@@ -151,13 +151,13 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
         data: updateContextReq
     });
 
-    /*if (response.status == 200) {
+    if (response.status == 200) {
         if (updateContextReq.updateAction == "DELETE") {
             await dgraph.DeleteEntity(updateContextReq);
         } else if (updateContextReq.updateAction == "UPDATE") {
             await dgraph.WriteEntity(updateContextReq)
         }
-    }*/
+    }
 
     res.send(response.data)
 });
