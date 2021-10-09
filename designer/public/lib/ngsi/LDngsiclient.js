@@ -32,15 +32,12 @@ var NGSILDclient = (function() {
 	if (url.includes('ngsi10')) {
 		 url = url.substring(0, url.lastIndexOf("/") );
 	}
-	console.log(url)
         this.brokerURL = url;
     };
     
     // update context 
     NGSILDclient.prototype.updateContext = function updateContext(ctxObj) {
-        updateCtxReq = JSONObject2CtxElement(ctxObj) 
-		console.log(updateCtxReq);
-   
+        updateCtxReq = JSONObject2CtxElement(ctxObj)  
         const updateCtxElements = []
 	updateCtxElements.push(updateCtxReq)
         return axios({
@@ -112,7 +109,6 @@ var NGSILDclient = (function() {
         
     // subscribe context
     NGSILDclient.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) { 
-	console.log(subscribeCtxReq)
         return axios({
             method: 'post',
             url: this.brokerURL + '/v1/subscriptions/',

@@ -84,7 +84,6 @@ $(function() {
     }
 
     function handleNotify(contextObj) {
-        console.log("++++++++++contextObj+++++++++++");
         curResult.push(contextObj);
 	
         if (contextObj.hasOwnProperty("timmer") && contextObj.hasOwnProperty("counter")) {
@@ -92,9 +91,7 @@ $(function() {
             var num = contextObj.counter.value;
             var point = [time, num];
             category_dataset[0].values.push(point);
-	    console.log("++++++++++++++++category_dataset+++++++++++++++++",category_dataset)
             var hash = window.location.hash;
-	    console.log("++++++++++hash+++++++++++++++",hash)
             if (hash == '#Result') {
                 updateChart('#chart svg', category_dataset);
             }
@@ -477,26 +474,6 @@ $(function() {
     }
 
 
-    /*function publishThreshold() {
-        console.log('update the defined threshold for anomaly detection ', RuleSet.threshold);
-
-        var ruleCtxObj = {};
-
-        ruleCtxObj.entityId = {
-            id: 'Stream.Rule.01',
-            type: 'Rule',
-            isPattern: false
-        };
-
-        ruleCtxObj.attributes = {};
-        ruleCtxObj.attributes.threshold = { type: 'integer', value: RuleSet.threshold };
-
-        client.updateContext(ruleCtxObj).then(function(data) {
-            console.log(data);
-        }).catch(function(error) {
-            console.log('failed to update the threshold for anomaly detection');
-        });
-    }*/
 
        function publishThreshold() {
         console.log('update the defined threshold for anomaly detection ', RuleSet.threshold);
@@ -506,7 +483,6 @@ $(function() {
         ruleCtxObj.id = 'urn:ngsi-ld:Stream.Rule.01'
         ruleCtxObj.type = 'Rule'
         ruleCtxObj.threshold = { type: 'Property', value: RuleSet.threshold };
-        console.log("==========ruleCtxObj+++++",ruleCtxObj)
         ldclient.updateContext(ruleCtxObj).then(function(data) {
             console.log(data);
         }).catch(function(error) {
