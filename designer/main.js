@@ -19,6 +19,7 @@ var globalConfigFile = require(config_fs_name)
 var app = express();
 var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
 var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
+var NGSILDAgent = require('./public/lib/ngsi/LDngsiagent.js');
 
 var config = globalConfigFile.designer;
 
@@ -38,15 +39,18 @@ if (config.host_ip) {
 
 config.agentPort = globalConfigFile.designer.agentPort;
 
+//Set NGSILD agent port
+config.ldAgentPort = globalConfigFile.designer.ldAgentPort;
+
 config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';
-
+config.LdbrokerURL = './ngsi-ld';
 config.webSrvPort = globalConfigFile.designer.webSrvPort
 
 
 console.log(config);
 
-dgraph.Init();
+//dgraph.Init();
 
 function uuid() {
     var uuid = "",
@@ -216,6 +220,10 @@ function handleNotify(req, ctxObjects, res) {
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
 
+
+NGSILDAgent.setNotifyHandler(handleNotify);
+NGSILDAgent.start(config.ldAgentPort);
+
 var webServer;
 webServer = app.listen(config.webSrvPort, function() {
     console.log("HTTP-based web server is listening on port ", config.webSrvPort);
@@ -228,7 +236,7 @@ var io = require('socket.io').listen(webServer);
 io.on('connection', function(client) {
     console.log('a client is connecting');
     client.on('subscriptions', function(subList) {
-        console.log(subList);
+	console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
             sid = subList[i];
             subscriptions[sid] = client;
