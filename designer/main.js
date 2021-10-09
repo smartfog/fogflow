@@ -50,7 +50,7 @@ config.webSrvPort = globalConfigFile.designer.webSrvPort
 
 console.log(config);
 
-//dgraph.Init();
+dgraph.Init();
 
 function uuid() {
     var uuid = "",

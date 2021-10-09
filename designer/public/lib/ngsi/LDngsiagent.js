@@ -70,7 +70,7 @@ function setAdminHandler(newHandler) {
 
 function readContextElements(body) {
 	var ctxObjects = [];
-	console.log("====body====",body)
+	
 	if (body["type"] ==  "Notification") {
             var NotificationData = body["data"]
             var len = NotificationData.length
@@ -84,7 +84,6 @@ function readContextElements(body) {
 }
 
 function handleNotify(req, res, next) {
-	console.log("========receiving notificatiom========")
 	if (notifyHandler) {
         //logger.debug('Handling notification from [%s]', req.get('host'));		
 		var ctxs = readContextElements(req.body);
