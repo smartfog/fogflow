@@ -24,12 +24,12 @@ $(function() {
     addMenuItem('Rule', showRule);
 
     //connect to the socket.io server via the NGSI proxy module
-    var ngsiproxy = new NGSIProxy();
+    var ngsiproxy = new LDNGSIProxy();
     ngsiproxy.setNotifyHandler(handleNotify);
 
     //connect to the broker
-    var client = new NGSILDclient(config.LdbrokerURL);
-    var client2 = new NGSI10Client(config.brokerURL);
+    var ldclient = new NGSILDclient(config.LdbrokerURL);
+    var client = new NGSI10Client(config.brokerURL);
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -70,11 +70,11 @@ $(function() {
         endPoint = {}
         subscribeCtxReq.notification.format = "normalized"
 
-        endPoint.uri = 'http://' + config.agentIP + ':' + config.agentPort + '/notifyContext';
+        endPoint.uri = 'http://' + config.agentIP + ':' + config.ldAgentPort + '/notifyContext';
         endPoint.accept = "application/ld+json"
         subscribeCtxReq.notification.endpoint = endPoint
         console.log("subscribeCtxReq data for topology",subscribeCtxReq)
-        client.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
+        ldclient.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
             console.log("SubscriptionID",subscriptionId);
             ngsiproxy.reportSubID(subscriptionId);
         }).catch(function(error) {
@@ -84,16 +84,17 @@ $(function() {
     }
 
     function handleNotify(contextObj) {
-        console.log(contextObj);
+        console.log("++++++++++contextObj+++++++++++");
         curResult.push(contextObj);
-
-        if (contextObj.attributes.hasOwnProperty("time") && contextObj.attributes.hasOwnProperty("counter")) {
-            var time = contextObj.attributes.time.value;
-            var num = contextObj.attributes.counter.value;
+	
+        if (contextObj.hasOwnProperty("timmer") && contextObj.hasOwnProperty("counter")) {
+            var time = contextObj.timmer.value;
+            var num = contextObj.counter.value;
             var point = [time, num];
             category_dataset[0].values.push(point);
-
+	    console.log("++++++++++++++++category_dataset+++++++++++++++++",category_dataset)
             var hash = window.location.hash;
+	    console.log("++++++++++hash+++++++++++++++",hash)
             if (hash == '#Result') {
                 updateChart('#chart svg', category_dataset);
             }
@@ -102,9 +103,9 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
+        queryReq.entities = [{ id: 'Topology.anomaly-detection.ld', type: 'Topology', isPattern: false }];
 
-        client.QueryContext(queryReq).then(function(resultList) {
+        client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
                 curTopology = resultList[0];
@@ -120,9 +121,9 @@ $(function() {
     function checkIntent() {
         var queryReq = {};
         queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
+        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection.ld' }] }
 
-        client.QueryContext(queryReq).then(function(resultList) {
+        client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
                 curIntent = resultList[0];
@@ -318,9 +319,9 @@ $(function() {
 
         var queryReq = {}
         queryReq.entities = [{ type: 'Task', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=anomaly-detection' }] }
+        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=anomaly-detection' }] }
 
-        client.QueryContext(queryReq).then(function(taskList) {
+        client.queryContext(queryReq).then(function(taskList) {
             console.log(taskList);
             displayTaskList(taskList);
         }).catch(function(error) {
@@ -468,6 +469,7 @@ $(function() {
 
     function updateRule() {
         var newThreshold = $('#thresholdNum').val();
+	console.log("newThreshold",newThreshold)
         RuleSet.threshold = parseInt(newThreshold);
         $('#thresholdValue').text(RuleSet.threshold);
 
@@ -501,16 +503,11 @@ $(function() {
 
         var ruleCtxObj = {};
 
-        /*ruleCtxObj = {
-            id: 'urn:ngsi-ld:Stream.Rule.01',
-            type: 'Rule',
-            isPattern: false
-        };*/
         ruleCtxObj.id = 'urn:ngsi-ld:Stream.Rule.01'
         ruleCtxObj.type = 'Rule'
         ruleCtxObj.threshold = { type: 'Property', value: RuleSet.threshold };
-
-        client.updateContext(ruleCtxObj).then(function(data) {
+        console.log("==========ruleCtxObj+++++",ruleCtxObj)
+        ldclient.updateContext(ruleCtxObj).then(function(data) {
             console.log(data);
         }).catch(function(error) {
             console.log('failed to update the threshold for anomaly detection');

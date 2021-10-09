@@ -27,7 +27,8 @@
     },
     "designer": {
         "webSrvPort": 8080,
-        "agentPort": 1030
+        "agentPort": 1030,
+	"ldAgentPort":1090
     },
     "rabbitmq": {
         "port": 5672,

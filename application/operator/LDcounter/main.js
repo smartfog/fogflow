@@ -87,7 +87,7 @@ function updateContext(stat)
     //ctxObj.entityId.isPattern = false;    
     
             
-    ctxObj.time = {        
+    ctxObj.timmer = {        
         type: 'Property',
         value: stat.time
     };

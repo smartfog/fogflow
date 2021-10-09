@@ -106,6 +106,7 @@ exports.handler = function(contextEntity, publish, query, subscribe) {
             publish(updateEntity)
         }
     } else if (type == 'Rule') {
+	console.log(contextEntity.threshold.value)
         threshold = contextEntity.threshold.value;
         console.log('update the threshold to ', threshold);
     }

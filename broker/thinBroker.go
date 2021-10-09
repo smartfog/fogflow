@@ -2570,7 +2570,8 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					return
 				}
 				// send response
-				w.WriteHeader(http.StatusCreated)
+				//w.WriteHeader(http.StatusCreated)
+				fmt.Println("Subscription is created")
 				subResp := SubscribeContextResponse{}
 				subResp.SubscribeResponse.SubscriptionId = deSerializedSubscription.Id
 				subResp.SubscribeError.SubscriptionId = deSerializedSubscription.Id

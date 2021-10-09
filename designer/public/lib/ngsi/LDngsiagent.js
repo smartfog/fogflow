@@ -70,6 +70,7 @@ function setAdminHandler(newHandler) {
 
 function readContextElements(body) {
 	var ctxObjects = [];
+	console.log("====body====",body)
 	if (body["type"] ==  "Notification") {
             var NotificationData = body["data"]
             var len = NotificationData.length
@@ -83,6 +84,7 @@ function readContextElements(body) {
 }
 
 function handleNotify(req, res, next) {
+	console.log("========receiving notificatiom========")
 	if (notifyHandler) {
         //logger.debug('Handling notification from [%s]', req.get('host'));		
 		var ctxs = readContextElements(req.body);
@@ -125,7 +127,7 @@ function start(port, callback) {
         router: express.Router()
     };
 
-    logger.info('Starting NGSI Agent listening on port [%s]', port);
+    logger.info('Starting NGSILD Agent listening on port [%s]', port);
 
     northboundServer.app.set('port', port);
     northboundServer.app.set('host', '0.0.0.0');
