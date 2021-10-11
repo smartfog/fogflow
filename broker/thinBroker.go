@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -501,6 +502,134 @@ func (tb *ThinBroker) discoveryEntities(ids []EntityId, attributes []string, res
 	}
 
 	return result
+}
+
+func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
+	reqBytes, _ := ioutil.ReadAll(r.Body)
+	var LDqueryCtxReq interface{}
+	err := json.Unmarshal(reqBytes, &LDqueryCtxReq)
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var fiwareService, fiwareServicePath string
+
+	if r.Header.Get("fiware-service") != "" {
+		fiwareService = r.Header.Get("fiware-service")
+	} else {
+		fiwareService = "default"
+	}
+	if r.Header.Get("fiware-servicepath") != "" {
+		fiwareServicePath = r.Header.Get("fiware-servicepath")
+	} else {
+		fiwareServicePath = "default"
+	}
+
+	//fsp := r.Header.Get("fiware-servicepath")
+	cType := r.Header.Get("Content-Type")
+	link := r.Header.Get("Link")
+	context, contextInpayload := extractcontext(cType, link)
+	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
+	LDQueryContext := LDQueryContextRequest{}
+	var resolveError error
+	if err != nil {
+		rest.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	} else {
+		sz := Serializer{}
+		LDQueryContext, resolveError = sz.uploadQueryContext(resolved, fiwareService)
+		if resolveError != nil {
+			rest.Error(w, resolveError.Error(), 400)
+			return
+		}
+	}
+	matchedCtxElement := make([]interface{}, 0)
+
+	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
+		tb.ldEntities_lock.Lock()
+		for _, eid := range LDQueryContext.Entities {
+			EID := eid.ID
+			if element, exist := tb.ldEntities[EID]; exist {
+				matchedCtxElement = append(matchedCtxElement, element)
+			}
+		}
+		tb.ldEntities_lock.Unlock()
+	} else {
+		entityMap := tb.ldDiscoveryEntities(LDQueryContext)
+		for providerURL, entityList := range entityMap {
+			if providerURL == tb.MyURL {
+				for _, eid := range entityList {
+					tb.ldEntities_lock.Lock()
+					if element, exist := tb.ldEntities[eid.ID]; exist {
+						matchedCtxElement = append(matchedCtxElement, element)
+					}
+					tb.ldEntities_lock.Unlock()
+				}
+			} else {
+				elements := tb.fetchLDEntities(entityList, providerURL, fiwareService, fiwareServicePath)
+				matchedCtxElement = append(matchedCtxElement, elements...)
+			}
+		}
+
+	}
+	queryContextResponse := make([]interface{}, 0)
+	for _, val := range matchedCtxElement {
+		responseEle := val.(map[string]interface{})
+		delete(responseEle, "fiwareServicePath")
+		eid := responseEle["id"].(string)
+		actualEid := strings.Split(eid, "@")
+		responseEle["id"] = actualEid[0]
+		returnvalue, err := compactData(responseEle, responseEle["@context"])
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		queryContextResponse = append(queryContextResponse, returnvalue)
+	}
+	w.WriteHeader(200)
+	w.WriteJson(queryContextResponse)
+}
+
+func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) map[string][]EntityId {
+	discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
+	discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
+	//discoverCtxAvailabilityReq.Attributes = attributes
+	//discoverCtxAvailabilityReq.Restriction = restriction
+	fmt.Println("discoverCtxAvailabilityReq", discoverCtxAvailabilityReq)
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
+
+	result := make(map[string][]EntityId)
+	for _, registration := range registrationList {
+		reference := registration.ProvidingApplication
+		entities := registration.EntityIdList
+		if entityList, exist := result[reference]; exist {
+			result[reference] = append(result[reference], entityList...)
+		} else {
+			result[reference] = make([]EntityId, 0)
+			result[reference] = append(result[reference], entities...)
+		}
+	}
+
+	return result
+}
+
+func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs string, fsp string) []interface{} {
+	newEntityList := make([]EntityId, 0)
+	fmt.Println("ids", ids)
+	for _, entity := range ids {
+		id := entity.ID
+		idSplit := strings.Split(id, "@")
+		entity.ID = idSplit[0]
+		//fmt.Println("index",index)
+		newEntityList = append(newEntityList, entity)
+	}
+	queryCtxLDReq := LDQueryContextRequest{}
+	queryCtxLDReq.Entities = newEntityList
+	queryCtxLDReq.Type = "Query"
+	client := NGSI10Client{IoTBrokerURL: providerURL, SecurityCfg: tb.SecurityCfg}
+	ctxElementList, _ := client.InternalLDQueryContext(&queryCtxLDReq, fs, fsp)
+	return ctxElementList
 }
 
 func (tb *ThinBroker) fetchEntities(ids []EntityId, providerURL string) []ContextElement {
@@ -2077,6 +2206,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 					// Deserialize the payload here.
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
+					fmt.Println("deSerializedEntity", deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
 						problemSet.Details = "Unknown!"
@@ -2703,14 +2833,18 @@ func (tb *ThinBroker) ExpandPayload(ctx interface{}, context []interface{}, cont
 		if _, ok := itemsMap["type"]; ok == true {
 			payloadType = itemsMap["type"].(string)
 		} else if _, ok := itemsMap["@type"]; ok == true {
-			typ := itemsMap["@type"].([]interface{})
-			payloadType = typ[0].(string)
+			if reflect.ValueOf(itemsMap["@type"]).Kind() == reflect.String {
+				payloadType = itemsMap["@type"].(string)
+			} else {
+				typ := itemsMap["@type"].([]interface{})
+				payloadType = typ[0].(string)
+			}
 		}
 		if payloadType == "" {
 			err := errors.New("Type can not be nil!")
 			return nil, err
 		}
-		if payloadType != "ContextSourceRegistration" && payloadType != "Subscription" {
+		if payloadType != "ContextSourceRegistration" && payloadType != "Subscription" && payloadType != "Query" {
 			// Payload is of Entity Type
 			// Check if some other broker is registered for providing this entity or not
 			var entityId string

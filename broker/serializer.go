@@ -589,3 +589,109 @@ func (sz Serializer) afterString(str string, markingStr string) string {
 	}
 	return str[liAdjusted:len(str)]
 }
+
+// get NGSILD type
+
+func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, error) {
+	var typ string
+	var err error
+	if val, ok := QueryData["@type"]; ok == true {
+		valueResult := val.([]interface{})
+		typ = valueResult[0].(string)
+	} else if val, ok := QueryData["type"]; ok == true {
+		valueResult := val.([]interface{})
+		typ = valueResult[0].(string)
+	} else {
+		err = errors.New("type can not be Empty")
+	}
+	return typ, err
+}
+
+// get NGSILD attributes
+
+func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, error) {
+	attributesList := make([]string, 0)
+	if len(attributes) <= 0 {
+		err := errors.New("Zero length attribute list is not allowed")
+		return attributesList, err
+	}
+	for _, value := range attributes {
+		valuemap := value.(map[string]interface{})
+		attributesList = append(attributesList, valuemap["@value"].(string))
+	}
+	return attributesList, nil
+}
+func (sz Serializer) getEntityId(id interface{}, fs string) string {
+	ID := id.(string) + "@" + fs
+	return ID
+}
+
+func (sz Serializer) getEntityType(typ interface{}) string {
+	Etype := typ.([]interface{})
+	return Etype[0].(string)
+}
+
+func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
+	entity := EntityId{}
+	entitymap := entityobj.(map[string]interface{})
+	if val, ok := entitymap["@id"]; ok == true {
+		entity.ID = sz.getEntityId(val, fs)
+	} else if val, ok := entitymap["id"]; ok == true {
+		entity.ID = sz.getEntityId(val, fs)
+	} else {
+		entity.IsPattern = true
+	}
+	if val, ok := entitymap["@type"]; ok == true {
+		entity.Type = sz.getEntityType(val)
+	} else if val, ok := entitymap["type"]; ok == true {
+		entity.Type = sz.getEntityType(val)
+	}
+	return entity
+}
+
+//get Entities
+func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error) {
+	entitiesList := make([]EntityId, 0)
+	if len(entities) <= 0 {
+		err := errors.New("Zero length Entity List is not allowed")
+		return entitiesList, err
+	}
+	for _, val := range entities {
+		entity := sz.resolveEntity(val, fs)
+		if entity.ID == "" && entity.Type == "" {
+			continue
+		} else {
+			entitiesList = append(entitiesList, entity)
+		}
+	}
+	return entitiesList, nil
+}
+
+// serialize NGSIld Query
+func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQueryContextRequest, error) {
+	ngsildQueryContext := LDQueryContextRequest{}
+	expandedArray := expanded.([]interface{})
+	QueryData := expandedArray[0].(map[string]interface{})
+	typ, err := sz.getQueryType(QueryData)
+	if err != nil {
+		return ngsildQueryContext, err
+	}
+	ngsildQueryContext.Type = typ
+	var newErr error
+	for key, value := range QueryData {
+		if strings.Contains(key, "attrs") {
+			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
+			if newErr != nil {
+				break
+			}
+		} else if strings.Contains(key, "entities") {
+			ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
+			if newErr != nil {
+				break
+			}
+		} else {
+			continue
+		}
+	}
+	return ngsildQueryContext, newErr
+}

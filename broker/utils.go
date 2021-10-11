@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	//	. "fogflow/common/constants"
+	. "fogflow/common/constants"
 	. "fogflow/common/ngsi"
 
 	"io/ioutil"
@@ -790,4 +791,25 @@ func extractLinkHeaderFields(link string) string {
 	}
 
 	return splitLink
+}
+
+func extractcontext(cType string, link string) ([]interface{}, bool) {
+	var context []interface{}
+	cTypeInLower := strings.ToLower(cType)
+	contextInPayload := false
+	if cTypeInLower == "application/ld+json" {
+		contextInPayload = true
+	} else {
+		if link != "" {
+			link := extractLinkHeaderFields(link)
+			if link == "default" {
+				context = append(context, DEFAULT_CONTEXT)
+			} else {
+				context = append(context, link)
+			}
+		} else {
+			context = append(context, DEFAULT_CONTEXT)
+		}
+	}
+	return context, contextInPayload
 }
