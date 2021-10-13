@@ -172,7 +172,6 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
         await amqp.amqpPubTest(tmpVar1)
         let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
         await dgraph.WriteEntity(tmpVar)
-        
     }
     res.send("")
 });

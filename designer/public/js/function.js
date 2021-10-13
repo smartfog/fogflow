@@ -25,7 +25,7 @@ $(function() {
 
     // to interact with designer for internal fogflow entities
     var clientDes = new NGSI10Client('./internal');
-
+    var selectedFogFunction = null;
 
     var myFogFunctionExamples = [{
             name: "Convert1",
@@ -145,6 +145,7 @@ $(function() {
             functionCtxObj.attribute.designboard = fogfunction.designboard ;
             functionCtxObj.attribute.intent = fogfunction.intent ;
             functionCtxObj.attribute.status =  'enabled';
+            functionCtxObj.attribute.action = 'UPDATE'
             functionCtxObj.updateAction = 'UPDATE';
             functionCtxObj.internalType = 'FogFunction';
              console.log("init fog function ----- ",functionCtxObj);
@@ -305,10 +306,14 @@ $(function() {
         attribute.intent = intent;
         attribute.designboard = scene;
         attribute.status = 'enabled';
+        attribute.action = 'UPDATE'
         
         fogfunction.attribute = attribute;
         fogfunction.updateAction = 'UPDATE';
         fogfunction.internalType = 'FogFunction';
+        // if (selectedFogFunction){
+        //     fogfunction.uid = selectedFogFunction.uid;
+        // }
 
         console.log("=============submit a fog function=============");
         console.log(JSON.stringify(fogfunction));
@@ -443,6 +448,7 @@ $(function() {
         $('#content').html(html);
 
         $("#registerFunction").click(function() {
+            selectedFogFunction = null;
             showFogFunctionEditor();
         });
 
@@ -510,6 +516,7 @@ $(function() {
             editorButton.onclick = function(myFogFunction) {
                 return function() {
                     console.log("editor buttion ",myFogFunction);
+                    selectedFogFunction = myFogFunction;
                     openFogFunctionEditor(myFogFunction);
                 };
             }(fogfunction);
@@ -528,7 +535,7 @@ $(function() {
         console.log("delete function ",fogfunction.uid);
         // delete this fog function
         var functionEntity = {};
-        var attribute = {id :fogfunction.id};
+        var attribute = {id :fogfunction.id, action:'DELETE'};
         functionEntity.attribute = attribute
         functionEntity.updateAction = 'DELETE';
         functionEntity.internalType = 'FogFunction';

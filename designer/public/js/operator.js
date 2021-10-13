@@ -654,7 +654,7 @@ $(function() {
         attribute.name = image
         attribute.hwType = hwType
         attribute.osType = osType
-        attribute.operater = operatorName
+        attribute.operatorName = operatorName
         attribute.prefetched = prefetched
         attribute.tag = tag
         newImageObject.attribute = attribute

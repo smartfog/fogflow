@@ -21,7 +21,7 @@ $(function() {
 
     // the list of all registered operators
     var operatorList = [];
-
+    var selectedServiceIntent = null;
     // design board
     var blocks = null;
 
@@ -105,7 +105,7 @@ $(function() {
         var html = '';
 
         html += '<div id="topologySpecification" class="form-horizontal"><fieldset>';
-
+        //html +=    '<div id="uidTopology" style="display: none;"> </div>';
         html += '<div class="control-group"><label class="control-label">name</label>';
         html += '<div class="controls"><input type="text" class="input-large" id="serviceName">';
         html += '</div></div>';
@@ -158,7 +158,7 @@ $(function() {
             showTopologyEditor();
 
             var topology = topologyEntity;
-
+            $('#uidTopology').val(topology.uid);
             $('#serviceName').val(topology.name);
             $('#serviceDescription').val(topology.description);
         }
@@ -173,7 +173,7 @@ $(function() {
         //     isPattern: false
         // };
         var topEntity = {};
-        var attribute = {id: topologyEntity.name}
+        var attribute = {id: topologyEntity.name, action:'DELETE'}
         topEntity.attribute = attribute
         topEntity.updateAction = 'DELETE';
         topEntity.internalType = 'Topology';
@@ -208,6 +208,8 @@ $(function() {
 
     function boardScene2Topology(scene) {
         // construct a topology from the provided information
+        var uidTopology =  $('#uidTopology').val();
+
         var topologyName = $('#serviceName').val();
         var serviceDescription = $('#serviceDescription').val();
 
@@ -217,9 +219,13 @@ $(function() {
         attribute.description = serviceDescription;
         attribute.tasks = generateTaskList(scene);
         attribute.designboard = scene;
+        attribute.action = 'UPDATE'
         topology.attribute = attribute;
         topology.internalType = 'Topology';
         topology.updateAction = 'UPDATE';
+        if (uidTopology){
+            topology.uid = uidTopology;
+        }
 
         // topology.name = topologyName;
         // topology.description = serviceDescription;
@@ -441,7 +447,7 @@ $(function() {
         // associate a click handler to the editor button
         for (var i = 0; i < topologies.length; i++) {
             var topology = topologies[i];
-
+            console.log("topolody list val --- ",topology);
             // association handlers to the buttons
             var editorButton = document.getElementById('editor-' + topology.name);
             editorButton.onclick = function(mytopology) {
@@ -543,7 +549,10 @@ $(function() {
             var updateButton = document.getElementById('UPDATE-' + entity.id);
             updateButton.onclick = function(intentID) {
                 return function() {
-                    updateIntent(intentID);
+                    console.log("***********update intent uid ",intentID.uid);
+                    $('#intentDgraphUID').val(intentID.uid);
+                    selectedServiceIntent = intentID;
+                    showIntent(intentID);
                 };
             }(entity);
         }
@@ -552,7 +561,7 @@ $(function() {
     function showIntent(intentEntity) {
         console.log("show service intent -- ",intentEntity);
         var html = '<div id="intentRegistration" class="form-horizontal"><fieldset>';
-
+        html +=    '<div id="intentDgraphUID" style="display: none;"> </div>';
         html += '<div class="control-group hidediv"><label class="control-label hidediv" for="input01">ID</label>';
         html += '<div class="controls hidediv"><lable class="hidediv" id="SID">sid</label></div>'
         html += '</div>';
@@ -603,11 +612,13 @@ $(function() {
 
         // set the value accordingly
         if (intentEntity == undefined) {
+            
             var uid = uuid();
             var sid = 'ServiceIntent.' + uid;
 
             $("#SID").text(sid);
         } else {
+            $('#intentDgraphUID').val(intentEntity.uid);
             var sid = intentEntity.id;
             $("#SID").text(sid);
 
@@ -660,6 +671,7 @@ $(function() {
 
 
     function addIntent() {
+        selectedServiceIntent = null;
         $('#info').html('to specify an intent object in order to run your service');
         showIntent();
     }
@@ -667,7 +679,7 @@ $(function() {
     function removeIntent(intentObj) {
         console.log("service intent is ",intentObj)
         var sInent = {};
-        var attribute = {id:intentObj.id}
+        var attribute = {id:intentObj.id, action:'DELETE'}
         sInent.attribute = attribute
         sInent.updateAction = 'DELETE';
         sInent.internalType = 'ServiceIntent';
@@ -684,16 +696,19 @@ $(function() {
     function updateIntent(eid) {
         $('#info').html('to update an existing service intent');
 
-        console.log(eid);
+        console.log("aaaaaaaaaa intent ",eid);
+        submitIntent();
+        // var queryReq = {}
+        // queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
+        // clientDes.getContext(queryReq).then(function(data) {
+        //     console.log('update this service intent   ',data.data[0].uid);
 
-        var queryReq = {}
-        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(data) {
-            console.log('update this service intent');
-            showIntent(data.data[0]);
-        }).catch(function(error) {
-            console.log('failed to delete this service intent');
-        });
+        //     $('#intentDgraphUID').val(data.data[0].uid);
+        //     showIntent(data.data[0]);
+            
+        // }).catch(function(error) {
+        //     console.log('failed to delete this service intent');
+        // });
 
     }
 
@@ -731,7 +746,7 @@ $(function() {
     function submitIntent() {
         var intent = {};
         var attribute = {};
-
+        console.log("intent uid is 88888888 ",intentDgraphUID);
         var topology = $('#topologyItems option:selected').val();
         attribute.topology = topology;
         /*
@@ -782,6 +797,7 @@ $(function() {
 
         var sid = $("#SID").text();
         attribute.id = sid;
+        attribute.action= 'UPDATE'
         // intentCtxObj.entityId = {
         //     id: sid,
         //     type: 'ServiceIntent',
@@ -802,7 +818,11 @@ $(function() {
         //     geoScope.value = scope
         // }
         // intentCtxObj.metadata.location = geoScope;
+        if (selectedServiceIntent!=null) {
+            intent.uid = selectedServiceIntent.uid;;
+        }
         intent.attribute = attribute;
+        
         intent.internalType = "ServiceIntent";
         intent.updateAction = "UPDATE";
         console.log("service intent ", intent);

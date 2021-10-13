@@ -74,6 +74,7 @@ async function amqpPubTest(data, exchange_) {
     return
   }
   if (msg.attribute.hasOwnProperty("designboard")) delete msg.attribute.designboard;
+  if (msg.attribute.hasOwnProperty("uid")) delete msg.attribute.uid;
   console.log("final amqp msg ** ", msg.attribute)
   send = { 'Type': msg.internalType, 'RoutingKey': 'Operator.', 'From': 'designer', 'PayLoad': msg.attribute }
   try{
