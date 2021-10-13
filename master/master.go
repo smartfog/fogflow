@@ -275,7 +275,7 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 
 	// fog function that includes a pair of topology and intent
 	case "FogFunction":
-		master.handleFogFunctionUpdate(contextObj)
+		//master.handleFogFunctionUpdate(contextObj)
 
 	// service orchestration
 	case "ServiceIntent":
@@ -413,7 +413,7 @@ func (master *Master) prefetchDockerImages(image DockerImage) {
 //
 // to update the fog function list
 //
-func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) {
+/*func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) {
 	INFO.Println(fogfunctionCtxObj)
 
 	// the fog function is going to be deleted
@@ -497,7 +497,57 @@ func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) 
 	master.fogfunctionList_lock.Unlock()
 
 	INFO.Println(fogfunction)
+}*/
+
+
+func (master *Master) handleFogFunctionUpdate(msg json.RawMessage) {
+	//FO.Println(msg)
+	var fogfunction = FogFunction{}
+        err := json.Unmarshal(msg, &fogfunction)
+	fogfunction.Intent.ID = fogfunction.Id
+	fmt.Println("***** Intent.ID *********",fogfunction.Intent.ID)
+	fmt.Println("********* msg *******",msg, fogfunction)
+
+	if(fogfunction.Action == "DELETE"){
+		var eid = fogfunction.Id
+		
+		master.fogfunctionList_lock.RLock()
+		fogfunction := master.fogfunctionList[eid]
+		master.fogfunctionList_lock.RUnlock()
+
+		DEBUG.Printf("%+v\r\n", fogfunction)
+		master.serviceMgr.removeServiceIntent(fogfunction.Intent.ID)
+		
+		topology := fogfunction.Topology
+		master.topologyList_lock.Lock()
+		master.topologyList[topology.Name] = &topology
+		master.topologyList_lock.Unlock()
+
+		// remove this fog function entity
+		master.fogfunctionList_lock.Lock()
+		delete(master.fogfunctionList, eid)
+		master.fogfunctionList_lock.Unlock()
+
+		return
+
+	}
+
+        fmt.Println("&&&&&&&&& topology and name &&&&&&&&",&fogfunction.Topology, &fogfunction.Topology.Name)
+        master.topologyList_lock.Lock()
+        master.topologyList[fogfunction.Topology.Name] = &fogfunction.Topology
+        master.topologyList_lock.Unlock()
+        master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
+        fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&fogfunction,err)
+
+	// create or update this fog function
+	master.fogfunctionList_lock.Lock()
+	master.fogfunctionList[fogfunction.Id] = &fogfunction
+	master.fogfunctionList_lock.Unlock()
+
+	INFO.Println(fogfunction)
+
 }
+
 
 //
 // to update the topology list
@@ -573,16 +623,17 @@ func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
 	fmt.Println("***** len(topology.Tasks)*****",len(topology.Tasks))
 	fmt.Println("******* unmarshalled topology********",&topology)
 
-	if(len(topology.Name) !=0 && len(topology.Tasks) == 0) {
+	if(topology.Action == "DELETE") {
                  master.topologyList_lock.Lock()
 
-                var eid = "Topology." + topology.Name
+                var eid = "Topology." + topology.Id
 
                 // find which one has this id
                 for _, topologyToCheck := range master.topologyList {
                         if topologyToCheck.Id == eid {
                                 var name = topologyToCheck.Name
                                 delete(master.topologyList, name)
+				INFO.Println(name," this topology is deleted ~~~~~~~~~~",master.topologyList)
                                 break
                         }
                 }
@@ -601,6 +652,7 @@ func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
                 fmt.Println("****** topogoly ko handle karna hai *********",&topology)
 
                 master.topologyList_lock.Lock()
+		fmt.Println("******** topology list ****",master.topologyList)
                 master.topologyList[topology.Name] = &topology
                 master.topologyList_lock.Unlock()
 
@@ -843,7 +895,7 @@ func (master *Master) Process(msg *RecvMessage) error {
                 //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
 		//master.handleFogFunctionUpdate(constOb)
 		
-		fmt.Println("**** received msg ********",msg.PayLoad)
+		fmt.Println("**** received msg ********",string(msg.PayLoad))
 		/*var sol = msg.PayLoad
 		var topology = Topology{}
 		err := json.Unmarshal(msg.PayLoad.attributes.topology, &topology)
@@ -862,7 +914,7 @@ func (master *Master) Process(msg *RecvMessage) error {
 		fogfunction.Intent = intent
 		fmt.Println("&&&&&&&&& fogfunction &&&&&&&&",&fogfunction)*/
 		
-		var fogfunction = FogFunction{}
+		/*var fogfunction = FogFunction{}
 		err := json.Unmarshal(msg.PayLoad, &fogfunction)
 		fogfunction.Intent.ID = fogfunction.Id
 		fmt.Println("&&&&&&&&& topology and name &&&&&&&&",&fogfunction.Topology, &fogfunction.Topology.Name)
@@ -870,7 +922,9 @@ func (master *Master) Process(msg *RecvMessage) error {
 		master.topologyList[fogfunction.Topology.Name] = &fogfunction.Topology
 		master.topologyList_lock.Unlock()
 		master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
-		fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&fogfunction,err)
+		fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&fogfunction,err)*/
+
+		master.handleFogFunctionUpdate(msg.PayLoad)
 
 
 	case "Topology":
