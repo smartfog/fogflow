@@ -58,22 +58,22 @@ func (sMgr *ServiceMgr) handleServiceIntentUpdate(msg json.RawMessage) {
 	INFO.Println("handle intent update")
         INFO.Println(string(msg))
 
-	if (len(msg) <= 2) {
-	//	sMgr.removeServiceIntent(intentCtxObj.Entity.ID)
-	} else {
-		sIntent := ServiceIntent{}
-                err := json.Unmarshal(msg, &sIntent)
-		 if err == nil {
+	sIntent := ServiceIntent{}
+        err := json.Unmarshal(msg, &sIntent)
+
+        if err == nil {
+		if (sIntent.Action == "DELETE") {
+			sMgr.removeServiceIntent(sIntent.ID)
+		} else {
                         //sIntent.ID = string(msg.id)
                         INFO.Println(sIntent)
                         sMgr.handleServiceIntent(&sIntent)
-                } else {
+                }
+        } else {
                         ERROR.Println(err)
                         //sMgr.updateServiceIntentStatus(intentCtxObj.Entity.ID, "NOT_ACTIVATED", "intent object is not properly defined")
                 }
         }
-
-}
 
 func (sMgr *ServiceMgr) updateServiceIntentStatus(eid string, status string, reason string) {
 	ctxObj := ContextObject{}
