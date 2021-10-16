@@ -2169,6 +2169,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, Link)
 			} else {
 				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
+				fmt.Println("++++Resolved++++",resolved)
 				if err != nil {
 
 					if err.Error() == "EmptyPayload!" {

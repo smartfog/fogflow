@@ -5,11 +5,101 @@ import (
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type Serializer struct{}
 
-func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
+
+
+type fName func(map[string]interface{}) (map[string]interface{},error)
+
+
+func (sz Serializer) GeoHandler (geoMap map[string]interface{})(map[string]interface{},error) {
+	result := make(map[string]interface{})
+	var err error 
+	return result, err
+}
+
+func (sz Serializer)proprtyHandler (propertyMap map[string]interface{})(map[string]interface{},error) {
+        result := make(map[string]interface{})
+        var err error
+        return result, err
+}
+
+
+func (sz Serializer)relHandler(re map[string]interface{})(map[string]interface{},error) {
+        result := make(map[string]interface{})
+        var err error
+        return result, err
+}
+
+func (sz Serializer)getAttrType(attr map[string]interface{}) (fName, error) {
+        //var  Type1 string
+        var funcName fName
+        var err error
+	typ, oK := attr["@type"]
+	resType := typ.([]interface{})
+	if oK == false {
+		err := errors.New("attribute type can not be nil!")
+		return funcName, err
+	} else if len(resType) > 0 {
+		Type1 := resType[0].(string)
+                if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
+                        funcName = sz.GeoHandler
+                } else if strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship") {
+                        funcName = sz.relHandler
+                } else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
+                        funcName= sz.proprtyHandler
+                }  else {
+			err = errors.New("Unknown type")
+                }
+        }
+        return funcName, err 
+}
+
+func (sz Serializer) getId(id interface{}) string {
+	Id := id.(string)
+	return Id
+}
+
+func (sz Serializer) handler(ExpEntity interface{})(map[string]interface{},error) {
+	ExpEntityMap := ExpEntity.(map[string]interface{})
+	resultEntity := make(map[string]interface{})
+	for key,val := range ExpEntityMap {
+		if strings.Contains(key, "id") {
+			if val != nil {
+			    resultEntity["id"] = getEntityId(val.(interface{}))
+			}
+		} else if strings.Contains(key, "type") {
+			if val != nil {
+				resultEntity["type"] = sz.getType(val.([]interface{}))
+			}
+		} else {
+			interfaceArray := val.([]interface{})
+			if len(interfaceArray) > 0 {
+				handler , err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return resultEntity, err 
+				}
+				resultEntity[key],err = handler(val.(map[string]interface{}))
+				if err != nil {
+					return resultEntity,err
+				}
+			}
+		}
+	}
+	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+	fmt.Println("===============compaced===========",compaced)
+	return resultEntity,nil
+}
+func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]interface{},error) {
+	ExpEntity := expEntities[0]
+	result, _ := sz.handler(ExpEntity.(map[string]interface{}))
+	return result,nil
+}
+
+/*func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
 	entity := make(map[string]interface{})
 	for _, val := range expanded {
 		stringsMap := val.(map[string]interface{})
@@ -63,7 +153,8 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 	}
 	entity["modifiedAt"] = time.Now().String()
 	return entity, nil
-}
+}*/
+
 func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	subscription := LDSubscriptionRequest{}
 	for _, val := range expanded {
@@ -122,10 +213,10 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	return attr
 }
 
-func (sz Serializer) getId(id interface{}) string {
+/*func (sz Serializer) getId(id interface{}) string {
 	Id := id.(string)
 	return Id
-}
+}*/
 
 func (sz Serializer) getType(typ []interface{}) string {
 	var Type, Type1 string
