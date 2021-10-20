@@ -1,7 +1,7 @@
 version: "3"
 services:     
     designer:
-        image: fogflow/designer
+        image: fogflow/designer:latest
         volumes:
             - ./config.json:/app/config.json
         ports:
@@ -15,15 +15,15 @@ services:
         restart: always
                        
     discovery:
-        image: fogflow/discovery
+        image: fogflow/discovery:latest
         volumes:
             - ./config.json:/config.json                        
         ports:
-            - 8060:8060
+            - 8090:8090
         restart: always
 
     master:
-        image: fogflow/master
+        image: fogflow/master:latest
         volumes:
             - ./config.json:/config.json                                   
         links:
@@ -37,7 +37,7 @@ services:
         restart: always 
         
     cloud_broker:
-        image: fogflow/broker
+        image: fogflow/broker:latest
         volumes:
             - ./config.json:/config.json 
         ports:
@@ -47,7 +47,7 @@ services:
         restart: always     
                                         
     cloud_worker:
-        image: fogflow/worker
+        image: fogflow/worker:latest
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                            
@@ -75,7 +75,7 @@ services:
       restart: always           
         
     dgraph:                                   
-        image: fogflow/dgraph:latest
+        image: dgraph/standalone
         volumes:
             - ./dgraph:/dgraph           
         ports:
