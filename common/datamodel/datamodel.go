@@ -71,6 +71,7 @@ type ServiceIntent struct {
 	Priority       Priority       `json:"priority"`
 	TopologyName   string         `json:"topology"`
 	TopologyObject *Topology
+	Action		string	      `json:"action"` 
 }
 
 type TaskIntent struct {
@@ -146,6 +147,7 @@ type Topology struct {
 	Description string `json:"description"`
 	Name        string `json:"name"`
 	Tasks       []Task `json:"tasks"`
+	Action	    string `json:"action"`
 }
 
 type FogFunction struct {
@@ -153,6 +155,7 @@ type FogFunction struct {
 	Name     string        `json:"name"`
 	Topology Topology      `json:"topology"`
 	Intent   ServiceIntent `json:"intent"`
+	Action   string	       `json:"action"`
 }
 
 type DockerImage struct {
