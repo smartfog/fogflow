@@ -1,0 +1,16 @@
+{
+    "name": "docker_anomaly",
+    "version": "1.0.0",
+    "description": "dockerized task for anomaly detection",
+    "author": "Bin Cheng<bin.cheng@neclab.eu>",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js"
+    },
+    "dependencies": {
+        "express": "^4.13.3",
+        "axios": "*",
+        "logops": "*",
+        "body-parser": "*"
+    }
+}
