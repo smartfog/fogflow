@@ -180,8 +180,13 @@ $(function() {
         console.log("------------------op gen---",operator);
 
         // submit this operator
-        if(operator)
+        
+        if(operator.attribute && operator.attribute.name && operator.attribute.name != "unknown")
         submitOperator(operator, scene);
+        else {
+            alert('please provide the required inputs');
+            return;
+        }
     }
 
     function submitOperator(operator, designboard) {
@@ -660,7 +665,7 @@ $(function() {
         newImageObject.attribute = attribute
         newImageObject.internalType = "DockerImage"
         newImageObject.updateAction = "UPDATE"
-
+       
         clientDes.updateContext(newImageObject).then(function(data) {
             console.log(data);
 
