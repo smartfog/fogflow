@@ -2,10 +2,10 @@ package main
 
 import (
 	"strings"
-	"fmt"
+	//"fmt"
 )
 
-type cType func(interface{})interface{}
+type cType func(interface{}) interface{}
 
 func getEntityId(id interface{}) string {
 	Id := id.(string)
@@ -16,15 +16,29 @@ func getType(typ []interface{}) interface{} {
 	return typ
 }
 
-
+/*func collectfourPoints(frist, seecond ,third , forth interface{}) interface{}{
+	points := make([]interface{},0)
+	points = append(points,frist)
+	points = append(points,seecond)
+	points = append(points,third)
+	points = append(points,forth)
+	return points
+}
 func MultiLineStringHandler(coordinates interface{}) interface{} {
-	var value interface{}
-	return value
+	mulLinePoints := make([]interface{},0)
+	coordinateArray := coordinates.([]interface{})
+	for p:=0 ; p<len(coordinateArray); p = p+4 {
+		points := collectfourPoints(coordinateArray[p],coordinateArray[p+1],coordinateArray[p+2],coordinateArray[p+3])
+		linePoints := MultiPointHandler(points)
+		mulLinePoints = append(mulLinePoints,linePoints)
+	}
+	fmt.Println("mulLinePoints",mulLinePoints)
+	return mulLinePoints
 }
 
 func LineStringHandler(coordinates interface{})interface{} {
-	var value interface{}
-        return value
+	points := MultiPointHandler(coordinates)
+        return points
 }
 
 func MultiPolygonHandler(coordinates interface{}) interface{} {
@@ -43,8 +57,8 @@ func PolygonHandler(coordinates interface{})interface{} {
 func MultiPointHandler(coordinates interface{}) interface{} {
         coordinatesArray := coordinates.([]interface{})
 	Points := make([]interface{},0)
-	for index, _ := range coordinatesArray {
-		point := PointHandler(coordinatesArray[index])
+	for p := 0; p < len(coordinatesArray) ; p = p + 2 {
+		point := pointExtract(coordinatesArray[p],coordinatesArray[p + 1])
 		Points = append(Points,point)
 	}
 	return Points
@@ -52,19 +66,21 @@ func MultiPointHandler(coordinates interface{}) interface{} {
 
 // Point Handler
 
+func pointExtract(latitude, logitude interface{}) []interface{}{
+	point := make([]interface{},0)
+	latitudeMap := latitude.(map[string]interface{})
+	logitudeMap := logitude.(map[string]interface{})
+	point = append(point,latitudeMap["@value"])
+	point = append(point,logitudeMap["@value"])
+	return point
+}
 func PointHandler(coordinates interface{})interface{} {
 	coordinateArray := coordinates.([]interface{})
-	point := make([]interface{},0)
-	for _, value := range coordinateArray {
-		p  := value.(map[string]interface{})
-		point = append(point,p["@value"])
+	points := pointExtract(coordinateArray[0],coordinateArray[1])
+        return points
 
-	}
-	fmt.Println("point",point)
-        return point
-
-}
-func getCoordinateType(typ []interface{}) cType {
+}*/
+/*func getCoordinateType(typ []interface{}) cType {
 	coordinateType := typ[0].(string)
 	var  functionType cType
 	fmt.Println("coordinateType",coordinateType)
@@ -83,21 +99,33 @@ func getCoordinateType(typ []interface{}) cType {
 	}
 	fmt.Println("coordinatetype",functionType)
 	return functionType
+}*/
+
+func getCreatedTime(createdTime []interface{}) interface{} {
+	return createdTime
 }
 
-func getValue(val []interface{}) map[string]interface{} {
+func getModifiedTime(modifiedTime []interface{}) interface{} {
+	return modifiedTime
+}
+
+func getDataSetID(dataSetID []interface{}) interface{} {
+	return dataSetID
+}
+
+func getGeoValue(val []interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
-	var coordinateHandler cType
 	valueMap := val[0].(map[string]interface{})
-	if val, ok := valueMap["@type"]; ok {
-		coordinateHandler = getCoordinateType(val.([]interface{}))
-	}
-	for key,val := range valueMap {
+	for key, val := range valueMap {
 		if strings.Contains(key, "@type") {
 			result[key] = getType(val.([]interface{}))
 		} else if strings.Contains(key, "coordinates") {
-			result[key] = coordinateHandler(val.(interface{}))
+			result[key] = val
 		}
 	}
-    return result
+	return result
+}
+
+func getPropertyValue(val []interface{}) interface{} {
+	return val
 }

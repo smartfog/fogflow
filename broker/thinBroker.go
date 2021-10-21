@@ -2147,6 +2147,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					context = append(context, DEFAULT_CONTEXT)
 				}
 			}
+			fmt.Println("context", context)
 			ctxEle := ctx.(map[string]interface{})
 			_, ok1 := ctxEle["id"]
 			_, ok2 := ctxEle["@id"]
@@ -2169,7 +2170,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, Link)
 			} else {
 				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
-				fmt.Println("++++Resolved++++",resolved)
+				fmt.Println("++++Resolved++++", resolved)
 				if err != nil {
 
 					if err.Error() == "EmptyPayload!" {

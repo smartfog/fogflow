@@ -2,55 +2,144 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
-	"fmt"
 )
 
 type Serializer struct{}
 
+type fName func(map[string]interface{}) (map[string]interface{}, error)
 
-
-type fName func(map[string]interface{}) (map[string]interface{},error)
-
-
-func (sz Serializer) geoHandler (geoMap map[string]interface{})(map[string]interface{},error) {
-	fmt.Println("geoMap",geoMap)
-	result := make(map[string]interface{})
+func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]interface{}, error) {
+	geoResult := make(map[string]interface{})
+	var err error
 	for key, val := range geoMap {
 		if strings.Contains(key, "type") {
 			if val != nil {
-				result[key] = getType(val.([]interface{}))
+				geoResult[key] = getType(val.([]interface{}))
 			}
 		} else if strings.Contains(key, "hasValue") {
 			if val != nil {
-				fmt.Println("++++Value+++",val)
-				result[key] = getValue(val.([]interface{}))
+				geoResult[key] = getGeoValue(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "createdAt") {
+			if val != nil {
+				geoResult[key] = getCreatedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "modifiedAt") {
+			if val != nil {
+				geoResult[key] = getModifiedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "datasetId") {
+			if val != nil {
+				geoResult[key] = getDataSetID(val.([]interface{}))
+			}
+		} else {
+			interfaceArray := val.([]interface{})
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return geoResult, err
+				}
+				geoResult[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return geoResult, err
+				}
 			}
 		}
 	}
+	//var err error
+	return geoResult, err
+}
+
+func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[string]interface{}, error) {
+	propertyResult := make(map[string]interface{})
 	var err error
-	return result, err
+	for key, val := range propertyMap {
+		if strings.Contains(key, "type") {
+			if val != nil {
+				propertyResult[key] = getType(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "hasValue") {
+			if val != nil {
+				propertyResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "createdAt") {
+			if val != nil {
+				propertyResult[key] = getCreatedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "modifiedAt") {
+			if val != nil {
+				propertyResult[key] = getModifiedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "datasetId") {
+			if val != nil {
+				propertyResult[key] = getDataSetID(val.([]interface{}))
+			}
+		} else {
+			interfaceArray := val.([]interface{})
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return propertyResult, err
+				}
+				propertyResult[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return propertyResult, err
+				}
+			}
+		}
+	}
+	return propertyResult, err
 }
 
-func (sz Serializer)proprtyHandler (propertyMap map[string]interface{})(map[string]interface{},error) {
-        result := make(map[string]interface{})
-        var err error
-        return result, err
+func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]interface{}, error) {
+	relResult := make(map[string]interface{})
+	var err error
+	for key, val := range relmap {
+		if strings.Contains(key, "type") {
+			if val != nil {
+				relResult[key] = getType(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "hasObject") {
+			if val != nil {
+				relResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "createdAt") {
+			if val != nil {
+				relResult[key] = getCreatedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "modifiedAt") {
+			if val != nil {
+				relResult[key] = getModifiedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "datasetId") {
+			if val != nil {
+				relResult[key] = getDataSetID(val.([]interface{}))
+			}
+		} else {
+			interfaceArray := val.([]interface{})
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return relResult, err
+				}
+				relResult[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return relResult, err
+				}
+			}
+		}
+	}
+	return relResult, err
 }
 
-
-func (sz Serializer)relHandler(re map[string]interface{})(map[string]interface{},error) {
-        result := make(map[string]interface{})
-        var err error
-        return result, err
-}
-
-func (sz Serializer)getAttrType(attr map[string]interface{}) (fName, error) {
-        //var  Type1 string
-        var funcName fName
-        var err error
+func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
+	//var  Type1 string
+	var funcName fName
+	var err error
 	typ, oK := attr["@type"]
 	resType := typ.([]interface{})
 	if oK == false {
@@ -58,17 +147,17 @@ func (sz Serializer)getAttrType(attr map[string]interface{}) (fName, error) {
 		return funcName, err
 	} else if len(resType) > 0 {
 		Type1 := resType[0].(string)
-                if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
-                        funcName = sz.geoHandler
-                } else if strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship") {
-                        funcName = sz.relHandler
-                } else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
-                        funcName= sz.proprtyHandler
-                }  else {
+		if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
+			funcName = sz.geoHandler
+		} else if strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship") {
+			funcName = sz.relHandler
+		} else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
+			funcName = sz.proprtyHandler
+		} else {
 			err = errors.New("Unknown type")
-                }
-        }
-        return funcName, err 
+		}
+	}
+	return funcName, err
 }
 
 func (sz Serializer) getId(id interface{}) string {
@@ -76,43 +165,55 @@ func (sz Serializer) getId(id interface{}) string {
 	return Id
 }
 
-func (sz Serializer) handler(ExpEntity interface{})(map[string]interface{},error) {
+func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, error) {
 	ExpEntityMap := ExpEntity.(map[string]interface{})
 	resultEntity := make(map[string]interface{})
-	for key,val := range ExpEntityMap {
+	for key, val := range ExpEntityMap {
 		if strings.Contains(key, "id") {
 			if val != nil {
-			    resultEntity["@id"] = getEntityId(val.(interface{}))
+				resultEntity[key] = getEntityId(val.(interface{}))
 			}
 		} else if strings.Contains(key, "type") {
 			if val != nil {
-				resultEntity["@type"] = getType(val.([]interface{}))
+				resultEntity[key] = getType(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "createdAt") {
+			if val != nil {
+				resultEntity[key] = getCreatedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "modifiedAt") {
+			if val != nil {
+				resultEntity[key] = getModifiedTime(val.([]interface{}))
+			}
+		} else if strings.Contains(key, "datasetId") {
+			if val != nil {
+				resultEntity[key] = getDataSetID(val.([]interface{}))
 			}
 		} else {
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
-				attrHandler , err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
 				if err != nil {
-					return resultEntity, err 
+					return resultEntity, err
 				}
-				resultEntity[key],err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				resultEntity[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
 				if err != nil {
-					return resultEntity,err
+					return resultEntity, err
 				}
 			}
 		}
 	}
-	fmt.Println("============resultEntity=======",resultEntity)
-	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-	fmt.Println("===============compaced===========",compaced)
-	return resultEntity,nil
+	fmt.Println("============resultEntity=======", resultEntity)
+	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
+	fmt.Println("===============compaced===========", compaced)
+	return resultEntity, nil
 }
 
-func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]interface{},error) {
+func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]interface{}, error) {
 	expEntity := expEntities[0]
-	fmt.Println("expEntity",expEntity)
+	fmt.Println("expEntity", expEntity)
 	result, _ := sz.handler(expEntity.(map[string]interface{}))
-	return result,nil
+	return result, nil
 }
 
 /*func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {

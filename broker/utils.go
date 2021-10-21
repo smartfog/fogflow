@@ -446,7 +446,7 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 		ExpandOnce.Do(
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
 				fmt.Println("created object", ldE, err)
 			})
 	} else {
@@ -462,7 +462,7 @@ func Compact_once() *ld.RFC7324CachingDocumentLoader {
 		CompactOnce.Do(
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
 				fmt.Println("created object", ldC, err)
 			})
 	} else {
