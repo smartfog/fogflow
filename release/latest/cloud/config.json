@@ -1,8 +1,8 @@
 {
     "my_hostip": "192.168.0.59",
     "physical_location":{
-        "longitude": 139.709059,
-        "latitude": 35.692221
+        "longitude": 139,
+        "latitude": 35
     },
     "site_id": "001",
     "logging":{
@@ -12,7 +12,7 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 8090
+        "http_port": 8060
     },
     "broker": {
         "http_port": 8070
@@ -26,9 +26,8 @@
         "capacity": 8
     },
     "designer": {
-        "webSrvPort": 8080,
-        "agentPort": 1030,
-        "ldAgentPort":1090	
+        "webSrvPort": 8088,
+        "agentPort": 1030               
     },    
     "rabbitmq": {
         "port": 5672,
@@ -40,5 +39,5 @@
     },
     "persistent_storage": {
         "port": 9082
-    } 
+    }     
 }

@@ -1,11 +1,11 @@
-version: "3.5"
+version: "3"
 services:     
     designer:
         image: fogflow/designer:latest
         volumes:
             - ./config.json:/app/config.json
         ports:
-            - 8080:8080
+            - 8088:8088
             - 1030:1030
             - 1090:1090
         depends_on: 
@@ -13,15 +13,13 @@ services:
             - cloud_broker
             - dgraph
         restart: always
-            
+                       
     discovery:
         image: fogflow/discovery:latest
         volumes:
             - ./config.json:/config.json                        
         ports:
             - 8090:8090
-        depends_on:
-            - dgraph
         restart: always
 
     master:
@@ -35,8 +33,7 @@ services:
         depends_on: 
             - rabbitmq
             - discovery
-            - cloud_broker
-            - dgraph     
+            - cloud_broker     
         restart: always 
         
     cloud_broker:
@@ -47,7 +44,6 @@ services:
             - 8070:8070
         depends_on: 
             - discovery
-            - dgraph
         restart: always     
                                         
     cloud_worker:
@@ -56,9 +52,6 @@ services:
             - /tmp:/tmp        
             - ./config.json:/config.json                            
             - /var/run/docker.sock:/var/run/docker.sock      
-        depends_on: 
-            - cloud_broker
-            - rabbitmq
         restart: always
                                         
     rabbitmq:
@@ -68,26 +61,25 @@ services:
         environment:
             - RABBITMQ_DEFAULT_USER=admin
             - RABBITMQ_DEFAULT_PASS=mypass   
-        restart: always
-        
+        restart: always     
+                    
     nginx: 
-        image: nginx:latest
-        volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-        ports:
-            - 80:80
-        depends_on: 
-            - discovery    
-            - cloud_broker
-            - designer
-        restart: always
-
+      image: nginx:latest
+      volumes:
+        - ./nginx.conf:/etc/nginx/nginx.conf
+      ports:
+        - 80:80
+      depends_on: 
+        - discovery    
+        - cloud_broker
+      restart: always           
+        
     dgraph:                                   
-        image: dgraph/standalone:latest
+        image: dgraph/standalone
         volumes:
             - ./dgraph:/dgraph           
         ports:
             - 6080:6080
             - 8082:8080
             - 9082:9080
-            - 8000:8000
+            - 8000:8000        
