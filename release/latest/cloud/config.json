@@ -12,7 +12,7 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 8060
+        "http_port": 8090
     },
     "broker": {
         "http_port": 8070
@@ -26,8 +26,9 @@
         "capacity": 8
     },
     "designer": {
-        "webSrvPort": 8088,
-        "agentPort": 1030               
+        "webSrvPort": 8080,
+        "agentPort": 1030,
+        "ldAgentPort":1090
     },    
     "rabbitmq": {
         "port": 5672,
