@@ -1,10 +1,9 @@
 {
-    "coreservice_ip": "host.docker.internal",   
-    "external_hostip": "host.docker.internal",         
-    "internal_hostip": "host.docker.internal",  
+    "coreservice_ip": "192.168.0.59",   
+    "my_hostip": "192.168.0.16",  
     "physical_location":{
-        "longitude": 137,
-        "latitude": 35
+        "longitude": 138.709059,
+        "latitude": 36.692221
     },
     "site_id": "002",
     "logging":{
@@ -14,10 +13,10 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 80
+        "http_port": 8090           
     },
     "broker": {
-        "http_port": 8170
+        "http_port": 8060
     },     
     "worker": {
         "container_autoremove": false,
