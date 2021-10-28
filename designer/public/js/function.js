@@ -315,7 +315,6 @@ $(function() {
         //     fogfunction.uid = selectedFogFunction.uid;
         // }
         
-        console.log("=============submit a fog function=============",fogfunction);
         console.log(JSON.stringify(fogfunction));
         if (topologyName == '' || topology.name == '' || topology.tasks.length==0 || topology.tasks[0].operator == 'null' || 
         topology.tasks[0].operator == '' || topology.tasks[0].input_streams.length==0){

@@ -161,7 +161,7 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
 
     if (updateContextReq.updateAction == "DELETE") {
         console.log("delete entity is ",updateContextReq);
-        amqp.amqpPubTest(updateContextReq)
+        amqp.amqpPub(updateContextReq)
         let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
         await dgraph.DeleteNodeById(tmpVar.uid);
 
@@ -169,7 +169,7 @@ app.post('/internal/updateContext', jsonParser, async function (req, res) {
     } else if (updateContextReq.updateAction == "UPDATE") {
         //console.log("main js obj  ++++ ",updateContextReq)
         let tmpVar1 = JSON.parse(JSON.stringify(updateContextReq));
-        await amqp.amqpPubTest(tmpVar1)
+        await amqp.amqpPub(tmpVar1)
         let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
         await dgraph.WriteEntity(tmpVar)
     }
@@ -222,7 +222,6 @@ app.get('/proxy', function(req, res) {
     }
 });
 */
-function sayHello() { return "hello " } 
 
 // handle the received results
 function handleNotify(req, ctxObjects, res) {

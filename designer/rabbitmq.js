@@ -11,6 +11,7 @@ var channel_ = undefined;
 const opt = { credentials: require('amqplib').credentials.plain(USER, PASSWORD) };
 const hOpt = { content_type: 'application/json' }
 
+/** Hardcode value for testing */
 msg1 = {
   "entityId": { "id": "KK", "type": "Operator", "isPattern": false },
   "attributes": [
@@ -65,7 +66,7 @@ function amqpConnection(exchange_) {
 
 
 
-async function amqpPubTest(data, exchange_) {
+async function amqpPub(data, exchange_) {
   if (channel_ === undefined) amqpConnection();
   let msg = JSON.parse(JSON.stringify(data));
   //console.log("inside in amqp ",msg.attribute)
@@ -86,51 +87,13 @@ async function amqpPubTest(data, exchange_) {
   console.log(" [x] Sent %s", send.PayLoad);
   //return
 }
-// async function amqpPubTest(data, exchange_) {
-//   let msg = JSON.parse(JSON.stringify(data));
-//   //console.log("inside in amqp ",msg.attribute)
-//   //payData = string2json(msg.contextElements)
-//   if (msg.attribute == undefined){
-//     return
-//   }
-//   if (msg.attribute.hasOwnProperty("designboard")) delete msg.attribute.designboard;
-//   console.log("final amqp msg ** ",msg.attribute)
-//   send ={'Type': msg.internalType, 'RoutingKey': 'Operator.', 'From': 'designer', 'PayLoad': msg.attribute}
-//   //return
-//   amqp.connect(RABBIT_URL, opt,function (error0, connection) {
-//     if (error0) {
-//       throw error0;
-//     }
-//     connection.createChannel(function (error1, channel) {
-//       if (error1) {
-//         throw error1;
-//       }
-//       var exchange = exchange_ || EXCHANGE;
-//       channel.assertQueue(queue='Operator', {durable: true, autoDelete: true});
 
-//       channel.assertExchange(exchange, 'topic', {
-//         durable: true, autoDelete: true
-//       });
-//       channel.publish(exchange, 'Operator.', Buffer.from(JSON.stringify(send)),hOpt);
-//       console.log(" [x] Sent %s", send.PayLoad);
-//     });
-
-//     setTimeout(function () {
-//       connection.close();
-//       //process.exit(0);
-//     }, 500);
-//   });
-
-
-// }
 
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
   this.axios = require('axios')
-  module.exports.amqpPubTest = amqpPubTest;
+  module.exports.amqpPub = amqpPub;
   module.exports.amqpConnection =amqpConnection;
 } else {
-  window.amqpPubTest = amqpPubTest;
+  window.amqpPub = amqpPub;
   window.amqpConnection = amqpConnection;
 }
-
-//amqpPubTest("test")
