@@ -250,7 +250,7 @@ func (master *Master) subscribeContextEntity(entityType string) {
 	master.subID2Type[sid] = entityType
 }
 
-func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest) {
+/*func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest) {
 	sid := notifyCtxReq.SubscriptionId
 	stype := master.subID2Type[sid]
 
@@ -285,7 +285,7 @@ func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest)
 	case "TaskIntent":
 		//master.taskMgr.handleTaskIntentUpdate(contextObj)
 	}
-}
+}*/
 
 //
 // to handle the registry of operator
@@ -599,25 +599,6 @@ func (master *Master) handleFogFunctionUpdate(msg json.RawMessage) {
 func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
 	INFO.Println(string(msg))
 
-	/*if(len(msg) <= 2{
-		 master.topologyList_lock.Lock()
-
-                var eid = topologyCtxObj.Entity.ID
-
-                // find which one has this id
-                for _, topology := range master.topologyList {
-                        if topology.Id == eid {
-                                var name = topology.Name
-                                delete(master.topologyList, name)
-                                break
-                        }
-                }
-
-                master.topologyList_lock.Unlock()
-
-                return
-        }*/
-
 	topology := Topology{}
         err := json.Unmarshal(msg, &topology)
 	fmt.Println("***** len(topology.Tasks)*****",len(topology.Tasks))
@@ -815,31 +796,6 @@ func (master *Master) unsubscribeContextAvailability(sid string) {
 // to deal with the communication between master and workers via rabbitmq
 //
 func (master *Master) Process(msg *RecvMessage) error {
-
-	//contextObj := CtxElement2Object(string(msg.PayLoad))
-	//fmt.Println("***** Printing received message *****",msg)
-	//Op := Operator{}
-	//constEl := ContextElement{}
-	//jT, err1 := json.Marshal(msg.PayLoad.attributes["operator"].Value.(string))
-	//jT, err1 := json.Marshal(msg.PayLoad)
-	//fmt.Println("******* JT or err1**********",jT,err1)
-	//err := json.Unmarshal(msg.PayLoad, &constEl)
-	//jj, _ := json.Marshal(constEl.Attributes["operator"].Value.(map[string]interface{}))
-	//err2 := json.Unmarshal(jj,&Op)
-	//fmt.Println("***** err, constEl ********",err,constEl)
-	
-	//constOb := CtxElement2Object(&constEl)
-	//fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
-	
-	//jj, _ := json.Marshal(constOb.Attributes["operator"].Value.(map[string]interface{}))
-        //err2 := json.Unmarshal(jj,&Op)
-	
-	//fmt.Println("***** msg ********",string(msg.PayLoad))
-	//if err2 == nil {
-	//	fmt.Println(" **** OPERATOR *********", Op)
-	//}
-	//INFO.Println("type ", msg.Type)
-
 	switch msg.Type {
 	case "heart_beat":
 		profile := WorkerProfile{}
@@ -856,88 +812,17 @@ func (master *Master) Process(msg *RecvMessage) error {
 		}
 
 	case "Operator":
-		//constEl := ContextElement{}
-		//err := json.Unmarshal(msg.PayLoad, &constEl)
-		//fmt.Println("***** err, constEl ********",err,constEl)
-		//constOb := CtxElement2Object(&constEl)
-	        //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
-		//fmt.Println(string(msg.PayLoad));
-		//fmt.Println("***** msg size **********",len(msg.PayLoad));
-		//var operator = Operator{}
-		//err := json.Unmarshal(msg.PayLoad, &operator)
-		//fmt.Println("&&&&&&&&& operator and error &&&&&&&&",operator,err)
-
 		master.handleOperatorRegistration(msg.PayLoad)
 
 	case "DockerImage":
-		//constEl := ContextElement{}
-                //err := json.Unmarshal(msg.PayLoad, &constEl)
-                //fmt.Println("***** err, constEl ********",err,constEl)
-                //constOb := CtxElement2Object(&constEl)
-                //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
-
-		//var dockerImage = DockerImage{}
-		//err := json.Unmarshal(msg.PayLoad, &dockerImage)
-		//fmt.Println("&&&&&&&&& dockerImage and error &&&&&&&&",dockerImage,err)
-		//if dockerImage.Prefetched == true {
-                // inform all workers to prefetch this docker image in advance
-                //master.prefetchDockerImages(dockerImage)
-		//}
-
-
 		master.handleDockerImageRegistration(msg.PayLoad)
 
 	case "FogFunction":
-		//constEl := ContextElement{}
-                //err := json.Unmarshal(msg.PayLoad, &constEl)
-                //fmt.Println("***** err, constEl ********",err,constEl)
-                //constOb := CtxElement2Object(&constEl)
-                //fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)
-		//master.handleFogFunctionUpdate(constOb)
-		
-		fmt.Println("**** received msg ********",string(msg.PayLoad))
-		/*var sol = msg.PayLoad
-		var topology = Topology{}
-		err := json.Unmarshal(msg.PayLoad.attributes.topology, &topology)
-		fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&topology,err)
-		
-		var intent = ServiceIntent{}
-		err2 := json.Unmarshal(msg.PayLoad.attributes.intent, &intent)
-		fmt.Println("&&&&&&&&& intent from fogfunction and error &&&&&&&&",&topology,err2)
-		intent.ID = msg.PayLoad.attributes.id
-		fmt.Println("**** intent id *******",intent.ID)
-
-		var fogfunction = FogFunction{}
-		fogfunction.Id =  msg.PayLoad.attributes.id
-		fogfunction.Name = msg.PayLoad.attributes.name
-		fogfunction.Topology = topology
-		fogfunction.Intent = intent
-		fmt.Println("&&&&&&&&& fogfunction &&&&&&&&",&fogfunction)*/
-		
-		/*var fogfunction = FogFunction{}
-		err := json.Unmarshal(msg.PayLoad, &fogfunction)
-		fogfunction.Intent.ID = fogfunction.Id
-		fmt.Println("&&&&&&&&& topology and name &&&&&&&&",&fogfunction.Topology, &fogfunction.Topology.Name)
-		master.topologyList_lock.Lock()
-		master.topologyList[fogfunction.Topology.Name] = &fogfunction.Topology
-		master.topologyList_lock.Unlock()
-		master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
-		fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&",&fogfunction,err)*/
-
 		master.handleFogFunctionUpdate(msg.PayLoad)
 
 
 	case "Topology":
-                /*constEl := ContextElement{}
-                err := json.Unmarshal(msg.PayLoad, &constEl)
-                fmt.Println("***** err, constEl ********",err,constEl)
-                constOb := CtxElement2Object(&constEl)
-                fmt.Println("&&& &&&& &&& &&&&& const ob &&&&&&&&",constOb)*/
-
-		//var topology = Topology{}
-		//err := json.Unmarshal(msg.PayLoad, &topology)
-		//fmt.Println("&&&&&&&&& topology and error &&&&&&&&",&topology,err)
-		master.handleTopologyUpdate(msg.PayLoad)
+                master.handleTopologyUpdate(msg.PayLoad)
 
 	case "ServiceIntent": 
 		master.serviceMgr.handleServiceIntentUpdate(msg.PayLoad)
