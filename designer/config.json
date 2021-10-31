@@ -1,5 +1,5 @@
 {
-    "my_hostip": "180.179.214.149",
+    "my_hostip": "180.179.214.211",
     "physical_location": {
         "longitude": 139,
         "latitude": 35
@@ -39,6 +39,6 @@
         "enabled": false
     },
     "persistent_storage": {
-        "port": 9080
+        "port": 9082
     }
 }
