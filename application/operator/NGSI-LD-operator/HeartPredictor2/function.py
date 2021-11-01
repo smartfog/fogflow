@@ -2,6 +2,7 @@ import joblib
 import pandas as pd
 import sys
 import json
+from datetime import datetime
 
 loaded_rf = joblib.load("./predictor.joblib")
 
@@ -51,7 +52,9 @@ def handleEntity(ctxObj, publish, publishResultOnDesigner):
     {   
         'id' : ctxObj["id"]+".prediction",
         'type' : 'prediction',
-        'Analysis' : { 'type' : 'Property', 'value' : result}
+        'Analysis' : { 'type' : 'Property', 'value' : result},
+        'alert' : { 'type' : 'Property', 'value' : str(prediction[0])},
+        'Time' : { 'type' : 'Property' , 'value' : str(datetime.now())} 
     }
     print("Update Entity : ")
     print(json.dumps(updateEntity))

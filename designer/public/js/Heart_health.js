@@ -7,7 +7,6 @@ $(function() {
         scopeValue: "local"
     };
 
-    var RuleSet = { threshold: 30 };
     var curTopology = null;
     var curIntent = null;
     var curResult = [];
@@ -20,9 +19,8 @@ $(function() {
     addMenuItem('Topology', showTopology);
     addMenuItem('Management', showMgt);
     addMenuItem('Tasks', showTasks);
-    addMenuItem('Prediction Result', predictionResult);
     addMenuItem('Alerts', showResult);
-    //addMenuItem('Rule', showRule);
+    addMenuItem('Prediction', predictionResult);
 
     //connect to the socket.io server via the NGSI proxy module
     var ngsiproxy = new LDNGSIProxy();
@@ -35,7 +33,6 @@ $(function() {
     checkTopology();
     checkIntent();
     showTopology();
-    publishThreshold();
 
     $(window).on('hashchange', function() {
         var hash = window.location.hash;
@@ -57,15 +54,15 @@ $(function() {
     }
 
     //start a timer to send the rule set periodically
-    function startUpdateTimer() {
-        setInterval(publishThreshold, 2000);
-    }
+    //function startUpdateTimer() {
+    //    setInterval(publishThreshold, 2000);
+    //}
 
     function subscribeResult() {
         var subscribeCtxReq = {};
         subscribeCtxReq.type = "Subscription"
 
-        subscribeCtxReq.entities = [{ type: 'ldStat' }];
+        subscribeCtxReq.entities = [{ type: 'ldStat_health' }];
 
         subscribeCtxReq.notification = {}
         endPoint = {}
@@ -93,7 +90,8 @@ $(function() {
             var point = [time, num];
             category_dataset[0].values.push(point);
             var hash = window.location.hash;
-            if (hash == '#Result') {
+            console.log(hash);
+            if (hash == '#Alerts') {
                 updateChart('#chart svg', category_dataset);
             }
         }
@@ -375,17 +373,59 @@ $(function() {
     function predictionResult() {
         $('#info').html('list of prediction data from all Heart Sensors');
         
-        var queryReq2 = {}
-        queryReq2.entities = [{ type: 'prediction' }];
+        var queryReq2 = {};
+        queryReq2.type = 'Query';
+        queryReq2.entities = [{ type : 'prediction' }];
         ldclient.queryContext(queryReq2).then(function(entityList) {
             console.log(entityList);
+            displayPredictionList(entityList);
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query task');
+            console.log('failed to query predictions');
         });
     }
 
+    function displayPredictionList(entity) {
+	$('#info').html('list of predictions for this service topology');
+        
+        if (entity[0].length == 0) {
+            $('#content').html('there are no predictions for this topology');
+            return;
+        }
+       
+        var html = '<table class="table table-striped table-bordered table-condensed">';
 
+        html += '<thead><tr>';
+        html += '<th>Sensor ID</th>';
+        html += '<th>Prediction</th>';
+        html += '<th>Alert</th>';
+        html += '<th>Time</th>';
+        html += '</tr></thead>';
+
+        for (var i = 0; i < entity.length; i++) {
+            var taskresult = entity[i];
+        for (var j = 0; j < taskresult.length; j++){
+	    var task = taskresult[i];
+            html += '<tr>';
+            html += '<td>' + task.id + '</td>';
+            html += '<td>' + task.Analysis.value + '</td>';
+            if (task.alert.value == "1") {
+                html += '<td><font color="red">' + task.alert.value + '</font></td>';
+            } else {
+                html += '<td><font color="green">' + task.alert.value + '</font></td>';
+            }
+
+            html += '<td>' + task.Time.value + '</td>';
+
+            html += '</tr>';
+        }
+       }
+
+        html += '</table>';
+
+        $('#content').html(html);
+
+    }
        
     function showResult() {
         $('#info').html('statistical result');
@@ -464,48 +504,6 @@ $(function() {
             .transition().duration(500)
             .call(chart);
     }
-
-   function showRule() {
-        $('#info').html('update the defined rule for anomaly detection');
-
-        var html = '';
-
-        html += '<div class="input-prepend">';
-        html += '<button id="updateRule" type="button" class="btn btn-default">Update</button>';
-        html += '<input type="number" class="input-small" min="0" id="thresholdNum" placeholder="Threshold...">';
-        html += ' Current threshold = <span class="badge badge-important" id="thresholdValue">' + RuleSet.threshold + '</span>';
-        html += '</div> ';
-        $('#content').html(html);
-
-        $('#updateRule').click(updateRule);
-    }
-
-    function updateRule() {
-        var newThreshold = $('#thresholdNum').val();
-	console.log("newThreshold",newThreshold)
-        RuleSet.threshold = parseInt(newThreshold);
-        $('#thresholdValue').text(RuleSet.threshold);
-
-        publishThreshold()
-    }
-
-
-
-       function publishThreshold() {
-        console.log('update the defined threshold for anomaly detection ', RuleSet.threshold);
-
-        var ruleCtxObj = {};
-
-        ruleCtxObj.id = 'urn:ngsi-ld:Stream.Rule.01'
-        ruleCtxObj.type = 'Rule'
-        ruleCtxObj.threshold = { type: 'Property', value: RuleSet.threshold };
-        ldclient.updateContext(ruleCtxObj).then(function(data) {
-            console.log(data);
-        }).catch(function(error) {
-            console.log('failed to update the threshold for anomaly detection');
-        });
-    }
-
     function showMap() {
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osm = L.tileLayer(osmUrl, { maxZoom: 7, zoom: 7 }),
