@@ -1024,3 +1024,89 @@ func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabi
 		return "", err
 	}
 }
+
+// LD QueryContext 
+
+func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs string, fsp string) ([]interface{}, error) {
+	/*for index, entity := *query.Entities {
+		id := entity.ID
+		idSplit := strings.Split(id, "@")
+		entity.ID = idSplit[0]
+		query.Entities[index] = entity
+	}
+	fmt.Println(query)*/
+	body, err := json.Marshal(*query)
+	if err != nil {
+		return nil, err
+	}
+	BrokerURL := strings.TrimSuffix(nc.IoTBrokerURL, "/ngsi10")
+	req, err := http.NewRequest("POST", BrokerURL+"/ngsi-ld/v1/entityOperations/query", bytes.NewBuffer(body))
+	if fs != "default" {
+                req.Header.Add("fiware-service", fs)
+        }
+        if fsp != "" {
+                req.Header.Add("fiware-servicepath", fsp)
+        }
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	fmt.Println("resp",resp)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return nil, err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+	var queryCtxResp  []interface{}
+	err = json.Unmarshal(text, &queryCtxResp)
+	if err != nil {
+		return nil, err
+	}
+	return queryCtxResp, nil
+}
+
+func (nc *NGSI10Client) QueryLdContext(query * LDQueryContextRequest, fs,fsp string) ([]interface{}, error) {
+	body, err := json.Marshal(*query)
+	if err != nil {
+		return nil, err
+	}
+	BrokerURL := strings.TrimSuffix(nc.IoTBrokerURL, "/ngsi10")
+	req, err := http.NewRequest("POST", BrokerURL+"/ngsi-ld/v1/entityOperations/query", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	if fs != "default" {
+                req.Header.Add("fiware-service", fs)
+        }
+
+        if fsp != "" {
+                req.Header.Add("fiware-servicepath", fsp)
+        }
+
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		ERROR.Println(err)
+		return nil, err
+	}
+
+	text, _ := ioutil.ReadAll(resp.Body)
+	var queryCtxResp  []interface{}
+        err = json.Unmarshal(text, &queryCtxResp)
+        if err != nil {
+                return nil, err
+        }
+        fmt.Println("queryCtxResp",queryCtxResp)
+        return queryCtxResp, nil
+
+}
+

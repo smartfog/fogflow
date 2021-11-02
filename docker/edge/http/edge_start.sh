@@ -5,7 +5,7 @@
 # ./edge_start.sh arm : this command will run the docker image with "arm" tag  i.e. fogflow/broker:arm
 
 if [ $# -eq 0 ]; then
-	htype='3.2.6'
+	htype='latest'
 else
 	htype='arm'
 fi

@@ -287,12 +287,12 @@ func (pAttr *ContextAttribute) UnmarshalJSON(b []byte) error {
 }
 
 type EntityId struct {
-	Type      string `json:"type,omitempty"`
-	IsPattern bool   `json:"isPattern,omitempty"`
-	ID        string `json:"id"`
-	IdPattern string `json:"idPattern,omitempty"`
-	FiwareServicePath  string  `json:"fiwareServicePath,omitempty"`
-	MsgFormat  string  `json:"magFormat,omitempty"`
+	Type              string `json:"type,omitempty"`
+	IsPattern         bool   `json:"isPattern,omitempty"`
+	ID                string `json:"id"`
+	IdPattern         string `json:"idPattern,omitempty"`
+	FiwareServicePath string `json:"fiwareServicePath,omitempty"`
+	MsgFormat         string `json:"magFormat,omitempty"`
 }
 
 type Conditions struct {
@@ -667,7 +667,7 @@ type EntityRegistration struct {
 	ProvidingApplication string
 	FiwareServicePath    string
 	MsgFormat            string
-	FiwareService	     string
+	FiwareService        string
 }
 
 func (registredEntity *EntityRegistration) GetLocation() Point {
@@ -739,7 +739,7 @@ type ContextRegistration struct {
 	ProvidingApplication          string                         `json:"providingApplication"`
 	FiwareServicePath             string
 	MsgFormat                     string
-	FiwareService		      string
+	FiwareService                 string
 }
 
 type ContextRegistrationResponse struct {
@@ -759,6 +759,8 @@ type QueryContextRequest struct {
 	Restriction Restriction `json:"restriction,omitempty"`
 }
 
+//NGSILD
+
 type QueryContextResponse struct {
 	ContextResponses []ContextElementResponse `json:"contextResponses,omitempty"`
 	ErrorCode        StatusCode               `json:"errorCode,omitempty"`
@@ -770,11 +772,11 @@ type Subscriber struct {
 	RequireReliability bool
 	BrokerURL          string
 	//Integration        bool
-	NotifyCache        []*ContextElement
-	LDNotifyCache      []map[string]interface{}
+	NotifyCache       []*ContextElement
+	LDNotifyCache     []map[string]interface{}
 	Integration       string
-        FiwareService      string
-        FiwareServicePath  string
+	FiwareService     string
+	FiwareServicePath string
 }
 
 type SubscribeContextRequest struct {
@@ -1281,22 +1283,81 @@ type CSourceRegistrationResponse struct {
 }
 
 type ProblemDetails struct {
-        Type    string `json: "type",omitemtpy`
-        Status  string `json: "status",omitemtpy`
-        Title   string `json: "title",omitemtpy`
-        Details string `json: "details",omitemtpy`
+	Type    string `json: "type",omitemtpy`
+	Status  string `json: "status",omitemtpy`
+	Title   string `json: "title",omitemtpy`
+	Details string `json: "details",omitemtpy`
+}
+
+//NGSILD QueryContext
+
+type LDQueryContextRequest struct {
+	Type       string      `json:"type"`
+	Entities   []EntityId  `json:"entities"`
+	Attributes []string    `json:"attrs,omitempty"`
+	Q          string      `json:"q"`
+	GeoQ       interface{} `json:"geoQ"`
+	Csf        string      `json:"csf"`
+	TemporalQ  interface{} `json:"temporalQ"`
 }
 
 type ResponseError struct {
-        Success []string         `json: "success",omitemtpy`
-        Errors  []ProblemDetails `json: "errors",omitemtpy`
+	Success []string         `json: "success",omitemtpy`
+	Errors  []ProblemDetails `json: "errors",omitemtpy`
 }
 
-func FiwareId(id string)(string, string) {
-        if strings.Contains(id,"@") == true {
-                idsplit :=strings.Split(id,"@")
-                return idsplit[0],idsplit[1]
-        }
-        return id, "default"
+func FiwareId(id string) (string, string) {
+	if strings.Contains(id, "@") == true {
+		idsplit := strings.Split(id, "@")
+		return idsplit[0], idsplit[1]
+	}
+	return id, "default"
 }
 
+func changeInv1cordinates(Latitude interface{}, Longitude interface{}) interface{} {
+	v1point := Point{}
+	v1point.Latitude = Latitude.(float64)
+	v1point.Longitude = Longitude.(float64)
+	return v1point
+}
+
+func resolvePolygon(location interface{}) interface{} {
+	OuterArray := location.([]interface{})
+	ListOfV1Points := make([]interface{}, 0)
+	for point := 0; point < len(OuterArray); point = point + 1 {
+		points := OuterArray[point].([]interface{})
+		v1Points := changeInv1cordinates(points[0], points[1])
+		ListOfV1Points = append(ListOfV1Points, v1Points)
+	}
+	return ListOfV1Points
+}
+
+func resolveMultipont(location interface{}) interface{} {
+	multipointArray := location.([]float64)
+	ListOfV1Points := make([]interface{}, 0)
+	for point := 0; point < len(multipointArray); point = point + 2 {
+		v1Points := changeInv1cordinates(multipointArray[point], multipointArray[point])
+		ListOfV1Points = append(ListOfV1Points, v1Points)
+	}
+	return ListOfV1Points
+}
+
+func GetNGSIV1DomainMetaData(typ string, location interface{}) (string, interface{}) {
+	var valuetyp string
+	var points interface{}
+	if strings.HasSuffix(typ, "Point") == true && strings.HasSuffix(typ, "MultiPoint") == false {
+		valuetyp = "point"
+		cordinates := location.([]interface{})
+		points = changeInv1cordinates(cordinates[0], cordinates[1])
+	} else if strings.HasSuffix(typ, "Polygon") == true {
+		valuetyp = "polygon"
+		points = resolvePolygon(location.(interface{}))
+	} else if strings.HasSuffix(typ, "MultiPoint") == true {
+		valuetyp = "multiPoint"
+		points = resolveMultipont(location)
+	} else {
+		valuetyp = typ
+		points = changeInv1cordinates(float64(0),float64(0))
+	}
+	return valuetyp, points
+}

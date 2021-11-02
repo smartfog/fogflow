@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	//	. "fogflow/common/constants"
+	. "fogflow/common/constants"
 	. "fogflow/common/ngsi"
 
 	"io/ioutil"
@@ -157,7 +158,6 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
-	fmt.Println("rsp", resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -503,6 +503,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		}
 		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
 	}
+	INFO.Println("Compacted Element:",ldCompactedElems)
 	var notifyCtxReq interface{}
 	var notifyURL string
 	var newBody []byte
@@ -536,6 +537,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		}
 		body, err := json.Marshal(notifyCtxReq)
 		if err != nil {
+			ERROR.Println("Not able to marshal to notifyData")
 			return err
 		}
 		newBody = body
@@ -564,7 +566,6 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 				}
 			}
 		}
-		//commandResult := ldEle["command"]
 	}
 	return nil
 }
@@ -595,6 +596,7 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 		defer resp.Body.Close()
 	}
 	if err != nil {
+		 ERROR.Println("Error in notification response: ", err)
 		return err
 	}
 
@@ -629,6 +631,7 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 		defer resp.Body.Close()
 	}
 	if err != nil {
+		ERROR.Println("Error in notification response: ", err)
 		return err
 	}
 
@@ -790,4 +793,25 @@ func extractLinkHeaderFields(link string) string {
 	}
 
 	return splitLink
+}
+
+func extractcontext(cType string, link string) ([]interface{}, bool) {
+	var context []interface{}
+	cTypeInLower := strings.ToLower(cType)
+	contextInPayload := false
+	if cTypeInLower == "application/ld+json" {
+		contextInPayload = true
+	} else {
+		if link != "" {
+			link := extractLinkHeaderFields(link)
+			if link == "default" {
+				context = append(context, DEFAULT_CONTEXT)
+			} else {
+				context = append(context, link)
+			}
+		} else {
+			context = append(context, DEFAULT_CONTEXT)
+		}
+	}
+	return context, contextInPayload
 }

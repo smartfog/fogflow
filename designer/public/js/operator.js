@@ -339,6 +339,14 @@ $(function() {
             name: "detector",
             description: "",
             parameters: []
+        }, {
+            name: "LDanomaly",
+            description: "",
+            parameters: []
+        }, {
+            name: "LDCounter",
+            description: "",
+            parameters: []
         }];
        
         return operatorList
@@ -500,6 +508,20 @@ $(function() {
             hwType: "ARM",
             osType: "Linux",
             operatorName: "detector",
+            prefetched: false
+        }, {
+            name: "fogflow/ldanomaly",
+            tag: "latest",
+            hwType: "X86",
+            osType: "Linux",
+            operatorName: "LDanomaly",
+            prefetched: false
+        }, {
+            name: "fogflow/ldcounter",
+            tag: "latest",
+            hwType: "X86",
+            osType: "Linux",
+            operatorName: "LDCounter",
             prefetched: false
         }];
 

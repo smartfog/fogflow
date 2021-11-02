@@ -1,5 +1,5 @@
 {
-    "my_hostip": "192.168.1.10",
+    "my_hostip": "180.179.214.149",
     "physical_location": {
         "longitude": 139,
         "latitude": 35
@@ -27,7 +27,8 @@
     },
     "designer": {
         "webSrvPort": 8080,
-        "agentPort": 1030
+        "agentPort": 1030,
+	"ldAgentPort":1090
     },
     "rabbitmq": {
         "port": 5672,
