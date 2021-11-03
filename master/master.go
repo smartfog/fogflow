@@ -109,7 +109,7 @@ func (master *Master) Start(configuration *Config) {
 	// start the NGSI agent
 	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort, SecurityCfg: master.cfg.HTTPS}
 	master.agent.Start()
-	master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
+	//master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
 	// start the message consumer
