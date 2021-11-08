@@ -129,3 +129,15 @@ func getGeoValue(val []interface{}) map[string]interface{} {
 func getPropertyValue(val []interface{}) interface{} {
 	return val
 }
+ 
+//getType
+
+func getRegistrationType(typ interface{}) string {
+	typeArray  := typ.([]interface{})
+	return typeArray[0].(string)
+}
+
+func reslice(slice []string, s int) []string {
+	slice[s] = slice[len(slice)-1]
+        return slice[:len(slice)-1]
+}  
