@@ -78,7 +78,11 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 			if val != nil {
 				propertyResult[key] = getDataSetID(val.([]interface{}))
 			}
-		} else {
+		} else if strings.Contains(key, "unitCode") {
+			if val != nil {
+				propertyResult[key] = getUniCode(val.([]interface{}))
+			}
+		}  else {
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -140,7 +144,9 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	//var  Type1 string
 	var funcName fName
 	var err error
+	fmt.Println("attr",attr)
 	typ, oK := attr["@type"]
+	fmt.Println("++++type=======",typ)
 	resType := typ.([]interface{})
 	if oK == false {
 		err := errors.New("attribute type can not be nil!")

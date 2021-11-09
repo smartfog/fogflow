@@ -112,6 +112,9 @@ func getModifiedTime(modifiedTime []interface{}) interface{} {
 func getDataSetID(dataSetID []interface{}) interface{} {
 	return dataSetID
 }
+func getUniCode(dataSetID []interface{}) interface{} {
+        return dataSetID
+}
 
 func getGeoValue(val []interface{}) map[string]interface{} {
 	result := make(map[string]interface{})
@@ -140,4 +143,24 @@ func getRegistrationType(typ interface{}) string {
 func reslice(slice []string, s int) []string {
 	slice[s] = slice[len(slice)-1]
         return slice[:len(slice)-1]
+}
+
+func checkCondition(k string) bool {
+	if k == "@id" {
+		return false
+	} else if  k == "@type" {
+		return false
+	} else if k == "@context"{
+		return false
+	} else if strings.Contains(k, "modifiedAt") {
+		return false
+	} else if strings.Contains(k, "createdAt") {
+                return false
+        } else if strings.Contains(k, "observationSpace") {
+                return false
+        } else if strings.Contains(k, "operationSpace") {
+                return false
+        } else {
+		return true
+	}
 }  

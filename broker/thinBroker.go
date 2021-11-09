@@ -2371,8 +2371,10 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) error {
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
-	for k, v := range elem {
-		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "mgsFormat" && k != "fiwareServicePath" {
+	fmt.Println("entity",entity)
+	for k, _ := range elem {
+		isLdJsonOject := checkCondition(k)
+		if  isLdJsonOject == true && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
 				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
 				attrMap := elem[k].(map[string]interface{})            // to be updated as
@@ -2413,11 +2415,11 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 
 					entityMap[k] = v
 				}
-			}
+			}*/
 		}
 	}
-	entityMap["modifiedAt"] = time.Now().String()
-	tb.ldEntities[eid] = entityMap
+	//entityMap["modifiedAt"] = time.Now().String()
+	//tb.ldEntities[eid] = entityMap
 	return nil
 }
 
@@ -2532,7 +2534,9 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
 	for k, attr := range elem { // considering properties and relationships as attributes
-		if k != "@id" && k != "@type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+	       fmt.Println("k inside registration", k)
+		isLdJsonObject := checkCondition(k)
+		if isLdJsonObject == true {
 			if k == "fiwareServicePath" {
 				ctxReg.FiwareServicePath = attr.(string)
 				continue
