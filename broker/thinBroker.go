@@ -2408,6 +2408,7 @@ func (tb *ThinBroker) updateLdContextElement(ctxEle map[string]interface{}) {
 	if _, exist := tb.ldEntities[eid]; exist {
 		tb.updateCtxElemet(ctxEle, eid)
 	} else {
+		fmt.Println("ctxEle",ctxEle)
 		typ := getRegistrationType(ctxEle["@type"])
 		fmt.Println("typ",typ)
 		tb.entityTypeTOEntityId[typ] = append(tb.entityTypeTOEntityId[typ],eid)

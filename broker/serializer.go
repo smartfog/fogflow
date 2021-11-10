@@ -83,6 +83,7 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 				propertyResult[key] = getUniCode(val.([]interface{}))
 			}
 		}  else {
+			fmt.Println("Comming in value ",val)
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -145,13 +146,12 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	var funcName fName
 	var err error
 	fmt.Println("attr",attr)
-	typ, oK := attr["@type"]
-	fmt.Println("++++type=======",typ)
-	resType := typ.([]interface{})
-	if oK == false {
+	if _, okey := attr["@type"] ; okey == false {
 		err := errors.New("attribute type can not be nil!")
 		return funcName, err
-	} else if len(resType) > 0 {
+	}
+	resType := attr["@type"].([]interface{})
+	if len(resType) > 0 {
 		Type1 := resType[0].(string)
 		if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
 			funcName = sz.geoHandler
@@ -160,7 +160,7 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 		} else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
 			funcName = sz.proprtyHandler
 		} else {
-			err = errors.New("Unknown type")
+			err = errors.New("Unknown type!")
 		}
 	}
 	return funcName, err
@@ -174,6 +174,7 @@ func (sz Serializer) getId(id interface{}) string {
 func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, error) {
 	ExpEntityMap := ExpEntity.(map[string]interface{})
 	resultEntity := make(map[string]interface{})
+	fmt.Println("ExpEntity",ExpEntity)
 	for key, val := range ExpEntityMap {
 		if strings.Contains(key, "id") {
 			if val != nil {
@@ -209,17 +210,16 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 			}
 		}
 	}
-	fmt.Println("============resultEntity=======", resultEntity)
 	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
-	fmt.Println("===============compaced===========", compaced)
+	fmt.Println(compaced)
+	fmt.Println("+++++resultEntity++++",resultEntity)
 	return resultEntity, nil
 }
 
 func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]interface{}, error) {
 	expEntity := expEntities[0]
-	fmt.Println("expEntity", expEntity)
-	result, _ := sz.handler(expEntity.(map[string]interface{}))
-	return result, nil
+	result, err := sz.handler(expEntity.(map[string]interface{}))
+	return result, err
 }
 
 /*func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
