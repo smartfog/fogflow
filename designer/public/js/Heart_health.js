@@ -405,7 +405,7 @@ $(function() {
         for (var i = 0; i < entity.length; i++) {
             var taskresult = entity[i];
         for (var j = 0; j < taskresult.length; j++){
-	    var task = taskresult[i];
+	    var task = taskresult[j];
             html += '<tr>';
             html += '<td>' + task.id + '</td>';
             html += '<td>' + task.Analysis.value + '</td>';
