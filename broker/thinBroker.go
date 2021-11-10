@@ -2371,51 +2371,29 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) error {
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
-	fmt.Println("entity",entity)
-	for k, _ := range elem {
+	for k, v := range elem {
 		isLdJsonOject := checkCondition(k)
 		if  isLdJsonOject == true && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
-				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
-				attrMap := elem[k].(map[string]interface{})            // to be updated as
-				if strings.Contains(attrMap["type"].(string), "Property") {
-					if attrMap["value"] != nil {
-						entityAttrMap["value"] = attrMap["value"]
-					}
-					if attrMap["observedAt"] != nil {
-						entityAttrMap["observedAt"] = attrMap["observedAt"]
-					}
-					if attrMap["datasetId"] != nil {
-						entityAttrMap["datasetId"] = attrMap["datasetId"]
-					}
-					if attrMap["instanceId"] != nil {
-						entityAttrMap["instanceId"] = attrMap["instanceId"]
-					}
-					if attrMap["unitCode"] != nil {
-						entityAttrMap["unitCode"] = attrMap["unitCode"]
-					}
-				} else if strings.Contains(attrMap["type"].(string), "Relationship") {
-					if attrMap["object"] != nil {
-						entityAttrMap["object"] = attrMap["object"]
-					}
-					if attrMap["providedBy"] != nil {
-						entityAttrMap["providedBy"] = attrMap["providedBy"]
-					}
-					if attrMap["datasetId"] != nil {
-						entityAttrMap["datasetId"] = attrMap["datasetId"]
-					}
-					if attrMap["instanceId"] != nil {
-						entityAttrMap["instanceId"] = attrMap["instanceId"]
-					}
+				updatedResult := make(map[string]interface{})
+				prevEleAttr := entityMap[k].(map[string]interface{})
+				currEleAttr := elem[k].(map[string]interface{})
+				AttrType := checkAttributeType(prevEleAttr["@type"])
+				if AttrType == "Property" {
+					updatedResult = propertyUpdater(prevEleAttr,currEleAttr)
+				} else if AttrType == "Relationship" {
+					//entityMap[k] = relationShipUpdater(entityAttrMap)
+					fmt.Println("need to implement")
+				} else {
+					 fmt.Println("need to implement ")
 				}
-				entityAttrMap["modifiedAt"] = time.Now().String()
-				entityMap[k] = entityAttrMap
+				updatedResult["modifiedAt"] = time.Now().String()
+				entityMap[k] = updatedResult
 			} else {
-				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-
+				if isLdJsonOject == true {
 					entityMap[k] = v
 				}
-			}*/
+			}
 		}
 	}
 	//entityMap["modifiedAt"] = time.Now().String()

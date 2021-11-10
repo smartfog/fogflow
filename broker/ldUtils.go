@@ -163,4 +163,52 @@ func checkCondition(k string) bool {
         } else {
 		return true
 	}
-}  
+} 
+/*
+	check aatribute type 
+*/
+
+func checkAttributeType(typ interface{}) string {
+	attrType := getRegistrationType(typ)
+	var typeResult string
+	if strings.Contains(attrType, "GeoProperty") || strings.Contains(attrType, "geoproperty") {
+               typeResult = "GeoProperty"
+        } else if strings.Contains(attrType, "Relationship") || strings.Contains(attrType, "relationship") {
+                typeResult = "Relationship"
+                } else if strings.Contains(attrType, "Property") || strings.Contains(attrType, "property") {
+                        typeResult = "Property"
+                }  else {
+			typeResult = ""
+		}
+	return typeResult
+}
+
+// update entity
+
+func propertyUpdater(prev , curr map[string]interface{}) map[string]interface{} {
+	for key , value := range curr {
+		if _ , ok := prev[key] ; ok == true {
+			switch value.(type) {
+				case map[string]interface{}:
+					valueMap := value.(map[string]interface{})
+					if value, ok := valueMap["@type"] ; ok == true {
+						typ := checkAttributeType(value)
+						if typ != "" {
+							newPrev := prev[key].(map[string]interface{})
+							newCurr := curr[key].(map[string]interface{})
+							prev[key] = propertyUpdater(newPrev,newCurr)
+						} else {
+							prev[key] = curr[key]
+						}
+					} else {
+						prev[key] = curr[key]
+					}
+				default: 
+					prev[key] = curr[key]
+			}
+		} else {
+			prev[key] = value
+		}
+	}
+return prev
+}
