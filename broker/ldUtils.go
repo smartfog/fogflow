@@ -101,6 +101,11 @@ func PointHandler(coordinates interface{})interface{} {
 	return functionType
 }*/
 
+
+func getObservedTime(obsevedTime []interface{}) interface{} {
+        return obsevedTime
+}
+
 func getCreatedTime(createdTime []interface{}) interface{} {
 	return createdTime
 }

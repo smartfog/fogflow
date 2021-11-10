@@ -112,9 +112,9 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 			if val != nil {
 				relResult[key] = getPropertyValue(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "createdAt") {
+		} else if strings.Contains(key, "observedAt") {
 			if val != nil {
-				relResult[key] = getCreatedTime(val.([]interface{}))
+				relResult[key] = getObservedTime(val.([]interface{}))
 			}
 		} else if strings.Contains(key, "modifiedAt") {
 			if val != nil {
@@ -174,7 +174,6 @@ func (sz Serializer) getId(id interface{}) string {
 func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, error) {
 	ExpEntityMap := ExpEntity.(map[string]interface{})
 	resultEntity := make(map[string]interface{})
-	fmt.Println("ExpEntity",ExpEntity)
 	for key, val := range ExpEntityMap {
 		if strings.Contains(key, "id") {
 			if val != nil {
