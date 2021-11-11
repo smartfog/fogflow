@@ -79,6 +79,7 @@ $(function () {
         discoverReq.entities = [{ type: 'IoTBroker', isPattern: true }];
 
         var ngsi9client = new NGSI9Client(config.discoveryURL)
+        console.log('discorvery url is ',config.discoveryURL);
         ngsi9client.discoverContextAvailability(discoverReq).then(function (response) {
             var brokers = [];
             if (response.errorCode.code == 200 && response.hasOwnProperty('contextRegistrationResponses')) {

@@ -58,19 +58,35 @@ var NGSI10Client = (function() {
     
     // update context 
     NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
-        contextElement = JSONObject2CtxElement(ctxObj);
+        // contextElement = JSONObject2CtxElement(ctxObj);
         
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'UPDATE'
+        // var updateCtxReq = {};
+        // updateCtxReq.contextElements = [];
+        // updateCtxReq.contextElements.push(contextElement)
+        // updateCtxReq.updateAction = 'UPDATE'
          
-		console.log(updateCtxReq);
+		// console.log(updateCtxReq);
 		      
         return axios({
             method: 'post',
             url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            data: ctxObj
+        }).then( function(response){
+            if (response.status == 200) {
+                return response.data;
+            } else {
+                return null;
+            }
+        });
+    };
+
+    // get context from dgraph
+    NGSI10Client.prototype.getContext = function getContext(ctxObj) {
+		console.log("+++++++++++++++++++++++ ",ctxObj);
+        return axios({
+            method: 'post',
+            url: this.brokerURL + '/getContext',
+            data: ctxObj
         }).then( function(response){
             if (response.status == 200) {
                 return response.data;
@@ -82,18 +98,19 @@ var NGSI10Client = (function() {
     
     // delete context 
     NGSI10Client.prototype.deleteContext = function deleteContext(entityId) {
-        var contextElement = {};
-        contextElement.entityId = entityId
         
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'DELETE'
+        // var contextElement = {};
+        // contextElement.entityId = entityId
+        
+        // var updateCtxReq = {};
+        // updateCtxReq.contextElements = [];
+        // updateCtxReq.contextElements.push(contextElement)
+        // updateCtxReq.updateAction = 'DELETE'
         
         return axios({
             method: 'post',
             url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            data: entityId
         }).then( function(response){
             if (response.status == 200) {
                 return response.data;
@@ -104,7 +121,8 @@ var NGSI10Client = (function() {
     };    
     
     // query context
-    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {        
+    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {  
+        console.log("queryContext url *** ",this.brokerURL); 
         return axios({
             method: 'post',
             url: this.brokerURL + '/queryContext',
@@ -117,7 +135,9 @@ var NGSI10Client = (function() {
                     var obj = CtxElement2JSONObject(ctxElements[i].contextElement);
                     objectList.push(obj);
                 }
+                console.log("inside in ngsi 10 client ",objectList)
                 return objectList;
+
             } else {
                 return null;
             }

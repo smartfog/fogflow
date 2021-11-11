@@ -138,7 +138,7 @@ jobs:
         pytest -s -v test_casesNGSI-LD.py
 
         echo "Persistance Testing !!!"  
-        cd ../persistance/
-        pytest -s -v test_persistance.py 
+        #cd ../persistance/
+        #pytest -s -v test_persistance.py 
 
         echo "Testing Done !!!!!"

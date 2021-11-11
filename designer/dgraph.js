@@ -228,31 +228,16 @@ async function sendPostRequestToBroker(contextElement) {
 
 async function loadContextElements(dgraphClient) {
     const query = `{
-        contextElements(func: has(entityId)) {
+        contextElements(func: type(ContextData)) {
            {
-                  entityId{
-                        id
-                        type
-                        isPattern
-                  }
-                  attributes{
-                        name
-                        type
-                        value
-                  }
-                  domainMetadata{
-                        name
-                        type
-                        value
-                        location
-                  }
+            expand(_all_)
               }
            }
     }`;
 
     responseBody = await dgraphClient.newTxn().queryWithVars(query);
     const responsData = responseBody.getJson();
-        
+    console.log("all data---- ",responsData)
     sendPostRequestToBroker(responsData)
 }
 
@@ -260,22 +245,27 @@ async function loadContextElements(dgraphClient) {
 /*
    write entity data into dgraph
 */
-async function WriteEntity(contextData) {
+
+async function WriteEntity(contextData1) {
+    var contextData = contextData1;
+    contextData.attribute = JSON.stringify(contextData.attribute)
+    console.log("write entity *** ",contextData)
     try {
+       // console.log("inside in write entity-----",contextData)
         const dgraphClientStub = await newClientStub();
         const dgraphClient = await newClient(dgraphClientStub);
 
-        if ('contextElements' in contextData) {
-            contextData = contextData['contextElements']
-            contextData = contextData[0]
-        }
+        // if ('contextElements' in contextData) {
+        //     contextData = contextData['contextElements']
+        //     contextData = contextData[0]
+        // }
 
-        await resolveAttributes(contextData)
-        await resolveDomainMetaData(contextData)
+        // await resolveAttributes(contextData)
+        // await resolveDomainMetaData(contextData)
 
-        contextData["dgraph.type"] = "ContextElement"
+        contextData["dgraph.type"] = "ContextData"
 
-        console.log(contextData);
+        // console.log(contextData);
 
         await createData(dgraphClient, contextData);
         await dgraphClientStub.close();
@@ -350,7 +340,40 @@ async function QueryNodeByEntityId(eid) {
     }
 }
 
+/*
+   query entity by uid
+*/
+async function QueryNodeByActionType(internalType) {
+    try {
+        const dgraphClientStub = await newClientStub();
+        const dgraphClient = await newClient(dgraphClientStub);
 
+        console.log("query context elements by internal type: " + internalType)
+
+        const query = `query all($internalType: string) {
+            contextElements(func: has(ContextData)) {
+               {
+                    uid
+                    ContextData @filter(ge(internalType, $internalType)) {
+                        internalType
+                    }                     
+               }
+            }
+        }`;
+        const vars = { $internalType: internalType };
+        const responseBody = await dgraphClient.newTxn().queryWithVars(query, vars);
+
+        console.log(responseBody.getJson())
+
+        ctxElements = responseBody.getJson().contextElements;
+
+        await dgraphClientStub.close();
+
+        return ctxElements;
+    } catch (err) {
+        console.log('DB ERROR::', err);
+    }
+}
 
 /*
    delete entity by uid
@@ -380,6 +403,96 @@ async function DeleteNodeById(id) {
     }
 }
 
+async function UpdateByUID(id_,attribute) {
+    WriteEntity(attribute)
+    //DeleteNodeById(id_);
+}
+/* */
+// async function UpdateByUID(id_,attribute) {
+//     try {
+//         uid_ = id_; 
+//         attr = JSON.stringify(attribute);
+//         attr = attr.replace(/"/g, '\'');
+
+//         const dgraphClientStub = await newClientStub();
+//         const dgraphClient = await newClient(dgraphClientStub);
+
+//         const txn = dgraphClient.newTxn();
+//         try {
+//             const query = `
+//             query {
+//                 user as var(func: eq(uid, "${uid_}"))
+//             }`
+          
+//           const mu = new dgraph.Mutation();
+//           mu.setSetNquads(`uid(user) <attribute> "${attr}"  .`);
+//         //  mu.setCond(`@if(eq(len(user), 1))`);
+          
+//           const req = new dgraph.Request();
+//           req.setQuery(query);
+//           req.addMutations(mu);
+//           req.setCommitNow(true);
+          
+//           await dgraphClient.newTxn().doRequest(req);
+
+//           await txn.commit();
+//         } catch (e) {
+//           if (e === dgraph.ERR_ABORTED) {
+//             // Retry or handle exception.
+//           } else {
+//             throw e;
+//           }
+//         } finally {
+//           // Clean up. Calling this after txn.commit() is a no-op
+//           // and hence safe.
+//           await txn.discard();
+//         }
+
+
+
+//         // const txn = dgraphClient.newTxn();
+//         // attr = JSON.stringify(attribute);
+//         // attr = attr.replace(/"/g, '\'');
+//         // console.log("**************** ddd ",attr);
+//         // uid_ = id_; 
+//         // console.log("aaaa ",uid_);
+//         // try {
+//         //     // const updateObj = {
+//         //     //     uid: id,
+//         //     //     attribute:JSON.stringify(attribute)
+//         //     // };
+//         //     const query = `
+//         //         query {
+//         //             user as var(func: eq(uid, "${uid_}"))
+//         //         }`
+//         //     const mu = new dgraph.Mutation();
+//         //     //mu.setSetNquads(` uid(user) <attribute> "${attr}" .`);
+//         //     // txn.setMutationsList([mu]);
+//         //     // txn.setCommitNow(true);
+            
+//         //     //const mu = new dgraph.Mutation();
+//         //     mu.setSetNquads(`uid(user) <attribute> "${attr}" .`);
+
+//         //     const req = new dgraph.Request();
+//         //     req.setQuery(query);
+//         //     req.setMutationsList([mu]);
+//         //     req.setCommitNow(true);
+
+//         //     // Upsert: If wrong_email found, update the existing data
+//         //     // or else perform a new mutation.
+//         //     await dgraphClient.newTxn().doRequest(req);
+
+//         //     //const response = await txn.mutate(mu);
+//         //     await txn.commit();
+//         // } finally {
+//         //     await txn.discard();
+//         // }
+
+//         // await dgraphClientStub.close();
+//     } catch (err) {
+//         console.log('DB ERROR::', err);
+//     }
+// }
 
 /*
    write model profiles into dgraph
@@ -433,20 +546,33 @@ async function LoadEntity() {
 /*
    retrieve all json objects with the specified data type
 */
-async function QueryJsonWithType(dtype) {
+
+
+/** {
+    result(func: type(${dtype})) {
+        {
+             uid
+             expand(_all_)
+        }
+     }
+ } */
+async function QueryJsonWithType(internalType) {
+    console.log("&&&&&&&&&&&&&&&&&&&&&& in query ---");
+    internalType = 'Operator'
     const dgraphClientStub = await newClientStub();
     const dgraphClient = await newClient(dgraphClientStub);
 
     const query = `{
-        result(func: type(${dtype})) {
+        contextElements(func: type(ContextData)) {
            {
-                uid
-                expand(_all_)
+               uid
+            expand(_all_)
+              }
            }
-        }
     }`;
 
     const responseBody = await dgraphClient.newTxn().queryWithVars(query);
+    //console.log("inside in query --- ",responseBody.getJson())
 
     await dgraphClientStub.close();
 
@@ -482,48 +608,17 @@ url: string @index(term) .
 flavor: string @index(term) .
 inputdata: string @index(term) .
 version: string @index(term) .
+attribute: string @index(term) .
+internalType: string @index(term) .
+updateAction: string @index(term) .
 
 
-type Model {
-    name 
-    flavor 
-    inputdata 
-    version 
-    description 
-    filepath     
-}
 
-id: string @index(exact) .
-type: string @index(term) .
-isPattern: bool  . 
-value: string @index(term) .
 
-entityId: uid .
-attributes: [uid] .
-domainMetadata: [uid] .
-
-type EntityId {
-   id
-   type 
-   isPattern 
-}
-
-type Attribute {
-   name
-   type 
-   value 
-}
-
-type Metadata {
-   name
-   type 
-   value 
-}
-
-type ContextElement {
-    entityId 
-    attributes 
-    domainMetadata 
+type ContextData {
+    attribute
+    internalType
+    updateAction
 }
 
 `;
@@ -560,4 +655,4 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 
-module.exports = { Init, WriteEntity, DeleteEntity, DeleteNodeById, WriteJsonWithType, QueryJsonWithType, DropAll }
+module.exports = { Init, WriteEntity, DeleteEntity, DeleteNodeById, WriteJsonWithType, QueryJsonWithType, DropAll, QueryNodeByActionType,UpdateByUID }

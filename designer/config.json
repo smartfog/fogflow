@@ -39,6 +39,6 @@
         "enabled": false
     },
     "persistent_storage": {
-        "port": 9080
+        "port": 9082
     }
 }
