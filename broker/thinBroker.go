@@ -2565,7 +2565,7 @@ func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
 		compactEntity := tb.createOriginalPayload(entityMap)
 		resultEntity := compactEntity.(map[string]interface{})
 		actualId := getActualEntity(resultEntity)
-		resultEntity["id"] = actualId
+		resultEntity["@id"] = actualId
 		delete(resultEntity, "fiwareServicePath")
 		return resultEntity
 	} else {
