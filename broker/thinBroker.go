@@ -2349,13 +2349,13 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 					// Store Context
 					deSerializedEntity["@context"] = context
 
-					if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+					if !strings.HasPrefix(deSerializedEntity["@id"].(string), "urn:ngsi-ld:") {
 						rest.Error(w, "Entity id must contain uri!", 400)
 						return
 					}
-					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+					deSerializedEntity["@id"] = getIoTID(deSerializedEntity["@id"].(string), fiwareService)
 					deSerializedEntity["@context"] = context
-					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
+					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["@id"].(string))
 					w.WriteHeader(201)
 					deSerializedEntity["fiwareServicePath"] = fsp
 					tb.UpdateLdContext2LocalSite(deSerializedEntity)
