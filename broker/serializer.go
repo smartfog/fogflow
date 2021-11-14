@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	. "fogflow/common/ngsi"
+	. "fogflow/common/constants"
+	. "fogflow/common/ldContext"
 	"strings"
 	"time"
 )
@@ -209,7 +211,7 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 			}
 		}
 	}
-	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
+	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 	fmt.Println(compaced)
 	fmt.Println("+++++resultEntity++++",resultEntity)
 	return resultEntity, nil
@@ -821,16 +823,24 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, err
 }
 
 // get NGSILD attributes
-
 func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, error) {
 	attributesList := make([]string, 0)
 	if len(attributes) <= 0 {
 		err := errors.New("Zero length attribute list is not allowed")
 		return attributesList, err
 	}
-	for _, value := range attributes {
-		valuemap := value.(map[string]interface{})
-		attributesList = append(attributesList, valuemap["@value"].(string))
+	for _, attr := range attributes {
+		//fmt.Println("attr",attr)
+		valueMap := attr.(map[string]interface{})
+		context := "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld"
+		ldobject := getLDobject(valueMap["@value"],context)
+		ExpandedAttr, _ := ExpandEntity(ldobject)
+		attrUri := getAttribute(ExpandedAttr)
+		attributesList = append(attributesList,attrUri)
+		fmt.Println("attributesList",attributesList)
+		fmt.Println("ExpandedAttr",ExpandedAttr)
+		//valuemap := value.(map[string]interface{})
+		//attributesList = append(attributesList, valuemap["@value"].(string))
 	}
 	return attributesList, nil
 }
@@ -892,7 +902,7 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 	ngsildQueryContext.Type = typ
 	var newErr error
 	for key, value := range QueryData {
-		if strings.Contains(key, "attrs") {
+		/*if strings.Contains(key, "attrs") {
 			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
 			if newErr != nil {
 				break
@@ -904,6 +914,21 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 			}
 		} else {
 			continue
+		}*/
+		switch key {
+			case NGSI_LD_ATTRS :
+				ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
+				if newErr != nil {
+                                	break
+                      	 	}
+			case NGSI_LD_ENTITIES:
+				ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
+				if newErr != nil {
+	                                break
+			          }
+
+			default:
+				continue
 		}
 	}
 	return ngsildQueryContext, newErr

@@ -217,3 +217,19 @@ func propertyUpdater(prev , curr map[string]interface{}) map[string]interface{} 
 	}
 return prev
 }
+
+func getLDobject(attr , context interface{}) map[string]interface{} {
+	ldAttributes := make(map[string]interface{})
+	ldAttributes[attr.(string)] = ""
+	ldAttributes["@context"] = context
+	return ldAttributes
+}
+
+func getAttribute(attributes interface{})string {
+	attrs := attributes.([]interface{})
+	attr := attrs[0].(map[string]interface{})
+	for key , _ := range attr {
+		return key
+	}
+	return ""
+}

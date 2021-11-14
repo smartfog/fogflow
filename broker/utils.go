@@ -154,7 +154,7 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	req.Header.Add("Require-Reliability", "true")
 	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	// add link header
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
@@ -446,7 +446,7 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 		ExpandOnce.Do(
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
+				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 				fmt.Println("created object", ldE, err)
 			})
 	} else {
@@ -462,7 +462,7 @@ func Compact_once() *ld.RFC7324CachingDocumentLoader {
 		CompactOnce.Do(
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.4.jsonld")
+				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 				fmt.Println("created object", ldC, err)
 			})
 	} else {
@@ -497,7 +497,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	ldCompactedElems := make([]map[string]interface{}, 0)
 	for k, _ := range ldCtxElems {
 		compact_lock.Lock()
-		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 		compact_lock.Unlock()
 		if err != nil {
 			continue
@@ -586,7 +586,7 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 	req.Header.Add("Accept", "application/json")
 	//	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
 		client = httpsCfg.GetHTTPClient()
@@ -619,7 +619,7 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 	req.Header.Add("Accept", "application/json")
 	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {

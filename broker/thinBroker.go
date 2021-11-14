@@ -531,6 +531,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	link := r.Header.Get("Link")
 	context, contextInpayload := extractcontext(cType, link)
 	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
+	fmt.Println("===========resolved==============",resolved)
 	LDQueryContext := LDQueryContextRequest{}
 	var resolveError error
 	if err != nil {
@@ -577,9 +578,9 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	for _, val := range matchedCtxElement {
 		responseEle := val.(map[string]interface{})
 		delete(responseEle, "fiwareServicePath")
-		eid := responseEle["id"].(string)
+		eid := responseEle["@id"].(string)
 		actualEid := strings.Split(eid, "@")
-		responseEle["id"] = actualEid[0]
+		responseEle["@id"] = actualEid[0]
 		returnvalue, err := compactData(responseEle, responseEle["@context"])
 		if err != nil {
 			fmt.Println(err)
@@ -2972,15 +2973,12 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 
 // Expand the NGSI-LD Data with context
 func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
-	//var dl *ld.RFC7324CachingDocumentLoader
 	dl := Expand_once()
 	proc := ld.NewJsonLdProcessor()
 	opts := ld.NewJsonLdOptions("")
 	opts.ProcessingMode = ld.JsonLd_1_1
 	opts.DocumentLoader = dl
 	expanded, err := proc.Expand(v, opts)
-	//LD processor expands the data and returns []interface{}
-	//expanded, err := proc.Expand(v, options)
 	return expanded, err
 }
 
