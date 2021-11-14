@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"fmt"
-	. "fogflow/common/ngsi"
 	. "fogflow/common/constants"
 	. "fogflow/common/ldContext"
+	. "fogflow/common/ngsi"
 	"strings"
 	"time"
 )
@@ -84,8 +84,8 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 			if val != nil {
 				propertyResult[key] = getUniCode(val.([]interface{}))
 			}
-		}  else {
-			fmt.Println("Comming in value ",val)
+		} else {
+			fmt.Println("Comming in value ", val)
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -147,8 +147,8 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	//var  Type1 string
 	var funcName fName
 	var err error
-	fmt.Println("attr",attr)
-	if _, okey := attr["@type"] ; okey == false {
+	fmt.Println("attr", attr)
+	if _, okey := attr["@type"]; okey == false {
 		err := errors.New("attribute type can not be nil!")
 		return funcName, err
 	}
@@ -213,7 +213,7 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 	}
 	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 	fmt.Println(compaced)
-	fmt.Println("+++++resultEntity++++",resultEntity)
+	fmt.Println("+++++resultEntity++++", resultEntity)
 	return resultEntity, nil
 }
 
@@ -823,7 +823,7 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, err
 }
 
 // get NGSILD attributes
-func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, error) {
+func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]string, error) {
 	attributesList := make([]string, 0)
 	if len(attributes) <= 0 {
 		err := errors.New("Zero length attribute list is not allowed")
@@ -832,15 +832,10 @@ func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, err
 	for _, attr := range attributes {
 		//fmt.Println("attr",attr)
 		valueMap := attr.(map[string]interface{})
-		context := "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld"
-		ldobject := getLDobject(valueMap["@value"],context)
+		ldobject := getLDobject(valueMap["@value"], context)
 		ExpandedAttr, _ := ExpandEntity(ldobject)
 		attrUri := getAttribute(ExpandedAttr)
-		attributesList = append(attributesList,attrUri)
-		fmt.Println("attributesList",attributesList)
-		fmt.Println("ExpandedAttr",ExpandedAttr)
-		//valuemap := value.(map[string]interface{})
-		//attributesList = append(attributesList, valuemap["@value"].(string))
+		attributesList = append(attributesList, attrUri)
 	}
 	return attributesList, nil
 }
@@ -891,7 +886,7 @@ func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]Enti
 }
 
 // serialize NGSIld Query
-func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQueryContextRequest, error) {
+func (sz Serializer) uploadQueryContext(expanded interface{}, fs string, context []interface{}) (LDQueryContextRequest, error) {
 	ngsildQueryContext := LDQueryContextRequest{}
 	expandedArray := expanded.([]interface{})
 	QueryData := expandedArray[0].(map[string]interface{})
@@ -902,33 +897,23 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 	ngsildQueryContext.Type = typ
 	var newErr error
 	for key, value := range QueryData {
-		/*if strings.Contains(key, "attrs") {
-			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
+		switch key {
+		case NGSI_LD_ATTRS:
+			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}), context)
 			if newErr != nil {
 				break
 			}
-		} else if strings.Contains(key, "entities") {
+		case NGSI_LD_ENTITIES:
 			ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
 			if newErr != nil {
 				break
 			}
-		} else {
-			continue
-		}*/
-		switch key {
-			case NGSI_LD_ATTRS :
-				ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
-				if newErr != nil {
-                                	break
-                      	 	}
-			case NGSI_LD_ENTITIES:
-				ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
-				if newErr != nil {
-	                                break
-			          }
+		case NGSI_LD_GEO_QUERY:
 
-			default:
-				continue
+		case NGSI_LD_QUERY:
+
+		default:
+			continue
 		}
 	}
 	return ngsildQueryContext, newErr

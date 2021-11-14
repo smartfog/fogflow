@@ -82,7 +82,7 @@ type ThinBroker struct {
 	tmpNGSIldNotifyCache    []string
 	tmpNGSILDNotifyCache    map[string]*NotifyContextAvailabilityRequest
 	entityId2LDSubcriptions map[string][]string
-	entityTypeTOEntityId    map[string][]string 
+	entityTypeTOEntityId    map[string][]string
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
@@ -531,7 +531,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	link := r.Header.Get("Link")
 	context, contextInpayload := extractcontext(cType, link)
 	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
-	fmt.Println("===========resolved==============",resolved)
+	fmt.Println("===========resolved==============", resolved)
 	LDQueryContext := LDQueryContextRequest{}
 	var resolveError error
 	if err != nil {
@@ -539,7 +539,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		return
 	} else {
 		sz := Serializer{}
-		LDQueryContext, resolveError = sz.uploadQueryContext(resolved, fiwareService)
+		LDQueryContext, resolveError = sz.uploadQueryContext(resolved, fiwareService, context)
 		if resolveError != nil {
 			rest.Error(w, resolveError.Error(), 400)
 			return
@@ -595,7 +595,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) map[string][]EntityId {
 	discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
 	discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
-	//discoverCtxAvailabilityReq.Attributes = attributes
+	discoverCtxAvailabilityReq.Attributes = ldQueryContext.Attributes
 	//discoverCtxAvailabilityReq.Restriction = restriction
 	fmt.Println("discoverCtxAvailabilityReq", discoverCtxAvailabilityReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
@@ -2374,19 +2374,19 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 	entityMap := entity.(map[string]interface{})
 	for k, v := range elem {
 		isLdJsonOject := checkCondition(k)
-		if  isLdJsonOject == true && k != "mgsFormat" && k != "fiwareServicePath" {
+		if isLdJsonOject == true && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
 				updatedResult := make(map[string]interface{})
 				prevEleAttr := entityMap[k].(map[string]interface{})
 				currEleAttr := elem[k].(map[string]interface{})
 				AttrType := checkAttributeType(prevEleAttr["@type"])
 				if AttrType == "Property" {
-					updatedResult = propertyUpdater(prevEleAttr,currEleAttr)
+					updatedResult = propertyUpdater(prevEleAttr, currEleAttr)
 				} else if AttrType == "Relationship" {
 					//entityMap[k] = relationShipUpdater(entityAttrMap)
 					fmt.Println("need to implement")
 				} else {
-					 fmt.Println("need to implement ")
+					fmt.Println("need to implement ")
 				}
 				updatedResult["modifiedAt"] = time.Now().String()
 				entityMap[k] = updatedResult
@@ -2409,11 +2409,11 @@ func (tb *ThinBroker) updateLdContextElement(ctxEle map[string]interface{}) {
 	if _, exist := tb.ldEntities[eid]; exist {
 		tb.updateCtxElemet(ctxEle, eid)
 	} else {
-		fmt.Println("ctxEle",ctxEle)
+		fmt.Println("ctxEle", ctxEle)
 		typ := getRegistrationType(ctxEle["@type"])
-		fmt.Println("typ",typ)
-		tb.entityTypeTOEntityId[typ] = append(tb.entityTypeTOEntityId[typ],eid)
-		fmt.Println("tb.entityTypeTOEntityId[typ]",tb.entityTypeTOEntityId[typ])
+		fmt.Println("typ", typ)
+		tb.entityTypeTOEntityId[typ] = append(tb.entityTypeTOEntityId[typ], eid)
+		fmt.Println("tb.entityTypeTOEntityId[typ]", tb.entityTypeTOEntityId[typ])
 		tb.ldEntities[eid] = ctxEle
 	}
 }
@@ -2502,8 +2502,8 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	_, fs := FiwareId(elem["@id"].(string))
 	//}
 	//fmt.Println("Fs", Fs)
-	fmt.Println("elem inside registration",elem)
-        entityId.Type = getRegistrationType(elem["@type"])
+	fmt.Println("elem inside registration", elem)
+	entityId.Type = getRegistrationType(elem["@type"])
 	//entityId.Type = elem["type"].(string)
 	entities = append(entities, entityId)
 
@@ -2514,7 +2514,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
 	for k, attr := range elem { // considering properties and relationships as attributes
-	       fmt.Println("k inside registration", k)
+		fmt.Println("k inside registration", k)
 		isLdJsonObject := checkCondition(k)
 		if isLdJsonObject == true {
 			if k == "fiwareServicePath" {
@@ -2946,7 +2946,7 @@ func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interfac
 
 func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 	newLink := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-	fmt.Println("newLink",newLink)
+	fmt.Println("newLink", newLink)
 	var context []interface{}
 
 	if newLink == "default" {
@@ -2956,7 +2956,7 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 	context = append(context, newLink)
 
 	itemsMap := make(map[string]interface{})
-	fmt.Println("itemsMap",itemsMap)
+	fmt.Println("itemsMap", itemsMap)
 	itemsMap["@context"] = context
 	itemsMap["type"] = typ //Error, when entire slice typ is assigned :  invalid type value: @type value must be a string or array of strings
 	resolved, err := tb.ExpandData(itemsMap)
@@ -3690,7 +3690,7 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	typ := typs[0]
 	if link != "" {
 		typ = tb.getTypeResolved(link, typ)
-		fmt.Println("type",typ)
+		fmt.Println("type", typ)
 		if typ == "" {
 			err := errors.New("Type not resolved!")
 			return nil, err
@@ -3711,8 +3711,8 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	}*/
 	for index, value := range tb.entityTypeTOEntityId[typ] {
 		fmt.Println("value", tb.ldEntities[value])
-		if result, okey := tb.ldEntities[value] ; okey == true {
-			fmt.Println("result",result)
+		if result, okey := tb.ldEntities[value]; okey == true {
+			fmt.Println("result", result)
 			compactEntity := tb.createOriginalPayload(result)
 			compactEntityMap := compactEntity.(map[string]interface{})
 			compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))
