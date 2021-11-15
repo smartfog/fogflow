@@ -186,6 +186,10 @@ app.post('/internal/getContext', jsonParser, async function (req, res) {
     res.send({data:getResult(queryContext.internalType,dgraphOp.contextElements)})
 });
 
+app.post('/masterNotify', jsonParser, async function (req, res) {
+    dgraphSendToMaster();
+    res.send()
+});
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res) {
@@ -240,6 +244,22 @@ function handleNotify(req, ctxObjects, res) {
         }
     }
 }
+
+async function dgraphSendToMaster(){
+    var dgraphResult = await dgraph.QueryJsonWithType('all')
+    if (dgraphResult.hasOwnProperty("contextElements")){
+        dgraphData = dgraphResult.contextElements
+        for (var i in dgraphData) {
+            if (dgraphData[i].attribute == undefined) {
+                continue;
+              }
+            dgraphData[i].attribute = JSON.parse(dgraphData[i].attribute)
+            amqp.amqpPub(dgraphData[i])
+        }
+    }
+    
+}
+
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
