@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"bytes"
+	"net/http"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,6 +26,8 @@ type Master struct {
 	myURL        string
 	messageBus   string
 	discoveryURL string
+	designerURL  string
+        SecurityCfg     *HTTPS
 
 	communicator *Communicator
 	communicator2 *Communicator
@@ -67,10 +71,12 @@ type Master struct {
 
 func (master *Master) Start(configuration *Config) {
 	master.cfg = configuration
-
+	master.SecurityCfg = &configuration.HTTPS
+	
 	master.messageBus = configuration.GetMessageBus()
 	master.discoveryURL = configuration.GetDiscoveryURL()
-
+	master.designerURL = configuration.GetDesignerURL()
+	
 	master.workers = make(map[string]*WorkerProfile)
 
 	master.operatorList = make(map[string]Operator)
@@ -112,6 +118,29 @@ func (master *Master) Start(configuration *Config) {
 	//master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
+	 go func() {
+              body, err := json.Marshal(map[string]string{
+                       "status" : "Master is Up"})
+                if err != nil {
+                        fmt.Println(err)
+                }
+               //fmt.Println(master.cfg.HTTPS)
+               master.cfg.HTTPS.LoadConfig()
+               client := master.cfg.HTTPS.GetHTTPClient()
+               fmt.Println("==== client =====",client)
+               req2, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
+               fmt.Println("++++++ req ++++++ and err",req2,err)
+               for {
+                        //resp, err := client.Post(url,"application/json" , bytes.NewBuffer(body))
+                       resp, err := client.Do(req2)
+                       fmt.Println(err)
+                        if(resp != nil) {
+                                defer resp.Body.Close()
+                        }
+                        break
+                }
+        }()
+	
 	// start the message consumer
 	go func() {
 		cfg := MessageBusConfig{}
