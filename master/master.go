@@ -119,7 +119,7 @@ func (master *Master) Start(configuration *Config) {
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
 	 go func() {
-	      time.Sleep(5 * time.Second)
+	      
               body, err := json.Marshal(map[string]string{
                        "status" : "Master is Up"})
                 if err != nil {
@@ -133,6 +133,7 @@ func (master *Master) Start(configuration *Config) {
                fmt.Println("++++++ req ++++++ and err",req2,err)
                for {
                         //resp, err := client.Post(url,"application/json" , bytes.NewBuffer(body))
+                       time.Sleep(5 * time.Second)
                        resp, err := client.Do(req2)
                        fmt.Println(err)
                         if(resp != nil) {
