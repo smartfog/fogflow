@@ -409,6 +409,7 @@ func (master *Master) handleDockerImageRegistration(msg json.RawMessage) {
 
 	var dockerImage = DockerImage{}
         err := json.Unmarshal(msg, &dockerImage)
+	fmt.Println("******* Docker Image ********",dockerImage.ImageName)
 	fmt.Println("***** dockerImage operator name ****",dockerImage.OperatorName)
 	if(len(dockerImage.OperatorName) == 0 || len(dockerImage.ImageName) == 0 || len(dockerImage.ImageTag) == 0 || len(dockerImage.TargetedHWType) == 0 || len(dockerImage.TargetedOSType) == 0) {
                 //does not handle the removal of dockerImage
@@ -533,12 +534,12 @@ func (master *Master) prefetchDockerImages(image DockerImage) {
 
 
 func (master *Master) handleFogFunctionUpdate(msg json.RawMessage) {
-	//FO.Println(msg)
+	//INFO.Println(msg)
 	var fogfunction = FogFunction{}
         err := json.Unmarshal(msg, &fogfunction)
 	fogfunction.Intent.ID = fogfunction.Id
 	fmt.Println("***** Intent.ID *********",fogfunction.Intent.ID)
-	fmt.Println("********* msg *******",msg, fogfunction)
+	//fmt.Println("********* msg *******",msg, fogfunction)
 
 	if(fogfunction.Action == "DELETE"){
 		var eid = fogfunction.Id
