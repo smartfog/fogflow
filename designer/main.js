@@ -141,9 +141,10 @@ app.post('/intent', jsonParser, function(req, res) {
 */
 
 function getResult(filterBy, objList) {
+    console.log("objlist is ---- ",objList);
     var arr = [];
     for(var i in objList){
-            if (Object.keys(objList[i].attribute).length === 0) {
+            if (objList[i].hasOwnProperty("attribute") && Object.keys(objList[i].attribute).length === 0) {
                 console.log("aaaa",objList[i]);
                 continue;}
             var fType = objList[i]['internalType'];
@@ -188,7 +189,7 @@ app.post('/internal/getContext', jsonParser, async function (req, res) {
 
 app.post('/masterNotify', jsonParser, async function (req, res) {
     dgraphSendToMaster();
-    res.send()
+    res.json({"status":"DONE"})
 });
 
 // to remove an existing intent
