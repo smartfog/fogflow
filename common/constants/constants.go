@@ -56,3 +56,12 @@ const NGSI_LD_ATTRS string = "https://uri.etsi.org/ngsi-ld/attrs"
 const NGSI_LD_ENTITIES string = "https://uri.etsi.org/ngsi-ld/entities"
 const NGSI_LD_GEO_QUERY string = "https://uri.etsi.org/ngsi-ld/geoQ"
 const NGSI_LD_QUERY string = "https://uri.etsi.org/ngsi-ld/q"
+const NGSI_LD_ID string = "@id"
+const NGSI_LD_TYPE string = "@type"
+const NGSI_LD_CREATEDAT string = "https://uri.etsi.org/ngsi-ld/createdAt"
+const NGSI_LD_DATASETID string = "https://uri.etsi.org/ngsi-ld/datasetId"
+const NGSI_LD_INSTANCEID string = "https://uri.etsi.org/ngsi-ld/instanceId"
+const NGSI_LD_NOTIFIED_AT string = "https://uri.etsi.org/ngsi-ld/notifiedAt";
+const NGSI_LD_OBSERVED_AT string = "https://uri.etsi.org/ngsi-ld/observedAt";
+const NGSI_LD_HAS_VALUE string = "https://uri.etsi.org/ngsi-ld/hasValue";
+
