@@ -61,7 +61,11 @@ const NGSI_LD_TYPE string = "@type"
 const NGSI_LD_CREATEDAT string = "https://uri.etsi.org/ngsi-ld/createdAt"
 const NGSI_LD_DATASETID string = "https://uri.etsi.org/ngsi-ld/datasetId"
 const NGSI_LD_INSTANCEID string = "https://uri.etsi.org/ngsi-ld/instanceId"
-const NGSI_LD_NOTIFIED_AT string = "https://uri.etsi.org/ngsi-ld/notifiedAt";
-const NGSI_LD_OBSERVED_AT string = "https://uri.etsi.org/ngsi-ld/observedAt";
-const NGSI_LD_HAS_VALUE string = "https://uri.etsi.org/ngsi-ld/hasValue";
-
+const NGSI_LD_NOTIFIED_AT string = "https://uri.etsi.org/ngsi-ld/notifiedAt"
+const NGSI_LD_OBSERVED_AT string = "https://uri.etsi.org/ngsi-ld/observedAt"
+const NGSI_LD_HAS_VALUE string = "https://uri.etsi.org/ngsi-ld/hasValue"
+const NGSI_LD_MODIFIEDAT string = "https://uri.etsi.org/ngsi-ld/modifiedAt"
+const NGSI_LD_HAS_OBJECT string = "https://uri.etsi.org/ngsi-ld/hasObject"
+const LD_RELATIONSHIP string = "https://uri.etsi.org/ngsi-ld/Relationship"
+const LD_PRPERTY string = "https://uri.etsi.org/ngsi-ld/Property"
+const LD_GEOPROPERTY string = "https://uri.etsi.org/ngsi-ld/GeoProperty"

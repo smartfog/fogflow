@@ -18,27 +18,33 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 	geoResult := make(map[string]interface{})
 	var err error
 	for key, val := range geoMap {
-		if strings.Contains(key, "type") {
+		switch key {
+		case NGSI_LD_TYPE:
 			if val != nil {
 				geoResult[key] = getType(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "hasValue") {
-			if val != nil {
-				geoResult[key] = getGeoValue(val.([]interface{}))
-			}
-		} else if strings.Contains(key, "createdAt") {
+		case NGSI_LD_CREATEDAT:
 			if val != nil {
 				geoResult[key] = getCreatedTime(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "modifiedAt") {
+
+		case NGSI_LD_MODIFIEDAT:
 			if val != nil {
 				geoResult[key] = getModifiedTime(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "datasetId") {
+		case NGSI_LD_HAS_VALUE:
+			if val != nil {
+				geoResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		case NGSI_LD_DATASETID:
 			if val != nil {
 				geoResult[key] = getDataSetID(val.([]interface{}))
 			}
-		} else {
+		case NGSI_LD_INSTANCEID:
+			if val != nil {
+				geoResult[key] = getInstanceID(val.([]interface{}))
+			}
+		default:
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -60,32 +66,32 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 	propertyResult := make(map[string]interface{})
 	var err error
 	for key, val := range propertyMap {
-		if strings.Contains(key, "type") {
+		switch key {
+		case NGSI_LD_TYPE:
 			if val != nil {
 				propertyResult[key] = getType(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "hasValue") {
-			if val != nil {
-				propertyResult[key] = getPropertyValue(val.([]interface{}))
-			}
-		} else if strings.Contains(key, "createdAt") {
+		case NGSI_LD_CREATEDAT:
 			if val != nil {
 				propertyResult[key] = getCreatedTime(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "modifiedAt") {
+		case NGSI_LD_MODIFIEDAT:
 			if val != nil {
 				propertyResult[key] = getModifiedTime(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "datasetId") {
+		case NGSI_LD_HAS_VALUE:
+			if val != nil {
+				propertyResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		case NGSI_LD_DATASETID:
 			if val != nil {
 				propertyResult[key] = getDataSetID(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "unitCode") {
+		case NGSI_LD_INSTANCEID:
 			if val != nil {
-				propertyResult[key] = getUniCode(val.([]interface{}))
+				propertyResult[key] = getInstanceID(val.([]interface{}))
 			}
-		} else {
-			fmt.Println("Comming in value ", val)
+		default:
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -106,27 +112,32 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 	relResult := make(map[string]interface{})
 	var err error
 	for key, val := range relmap {
-		if strings.Contains(key, "type") {
+		switch key {
+		case NGSI_LD_TYPE:
 			if val != nil {
 				relResult[key] = getType(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "hasObject") {
+		case NGSI_LD_CREATEDAT:
 			if val != nil {
-				relResult[key] = getPropertyValue(val.([]interface{}))
+				relResult[key] = getCreatedTime(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "observedAt") {
-			if val != nil {
-				relResult[key] = getObservedTime(val.([]interface{}))
-			}
-		} else if strings.Contains(key, "modifiedAt") {
+		case NGSI_LD_MODIFIEDAT:
 			if val != nil {
 				relResult[key] = getModifiedTime(val.([]interface{}))
 			}
-		} else if strings.Contains(key, "datasetId") {
+		case NGSI_LD_HAS_OBJECT:
+			if val != nil {
+				relResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		case NGSI_LD_DATASETID:
 			if val != nil {
 				relResult[key] = getDataSetID(val.([]interface{}))
 			}
-		} else {
+		case NGSI_LD_INSTANCEID:
+			if val != nil {
+				relResult[key] = getInstanceID(val.([]interface{}))
+			}
+		default:
 			interfaceArray := val.([]interface{})
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -143,6 +154,48 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 	return relResult, err
 }
 
+func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, error) {
+	ExpEntityMap := ExpEntity.(map[string]interface{})
+	resultEntity := make(map[string]interface{})
+	for key, val := range ExpEntityMap {
+		switch key {
+		case NGSI_LD_ID:
+			if val != nil {
+				resultEntity[key] = getEntityId(val.(interface{}))
+			}
+		case NGSI_LD_TYPE:
+			if val != nil {
+				resultEntity[key] = getType(val.([]interface{}))
+			}
+		case NGSI_LD_CREATEDAT:
+			if val != nil {
+				resultEntity[key] = getCreatedTime(val.([]interface{}))
+			}
+		case NGSI_LD_MODIFIEDAT:
+			if val != nil {
+				resultEntity[key] = getModifiedTime(val.([]interface{}))
+			}
+		default:
+			interfaceArray := val.([]interface{})
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return resultEntity, err
+				}
+				resultEntity[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return resultEntity, err
+				}
+			}
+
+		}
+	}
+	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
+	fmt.Println(compaced)
+	fmt.Println("+++++resultEntity++++", resultEntity)
+	return resultEntity, nil
+}
+
 func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	//var  Type1 string
 	var funcName fName
@@ -155,14 +208,15 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	resType := attr["@type"].([]interface{})
 	if len(resType) > 0 {
 		Type1 := resType[0].(string)
-		if strings.Contains(Type1, "GeoProperty") || strings.Contains(Type1, "geoproperty") {
-			funcName = sz.geoHandler
-		} else if strings.Contains(Type1, "Relationship") || strings.Contains(Type1, "relationship") {
+		switch Type1 {
+		case LD_RELATIONSHIP:
 			funcName = sz.relHandler
-		} else if strings.Contains(Type1, "Property") || strings.Contains(Type1, "property") {
+		case LD_PRPERTY:
 			funcName = sz.proprtyHandler
-		} else {
-			err = errors.New("Unknown type!")
+		case LD_GEOPROPERTY:
+			funcName = sz.geoHandler
+		default:
+			err = errors.New("Unknown Type !")
 		}
 	}
 	return funcName, err
@@ -171,50 +225,6 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 func (sz Serializer) getId(id interface{}) string {
 	Id := id.(string)
 	return Id
-}
-
-func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, error) {
-	ExpEntityMap := ExpEntity.(map[string]interface{})
-	resultEntity := make(map[string]interface{})
-	for key, val := range ExpEntityMap {
-		if strings.Contains(key, "id") {
-			if val != nil {
-				resultEntity[key] = getEntityId(val.(interface{}))
-			}
-		} else if strings.Contains(key, "type") {
-			if val != nil {
-				resultEntity[key] = getType(val.([]interface{}))
-			}
-		} else if strings.Contains(key, "createdAt") {
-			if val != nil {
-				resultEntity[key] = getCreatedTime(val.([]interface{}))
-			}
-		} else if strings.Contains(key, "modifiedAt") {
-			if val != nil {
-				resultEntity[key] = getModifiedTime(val.([]interface{}))
-			}
-		} else if strings.Contains(key, "datasetId") {
-			if val != nil {
-				resultEntity[key] = getDataSetID(val.([]interface{}))
-			}
-		} else {
-			interfaceArray := val.([]interface{})
-			if len(interfaceArray) > 0 {
-				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
-				if err != nil {
-					return resultEntity, err
-				}
-				resultEntity[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
-				if err != nil {
-					return resultEntity, err
-				}
-			}
-		}
-	}
-	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
-	fmt.Println(compaced)
-	fmt.Println("+++++resultEntity++++", resultEntity)
-	return resultEntity, nil
 }
 
 func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]interface{}, error) {
@@ -896,24 +906,25 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string, context
 	}
 	ngsildQueryContext.Type = typ
 	var newErr error
+forloop:
 	for key, value := range QueryData {
 		switch key {
 		case NGSI_LD_ATTRS:
 			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}), context)
 			if newErr != nil {
-				break
+				break forloop
 			}
 		case NGSI_LD_ENTITIES:
 			ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
 			if newErr != nil {
-				break
+				break forloop
 			}
 		case NGSI_LD_GEO_QUERY:
 
 		case NGSI_LD_QUERY:
 
 		default:
-			continue
+			continue forloop
 		}
 	}
 	return ngsildQueryContext, newErr
