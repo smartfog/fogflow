@@ -17,6 +17,7 @@ type fName func(map[string]interface{}) (map[string]interface{}, error)
 func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]interface{}, error) {
 	geoResult := make(map[string]interface{})
 	var err error
+	geoValue := false
 	for key, val := range geoMap {
 		switch key {
 		case NGSI_LD_TYPE:
@@ -27,13 +28,17 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 			if val != nil {
 				geoResult[key] = getCreatedTime(val.([]interface{}))
 			}
-
+		case NGSI_LD_OBSERVED_AT:
+                        if val != nil {
+                                geoResult[key] = getObservedTime(val.([]interface{}))
+                        }
 		case NGSI_LD_MODIFIEDAT:
 			if val != nil {
 				geoResult[key] = getModifiedTime(val.([]interface{}))
 			}
 		case NGSI_LD_HAS_VALUE:
 			if val != nil {
+				geoValue = true
 				geoResult[key] = getPropertyValue(val.([]interface{}))
 			}
 		case NGSI_LD_DATASETID:
@@ -58,19 +63,26 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 			}
 		}
 	}
-	//var err error
+	if geoValue == false {
+		err = errors.New("value field is mandatory!")
+	}
 	return geoResult, err
 }
 
 func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[string]interface{}, error) {
 	propertyResult := make(map[string]interface{})
 	var err error
+	propertyValue := false 
 	for key, val := range propertyMap {
 		switch key {
 		case NGSI_LD_TYPE:
 			if val != nil {
 				propertyResult[key] = getType(val.([]interface{}))
 			}
+		case NGSI_LD_OBSERVED_AT:
+                        if val != nil {
+                                propertyResult[key] = getObservedTime(val.([]interface{}))
+                        }
 		case NGSI_LD_CREATEDAT:
 			if val != nil {
 				propertyResult[key] = getCreatedTime(val.([]interface{}))
@@ -81,6 +93,7 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 			}
 		case NGSI_LD_HAS_VALUE:
 			if val != nil {
+				propertyValue = true
 				propertyResult[key] = getPropertyValue(val.([]interface{}))
 			}
 		case NGSI_LD_DATASETID:
@@ -105,12 +118,16 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 			}
 		}
 	}
+	if propertyValue == false {
+		err = errors.New("value field is mandatory!")
+	}
 	return propertyResult, err
 }
 
 func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]interface{}, error) {
 	relResult := make(map[string]interface{})
 	var err error
+	ralationobject := false
 	for key, val := range relmap {
 		switch key {
 		case NGSI_LD_TYPE:
@@ -121,12 +138,17 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 			if val != nil {
 				relResult[key] = getCreatedTime(val.([]interface{}))
 			}
+		case NGSI_LD_OBSERVED_AT:
+			if val != nil {
+				relResult[key] = getObservedTime(val.([]interface{}))
+			}
 		case NGSI_LD_MODIFIEDAT:
 			if val != nil {
 				relResult[key] = getModifiedTime(val.([]interface{}))
 			}
 		case NGSI_LD_HAS_OBJECT:
 			if val != nil {
+				ralationobject = true
 				relResult[key] = getPropertyValue(val.([]interface{}))
 			}
 		case NGSI_LD_DATASETID:
@@ -151,6 +173,9 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 			}
 		}
 	}
+	if ralationobject == false {
+		err = errors.New("object field is mandatory!")
+	}
 	return relResult, err
 }
 
@@ -158,6 +183,7 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 	ExpEntityMap := ExpEntity.(map[string]interface{})
 	resultEntity := make(map[string]interface{})
 	for key, val := range ExpEntityMap {
+		fmt.Println("++++++++key+++++++",key)
 		switch key {
 		case NGSI_LD_ID:
 			if val != nil {
@@ -200,12 +226,18 @@ func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	//var  Type1 string
 	var funcName fName
 	var err error
-	fmt.Println("attr", attr)
 	if _, okey := attr["@type"]; okey == false {
 		err := errors.New("attribute type can not be nil!")
 		return funcName, err
 	}
-	resType := attr["@type"].([]interface{})
+	var resType []interface{}
+	switch  attr["@type"].(type) {
+		case []interface{}:
+			resType = attr["@type"].([]interface{})
+		default:
+			err := errors.New("Unknown Type!")
+			return funcName, err
+	}
 	if len(resType) > 0 {
 		Type1 := resType[0].(string)
 		switch Type1 {
@@ -232,62 +264,6 @@ func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]in
 	result, err := sz.handler(expEntity.(map[string]interface{}))
 	return result, err
 }
-
-/*func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
-	entity := make(map[string]interface{})
-	for _, val := range expanded {
-		stringsMap := val.(map[string]interface{})
-		for k, v := range stringsMap {
-			if strings.Contains(k, "id") {
-				if v != nil {
-					entity["id"] = sz.getId(v.(interface{}))
-				}
-			} else if strings.Contains(k, "type") {
-				if v != nil {
-					entity["type"] = sz.getType(v.([]interface{}))
-				}
-			} else if strings.Contains(k, "location") {
-				if v != nil {
-					entity["location"] = sz.getLocation(v.([]interface{}))
-				}
-			} else if strings.Contains(k, "createdAt") {
-				continue
-			} else if strings.Contains(k, "modifiedAt") {
-				continue
-			} else {
-				interfaceArray := v.([]interface{})
-				if len(interfaceArray) > 0 {
-					mp := interfaceArray[0].(map[string]interface{})
-					_, oK := mp["@type"]
-					if oK == false {
-						err := errors.New("attribute type can not be nil!")
-						return nil, err
-					}
-					typ := mp["@type"].([]interface{})
-					if len(typ) > 0 {
-						if strings.Contains(typ[0].(string), "Property") {
-							property, err := sz.getProperty(mp)
-							if err != nil {
-								return entity, err
-							} else {
-								entity[k] = property
-							}
-						} else if strings.Contains(typ[0].(string), "Relationship") {
-							relationship, err := sz.getRelationship(mp)
-							if err != nil {
-								return entity, err
-							} else {
-								entity[k] = relationship
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	entity["modifiedAt"] = time.Now().String()
-	return entity, nil
-}*/
 
 func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	subscription := LDSubscriptionRequest{}

@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 	//"fmt"
+	. "fogflow/common/constants"
 )
 
 type cType func(interface{}) interface{}
@@ -109,18 +110,18 @@ func checkAttributeType(typ interface{}) string {
 
 // update entity
 
-func propertyUpdater(prev, curr map[string]interface{}) map[string]interface{} {
+func update(prev, curr map[string]interface{}) map[string]interface{} {
 	for key, value := range curr {
 		if _, ok := prev[key]; ok == true {
 			switch value.(type) {
 			case map[string]interface{}:
 				valueMap := value.(map[string]interface{})
-				if value, ok := valueMap["@type"]; ok == true {
+				if value, ok := valueMap[NGSI_LD_TYPE]; ok == true {
 					typ := checkAttributeType(value)
 					if typ != "" {
 						newPrev := prev[key].(map[string]interface{})
 						newCurr := curr[key].(map[string]interface{})
-						prev[key] = propertyUpdater(newPrev, newCurr)
+						prev[key] = update(newPrev, newCurr)
 					} else {
 						prev[key] = curr[key]
 					}

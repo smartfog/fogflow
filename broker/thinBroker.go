@@ -2108,7 +2108,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	if r.Header.Get("fiware-servicePath") != "" {
 		fsp = r.Header.Get("fiware-servicePath")
 	} else {
-		//deSerializedEntity["fiwareServicePath"] = "default"
 		fsp = "default"
 	}
 
@@ -2172,37 +2171,10 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 				tb.UpdateLdContext2RemoteSite(updateCtxReq, brokerURL, Link)
 			} else {
 				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
-				fmt.Println("++++Resolved++++", resolved)
 				if err != nil {
-
-					if err.Error() == "EmptyPayload!" {
-						//res.Errors.Details  = "EmptyPayload is not allowed"
-						problemSet := ProblemDetails{}
-						problemSet.Details = "EmptyPayload is not allowed"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					if err.Error() == "Id can not be nil!" {
-						problemSet := ProblemDetails{}
-						problemSet.Details = "Id can not be nil!"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					if err.Error() == "Type can not be nil!" {
-						problemSet := ProblemDetails{}
-						problemSet.Details = "Type can not be nil!"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					if err.Error() == "@context is Empty" {
-						problemSet := ProblemDetails{}
-						problemSet.Details = "@context can not be nil if Content-Type is application/ld+json"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					//res.Errors.Details  = "Unknown"
+					fmt.Println(err.Error())
 					problemSet := ProblemDetails{}
-					problemSet.Details = "Unknown!"
+					problemSet.Details = err.Error()
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				} else {
@@ -2213,23 +2185,23 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					fmt.Println("deSerializedEntity", deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
-						problemSet.Details = "Unknown!"
+						problemSet.Details = err.Error()
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					} else {
 						//Update createdAt value.
-						if !strings.HasPrefix(deSerializedEntity["@id"].(string), "urn:ngsi-ld:") {
+						if !strings.HasPrefix(deSerializedEntity[NGSI_LD_ID].(string), "urn:ngsi-ld:") {
 							problemSet := ProblemDetails{}
 							problemSet.Details = "Entity id must contain uri!"
 							res.Errors = append(res.Errors, problemSet)
 							continue
 						}
-						deSerializedEntity["@id"] = getIoTID(deSerializedEntity["@id"].(string), fiwareService)
+						deSerializedEntity[NGSI_LD_ID] = getIoTID(deSerializedEntity[NGSI_LD_ID].(string), fiwareService)
 						//deSerializedEntity["createdAt"] = time.Now().String()
 						// Store Context
 						deSerializedEntity["@context"] = context
 						deSerializedEntity["fiwareServicePath"] = fsp
-						res.Success = append(res.Success, deSerializedEntity["@id"].(string))
+						res.Success = append(res.Success, deSerializedEntity[NGSI_LD_ID].(string))
 						tb.UpdateLdContext2LocalSite(deSerializedEntity)
 					}
 				}
@@ -2346,17 +2318,17 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 					return
 				} else {
 					//Update createdAt value.
-					deSerializedEntity["createdAt"] = time.Now().String()
+					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
 
-					if !strings.HasPrefix(deSerializedEntity["@id"].(string), "urn:ngsi-ld:") {
+					if !strings.HasPrefix(deSerializedEntity[NGSI_LD_ID].(string), "urn:ngsi-ld:") {
 						rest.Error(w, "Entity id must contain uri!", 400)
 						return
 					}
-					deSerializedEntity["@id"] = getIoTID(deSerializedEntity["@id"].(string), fiwareService)
+					deSerializedEntity[NGSI_LD_ID] = getIoTID(deSerializedEntity[NGSI_LD_ID].(string), fiwareService)
 					deSerializedEntity["@context"] = context
-					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["@id"].(string))
+					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity[NGSI_LD_ID].(string))
 					w.WriteHeader(201)
 					deSerializedEntity["fiwareServicePath"] = fsp
 					tb.UpdateLdContext2LocalSite(deSerializedEntity)
@@ -2379,15 +2351,7 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 				updatedResult := make(map[string]interface{})
 				prevEleAttr := entityMap[k].(map[string]interface{})
 				currEleAttr := elem[k].(map[string]interface{})
-				AttrType := checkAttributeType(prevEleAttr["@type"])
-				if AttrType == "Property" {
-					updatedResult = propertyUpdater(prevEleAttr, currEleAttr)
-				} else if AttrType == "Relationship" {
-					//entityMap[k] = relationShipUpdater(entityAttrMap)
-					fmt.Println("need to implement")
-				} else {
-					fmt.Println("need to implement ")
-				}
+				updatedResult = update(prevEleAttr, currEleAttr)
 				updatedResult["modifiedAt"] = time.Now().String()
 				entityMap[k] = updatedResult
 			} else {
@@ -3638,7 +3602,7 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
-		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
+		if strings.HasSuffix(entityMap["@id"].(string), fiwareService) == true {
 			allExist := true
 			for _, attr := range attrs {
 				if _, ok := entityMap[attr]; ok != true {
