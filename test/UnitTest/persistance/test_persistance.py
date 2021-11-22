@@ -21,9 +21,9 @@ def test_persistOPerator():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test0),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test001),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test002),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test003),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test001),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test002),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test003),headers=headers)
 
     '''
     #print(r.content)
@@ -50,10 +50,10 @@ def test_persistFogFunction():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test1),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test101),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test102),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test103),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test104),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test101),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test102),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test103),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test104),headers=headers)
 
     '''
     #print(r.content)
@@ -80,10 +80,10 @@ def test_persistDockerImage():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test2),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
 
     '''
     #print(r.content)
@@ -152,8 +152,6 @@ def test_persistintent():
     '''
     assert r.status_code == 200
 
-'''
-'''
 '''
   test if entity does not have domainMetaData
 '''
