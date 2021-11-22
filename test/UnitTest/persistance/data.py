@@ -1,17 +1,17 @@
-#payload to persist Operator
+# Payload to persist Operator
 test001=\
     {
     }
 
 test002=\
     {
-    	"name":"counter"
+    "name":"counter"
     }
 
 test003=\
     {
-    	"name":"counter",
-    	"description":"Hi there, all okay!",
+    "name":"counter",
+    "description":"Hi there, all okay!",
     }
 
 test0 =\
@@ -82,74 +82,126 @@ test1 =\
     }
         }
 # Payload to persist DockerImage
-test200=\
+
+test200 =\
     {
+
     }
 
-test201=\
+
+test201 =\
     {
-    	"operater": "counter"
+    "operater": "counter",
+    }
+
+test202 =\
+    {
+    "operater": "counter",
+    "name": "fogflow/counter"
+    }
+
+test203 =\
+    {
+    "operater": "counter",
+    "name": "fogflow/counter",
+    "hwType": "X86",
+    "osType": "Linux"
     }
 
 test2 =\
     {
-    	"operater": "counter",
-    	"name": "fogflow/counter",
-    	"tag": "latest",
-    	"hwType": "X86",
-    	"osType": "Linux",
-    	"prefetched": False
+    "operater": "counter",
+    "name": "fogflow/counter",
+    "tag": "latest",
+    "hwType": "X86",
+    "osType": "Linux",
+    "prefetched": False
 }
 
 # payload to persist Topology
 test3 =\
     {
-   	"description": "detect anomaly events in shops",
-   	"name": "anomaly-detection",
-   	"tasks": [
-      	{
-         	"input_streams": [
-            	{
-               	"groupby": "ALL",
-               	"scoped": True,
-               	"selected_attributes": [],
-               	"selected_type": "Anomaly"
-            	}	
-         	],
-         	"name": "Counting",
-         	"operator": "counter",
-         	"output_streams": [
-            	{
-               	"entity_type": "Stat32_new"
-            	}			
-         	]
-     	},
-      	{
-         	"input_streams": [
-            	{
-               	"groupby": "EntityID",
-               	"scoped": True,
-               	"selected_attributes": [],
-               	"selected_type": "PowerPanel"
-            	},
-           	{
-               	"groupby": "ALL",
-               	"scoped": False,
-               	"selected_attributes": [],
-               	"selected_type": "Rule"
-            	}
-         	],
-         	"name": "Detector",
-         	"operator": "anomaly",
-         	"output_streams": [
-            	{
-               	"entity_type": "Anomaly32_new"
-            	}
-         	]		
-      	}
-   	]	
+   "description": "detect anomaly events in shops",
+   "name": "anomaly-detection",
+   "tasks": [
+      {
+         "input_streams": [
+            {
+               "groupby": "ALL",
+               "scoped": True,
+               "selected_attributes": [],
+               "selected_type": "Anomaly"
+            }
+         ],
+         "name": "Counting",
+         "operator": "counter",
+         "output_streams": [
+            {
+               "entity_type": "Stat32_new"
+            }
+         ]
+      },
+      {
+         "input_streams": [
+            {
+               "groupby": "EntityID",
+               "scoped": True,
+               "selected_attributes": [],
+               "selected_type": "PowerPanel"
+            },
+           {
+               "groupby": "ALL",
+               "scoped": False,
+               "selected_attributes": [],
+               "selected_type": "Rule"
+            }
+         ],
+         "name": "Detector",
+         "operator": "anomaly",
+         "output_streams": [
+            {
+               "entity_type": "Anomaly32_new"
+            }
+         ]
+      }
+   ]
+}
+
+test300=\
+	{
 	}
 
+test301=\
+	{
+	"description": "detect anomaly events in shops",
+    "name": "anomaly-detection"
+	}
+
+'''        
+test302=\
+	{
+	"description": "detect anomaly events in shops",
+        "name": "anomaly-detection",
+        "tasks": [
+        {
+            "input_streams": [
+                {
+                "groupby": "ALL",
+                "scoped": True,
+                "selected_attributes": [],
+                "selected_type": "Anomaly"
+                }   
+                ],
+        "name": "Counting",
+        "operator": "counter",
+        "output_streams": [
+            {
+               "entity_type": "Stat32_new"
+            }
+            ]
+            }
+        }   
+'''
 #payload to persist service intent
 test400=\
     {   
@@ -173,6 +225,4 @@ test4=\
     "geoscope": { "scopeType": "global", "scopeValue": "global" },
     "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2"
     }
-
-
 

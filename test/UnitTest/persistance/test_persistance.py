@@ -21,10 +21,6 @@ def test_persistOPerator():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test0),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test001),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test002),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test003),headers=headers)
-
     '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
@@ -39,6 +35,31 @@ def test_persistOPerator():
     '''
     assert r.status_code == 200
 
+def test_persistOPerator1():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test011"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test001),headers=headers)
+ 
+    assert r.status_code == 200
+
+def test_persistOPerator2():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test011"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test002),headers=headers)
+ 
+    assert r.status_code == 200
+
+def test_persistOPerator3():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test011"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test003),headers=headers)
+ 
+    assert r.status_code == 200
+
+
 
 '''
   test registration for fogfunction
@@ -50,10 +71,6 @@ def test_persistFogFunction():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test1),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test101),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test102),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test103),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test104),headers=headers)
 
     '''
     #print(r.content)
@@ -70,6 +87,35 @@ def test_persistFogFunction():
     assert r.status_code == 200
 
 
+def test_persistFogFunction1():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test101),headers=headers)
+    assert r.status_code == 200
+
+def test_persistFogFunction2():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test102),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistFogFunction3():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test103),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistFogFunction4():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test104),headers=headers)
+    assert r.status_code == 200
+
+
 '''
   test registration for dockerImage
 '''
@@ -80,10 +126,10 @@ def test_persistDockerImage():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test2),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
 
     '''
     #print(r.content)
@@ -99,6 +145,34 @@ def test_persistDockerImage():
     '''
     assert r.status_code == 200
 
+def test_persistDockerImage1():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistDockerImage2():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistDockerImage3():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistDockerImage4():
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
+    assert r.status_code == 200
+	
 
 '''
   test registration for topology
@@ -125,7 +199,27 @@ def test_persistopology():
     '''
     assert r.status_code == 200
 
-
+def test_persistopology1():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test300),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistopology2():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test301),headers=headers)
+    assert r.status_code == 200
+'''	
+def test_persistopology3():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test302),headers=headers)
+    assert r.status_code == 200
+'''	
 '''
 test registration for service intent
 '''
@@ -135,9 +229,7 @@ def test_persistintent():
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test4),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test400),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test401),headers=headers)
-    #r = requests.post(designerUrl,data=json.dumps(data.test402),headers=headers)
+
     '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
@@ -152,6 +244,28 @@ def test_persistintent():
     '''
     assert r.status_code == 200
 
+def test_persistintent1():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test400),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistintent1():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test401),headers=headers)
+    assert r.status_code == 200
+	
+def test_persistintent1():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test402),headers=headers)
+    assert r.status_code == 200
+'''
+'''
 '''
   test if entity does not have domainMetaData
 '''
