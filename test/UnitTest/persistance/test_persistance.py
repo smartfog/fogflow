@@ -9,7 +9,7 @@ import sys
 
 # change it by broker ip and port
 designerIp="http://localhost:8080"
-brokerIp= "http://localhost:8070"
+#brokerIp= "http://localhost:8070"
 
 '''
   test registration for opearator
@@ -17,14 +17,15 @@ brokerIp= "http://localhost:8070"
 
 
 def test_persistOPerator():
-    brokerUrl = brokerIp + "/ngsi10/entity/test011"
+    #brokerUrl = brokerIp + "/ngsi10/entity/test011"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
-    r = requests.post(
-        designerUrl,
-        data=json.dumps(
-            data.test0),
-        headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test0),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test001),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test002),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test003),headers=headers)
+
+    '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
     #print(r.content)
@@ -35,6 +36,7 @@ def test_persistOPerator():
         print "\nValidated"
     else:
         print "\nNot Validated"
+    '''
     assert r.status_code == 200
 
 
@@ -44,14 +46,16 @@ def test_persistOPerator():
 
 
 def test_persistFogFunction():
-    brokerUrl = brokerIp+ "/ngsi10/entity/test2"
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
-    r = requests.post(
-        designerUrl,
-        data=json.dumps(
-            data.test1),
-        headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test1),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test101),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test102),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test103),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test104),headers=headers)
+
+    '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
     #print(r.content)
@@ -62,6 +66,7 @@ def test_persistFogFunction():
         print "\nValidated"
     else:
         print "\nNot Validated"
+    '''
     assert r.status_code == 200
 
 
@@ -71,14 +76,16 @@ def test_persistFogFunction():
 
 
 def test_persistDockerImage():
-    brokerUrl = brokerIp+ "/ngsi10/entity/test3"
+    #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
-    r = requests.post(
-        designerUrl,
-        data=json.dumps(
-            data.test2),
-        headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test2),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
+
+    '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
     #print(r.content)
@@ -89,6 +96,7 @@ def test_persistDockerImage():
         print "\nValidated"
     else:
         print "\nNot Validated"
+    '''
     assert r.status_code == 200
 
 
@@ -98,14 +106,12 @@ def test_persistDockerImage():
 
 
 def test_persistopology():
-    brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
-    r = requests.post(
-        designerUrl,
-        data=json.dumps(
-            data.test3),
-        headers=headers)
+    r = requests.post(designerUrl,data=json.dumps(data.test3),headers=headers)
+    
+    '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
     #print(r.content)
@@ -116,9 +122,38 @@ def test_persistopology():
         print "\nValidated"
     else:
         print "\nNot Validated"
+    '''
     assert r.status_code == 200
 
 
+'''
+test registration for service intent
+'''
+
+def test_persistintent():
+    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
+    designerUrl = designerIp + "/internal/updateContext"
+    headers = {'Content-Type': 'application/json'}
+    r = requests.post(designerUrl,data=json.dumps(data.test4),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test400),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test401),headers=headers)
+    #r = requests.post(designerUrl,data=json.dumps(data.test402),headers=headers)
+    '''
+    #print(r.content)
+    r = requests.get(brokerUrl, headers=headers)
+    #print(r.content)
+    resp_content = r.content
+    resInJson = resp_content.decode('utf8').replace("'", '"')
+    resp = json.loads(resInJson)
+    if resp["entityId"]["type"] == "Topology" and resp["entityId"]["id"] == "test4":
+        print "\nValidated"
+    else:
+        print "\nNot Validated"
+    '''
+    assert r.status_code == 200
+
+'''
+'''
 '''
   test if entity does not have domainMetaData
 '''
