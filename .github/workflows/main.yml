@@ -122,8 +122,7 @@ jobs:
         cd ../broker/
         screen -d -m ./broker
         cd ../designer/
-        #screen -d -m node main.js
-        node main.js
+        screen -d -m node main.js
         cd ../test/UnitTest/
         screen -d -m python accumulator.py
         
