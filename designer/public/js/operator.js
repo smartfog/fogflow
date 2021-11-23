@@ -261,7 +261,7 @@ $(function() {
     }
 
     
-    //vinod : start
+    
     function defaultOperatorList(){
         var operatorList = [{
             name: "nodejs",
@@ -350,7 +350,7 @@ $(function() {
         }];
        
         return operatorList
-    } //vinod:end
+    }
 
   
 

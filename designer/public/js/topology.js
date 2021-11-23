@@ -31,13 +31,6 @@ $(function() {
     // to interact with designer for internal fogflow entities
     var clientDes = new NGSI10Client('./internal');
 
- /*   var myToplogyExamples = [{
-        topology: { "name": "anomaly-detection", "description": "detect anomaly events in shops", "tasks": [{ "name": "Counting", "operator": "counter", "input_streams": [{ "selected_type": "Anomaly", "selected_attributes": [], "groupby": "ALL", "scoped": true }], "output_streams": [{ "entity_type": "Stat" }] }, { "name": "Detector", "operator": "anomaly", "input_streams": [{ "selected_type": "PowerPanel", "selected_attributes": [], "groupby": "EntityID", "scoped": true }, { "selected_type": "Rule", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "Anomaly" }] }] },
-        designboard: { "edges": [{ "id": 2, "block1": 3, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }, { "id": 3, "block1": 2, "connector1": ["outputs", "output", 0], "block2": 3, "connector2": ["in", "input"] }, { "id": 4, "block1": 4, "connector1": ["stream", "output"], "block2": 2, "connector2": ["streams", "input"] }, { "id": 5, "block1": 5, "connector1": ["stream", "output"], "block2": 2, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 202, "y": -146, "type": "Task", "module": null, "values": { "name": "Counting", "operator": "counter", "outputs": ["Stat"] } }, { "id": 2, "x": -194, "y": -134, "type": "Task", "module": null, "values": { "name": "Detector", "operator": "anomaly", "outputs": ["Anomaly"] } }, { "id": 3, "x": 4, "y": -18, "type": "Shuffle", "module": null, "values": { "selectedattributes": ["all"], "groupby": "ALL" } }, { "id": 4, "x": -447, "y": -179, "type": "EntityStream", "module": null, "values": { "selectedtype": "PowerPanel", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": true } }, { "id": 5, "x": -438, "y": -5, "type": "EntityStream", "module": null, "values": { "selectedtype": "Rule", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] }
-    }, {
-        topology: { "name": "child-finder", "description": "search for a lost child based on face recognition", "tasks": [{ "name": "childfinder", "operator": "facefinder", "input_streams": [{ "selected_type": "Camera", "selected_attributes": [], "groupby": "EntityID", "scoped": true }, { "selected_type": "ChildLost", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "ChildFound" }] }] },
-        designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }, { "id": 2, "block1": 3, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 7, "y": -107, "type": "Task", "module": null, "values": { "name": "childfinder", "operator": "facefinder", "outputs": ["ChildFound"] } }, { "id": 2, "x": -292, "y": -161, "type": "EntityStream", "module": null, "values": { "selectedtype": "Camera", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": true } }, { "id": 3, "x": -286, "y": -2, "type": "EntityStream", "module": null, "values": { "selectedtype": "ChildLost", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] }
-    }];*/
 
 
 	var myToplogyExamples = [{
@@ -179,11 +172,6 @@ $(function() {
     function deleteTopology(topologyEntity) {
         console.log("delete topology entity ",topologyEntity);
 
-        // var entityid = {
-        //     id: topologyEntity.entityId.id,
-        //     type: 'Topology',
-        //     isPattern: false
-        // };
         var topEntity = {};
         var attribute = {id: topologyEntity.name, action:'DELETE'}
         topEntity.attribute = attribute
@@ -239,9 +227,7 @@ $(function() {
             topology.uid = uidTopology;
         }
 
-        // topology.name = topologyName;
-        // topology.description = serviceDescription;
-        // topology.tasks = generateTaskList(scene);
+       
 
         // submit the generated topology
         submitTopology(topology, scene);
@@ -355,27 +341,7 @@ $(function() {
         var topology = topologyData.attribute;
         console.log("==============test========");
         console.log("save in db topology   ",JSON.stringify(topology));
-        // console.log(JSON.stringify(designboard));
-
-        // var topologyCtxObj = {};
-
-        // topologyCtxObj.entityId = {
-        //     id: 'Topology.' + topology.name,
-        //     type: 'Topology',
-        //     isPattern: false
-        // };
-
-        // topologyCtxObj.attributes = {};
-        // topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        // topologyCtxObj.attributes.designboard = { type: 'object', value: designboard };
-        // topologyCtxObj.attributes.template = { type: 'object', value: topology };
-
-        // topologyCtxObj.metadata = {};
-
-        // var geoScope = {};
-        // geoScope.type = "global"
-        // geoScope.value = "global"
-        // topologyCtxObj.metadata.location = geoScope;
+       
 
         if (topology == '' || topology.name == '' || topology.tasks.length==0 || topology.tasks[0].operator == 'null' || 
         topology.tasks[0].operator == '' || topology.tasks[0].input_streams.length==0){
@@ -717,17 +683,7 @@ $(function() {
 
         console.log("aaaaaaaaaa intent ",eid);
         submitIntent();
-        // var queryReq = {}
-        // queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        // clientDes.getContext(queryReq).then(function(data) {
-        //     console.log('update this service intent   ',data.data[0].uid);
-
-        //     $('#intentDgraphUID').val(data.data[0].uid);
-        //     showIntent(data.data[0]);
-            
-        // }).catch(function(error) {
-        //     console.log('failed to delete this service intent');
-        // });
+      
 
     }
 
@@ -817,26 +773,8 @@ $(function() {
         var sid = $("#SID").text();
         attribute.id = sid;
         attribute.action= 'UPDATE'
-        // intentCtxObj.entityId = {
-        //     id: sid,
-        //     type: 'ServiceIntent',
-        //     isPattern: false
-        // };
-
-        // intentCtxObj.attributes = {};
-        // intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        // intentCtxObj.attributes.intent = { type: 'object', value: intent };
-
-        // intentCtxObj.metadata = {};
-        // var geoScope = {};
-        // if (scope == 'custom') {
-        //     geoScope.type = geoscope.type
-        //     geoScope.value = geoscope.value
-        // } else {
-        //     geoScope.type = scope
-        //     geoScope.value = scope
-        // }
-        // intentCtxObj.metadata.location = geoScope;
+       
+    
         if (selectedServiceIntent!=null) {
             intent.uid = selectedServiceIntent.uid;;
         }

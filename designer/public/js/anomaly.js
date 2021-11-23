@@ -135,24 +135,7 @@ $(function() {
             console.log('failed to query context');
         });
     }
-    // function checkIntent() {
-    //     var queryReq = {};
-    //     queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-    //     queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
-
-    //     client.queryContext(queryReq).then(function(resultList) {
-    //         console.log(resultList);
-    //         if (resultList && resultList.length > 0) {
-    //             curIntent = resultList[0];
-
-    //             //update the current geoscope as well
-    //             geoscope = curIntent.attributes.intent.geoscope;
-    //         }
-    //     }).catch(function(error) {
-    //         console.log(error);
-    //         console.log('failed to query context');
-    //     });
-    // }
+   
 
 
     function showTopology() {
@@ -186,15 +169,9 @@ $(function() {
 
         var topologyCtxObj = {};
 
-        // topologyCtxObj.entityId = {
-        //     id: 'Topology.' + topology.name,
-        //     type: topology.name,
-        //     isPattern: false
-        // };
+    
 
         topologyCtxObj.attributes = topology ;
-        //topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        //topologyCtxObj.attributes.template = { type: 'object', value: topology };
         topologyCtxObj.internalType = 'Topology';
         topologyCtxObj.updateAction = 'UPDATE';
 
@@ -263,12 +240,10 @@ $(function() {
 
         console.log('issue an service intent for this service topology ', curTopology);
 
-        // create the intent object
         var topology = curTopology.name
         var intent = {};
         var intentCtxObj = {};
         var attribute = {};
-       // intent.topology = topology.name;
         attribute.topology = topology;
         attribute.priority = {
             'exclusive': false,
@@ -279,21 +254,7 @@ $(function() {
         attribute.id = 'ServiceIntent.' + uuid();
         attribute.action= 'UPDATE'
 
-        // create the intent entity            
-        // var intentCtxObj = {};
-        // intentCtxObj.entityId = {
-        //     id: 'ServiceIntent.' + uuid(),
-        //     type: 'ServiceIntent',
-        //     isPattern: false
-        // };
-
-        //intentCtxObj.attributes = {};
-        // intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        // intentCtxObj.attributes.intent = { type: 'object', value: intent };
-
-        // intentCtxObj.metadata = {};
-        // intentCtxObj.metadata.topology = { type: 'string', value: curTopology.entityId.id };
-
+      
         console.log(JSON.stringify(intentCtxObj));
         intentCtxObj.attribute = attribute;
         intentCtxObj.internalType = "ServiceIntent";
@@ -316,13 +277,6 @@ $(function() {
             return;
         }
 
-        // console.log('cancel the issued intent for this service topology ', curTopology.entityId.id);
-
-        // var entityid = {
-        //     id: curIntent.entityId.id,
-        //     type: 'ServiceIntent',
-        //     isPattern: false
-        // };
 
         var sInent = {};
         var attribute = {id:curIntent.id, action:'DELETE'}

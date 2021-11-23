@@ -1,10 +1,11 @@
 (function () {
 
-    function testfunction() {
-        return "result from utility";
-    }
-
-
+    /**
+     * check data exists in list
+     * @param {string} data : variable name
+     * @param {list} list_ : list of response data
+     * @returns list of filtered data
+     */
     function isDataExists(data, list_) {
 
         var result = list_.filter(x => x.name === data);
