@@ -119,22 +119,18 @@ func (master *Master) Start(configuration *Config) {
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
 	 go func() {
-	      
+	      retryInterval:=5
               body, err := json.Marshal(map[string]string{
                        "status" : "Master is Up"})
                 if err != nil {
                         fmt.Println(err)
                 }
-               //fmt.Println(master.cfg.HTTPS)
                master.cfg.HTTPS.LoadConfig()
                client := master.cfg.HTTPS.GetHTTPClient()
-               fmt.Println("==== client =====",client)
-               req2, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
-               fmt.Println("++++++ req ++++++ and err",req2,err)
+               req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
                for {
-                        //resp, err := client.Post(url,"application/json" , bytes.NewBuffer(body))
-                       time.Sleep(5 * time.Second)
-                       resp, err := client.Do(req2)
+                       time.Sleep(retryInterval * time.Second)
+                       resp, err := client.Do(req)
                        fmt.Println(err)
                         if(resp != nil) {
                                 defer resp.Body.Close()
