@@ -121,11 +121,8 @@ func (c *Config) GetDesignerURL() string {
         }
 
         hostip := c.InternalIP
-        if c.CoreSerivceIP != "" {
-                hostip = c.CoreSerivceIP
-        }
-
-        if c.Discovery.HostIP != "" {
+        
+        if c.Designer.HostIP != "" {
                 hostip = c.Designer.HostIP
         }
 
