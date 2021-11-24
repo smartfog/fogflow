@@ -1,4 +1,4 @@
-#FogFlow Designer deployment and service configuration 
+#Cloud-broker deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,19 +6,19 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "4"
+    "helm.sh/hook-weight": "3"
   creationTimestamp: null
   labels:
-    io.kompose.service: designer
-  name: designer
+    io.kompose.service: cloud-broker
+  name: cloud-broker
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: designer
-  minReadySeconds: 10
+      io.kompose.service: cloud-broker
+  minReadySeconds: 10    
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
@@ -33,43 +33,50 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: designer
+        io.kompose.service: cloud-broker
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 20s;']
       containers:
-      - image: fogflow/designer:latest
-        imagePullPolicy: Always 
-        name: designer
+      - image: fogflow/broker:k8s
+        imagePullPolicy: IfNotPresent
+        name: cloud-broker
         ports:
-        - containerPort: 8080
-        - containerPort: 1030
-        #readiness and liveness to check pod's Health
+        - containerPort: 8070 
+        #readiness and liveness to check pod's Health 
         readinessProbe:
           tcpSocket:
-            port: 8080
+            port: 8070
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 8080
+            port: 8070
           initialDelaySeconds: 15
           periodSeconds: 20
-        #CPU and memory requirement for designer deployment 
         resources: 
+        #CPU and memory limits for cloud-broker deployment 
           limits:
-            memory: 2Gi
+            memory: 3Gi
             cpu: 1 
           requests:
-            memory: 1Gi
-            cpu: 1
+            memory: 2Gi
+            cpu: 1 
         volumeMounts:
         - name: config-json
-          mountPath: /app/config.json
+          mountPath: /config.json
+          subPath: config.json
+          readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
-      - name: config-json
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }}
+       - name: config-json
+         configMap:
+          name: fogflow-configmap
+
 ---
 
 apiVersion: v1
@@ -80,18 +87,15 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: designer
-  name: designer
+    io.kompose.service: cloud-broker
+  name: cloud-broker
 spec:
   ports:
-  - name: "8080"
-    port: 8080
-    targetPort: 8080
-  - name: "1030"
-    port: 1030
-    targetPort: 1030
+  - name: "8070"
+    port: 8070
+    targetPort: 8070
   selector:
-    io.kompose.service: designer
+    io.kompose.service: cloud-broker
   externalIPs: {{ .Values.Service.spec.externalIPs }}
 status:
   loadBalancer: {}

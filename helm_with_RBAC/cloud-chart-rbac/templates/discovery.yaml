@@ -1,4 +1,4 @@
-#nginx deployment and service configuration
+#Discovery deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,18 +6,18 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
-    io.kompose.service: nginx
-  name: nginx
+    io.kompose.service: discovery
+  name: discovery
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: nginx
+      io.kompose.service: discovery  
   minReadySeconds: 10
   #strategy tells about How do want to update the pods?
   strategy:
@@ -25,7 +25,7 @@ spec:
       maxSurge: 25% 
       maxUnavailable: 25% 
     type: RollingUpdate
-  # This template field is a regular pod configuration
+   # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
@@ -33,43 +33,45 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: nginx
+        io.kompose.service: discovery
     spec:
       containers:
-      - image: nginx:latest
-        imagePullPolicy: Always 
-        name: nginx
+      - image: fogflow/discovery:k8s
+        imagePullPolicy: IfNotPresent 
+        name: discovery
         ports:
-        - containerPort: 80
+        - containerPort: 8090
         #readiness and liveness to check pod's Health
         readinessProbe:
           tcpSocket:
-            port: 80
+            port: 8090
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 80
+            port: 8090
           initialDelaySeconds: 15
           periodSeconds: 20
         resources:
-          #CPU and memory limits for nginx deployment
+         #CPU and memory limits for discovery deployment 
           limits:
-            memory: 1Gi
-            cpu: 800m
+            memory: 2Gi
+            cpu: 1
           requests:
-            memory: 500Mi
-            cpu: 500m
+            memory: 1Gi
+            cpu: 1
         volumeMounts:
-        - name: nginx-conf
-          mountPath: /etc/nginx/nginx.conf
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json
           readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
-      - name: nginx-conf 
-        hostPath:
-          path: {{ .Values.nginxConf.hostPath.path }} 
+      - name: config-json
+        configMap:
+          name: fogflow-configmap
+
 ---
 
 apiVersion: v1
@@ -80,15 +82,15 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: nginx
-  name: nginx
+    io.kompose.service: discovery
+  name: discovery
 spec:
   ports:
-  - name: "80"
-    port: 80
-    targetPort: 80
+  - name: "8090"
+    port: 8090
+    targetPort: 8090
   selector:
-    io.kompose.service: nginx
+    io.kompose.service: discovery
   externalIPs: {{ .Values.Service.spec.externalIPs }}
 status:
-  loadBalancer: {}
+  loadBalancer: {} 
