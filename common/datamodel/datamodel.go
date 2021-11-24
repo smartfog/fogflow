@@ -159,7 +159,7 @@ type FogFunction struct {
 }
 
 type DockerImage struct {
-	OperatorName   string `json:"operater"`
+	OperatorName   string `json:"OperatorName"`
 	ImageName      string `json:"name"`
 	ImageTag       string `json:"tag"`
 	TargetedHWType string `json:"hwType"`

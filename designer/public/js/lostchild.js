@@ -98,12 +98,17 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.child-finder', type: 'Topology', isPattern: false }];
-
-        client.queryContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList && resultList.length > 0) {
-                curTopology = resultList[0];
+        //queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
+        var name = "child-finder"
+        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
+        clientDes.getContext(queryReq).then(function(resultList) {
+            
+            if (resultList.data && resultList.data.length > 0) {
+                console.log("check topology ",isDataExists(name,resultList.data));
+                var cTopolody = isDataExists(name,resultList.data);
+                if (cTopolody.length != 0) {
+                    curTopology = cTopolody[0];
+                }
             }
 
             showTopology();
@@ -116,16 +121,21 @@ $(function() {
 
     function checkIntent() {
         var queryReq = {};
-        queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.child-finder' }] }
-
-        client.queryContext(queryReq).then(function(resultList) {
+       // queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
+        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
+        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
+        scopeValue = 'child-finder'
+        clientDes.getContext(queryReq).then(function(resultList) {
             console.log(resultList);
-            if (resultList && resultList.length > 0) {
-                curIntent = resultList[0];
-
-                //update the current geoscope as well
-                geoscope = curIntent.attributes.intent.value.geoscope;
+            if (resultList.data && resultList.data.length > 0) {
+                var result = resultList.data.filter(x => x.topology === scopeValue);
+                if (result.length > 0) {
+                    console.log("service intent result ---- ",result);
+                    curIntent = result[0];
+                    //update the current geoscope as well
+                    geoscope = result[0].geoscope;
+                }
+                
             }
         }).catch(function(error) {
             console.log(error);
@@ -164,19 +174,20 @@ $(function() {
 
         var topologyCtxObj = {};
 
-        topologyCtxObj.entityId = {
-            id: 'Topology.' + topology.name,
-            type: topology.name,
-            isPattern: false
-        };
+        // topologyCtxObj.entityId = {
+        //     id: 'Topology.' + topology.name,
+        //     type: topology.name,
+        //     isPattern: false
+        // };
 
-        topologyCtxObj.attributes = {};
-        topologyCtxObj.attributes.status = { type: 'string', value: 'disabled' };
-        topologyCtxObj.attributes.template = { type: 'object', value: topology };
+        topologyCtxObj.attributes = topology ;
+        //topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+        //topologyCtxObj.attributes.template = { type: 'object', value: topology };
+        topologyCtxObj.internalType = 'Topology';
+        topologyCtxObj.updateAction = 'UPDATE';
 
-        client.updateContext(topologyCtxObj).then(function(data) {
+        clientDes.updateContext(topologyCtxObj).then(function(data) {
             console.log(data);
-
             // update the current topology
             curTopology = topologyCtxObj;
         }).catch(function(error) {
@@ -259,53 +270,47 @@ $(function() {
         console.log('issue an service intent for this service topology ', curTopology);
 
         // create the intent object
-        var topology = curTopology.attributes.template.value
-
+        var topology = curTopology.topology
         var intent = {};
-        intent.topology = topology.name;
-        intent.priority = {
+        var intentCtxObj = {};
+        var attribute = {};
+       // intent.topology = topology.name;
+        attribute.topology = topology;
+        attribute.priority = {
             'exclusive': false,
             'level': 50
         };
-        intent.qos = "default";
-        intent.geoscope = geoscope;
+        attribute.qos = "default";
+        attribute.geoscope = geoscope;
+        attribute.id = 'ServiceIntent.' + uuid();
+        attribute.action= 'UPDATE'
 
         // create the intent entity            
-        var intentCtxObj = {};
-        intentCtxObj.entityId = {
-            id: 'ServiceIntent.' + uuid(),
-            type: 'ServiceIntent',
-            isPattern: false
-        };
-        intentCtxObj.attributes = {};
-        intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        intentCtxObj.attributes.intent = { type: 'object', value: intent };
+        // var intentCtxObj = {};
+        // intentCtxObj.entityId = {
+        //     id: 'ServiceIntent.' + uuid(),
+        //     type: 'ServiceIntent',
+        //     isPattern: false
+        // };
 
-        intentCtxObj.metadata = {};
-        intentCtxObj.metadata.topology = { type: 'string', value: curTopology.entityId.id };
+        //intentCtxObj.attributes = {};
+        // intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
+        // intentCtxObj.attributes.intent = { type: 'object', value: intent };
+
+        // intentCtxObj.metadata = {};
+        // intentCtxObj.metadata.topology = { type: 'string', value: curTopology.entityId.id };
 
         console.log(JSON.stringify(intentCtxObj));
-
-        // check if the dynamic task controlling is selected
-        //var scopeUpdating = document.getElementById('ScopeUpdating').checked;
-        //var checkingInterval = parseInt($('#checkingInterval option:selected').val(), 10);    
-        //var radiusInterval = parseInt($('#radiusInterval option:selected').val(), 10);            
-
-        client.updateContext(intentCtxObj).then(function(data) {
+        intentCtxObj.attribute = attribute;
+        intentCtxObj.internalType = "ServiceIntent";
+        intentCtxObj.updateAction = "UPDATE";
+        clientDes.updateContext(intentCtxObj).then(function(data) {
             console.log(data);
             curIntent = intentCtxObj;
 
             // change the button status
             $('#enableService').prop('disabled', true);
             $('#disableService').prop('disabled', false);
-
-            /*
-            if (scopeUpdating == true) {
-                console.log('start the timer for checking results and updating the search scope')
-                checkingTimer = setInterval(onCheckingTimer, checkingInterval * 1000);
-                radiusStepDistance = radiusInterval;
-            }*/
-
         }).catch(function(error) {
             console.log('failed to submit the defined intent');
         });
@@ -359,28 +364,33 @@ $(function() {
             clearInterval(checkingTimer);
         }
 
-        var entityid = {
-            id: curIntent.entityId.id,
-            type: 'ServiceIntent',
-            isPattern: false
-        };
+        // var entityid = {
+        //     id: curIntent.entityId.id,
+        //     type: 'ServiceIntent',
+        //     isPattern: false
+        // };
 
-        client.deleteContext(entityid).then(function(data) {
+        var sInent = {};
+        var attribute = {id:curIntent.id, action:'DELETE'}
+        sInent.attribute = attribute
+        sInent.updateAction = 'DELETE';
+        sInent.internalType = 'ServiceIntent';
+        sInent.uid = curIntent.uid
+
+        clientDes.deleteContext(sInent).then(function(data) {
             console.log(data);
-
             curIntent = null;
             geoscope = {
                 scopeType: "local",
                 scopeValue: "local"
             };
-
             personsFound = [];
-
             $('#enableService').prop('disabled', false);
             $('#disableService').prop('disabled', true);
         }).catch(function(error) {
             console.log('failed to cancel the service intent');
         });
+       
     }
 
 

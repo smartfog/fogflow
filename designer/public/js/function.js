@@ -280,25 +280,7 @@ $(function() {
             "scopeValue": "global"
         };
 
-        // step 3: create this fog function            
-        // var functionCtxObj = {};
-        // functionCtxObj.entityId = {
-        //     id: 'FogFunction.' + topologyName,
-        //     type: 'FogFunction',
-        //     isPattern: false
-        // };
-        // functionCtxObj.attributes = {};
-        // functionCtxObj.attributes.name = { type: 'string', value: topologyName };
-        // functionCtxObj.attributes.topology = { type: 'object', value: topology };
-        // functionCtxObj.attributes.designboard = { type: 'object', value: scene };
-        // functionCtxObj.attributes.intent = { type: 'object', value: intent };
-        // functionCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-
-        // functionCtxObj.metadata = {};
-        // var geoScope = {};
-        // geoScope.type = "global"
-        // geoScope.value = "global"
-        // functionCtxObj.metadata.location = geoScope;
+       
         var fogfunction = {};
         attribute.id = 'FogFunction.' + topologyName;
         attribute.name = topologyName;
@@ -311,11 +293,8 @@ $(function() {
         fogfunction.attribute = attribute;
         fogfunction.updateAction = 'UPDATE';
         fogfunction.internalType = 'FogFunction';
-        // if (selectedFogFunction){
-        //     fogfunction.uid = selectedFogFunction.uid;
-        // }
+       
         
-        console.log(JSON.stringify(fogfunction));
         if (topologyName == '' || topology.name == '' || topology.tasks.length==0 || topology.tasks[0].operator == 'null' || 
         topology.tasks[0].operator == '' || topology.tasks[0].input_streams.length==0){
             alert('please provide the required inputs');

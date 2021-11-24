@@ -1,6 +1,5 @@
 var amqp = require('amqplib/callback_api');
-//const amqplib = require('amqplib');
-//import {amqp} from 'amqplib/callback_api';
+
 
 RABBIT_URL = 'amqp://localhost'
 EXCHANGE = 'Op'
@@ -29,10 +28,8 @@ msg1 = {
   "domainMetadata": [{ "name": "location", "type": "global", "value": "global" }],
   "dgraph.type": "ContextElement"
 }
-//send ={'Type': 'Operator', 'RoutingKey': 'Operator.', 'From': 'designer', 'PayLoad': msg1}
 
 function string2json(data) {
-  console.log("------- stirng 2 json", data);
   for (var i = 0; i < data[0].attributes.length; i++) {
     console.log("******** data ", data[0].attributes[i].value)
     data[0].attributes[i].value = JSON.parse(data[0].attributes[i].value);
@@ -69,8 +66,6 @@ function amqpConnection(exchange_) {
 async function amqpPub(data, exchange_) {
   if (channel_ === undefined) amqpConnection();
   let msg = JSON.parse(JSON.stringify(data));
-  //console.log("inside in amqp ",msg.attribute)
-  //payData = string2json(msg.contextElements)
   if (msg.attribute == undefined) {
     return
   }
@@ -81,7 +76,6 @@ async function amqpPub(data, exchange_) {
   try{
     channel_.publish(exchange, 'Operator.', Buffer.from(JSON.stringify(send)), hOpt);
   }catch(err){
-    // reconnect
     amqpConnection();
   }
   console.log(" [x] Sent %s", send.PayLoad);

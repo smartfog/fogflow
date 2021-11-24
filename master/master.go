@@ -2,6 +2,8 @@ package main
 
 import (
 	"encoding/json"
+	"bytes"
+	"net/http"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,6 +26,8 @@ type Master struct {
 	myURL        string
 	messageBus   string
 	discoveryURL string
+	designerURL  string
+        SecurityCfg     *HTTPS
 
 	communicator *Communicator
 	communicator2 *Communicator
@@ -67,10 +71,12 @@ type Master struct {
 
 func (master *Master) Start(configuration *Config) {
 	master.cfg = configuration
-
+	master.SecurityCfg = &configuration.HTTPS
+	
 	master.messageBus = configuration.GetMessageBus()
 	master.discoveryURL = configuration.GetDiscoveryURL()
-
+	master.designerURL = configuration.GetDesignerURL()
+	
 	master.workers = make(map[string]*WorkerProfile)
 
 	master.operatorList = make(map[string]Operator)
@@ -112,6 +118,28 @@ func (master *Master) Start(configuration *Config) {
 	//master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
+	 go func() {
+	      retryInterval:=5
+              body, err := json.Marshal(map[string]string{
+                       "status" : "Master is Up"})
+                if err != nil {
+                        fmt.Println(err)
+                }
+               master.cfg.HTTPS.LoadConfig()
+               client := master.cfg.HTTPS.GetHTTPClient()
+               req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
+               for {
+		       time.Sleep(time.Duration(retryInterval) * time.Second)
+                       resp, err := client.Do(req)
+                       fmt.Println(err)
+                        if(resp != nil) {
+                                defer resp.Body.Close()
+                                break
+                        }
+                        
+                }
+        }()
+	
 	// start the message consumer
 	go func() {
 		cfg := MessageBusConfig{}
@@ -222,15 +250,6 @@ func (master *Master) unregisterMyself() {
 	}
 }
 
-/*func (master *Master) triggerInitialSubscriptions() {
-	master.subscribeContextEntity("Operator")
-	master.subscribeContextEntity("DockerImage")
-	master.subscribeContextEntity("Topology")
-	master.subscribeContextEntity("FogFunction")
-	master.subscribeContextEntity("ServiceIntent")
-	master.subscribeContextEntity("TaskIntent")
-}*/
-
 func (master *Master) subscribeContextEntity(entityType string) {
 	subscription := SubscribeContextRequest{}
 
@@ -251,70 +270,7 @@ func (master *Master) subscribeContextEntity(entityType string) {
 	master.subID2Type[sid] = entityType
 }
 
-/*func (master *Master) onReceiveContextNotify(notifyCtxReq *NotifyContextRequest) {
-	sid := notifyCtxReq.SubscriptionId
-	stype := master.subID2Type[sid]
-
-	if len(notifyCtxReq.ContextResponses) == 0 {
-		return
-	}
-	fmt.Println(" %%%%%%%%%%%%%%%%% notify %%%%%%%%%%%%%%",notifyCtxReq.ContextResponses[0].ContextElement)
-	contextObj := CtxElement2Object(&notifyCtxReq.ContextResponses[0].ContextElement)
-	switch stype {
-	// registry of an operator
-	case "Operator":
-		fmt.Println(" ***** Operastor registry ********",contextObj)
-		//master.handleOperatorRegistration(contextObj)
-
-	// registry of a docker image
-	case "DockerImage":
-		//master.handleDockerImageRegistration(contextObj)
-
-	// topology to define service template
-	case "Topology":
-		//master.handleTopologyUpdate(contextObj)
-
-	// fog function that includes a pair of topology and intent
-	case "FogFunction":
-		//master.handleFogFunctionUpdate(contextObj)
-
-	// service orchestration
-	case "ServiceIntent":
-		//master.serviceMgr.handleServiceIntentUpdate(contextObj)
-
-	// task orchestration
-	case "TaskIntent":
-		//master.taskMgr.handleTaskIntentUpdate(contextObj)
-	}
-}*/
-
-//
 // to handle the registry of operator
-//
-
-/*func (master *Master) handleOperatorRegistration(operatorCtxObj *ContextObject) {
-	INFO.Println(operatorCtxObj)
-
-	if operatorCtxObj.IsEmpty() {
-		// does not handle the removal of operator
-		return
-	}
-
-	var operator = Operator{}
-	jsonText, _ := json.Marshal(operatorCtxObj.Attributes["operator"].Value.(map[string]interface{}))
-	fmt.Println("**** jsonText *****",jsonText)
-	err := json.Unmarshal(jsonText, &operator)
-	fmt.Println("**** Unmarshal Operator inside function *****",operator)
-	if err != nil {
-		ERROR.Println("failed to read the given operator")
-	} else {
-		master.operatorList_lock.Lock()
-		master.operatorList[operator.Name] = operator
-		master.operatorList_lock.Unlock()
-	}
-}*/
-
-//start: Pradumn
 func (master *Master) handleOperatorRegistration(msg json.RawMessage) {
 	INFO.Println(string(msg))
 	//fmt.Println(len(msg))
@@ -334,41 +290,8 @@ func (master *Master) handleOperatorRegistration(msg json.RawMessage) {
                 master.operatorList_lock.Unlock()
 	}
 }
-//End: Pradumn
 
-
-//
 // to handle the management of docker images
-//
-/*func (master *Master) handleDockerImageRegistration(dockerImageCtxObj *ContextObject) {
-	INFO.Println(dockerImageCtxObj)
-
-	if dockerImageCtxObj.IsEmpty() {
-		// does not handle the removal of operator
-		return
-	}
-
-	dockerImage := DockerImage{}
-	dockerImage.OperatorName = dockerImageCtxObj.Attributes["operator"].Value.(string)
-	dockerImage.ImageName = dockerImageCtxObj.Attributes["image"].Value.(string)
-	dockerImage.ImageTag = dockerImageCtxObj.Attributes["tag"].Value.(string)
-	dockerImage.TargetedHWType = dockerImageCtxObj.Attributes["hwType"].Value.(string)
-	dockerImage.TargetedOSType = dockerImageCtxObj.Attributes["osType"].Value.(string)
-	dockerImage.Prefetched = dockerImageCtxObj.Attributes["prefetched"].Value.(bool)
-	
-	fmt.Println("********* dockerImage *********",dockerImage)
-	
-	master.dockerImageList_lock.Lock()
-	master.dockerImageList[dockerImage.OperatorName] = append(master.dockerImageList[dockerImage.OperatorName], dockerImage)
-	master.dockerImageList_lock.Unlock()
-
-	if dockerImage.Prefetched == true {
-		// inform all workers to prefetch this docker image in advance
-		master.prefetchDockerImages(dockerImage)
-	}
-}*/
-
-//Start: Pradumn
 func (master *Master) handleDockerImageRegistration(msg json.RawMessage) {
 	if(len(msg) <=2) {
 		//does not handle the removal of dockerImage
@@ -378,6 +301,7 @@ func (master *Master) handleDockerImageRegistration(msg json.RawMessage) {
 
 	var dockerImage = DockerImage{}
         err := json.Unmarshal(msg, &dockerImage)
+	fmt.Println("******* Docker Image ********",dockerImage.ImageName)
 	fmt.Println("***** dockerImage operator name ****",dockerImage.OperatorName)
 	if(len(dockerImage.OperatorName) == 0 || len(dockerImage.ImageName) == 0 || len(dockerImage.ImageTag) == 0 || len(dockerImage.TargetedHWType) == 0 || len(dockerImage.TargetedOSType) == 0) {
                 //does not handle the removal of dockerImage
@@ -411,104 +335,13 @@ func (master *Master) prefetchDockerImages(image DockerImage) {
 	}
 }
 
-//
 // to update the fog function list
-//
-/*func (master *Master) handleFogFunctionUpdate(fogfunctionCtxObj *ContextObject) {
-	INFO.Println(fogfunctionCtxObj)
-
-	// the fog function is going to be deleted
-	if fogfunctionCtxObj.IsEmpty() {
-		var eid = fogfunctionCtxObj.Entity.ID
-
-		master.fogfunctionList_lock.RLock()
-		fogfunction := master.fogfunctionList[eid]
-		master.fogfunctionList_lock.RUnlock()
-
-		DEBUG.Printf("%+v\r\n", fogfunction)
-
-		// remove the service intent
-		master.serviceMgr.removeServiceIntent(fogfunction.Intent.ID)
-
-		// remove the service topology
-		topology := fogfunction.Topology
-		master.topologyList_lock.Lock()
-		master.topologyList[topology.Name] = &topology
-		master.topologyList_lock.Unlock()
-
-		// remove this fog function entity
-		master.fogfunctionList_lock.Lock()
-		delete(master.fogfunctionList, eid)
-		master.fogfunctionList_lock.Unlock()
-
-		return
-	}
-
-	topology := Topology{}
-
-	topologyJsonText, err := json.Marshal(fogfunctionCtxObj.Attributes["topology"].Value.(map[string]interface{}))
-	fmt.Println("*********topologyJsonText*************",topologyJsonText)
-	if err != nil {
-		ERROR.Println("the topology object is not defined")
-		return
-	}
-	err = json.Unmarshal(topologyJsonText, &topology)
-	fmt.Println("*********topology*************",topology)
-	if err != nil {
-		ERROR.Println("the topology object is not correctly defined")
-		return
-	}
-
-	intent := ServiceIntent{}
-
-	intentJsonText, err := json.Marshal(fogfunctionCtxObj.Attributes["intent"].Value.(map[string]interface{}))
-	if err != nil {
-		ERROR.Println("the intent object is not defined")
-		return
-	}
-	err = json.Unmarshal(intentJsonText, &intent)
-	fmt.Println("*********intent*************",intent)
-	if err != nil {
-		ERROR.Println("the intent object is not correctly defined")
-		return
-	}
-
-	// allow the ID of this service intent
-	intent.ID = fogfunctionCtxObj.Entity.ID
-
-	fogfunction := FogFunction{}
-
-	fogfunction.Id = fogfunctionCtxObj.Entity.ID
-	fogfunction.Name = fogfunctionCtxObj.Attributes["name"].Value.(string)
-	fogfunction.Topology = topology
-	fogfunction.Intent = intent
-
-	// add the service topology
-	master.topologyList_lock.Lock()
-	master.topologyList[topology.Name] = &topology
-	master.topologyList_lock.Unlock()
-
-	// handle the associated service intent
-	master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
-
-	fmt.Println("******* inside  handle fog function ***********",fogfunction)
-	// create or update this fog function
-	master.fogfunctionList_lock.Lock()
-	master.fogfunctionList[fogfunction.Id] = &fogfunction
-	master.fogfunctionList_lock.Unlock()
-
-	INFO.Println(fogfunction)
-}*/
-
-
 func (master *Master) handleFogFunctionUpdate(msg json.RawMessage) {
-	//FO.Println(msg)
 	var fogfunction = FogFunction{}
         err := json.Unmarshal(msg, &fogfunction)
 	fogfunction.Intent.ID = fogfunction.Id
 	fmt.Println("***** Intent.ID *********",fogfunction.Intent.ID)
-	fmt.Println("********* msg *******",msg, fogfunction)
-
+	
 	if(fogfunction.Action == "DELETE"){
 		var eid = fogfunction.Id
 		
@@ -549,54 +382,7 @@ func (master *Master) handleFogFunctionUpdate(msg json.RawMessage) {
 
 }
 
-
-//
 // to update the topology list
-//
-/*func (master *Master) handleTopologyUpdate(topologyCtxObj *ContextObject) {
-	INFO.Println(topologyCtxObj)
-
-	if topologyCtxObj.IsEmpty() {
-		// remove this service topology entity
-		master.topologyList_lock.Lock()
-
-		var eid = topologyCtxObj.Entity.ID
-
-		// find which one has this id
-		for _, topology := range master.topologyList {
-			if topology.Id == eid {
-				var name = topology.Name
-				delete(master.topologyList, name)
-				break
-			}
-		}
-
-		master.topologyList_lock.Unlock()
-
-		return
-	}
-
-	// create or update this service topology
-	topology := Topology{}
-	jsonText, _ := json.Marshal(topologyCtxObj.Attributes["template"].Value.(map[string]interface{}))
-	err := json.Unmarshal(jsonText, &topology)
-	if err == nil {
-		INFO.Println(topology)
-
-		topology.Id = topologyCtxObj.Entity.ID
-		fmt.Println("****** topology.Id *****",topology.Id)
-		fmt.Println("****** topogoly ko handle karna hai *********",&topology)
-
-		master.topologyList_lock.Lock()
-		master.topologyList[topology.Name] = &topology
-		master.topologyList_lock.Unlock()
-
-		INFO.Println(topology)
-	}
-
-}*/
-
-//start:Pradumn
 func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
 	INFO.Println(string(msg))
 
@@ -631,7 +417,6 @@ func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
 
                 topology.Id = "Topology." + topology.Name
                 fmt.Println("****** topology.Id *****",topology.Id)
-                fmt.Println("****** topogoly ko handle karna hai *********",&topology)
 
                 master.topologyList_lock.Lock()
 		fmt.Println("******** topology list ****",master.topologyList)

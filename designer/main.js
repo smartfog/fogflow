@@ -141,9 +141,10 @@ app.post('/intent', jsonParser, function(req, res) {
 */
 
 function getResult(filterBy, objList) {
+    console.log("objlist is ---- ",objList);
     var arr = [];
     for(var i in objList){
-            if (Object.keys(objList[i].attribute).length === 0) {
+            if (objList[i].hasOwnProperty("attribute") && Object.keys(objList[i].attribute).length === 0) {
                 console.log("aaaa",objList[i]);
                 continue;}
             var fType = objList[i]['internalType'];
@@ -186,6 +187,10 @@ app.post('/internal/getContext', jsonParser, async function (req, res) {
     res.send({data:getResult(queryContext.internalType,dgraphOp.contextElements)})
 });
 
+app.post('/masterNotify', jsonParser, async function (req, res) {
+    dgraphSendToMaster();
+    res.json({"status":"DONE"})
+});
 
 // to remove an existing intent
 app.delete('/intent', jsonParser, function(req, res) {
@@ -240,6 +245,22 @@ function handleNotify(req, ctxObjects, res) {
         }
     }
 }
+
+async function dgraphSendToMaster(){
+    var dgraphResult = await dgraph.QueryJsonWithType('all')
+    if (dgraphResult.hasOwnProperty("contextElements")){
+        dgraphData = dgraphResult.contextElements
+        for (var i in dgraphData) {
+            if (dgraphData[i].attribute == undefined) {
+                continue;
+              }
+            dgraphData[i].attribute = JSON.parse(dgraphData[i].attribute)
+            amqp.amqpPub(dgraphData[i])
+        }
+    }
+    
+}
+
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
