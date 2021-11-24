@@ -16,10 +16,11 @@ test003=\
 
 test0 =\
     {
-        "name":"counter",
-        "description":"Hi there, all okay!",
-        "parameters":[]
+    "name":"counter",
+    "description":"Hi there, all okay!",
+    "parameters":[]
     }
+
 
 # Payload to persist FogFunction
 test101=\
@@ -28,59 +29,62 @@ test101=\
 
 test102=\
     {
-        "id": 'FogFunction.ParkingLotRecommendation'
+    "id": 'FogFunction.ParkingLotRecommendation'
     }        
+
 test103=\
     {
-        "id": 'FogFunction.ParkingLotRecommendation',
-        "name": 'ParkingLotRecommendation',
-        "topology":
+    "id": 'FogFunction.ParkingLotRecommendation',
+    "name": 'ParkingLotRecommendation',
+    "topology":
         {
             "name": 'ParkingLotRecommendation',
             "description": 'to recommend where to park around the destination',
             "tasks":[[]]
         }
     }
+
 test104=\
     {
-        "id": 'FogFunction.ParkingLotRecommendation',
-        "name": 'ParkingLotRecommendation',
+    "id": 'FogFunction.ParkingLotRecommendation',
+    "name": 'ParkingLotRecommendation',
 
-        "geoscope":
+    "geoscope":
         {
             "scopeType": 'global', "scopeValue": 'global'
         },
-        "status": 'enabled',
-        "action": 'UPDATE'
-
+    "status": 'enabled',
+    "action": 'UPDATE'
     }
 
 test1 =\
     { 
-        "id": 'FogFunction.ParkingLotRecommendation',
-        "name": 'ParkingLotRecommendation',
-        "topology":
+    "id": 'FogFunction.ParkingLotRecommendation',
+    "name": 'ParkingLotRecommendation',
+    "topology":
         { 
             "name": 'ParkingLotRecommendation',
             "description": 'to recommend where to park around the destination',
             "tasks":[[]]
         },
-        "intent":
+    "intent":
         { 
             "topology": 'ParkingLotRecommendation',
             "priority": 
             { 
                 "exclusive": False, "level": 0 
             },
-        "qos": 'Max Throughput',
-        "geoscope": 
+    "qos": 'Max Throughput',
+    "geoscope": 
         {   
             "scopeType": 'global', "scopeValue": 'global' 
         },
-        "status": 'enabled',
-        "action": 'UPDATE' 
+    "status": 'enabled',
+    "action": 'UPDATE' 
+    	}
     }
-        }
+        
+       
 # Payload to persist DockerImage
 
 test200 =\
@@ -119,13 +123,23 @@ test2 =\
 }
 
 # payload to persist Topology
+test300=\
+	{
+	}
+
+test301=\
+	{
+	"description": "detect anomaly events in shops",
+    	"name": "anomaly-detection"
+	}
+
 test3 =\
-    {
-   "description": "detect anomaly events in shops",
-   "name": "anomaly-detection",
-   "tasks": [
-      {
-         "input_streams": [
+    	{
+   	"description": "detect anomaly events in shops",
+   	"name": "anomaly-detection",
+   	"tasks": [
+      	{
+        "input_streams": [
             {
                "groupby": "ALL",
                "scoped": True,
@@ -167,41 +181,7 @@ test3 =\
    ]
 }
 
-test300=\
-	{
-	}
 
-test301=\
-	{
-	"description": "detect anomaly events in shops",
-    "name": "anomaly-detection"
-	}
-
-'''        
-test302=\
-	{
-	"description": "detect anomaly events in shops",
-        "name": "anomaly-detection",
-        "tasks": [
-        {
-            "input_streams": [
-                {
-                "groupby": "ALL",
-                "scoped": True,
-                "selected_attributes": [],
-                "selected_type": "Anomaly"
-                }   
-                ],
-        "name": "Counting",
-        "operator": "counter",
-        "output_streams": [
-            {
-               "entity_type": "Stat32_new"
-            }
-            ]
-            }
-        }   
-'''
 #payload to persist service intent
 test400=\
     {   

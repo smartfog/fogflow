@@ -12,9 +12,8 @@ designerIp="http://localhost:8080"
 #brokerIp= "http://localhost:8070"
 
 '''
-  test registration for opearator
+  testcase 1: To test registration for opearator
 '''
-
 
 def test_persistOPerator():
     #brokerUrl = brokerIp + "/ngsi10/entity/test011"
@@ -35,6 +34,11 @@ def test_persistOPerator():
     '''
     assert r.status_code == 200
 
+
+'''
+  testcase 2: To test registration for opearator with empty payload
+'''
+
 def test_persistOPerator1():
     #brokerUrl = brokerIp + "/ngsi10/entity/test011"
     designerUrl = designerIp + "/internal/updateContext"
@@ -43,6 +47,10 @@ def test_persistOPerator1():
  
     assert r.status_code == 200
 
+'''
+  testcase 3: To test registration for opearator with operator name only.
+'''
+
 def test_persistOPerator2():
     #brokerUrl = brokerIp + "/ngsi10/entity/test011"
     designerUrl = designerIp + "/internal/updateContext"
@@ -50,6 +58,10 @@ def test_persistOPerator2():
     r = requests.post(designerUrl,data=json.dumps(data.test002),headers=headers)
  
     assert r.status_code == 200
+
+'''
+  testcase 3: To test registration for opearator with operator name and description.
+'''
 
 def test_persistOPerator3():
     #brokerUrl = brokerIp + "/ngsi10/entity/test011"
@@ -62,7 +74,7 @@ def test_persistOPerator3():
 
 
 '''
-  test registration for fogfunction
+  testcase 4: To test registration for fogfunction
 '''
 
 
@@ -86,6 +98,9 @@ def test_persistFogFunction():
     '''
     assert r.status_code == 200
 
+'''
+  testcase 5: To test registration for fogfunction with empty payload
+'''
 
 def test_persistFogFunction1():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
@@ -93,6 +108,10 @@ def test_persistFogFunction1():
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test101),headers=headers)
     assert r.status_code == 200
+    
+'''
+  testcase 6: To test registration for fogfunction with id only.
+'''
 
 def test_persistFogFunction2():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
@@ -100,6 +119,10 @@ def test_persistFogFunction2():
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test102),headers=headers)
     assert r.status_code == 200
+    
+'''
+  testcase 7: To test registration for fogfunction with attributes: name and topology.
+'''
 	
 def test_persistFogFunction3():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
@@ -107,6 +130,10 @@ def test_persistFogFunction3():
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test103),headers=headers)
     assert r.status_code == 200
+
+'''
+  testcase 8: To test registration for fogfunction with only one attribute: geoscope.
+'''
 	
 def test_persistFogFunction4():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test2"
@@ -117,20 +144,14 @@ def test_persistFogFunction4():
 
 
 '''
-  test registration for dockerImage
+  testcase 9: To test registration for dockerImage
 '''
-
 
 def test_persistDockerImage():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test2),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
-    r = requests.post(designerUrl,data=json.dumps(data.test203),headers=headers)
-
     '''
     #print(r.content)
     r = requests.get(brokerUrl, headers=headers)
@@ -145,26 +166,42 @@ def test_persistDockerImage():
     '''
     assert r.status_code == 200
 
+'''
+  testcase 10: To test registration for dockerImage with empty payload
+'''
+
 def test_persistDockerImage1():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test200),headers=headers)
     assert r.status_code == 200
-	
+
+'''
+  testcase 11: To test registration for dockerImage with operator only.
+'''
+
 def test_persistDockerImage2():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test201),headers=headers)
     assert r.status_code == 200
-	
+
+'''
+  testcase 12: To test registration for dockerImage with operator and name.
+'''
+
 def test_persistDockerImage3():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test202),headers=headers)
     assert r.status_code == 200
+
+'''
+  testcase 13: To test registration for dockerImage with attributes: hwType and osType
+'''
 	
 def test_persistDockerImage4():
     #brokerUrl = brokerIp+ "/ngsi10/entity/test3"
@@ -175,9 +212,8 @@ def test_persistDockerImage4():
 	
 
 '''
-  test registration for topology
+  testcase 14: To test registration for topology
 '''
-
 
 def test_persistopology():
     #brokerUrl = brokerIp + "/ngsi10/entity/test4"
@@ -199,12 +235,20 @@ def test_persistopology():
     '''
     assert r.status_code == 200
 
+'''
+  testcase 15: To test registration for topology with empty payload.
+'''
+
 def test_persistopology1():
     #brokerUrl = brokerIp + "/ngsi10/entity/test4"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test300),headers=headers)
     assert r.status_code == 200
+
+'''
+  testcase 16: To test registration for topology with name and description.
+'''
 	
 def test_persistopology2():
     #brokerUrl = brokerIp + "/ngsi10/entity/test4"
@@ -212,16 +256,9 @@ def test_persistopology2():
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test301),headers=headers)
     assert r.status_code == 200
-'''	
-def test_persistopology3():
-    #brokerUrl = brokerIp + "/ngsi10/entity/test4"
-    designerUrl = designerIp + "/internal/updateContext"
-    headers = {'Content-Type': 'application/json'}
-    r = requests.post(designerUrl,data=json.dumps(data.test302),headers=headers)
-    assert r.status_code == 200
-'''	
+
 '''
-test registration for service intent
+testcase 16: To test registration for service intent 
 '''
 
 def test_persistintent():
@@ -244,19 +281,31 @@ def test_persistintent():
     '''
     assert r.status_code == 200
 
+'''
+testcase 16: To test registration for service intent with empty payload
+'''
+
 def test_persistintent1():
     #brokerUrl = brokerIp + "/ngsi10/entity/test4"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test400),headers=headers)
     assert r.status_code == 200
-	
+
+'''
+testcase 17: To test registration for service intent with attributes: id and topology.
+'''
+
 def test_persistintent1():
     #brokerUrl = brokerIp + "/ngsi10/entity/test4"
     designerUrl = designerIp + "/internal/updateContext"
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test401),headers=headers)
     assert r.status_code == 200
+
+'''
+testcase 18: To test registration for service intent with attributes: geoscope and topology.
+'''
 	
 def test_persistintent1():
     #brokerUrl = brokerIp + "/ngsi10/entity/test4"
@@ -264,6 +313,8 @@ def test_persistintent1():
     headers = {'Content-Type': 'application/json'}
     r = requests.post(designerUrl,data=json.dumps(data.test402),headers=headers)
     assert r.status_code == 200
+
+
 '''
 '''
 '''
