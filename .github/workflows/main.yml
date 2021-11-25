@@ -87,7 +87,8 @@ jobs:
         
     - name: Launching Docker containers
       run: |
-        sudo docker run  -it -d -p 8082:8080 -p 9082:9080 -p 8000:8000 -v ~/dgraph:/dgraph fogflow/dgraph:latest
+        sudo docker run  -it -d -p 8082:8080 -p 9082:9080 -p 8000:8000 -v ~/mnt/dgraph:/dgraph dgraph/standalone:latest
+        sudo docker run -it -d --rm --name rabbitmq -p 5672:5672 -p 15672:15672 --env RABBITMQ_DEFAULT_USER=admin --env RABBITMQ_DEFAULT_PASS=mypass  rabbitmq:3.8-management
         sudo docker run  -it -d --name mongodb -d mongo:3.4
         sudo docker run  -it -d --name orion1 --link mongodb:mongodb -p 1026:1026 fiware/orion -dbhost mongodb
         docker ps -a 
@@ -138,7 +139,7 @@ jobs:
         pytest -s -v test_casesNGSI-LD.py
 
         echo "Persistance Testing !!!"  
-        #cd ../persistance/
-        #pytest -s -v test_persistance.py 
+        cd ../persistance/
+        pytest -s -v test_persistance.py 
 
         echo "Testing Done !!!!!"
