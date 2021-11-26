@@ -11,15 +11,15 @@ $(function() {
     var curIntent = null;
     var curResult = [];
 
-    var category_dataset = [{ key: '#health_risk', values: [] }];
-    var chart;
+    //var category_dataset = [{ key: '#health_risk', values: [] }];
+    //var chart;
     var MARGIN = { top: 30, right: 20, bottom: 60, left: 80 };
 
 
     addMenuItem('Topology', showTopology);
     addMenuItem('Management', showMgt);
     addMenuItem('Tasks', showTasks);
-    addMenuItem('Alerts', showResult);
+    //addMenuItem('Alerts', showResult);
     addMenuItem('Prediction', predictionResult);
 
     //connect to the socket.io server via the NGSI proxy module
@@ -62,7 +62,7 @@ $(function() {
         var subscribeCtxReq = {};
         subscribeCtxReq.type = "Subscription"
 
-        subscribeCtxReq.entities = [{ type: 'ldStat_health' }];
+        subscribeCtxReq.entities = [{ type: 'CropPrediction' }];
 
         subscribeCtxReq.notification = {}
         endPoint = {}
@@ -82,9 +82,11 @@ $(function() {
     }
 
     function handleNotify(contextObj) {
-        curResult.push(contextObj);
-	
-        if (contextObj.hasOwnProperty("timmer") && contextObj.hasOwnProperty("counter")) {
+        console.log(contextObj);
+	if (curIntent != null) {
+		curResult.push(contextObj);
+	}
+        /*if (contextObj.hasOwnProperty("timmer") && contextObj.hasOwnProperty("counter")) {
             var time = contextObj.timmer.value;
             var num = contextObj.counter.value;
             var point = [time, num];
@@ -94,12 +96,16 @@ $(function() {
             if (hash == '#Alerts') {
                 updateChart('#chart svg', category_dataset);
             }
+        }*/
+	var hash = window.location.hash;
+        if (hash == '#Prediction') {
+            updateResult();
         }
     }
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.Heart_Health_Predictor', type: 'Topology', isPattern: false }];
+        queryReq.entities = [{ id: 'Topology.Crop_Predictor', type: 'Topology', isPattern: false }];
 
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
@@ -117,7 +123,7 @@ $(function() {
     function checkIntent() {
         var queryReq = {};
         queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.Heart_Health_Predictor'}]};
+        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.Crop_Predictor'}]};
 
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
@@ -370,7 +376,53 @@ $(function() {
     }
 
 
+    function updateResult() {
+        var html = '';
+        html += '<thead><tr>';
+        html += '<th>Field Sensor</th>';
+        html += '<th>Soil Moisture</th>';
+        html += '<th>Air Moisture</th>';
+	html += '<th>Rainfall</th>';
+	html += '<th>Soil pH</th>';
+	html += '<th>Crop Prediction</th>';
+        html += '</tr></thead>';
+
+        for (var i = 0; i < curResult.length; i++) {
+            ctxObj = curResult[i];
+
+            //var url = document.createElement('a');
+            //url.href = ctxObj.attributes.image.value;
+
+            html += '<tr>';
+            html += '<td>' + ctxObj.id + '</td>';
+            html += '<td>' + ctxObj.soilmoisture.value + '</td>';
+            html += '<td>' + ctxObj.airmoisture.value + '</td>';
+	    html += '<td>' + ctxObj.rainfall.value + '</td>';
+	    html += '<td>' + ctxObj.soilph.value + '</td>';
+            html += '<td>' + ctxObj.cropprediction.value + '</td>';
+            html += '</tr>';
+        }
+
+        //update the table content with the received result
+        $('#searchResult').empty();
+        $('#searchResult').append(html);
+    }
+
     function predictionResult() {
+        $('#info').html('updated result');
+
+        // table to show the search result
+        var html = '';
+
+        html += '<table id="searchResult" class="table table-striped table-bordered table-condensed"></table>';
+        html += '<div id="chart"><svg style="height:500px"></svg></div>';
+
+        $('#content').html(html);
+
+        updateResult();
+    }
+
+    /*function predictionResult() {
         $('#info').html('list of prediction data from all Heart Sensors');
         
         var queryReq2 = {};
@@ -428,9 +480,9 @@ $(function() {
 
         $('#content').html(html);
 
-    }
+    }*/
        
-    function showResult() {
+    /*function showResult() {
         $('#info').html('statistical result');
 
         var html = '<div id="chart"><svg style="height:500px"></svg></div>';
@@ -506,7 +558,8 @@ $(function() {
         d3.select(divID).datum(dataset)
             .transition().duration(500)
             .call(chart);
-    }
+    }*/
+
     function showMap() {
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osm = L.tileLayer(osmUrl, { maxZoom: 7, zoom: 7 }),

@@ -337,7 +337,19 @@ $(function() {
             name: "LDCounter",
             description: "",
             parameters: []
-        }];
+        }, {
+	    name: "Crop_Predict",
+	    description: "",
+	    parameters: []
+	}, {
+	    name: "Health_Predictor",
+            description: "",
+            parameters: []
+	},{
+	    name: "Health_Alert_Counter",
+            description: "",
+            parameters: []
+	}];
 
         var queryReq = {}
         queryReq.entities = [{ type: 'Operator', isPattern: true }];
@@ -522,7 +534,28 @@ $(function() {
             osType: "Linux",
             operatorName: "LDCounter",
             prefetched: false
-        }];
+        }, {
+	    name: "trial/soil2",
+            tag: "latest",
+            hwType: "X86",
+            osType: "Linux",
+            operatorName: "Crop_Predict",
+            prefetched: false
+	}, {
+	    name: "fogflow/hearthealth",
+            tag: "latest",
+            hwType: "X86",
+            osType: "Linux",
+            operatorName: "Health_Predictor",
+            prefetched: false
+	}, {
+	    name: "fogflow/ldcounter",
+            tag: "latest",
+            hwType: "X86",
+            osType: "Linux",
+            operatorName: "Health_Alert_Counter",
+            prefetched: false
+	}];
 
         var queryReq = {}
         queryReq.entities = [{ type: 'DockerImage', isPattern: true }];
