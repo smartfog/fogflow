@@ -15,7 +15,7 @@ Download the Kubernetes file and the configuration files as below.
 .. code-block:: console
 
         # the Kubernetes yaml file to start all FogFlow components on the cloud node
-        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/cloud-chart-RBAC.zip
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/cloud-chart-rbac.zip
 
 
 install unzip tool on system to extract files from cloud-chart-RBAC.zip
@@ -26,14 +26,14 @@ install unzip tool on system to extract files from cloud-chart-RBAC.zip
           apt-get install unzip
 
           #command to unzip the fogflow-chart.zip in same location
-          unzip cloud-chart-RBAC.zip
+          unzip cloud-chart-rbac.zip
 
 	
    
-Configure IP Addresses in config.json File
+Configure IP Addresses in config.json Under Configmap
 -------------------------------------------------------------
 
-You need to change the following IP addresses in config.json according to user's environment. The config.json file present in the above downloaded folder "cloud-chart-RBAC"
+You need to change the following IP addresses in config.json according to user's environment. The config.json section is present in the above downloaded folder "cloud-chart-rbac/template/configmap.yaml"
 
 - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this.
 
@@ -44,23 +44,23 @@ You need to change the following IP addresses in config.json according to user's
 Configure Namespace in Cloud Kubernetes Cluster
 -------------------------------------------------
 
-In order to launch fogflow components, user need to create a namespace. To create namespace in kubernetes cluster, use below command:
+In order to launch fogflow components, user need to create **fogflow** namespace. To create namespace in kubernetes cluster, use below command:
 
 .. code-block::
 
-    $kubectl create ns <User_provided_name> // E.g. kubectl create ns fogflow_fiware_integration
+    $kubectl create namespace fogflow 
 
 
 Configure values.yaml File
 ---------------------------
 
-- User should provide name of the namespace created by him in previous step. 
+- User should provide name of the namespace created by him in previous step i.e. fogflow.
 
-- User should provide name of serviceAccount as per requirement. 
+- User should provide name of serviceAccount as shown below i.e. fogflow-dns.
 
 - User should configure the no. of replicaCount required.
 
-- User should provide absolute path for dgraph, configJson and nginxConf in values.yaml file as per the environment.
+- User should provide absolute path for dgraph in values.yaml file as per the environment.
 
 - User should provide externalIPs as per the environment.
 
@@ -93,16 +93,6 @@ Configure values.yaml File
         hostPath:
           path: /mnt/dgraph
 
-      #hostPath for config.json, add this path to cloud-chart directory
-      configJson:
-        hostPath:
-          path: /home/necuser/fogflow/helm_with_RBAC/cloud-chart-RBAC/config.json
-
-      #hostPath for nginx.conf, add this path to cloud-chart directory
-      nginxConf:
-        hostPath:
-          path: /home/necuser/fogflow/helm_with_RBAC/cloud-chart-RBAC/nginx.conf
-
       #External IP to expose cluster
       Service:
        spec:
@@ -119,7 +109,7 @@ Add "--set" flag with helm install command to pass configuration from command li
 
 .. code-block:: console
  
-          helm install ./cloud-chart-RBAC --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
+          helm install ./cloud-chart-rbac --set externalIPs={XXX.XX.48.24} --generate-name --namespace=fogflow
           //Namespace should be the one created above. In our case namespace was "fogflow"
 
 
@@ -195,7 +185,7 @@ For deploying edge chart, use helm3 tool with microk8s as shown below.
 
         #fetch scripts for edge-chart-RBAC
 
-        $wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/edge-chart-RBAC.zip
+        $wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/edge-chart-rbac.zip
 
 
 To unzip the downloaded folder, use following, 
@@ -208,10 +198,10 @@ To unzip the downloaded folder, use following,
 
         #command to unzip the file dashboards.zip
 
-        $unzip edge-chart-RBAC.zip
+        $unzip edge-chart-rbac.zip
 
 
-**Step 1** : Edit the config.json file in edge-chart folder.
+**Step 1** :  Configure the config.json inside edgeconfigmap.yaml (/edge-chart/templates/edgeconfigmap.yaml) file in edge-chart folder.
 
  .. code-block:: console
    
@@ -223,19 +213,24 @@ To unzip the downloaded folder, use following,
       "my_hostip": "<Edge Node Ip>",
 
       #Eg. "my_hostip": "172.30.48.46"
+      
+      "site_id" : "002",
 
-**Step 2** : Create a namespace in order to deploy edge-components in microk8s environment.
+      #Increment this with every new edge node which is added
+      
 
-.. code-block:: console
-
-        $microk8s.kubectl create ns <User_provided_name> //E.g. microk8s.kubectl create ns fogflow
-
-
-**Step 3** : Edit the namespace as created above, serviceaccount name, externalIPs  in values.yaml file inside edge-chart-RBAC folder. User should change the and path under configJson tag as per his environment and also configure the value of replicaCount.
+**Step 2** : Create fogflow namespace in order to deploy edge-components in microk8s environment.
 
 .. code-block:: console
 
-        namespace: <User Specified>   #Eg. namespace: fogflow  (as created in previous step)
+        $microk8s.kubectl create ns fogflow 
+
+
+**Step 3** : Edit serviceaccount name, externalIPs and replicaCount in values.yaml file inside edge-chart folder.
+
+.. code-block:: console
+
+        namespace: fogflow   #Eg. namespace: fogflow  (as created in previous step)
 
         #replicas will make sure that no. of replicaCount mention in values.yaml
         #are running all the time for the deployment
@@ -248,27 +243,20 @@ To unzip the downloaded folder, use following,
         annotations: {}
         #The name of the service account to use.
         #If not set and create is true, a name is generated using the fullname template
-        name: ""
-
-        #hostPath for config.json  
-        configJson:
-        hostPath:
-        path: /root/new_fog/fogflow-helm/helm/edge-chart-RBAC/config.json
-
+        name: "fogflow-dns"
 
         Service:
         spec: 
         externalIPs: 
         - 172.30.48.46 #The IP of Edge Node 
 
-Note: The value of **"namespace"** will be one which user specified while creating the namespace in previous steps. Value of **"externalIPs"** will be the IP of edge node and value of **"path"** under configJson will be equal to the path of host machine where config.json is present inside edge-chart-RBAC.
-
+Note: The value of **"namespace"** will be one which user specified while creating the namespace in previous steps. Value of **"externalIPs"** will be the IP of edge node.
 
 **Step 4** : To finally deploy chart, use the command as below.
 
 .. code-block:: console
 
-        $microk8s.helm3 install ./edge-chart-RBAC --set externalIPs={XXX.XX.48.46} --generate-name --namespace=fogflow
+        $microk8s.helm3 install ./edge-chart-rbac --set externalIPs={XXX.XX.48.46} --generate-name --namespace=fogflow
 
         #the externalIPs is IP of edge node.
 
