@@ -1,4 +1,4 @@
-#Cloud-broker deployment and service configuration
+#nginx deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,19 +6,19 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-weight": "5"
   creationTimestamp: null
   labels:
-    io.kompose.service: cloud-broker
-  name: cloud-broker
+    io.kompose.service: nginx
+  name: nginx
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: cloud-broker
-  minReadySeconds: 10    
+      io.kompose.service: nginx
+  minReadySeconds: 10
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
@@ -33,44 +33,49 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: cloud-broker
+        io.kompose.service: nginx
     spec:
+      initContainers:
+      - image: busybox:1.28
+        imagePullPolicy: Always
+        name: init-broker
+        command: ['sh', '-c', 'sleep 80s;']
       containers:
-      - image: fogflow/broker:latest
-        imagePullPolicy: Always 
-        name: cloud-broker
+      - image: nginx:latest
+        imagePullPolicy: IfNotPresent 
+        name: nginx
         ports:
-        - containerPort: 8070
-        #readiness and liveness to check pod's Health 
+        - containerPort: 80
+        #readiness and liveness to check pod's Health
         readinessProbe:
           tcpSocket:
-            port: 8070
+            port: 80
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 8070
+            port: 80
           initialDelaySeconds: 15
           periodSeconds: 20
-        resources: 
-        #CPU and memory limits for cloud-broker deployment 
+        resources:
+          #CPU and memory limits for nginx deployment
           limits:
-            memory: 3Gi
-            cpu: 1 
+            memory: 1Gi
+            cpu: 800m
           requests:
-            memory: 2Gi
-            cpu: 1 
+            memory: 500Mi
+            cpu: 500m
         volumeMounts:
-        - name: config-json
-          mountPath: /config.json
+        - name: nginx-conf
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
           readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
-       - name: config-json
-         hostPath:
-           path: {{ .Values.configJson.hostPath.path }}
-
+      - name: nginx-conf
+        configMap:
+          name: fogflow-configmap
 ---
 
 apiVersion: v1
@@ -81,15 +86,15 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: cloud-broker
-  name: cloud-broker
+    io.kompose.service: nginx
+  name: nginx
 spec:
   ports:
-  - name: "8070"
-    port: 8070
-    targetPort: 8070
+  - name: "80"
+    port: 80
+    targetPort: 80
   selector:
-    io.kompose.service: cloud-broker
+    io.kompose.service: nginx
   externalIPs: {{ .Values.Service.spec.externalIPs }}
 status:
   loadBalancer: {}

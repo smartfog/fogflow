@@ -1,0 +1,54 @@
+apiVersion: v1
+data:
+  config.json: |
+        {
+            "coreservice_ip": "172.30.48.24",
+            "my_hostip": "172.30.48.46",
+            "physical_location":{
+                "longitude": 140.709059,
+                "latitude": 30.692221
+             },
+             "site_id": "002",
+             "logging":{
+                 "info":"stdout",
+                 "error":"stdout",
+                 "protocol": "stdout",
+                 "debug": "stdout"
+             },
+             "discovery": {
+                 "http_port": 8090
+             },
+             "broker": {
+                 "http_port": 8060
+             },     
+             "master": {
+                 "ngsi_agent_port": 1060    
+             },
+             "worker": {
+                 "container_autoremove": false,
+                 "start_actual_task": true,
+                 "capacity": 8
+             },
+             "designer": {
+                 "webSrvPort": 8080,
+                 "agentPort": 1030               
+             },    
+             "rabbitmq": {
+                 "port": 5672,
+                 "username": "admin",
+                 "password":"mypass"
+             },
+             "https": {
+                 "enabled" : false
+             },
+             "persistent_storage": {
+                 "port": 9080
+             } 
+        }
+
+kind: ConfigMap
+metadata:
+  namespace: fogflow
+  name: fogflow-edgeconfigmap
+  resourceVersion: "v3.2.2"
+
