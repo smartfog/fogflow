@@ -9,6 +9,7 @@ var parkingRequest = null;
 //
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
+    console.log("  received entity  ",contextEntity)
     if (contextEntity == null) {
         return;
     } 
@@ -43,7 +44,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     };*/
     updateEntity.id = contextEntity.id;
     updateEntity.type = contextEntity.type;	    	
-    #updateEntity.attributes = {};	 
+    //updateEntity.attributes = {};	 
         
     var twentyMinutesLater = new Date();
     twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);

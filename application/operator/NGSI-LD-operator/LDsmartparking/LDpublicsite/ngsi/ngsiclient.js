@@ -2,101 +2,83 @@
 
 function CtxElement2JSONObject(e) {
     var jsonObj = {};
-    jsonObj.entityId = e.entityId;
-
-    jsonObj.attributes = {}    
-    for(var i=0; e.attributes && i<e.attributes.length; i++) {
-        var attr = e.attributes[i];
-        jsonObj.attributes[attr.name] = {
-            type: attr.type, 
-            value: attr.value
-        };
-    }
-    
-    jsonObj.metadata = {}
-    for(var i=0; e.domainMetadata && i<e.domainMetadata.length; i++) {
-        var meta = e.domainMetadata[i];
-        jsonObj.metadata[meta.name] = {
-            type: meta.type,
-            value: meta.value
-        };
-    }
-    
+    for (var ctxElement in e ) {
+        jsonObj[ctxElement] = e[ctxElement]
+    }     
     return jsonObj;
-}    
+} 
 
-function JSONObject2CtxElement(ob) {
+function JSONObject2CtxElement(ctxObj) {
     console.log('convert json object to context element') 
-    var contextElement = {};
+    var ctxElement = {};
     
-    contextElement.entityId = ob.entityId;
+    ctxElement['id'] = ctxObj['id']
+    ctxElement['type'] = ctxObj['type']
     
-    contextElement.attributes = [];
-    if(ob.attributes) {
-        for( key in ob.attributes ) {
-            attr = ob.attributes[key];
-            contextElement.attributes.push({name: key, type: attr.type, value: attr.value});
-        }
+    for( key in ctxObj) {
+	if( key != 'id' && key != 'type' && key != 'modifiedAt' && key != 'createdAt' && key != 'observationSpace' && key != 'operationSpace' &&  key != '@context') {
+            ctxElement[key] = ctxObj[key]
+	}
     }
     
-    contextElement.domainMetadata = [];
-    if(ob.metadata) {
-        for( key in ob.metadata ) {
-            meta = ob.metadata[key];
-            contextElement.domainMetadata.push({name: key, type: meta.type, value: meta.value});
-        }
-    }    
-
-    return contextElement;
+    return ctxElement
+	
 }  
 
     
-var NGSI10Client = (function() {
+var NGSILDclient = (function() {
     // initialized with the broker URL
-    var NGSI10Client = function(url) {
+    var NGSILDclient = function(url) {
+	if (url.includes('ngsi10')) {
+		 url = url.substring(0, url.lastIndexOf("/") );
+	}
+	console.log(url)
         this.brokerURL = url;
     };
     
     // update context 
-    NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
-        contextElement = JSONObject2CtxElement(ctxObj);
-        
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'UPDATE'
-         
+    NGSILDclient.prototype.updateContext = function updateContext(ctxObj) {
+        updateCtxReq = JSONObject2CtxElement(ctxObj) 
 		console.log(updateCtxReq);
-		      
+   
+        const updateCtxElements = []
+	updateCtxElements.push(updateCtxReq)
+	console.log("updateCtxElements",updateCtxElements)
         return axios({
             method: 'post',
-            url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            url: this.brokerURL + '/ngsi-ld/v1/entityOperations/upsert',
+	    headers: {
+    		'content-type': 'application/json',
+   		'Accept': 'application/ld+json',
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+  },
+            data: updateCtxElements
         }).then( function(response){
-            if (response.status == 200) {
+	    console.log("response",response)
+            if (response.status == 204) {
+		console.log("Successfully updated")
                 return response.data;
-            } else {
+            } else if(response.status == 207) {
+		console.log("Failed to update some entities")
+		return response.data;
+	    } else {
                 return null;
             }
         });
     };
     
     // delete context 
-    NGSI10Client.prototype.deleteContext = function deleteContext(entityId) {
-        var contextElement = {};
-        contextElement.entityId = entityId
-        
-        var updateCtxReq = {};
-        updateCtxReq.contextElements = [];
-        updateCtxReq.contextElements.push(contextElement)
-        updateCtxReq.updateAction = 'DELETE'
-        
+    NGSILDclient.prototype.deleteContext = function deleteContext(entityId) {
+
         return axios({
-            method: 'post',
-            url: this.brokerURL + '/updateContext',
-            data: updateCtxReq
+            method: 'delete',
+	    headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+            },
+            url: this.brokerURL + '/ngsi-ld/v1/entities/' + entityId
         }).then( function(response){
-            if (response.status == 200) {
+            if (response.status == 204) {
                 return response.data;
             } else {
                 return null;
@@ -105,22 +87,21 @@ var NGSI10Client = (function() {
     };    
     
     // query context
-    NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {        
+    NGSILDclient.prototype.queryContext = function queryContext(id) {        
         return axios({
-            method: 'post',
-            url: this.brokerURL + '/queryContext',
-            data: queryCtxReq
+            method: 'get',
+            url: this.brokerURL + '/ngsi-ld/v1/entities/' + id,
+	          headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+  },
+            //data: queryCtxReq
         }).then( function(response){
             //console.log(response);
             if (response.status == 200) {
                 var objectList = [];
-                var ctxElements = response.data.contextResponses;
-                for(var i=0; ctxElements && i<ctxElements.length; i++){                    
-                    //console.log('===========context element=======');
-                    //console.log(ctxElements[i].contextElement)
-                    var obj = CtxElement2JSONObject(ctxElements[i].contextElement);
-                    objectList.push(obj);
-                }
+                var ctxElements = response.data;
+		objectList.push(ctxElements)
                 return objectList;
             } else {
                 return null;
@@ -129,10 +110,15 @@ var NGSI10Client = (function() {
     };    
         
     // subscribe context
-    NGSI10Client.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
+    NGSILDclient.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
         return axios({
             method: 'post',
-            url: this.brokerURL + '/subscribeContext',
+            url:    this.brokerURL + '/ngsi-ld/v1/subscriptions/',
+	        headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+                'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+  },
             data: subscribeCtxReq
         }).then( function(response){
             if (response.status == 200) {
@@ -144,7 +130,7 @@ var NGSI10Client = (function() {
     };    
 
     // unsubscribe context    
-    NGSI10Client.prototype.unsubscribeContext = function unsubscribeContext(sid) {
+    NGSILDclient.prototype.unsubscribeContext = function unsubscribeContext(sid) {
         var unsubscribeCtxReq = {};
         unsubscribeCtxReq.subscriptionId = sid;
         
@@ -161,7 +147,7 @@ var NGSI10Client = (function() {
         });
     };        
     
-    return NGSI10Client;
+    return NGSILDclient;
 })();
 
 var NGSI9Client = (function() {
@@ -182,8 +168,8 @@ var NGSI9Client = (function() {
         
         discoveryReq.restriction = {
             scopes: [{
-                scopeType: 'nearby',
-                scopeValue: nearby
+                type: 'nearby',
+                value: nearby
             }]
         };
     
@@ -225,7 +211,7 @@ var NGSI9Client = (function() {
 // initialize the exported object for this module, both for nodejs and browsers
 if (typeof module !== 'undefined' && typeof module.exports !== 'undefined'){
     this.axios = require('axios')    
-    module.exports.NGSI10Client = NGSI10Client; 
+    module.exports.NGSILDclient = NGSILDclient; 
     module.exports.NGSI9Client = NGSI9Client;   
     module.exports.CtxElement2JSONObject = CtxElement2JSONObject;
     module.exports.JSONObject2CtxElement = JSONObject2CtxElement;    

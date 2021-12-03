@@ -10,7 +10,6 @@ function makeid(length) {
 
 var myID = makeid(5);
 
-
 //
 //  contextEntity: the received entities
 //  publish, query, and subscribe are the callback functions for your own function to interact with the assigned nearby broker
@@ -20,6 +19,7 @@ var myID = makeid(5);
 //
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
+    console.log("   recieved entity    ",contextEntity);
     if (contextEntity == null) {
         return;
     } 
@@ -32,34 +32,45 @@ exports.handler = function(contextEntity, publish, query, subscribe)
         return;
     }  
 
-    if (contextEntity.Updater != null && contextEntity.Updater == myID) {
-        // this is the update from myself
-        return
-    }
-      
-   // query the data source to know the available parking lots
-    if (contextEntity.datasource != null) {
-        var dsURL = contextEntity.datasource.value;
-        console.log("connected to the orion broker to fetch the parking information");
-        console.log(dsURL);
-        //var connection = new NGSI.Connection("http://orion.example.com:1026");
+    if (contextEntity.ParkingRequest != null) {
+        return;
+    }  
+    
+    if (contextEntity.RecommendedParkingSite != null) {
+        return;
+    }  
+        
+    
+    // to calculate how long it will take to arrive the planned destination accordingly
+    // todo: @Javier, please add your implementation here
+    
+    
+    // create and update the ParkingRequest attribute of this connected car
+    var updateEntity = {};
+    /*updateEntity.entityId = {
+           id: contextEntity.entityId.id,
+           type: contextEntity.entityId.type,
+           isPattern: false
+    };*/
+    updateEntity.id = contextEntity.id;
+    updateEntity.type = contextEntity.type;	    	
+    //updateEntity.attributes = {};	 
+        
+    var twentyMinutesLater = new Date();
+    twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
 
-        var updateEntity = {};
-        /*updateEntity.entityId = {
-            id: contextEntity.entityId.id,
-            type: contextEntity.entityId.type,
-            isPattern: false
-        };*/
-	updateEntity.id = contextEntity.id;
-	updateEntity.type = contextEntity.type;
-        #updateEntity.attributes = {};
-        updateEntity.FreeParkingSpots = {type: 'Property', value: 10};
-        updateEntity.Updater = {type: 'Property', value: myID};
-
-        publish(updateEntity);
-        console.log("publish: ", updateEntity);
-    }
- 
+    parkingRequest = {
+        arrival_time: twentyMinutesLater,
+        destination: {
+            latitude: 37.984737,
+            longitude: -1.127266
+        }
+    };    
+    updateEntity.ParkingRequest = {type: 'Property', value: parkingRequest};                
+       	
+    publish(updateEntity);
+    console.log("publish: ", updateEntity);	    
+    
     
 
     // ============================== publish ======================================================

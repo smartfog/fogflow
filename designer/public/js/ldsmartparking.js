@@ -118,7 +118,7 @@ $(function() {
 
 	subscribeCtxReq.type = "Subscription"
 
-        subscribeCtxReq.entities = [{ id:'Twin.ConnectedCar.01' ,type: 'LDconnectedcar' }];
+        subscribeCtxReq.entities = [{ id:'urn:ngsi-ld:Twin.ConnectedCar.01' ,type: 'LDconnectedcar' }];
 
         subscribeCtxReq.notification = {}
         endPoint = {}
@@ -181,7 +181,7 @@ $(function() {
             type: siteType,
             isPattern: false
         };*/
-	siteEntity.id = 'Twin.ParkingSite.' + site.id;
+	siteEntity.id = 'urn:ngsi-ld:Twin.ParkingSite.' + site.id;
 	siteEntity.type = siteType;
 
         //siteEntity.attributes = {};
@@ -226,8 +226,8 @@ $(function() {
         var queryReq = {}
         //queryReq.entities = [{ id: 'Twin.*', isPattern: true }];
 	queryReq.type = 'Query';
-	queryReq2.entities = [{ type : '' }];
-        client.queryContext(queryReq).then(function(twinList) {
+	queryReq.entities = [{ idPattern : 'urn:ngsi-ld:Twin.*' }];
+        ldclient.queryContext(queryReq).then(function(twinList) {
             console.log(twinList);
             displayTwinList(twinList);
         }).catch(function(error) {
@@ -247,22 +247,25 @@ $(function() {
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Type</th>';
-        html += '<th>Attributes</th>';
-        html += '<th>DomainMetadata</th>';
+        //html += '<th>Attributes</th>';
+        //html += '<th>DomainMetadata</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < twins.length; i++) {
             var twin = twins[i];
-
+            console.log(twin);
+        for (var j = 0; j < twin.length; j++) {
+	    var displayTwin = twin[j];
             html += '<tr>';
-            html += '<td>' + twin.entityId.id + '<br>';
-            html += '<button id="remove-' + twin.entityId.id + '" type="button" class="btn btn-default">remove</button>';
+            html += '<td>' + displayTwin.id + '<br>';
+            html += '<button id="remove-' + displayTwin.id + '" type="button" class="btn btn-default">remove</button>';
             html += '</td>';
-            html += '<td>' + twin.entityId.type + '</td>';
-            html += '<td>' + JSON.stringify(twin.attributes) + '</td>';
-            html += '<td>' + JSON.stringify(twin.metadata) + '</td>';
+            html += '<td>' + displayTwin.type + '</td>';
+            //html += '<td>' + JSON.stringify(twin.attributes) + '</td>';
+            //html += '<td>' + JSON.stringify(twin.metadata) + '</td>';
             html += '</tr>';
         }
+      }
 
         html += '</table>';
 
@@ -271,9 +274,10 @@ $(function() {
         // associate a click handler to generate twin profile on request
         for (var i = 0; i < twins.length; i++) {
             var twin = twins[i];
-            console.log(twin.entityId.id);
-
-            var removeButton = document.getElementById('remove-' + twin.entityId.id);
+            console.log(twin);
+        for (var j = 0; j < twin.length; j++) {
+	     var display = twin[j];
+            var removeButton = document.getElementById('remove-' + display.id);
             removeButton.onclick = function(d) {
                 var myProfile = d;
                 return function() {
@@ -281,6 +285,7 @@ $(function() {
                 };
             }(twin);
         }
+      }
     }
 
 
@@ -500,28 +505,32 @@ $(function() {
 
     function displayParkingSites(map) {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Twin.ParkingSite.*', isPattern: true }];
-        client.queryContext(queryReq).then(function(sites) {
+	queryReq.type = 'Query';
+        queryReq.entities = [{ idPattern: 'urn:ngsi-ld:Twin.ParkingSite.*'}];
+        ldclient.queryContext(queryReq).then(function(sites) {
             console.log(sites);
 
             for (var i = 0; i < sites.length; i++) {
                 var site = sites[i];
-
-                if (site.attributes.iconURL != null) {
-                    var iconImag = site.attributes.iconURL.value;
+	    for (var j = 0; j < site.length; j++) {
+		 var displaySite = site[j];
+                 console.log(" display sites ",displaySite)
+                if (displaySite.iconURL != null) {
+                    var iconImag = displaySite.iconURL.value;
                     var icon = L.icon({
                         iconUrl: iconImag,
                         iconSize: [48, 48]
                     });
 
-                    latitude = site.metadata.location.value.latitude;
-                    longitude = site.metadata.location.value.longitude;
-                    siteId = site.entityId.id;
+                    latitude = displaySite.location.value.coordinates[0];
+                    longitude = displaySite.location.value.coordinates[1];
+                    siteId = displaySite.id;
 
                     var marker = L.marker(new L.LatLng(latitude, longitude), { icon: icon });
                     marker.addTo(map).bindPopup(siteId);
                 }
             }
+       }
 
         }).catch(function(error) {
             console.log(error);
@@ -533,26 +542,19 @@ $(function() {
         //register a new device
         var movingCarObject = {};
 
-        movingCarObject.entityId = {
-            id: 'Twin.ConnectedCar.01',
-            type: 'ConnectedCar',
-            isPattern: false
+        movingCarObject.id = 'urn:ngsi-ld:Twin.ConnectedCar.01';
+        
+        movingCarObject = {};
+        movingCarObject.iconURL = { type: 'Property', value: '/img/taxi.png' };
+        movingCarObject.location = {
+            type: 'GeoProperty',
+            value: { 
+			type: 'Point',
+			coordinates: [location.lat, location.lng ]}
         };
 
-        movingCarObject.attributes = {};
-        movingCarObject.attributes.iconURL = { type: 'string', value: '/img/taxi.png' };
-        movingCarObject.attributes.location = {
-            type: 'point',
-            value: { 'latitude': location.lat, 'longitude': location.lng }
-        };
 
-        movingCarObject.metadata = {};
-        movingCarObject.metadata.location = {
-            type: 'point',
-            value: { 'latitude': location.lat, 'longitude': location.lng }
-        };
-
-        client.updateContext(movingCarObject).then(function(data) {
+        ldclient.updateContext(movingCarObject).then(function(data) {
             console.log(data);
         }).catch(function(error) {
             console.log('failed to update car object');

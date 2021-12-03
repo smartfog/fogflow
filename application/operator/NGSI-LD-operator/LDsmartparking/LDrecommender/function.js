@@ -48,7 +48,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
         };*/
 	updateEntity.id = contextEntity.id;
 	updateEntity.type = contextEntity.type;	    	
-        #updateEntity.attributes = {};	                    
+        //updateEntity.attributes = {};	                    
         updateEntity.RecommendedParkingSite = {type: 'Property', value: 'Twin.ParkingSite.002'};                
             
         publish(updateEntity);

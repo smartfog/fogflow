@@ -20,6 +20,7 @@ var myID = makeid(5);
 //
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
+    console.log("    received Entiy   ",contextEntity)
     if (contextEntity == null) {
         return;
     } 
@@ -52,7 +53,7 @@ exports.handler = function(contextEntity, publish, query, subscribe)
         };*/
 	updateEntity.id = contextEntity.id;
 	updateEntity.type = contextEntity.type;
-        #updateEntity.attributes = {};
+        //updateEntity.attributes = {};
         updateEntity.FreeParkingSpots = {type: 'Property', value: 10};
         updateEntity.Updater = {type: 'Property', value: myID};
 
