@@ -37,7 +37,8 @@ There are two types of result consumers:
 Heart Health Predictor application menu 
 -----------------------------------------------------------------------
 As shown in the figure menu of this use case, we have 5 tabs namely: Topology, Management, Tasks, Alert and Prediction.
-.. figure:: figures/Heart_menu.png
+
+.. figure:: figures/Heart_Menu.png
 
 (1) Topology, includes
      * The brief pictorial representation of the use-case.
@@ -48,11 +49,15 @@ As shown in the figure menu of this use case, we have 5 tabs namely: Topology, M
      * This Start/Stop Button is to used to start the service intent. Without firing service intent, no tasks will run. 	
 .. figure:: figures/heart_management.png
 
-(3) Alert, includes
+(3) Tasks, includes
+     * Task lists down the ID of the health sensor, the service they are performing, the task they are assigned to do and there live status. 
+.. figure:: figures/heart_task.png
+
+(4) Alert, includes
      * The graphical representation of alerts generated whenever predictor predicts that the state of heart is at risk based upon the data that is coming from heart sensor.
 .. figure:: figures/Heart_alert.png
 
-(4) Prediction, includes
+(5) Prediction, includes
      * The decision whether the patient's heart is at risk or not. The prediction is sent to the Heart Alert Counter operator which sends the alert in case the heart is at risk. 
 .. figure:: figures/Heart_Prediction.png
 
@@ -124,7 +129,7 @@ Using NGSI-LD to create new predictor task
 ------------------------------------------
 
 
-We can register a health predictor task by sending a constructed NGSI-LD update message to the IoT Broker deployed in the cloud. 
+We can register a health predictor task by sending a constructed NGSI-LD update message to the IoT Broker deployed in the cloud. In this particular case the payloadis for a patient who's heart is not at risk.  
 
 .. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
 
