@@ -105,7 +105,7 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.Crop_Predictor', type: 'Topology', isPattern: false }];
+        queryReq.entities = [{ id: 'Topology.Crop_Prediction', type: 'Topology', isPattern: false }];
 
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
@@ -123,7 +123,7 @@ $(function() {
     function checkIntent() {
         var queryReq = {};
         queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.Crop_Predictor'}]};
+        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.Crop_Prediction'}]};
 
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
@@ -155,7 +155,7 @@ $(function() {
         html += '<input id="loadTopology" type="file" style="display: none;" accept=".json"></input>';
         html += '</div> ';
 
-        html += '<div><img src="/img/heart_health.png"></img></div>';
+        html += '<div><img src="/img/Crop_prediction_topology.png"></img></div>';
 
         $('#content').html(html);
 
@@ -380,7 +380,8 @@ $(function() {
         var html = '';
         html += '<thead><tr>';
         html += '<th>Field Sensor</th>';
-        html += '<th>Soil Moisture</th>';
+        html += '<th>Temperaure</th>';
+	html += '<th>Soil Moisture</th>';
         html += '<th>Air Moisture</th>';
 	html += '<th>Rainfall</th>';
 	html += '<th>Soil pH</th>';
@@ -395,6 +396,7 @@ $(function() {
 
             html += '<tr>';
             html += '<td>' + ctxObj.id + '</td>';
+            html += '<td>' + ctxObj.temperature.value + '</td>';
             html += '<td>' + ctxObj.soilmoisture.value + '</td>';
             html += '<td>' + ctxObj.airmoisture.value + '</td>';
 	    html += '<td>' + ctxObj.rainfall.value + '</td>';
