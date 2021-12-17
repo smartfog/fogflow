@@ -535,7 +535,7 @@ $(function() {
             operatorName: "LDCounter",
             prefetched: false
         }, {
-	    name: "trial/soil2",
+	    name: "fogflow/soil",
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
