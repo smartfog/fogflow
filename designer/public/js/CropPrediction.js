@@ -105,7 +105,7 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.Crop_Predictor', type: 'Topology', isPattern: false }];
+        queryReq.entities = [{ id: 'Topology.Crop_Prediction', type: 'Topology', isPattern: false }];
 
         client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
