@@ -1,0 +1,13 @@
+FROM python:3.5-slim-buster
+
+RUN mkdir /task
+ADD main.py /task
+ADD function.py /task
+ADD config.json /task
+ADD croppredictor.joblib /task
+ADD requirements.txt  /task
+WORKDIR /task
+RUN pip3 install -r requirements.txt
+
+CMD ["python3", "./main.py", "-o"]
+

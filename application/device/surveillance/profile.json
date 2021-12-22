@@ -1,0 +1,12 @@
+{
+    "discoveryURL": "http://180.179.214.148/ngsi9",
+    "myIP": "180.179.214.148",
+    "myPort": 8092,
+    "location": {
+        "latitude": 36.146094,
+        "longitude": 138.239776
+    },
+    "iconURL": "/img/camera.png",
+    "type": "lDCamera",
+    "id": "02"
+}
