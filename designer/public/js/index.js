@@ -23,6 +23,7 @@ $(function () {
     addMenuItem('Master', showMaster);
     addMenuItem('Worker', showWorkers);
     addMenuItem('Device', showDevices);
+    addMenuItem('edge', showEdge);
     addMenuItem('uService', showEndPointService);
     addMenuItem('Stream', showStreams);
 
@@ -354,6 +355,244 @@ $(function () {
         $('#content').html(html);
     }
 
+    // vinod : start
+    var edgeNodesList = undefined;
+    var brokers = [];
+    function getBrokerList() {
+        brokers =[]
+        var discoverReq = {}
+        
+        discoverReq.entities = [{ type: 'IoTBroker', isPattern: true }];
+
+        var ngsi9client = new NGSI9Client(config.discoveryURL)
+        console.log('discorvery url is ',config.discoveryURL);
+        displayEdgeNode();
+
+        ngsi9client.discoverContextAvailability(discoverReq).then(function (response) {
+            console.log("broker response: ",response);
+            
+            if (response.errorCode.code == 200 && response.hasOwnProperty('contextRegistrationResponses')) {
+                for (var i in response.contextRegistrationResponses) {
+                    var tmpIn = i;
+                    var contextRegistrationResponse = response.contextRegistrationResponses[i];
+                    console.log("broker details is *** ",contextRegistrationResponse);
+                    var brokerID = contextRegistrationResponse.contextRegistration.entities[0].id;
+                    var providerURL = contextRegistrationResponse.contextRegistration.providingApplication;
+                    if (providerURL != '') {
+                        brokers.push({ id: brokerID, brokerURL: providerURL });
+                        console.log("inside broker ",brokers);
+                        if (i==0) {
+                            var option = document.createElement("option");
+                            option.text ='All'; 
+                            var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
+                            allEdgeBrokerList.add(option);
+                        }
+                        var option = document.createElement("option");
+                        option.text =brokerID.replace('Broker','Edge'); 
+                        console.log("get broker ID: " + brokerID);
+                        var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
+                        console.log("all edge obje ",allEdgeBrokerList);
+                        allEdgeBrokerList.add(option);
+                        if (tmpIn+1==response.contextRegistrationResponses.length){
+                            if($('#allEdgeBrokerList option:selected').val() == 'All'){
+                                getWorkerList(displayEdgeOnMap,brokers)
+                            }
+                        }
+                    }
+                }
+                
+            }
+
+        }).catch(function (error) {
+            console.log(error);
+            console.log('failed to query context');
+        });
+       // return brokers;
+    }
+
+    function getWorkerList(callback,brokerObj) {
+        console.log("inside in get worker list ",brokerObj);
+        var edgeBrokerEntityList = [];
+        for (var i = 0; i < brokerObj.length; i++){
+            var tmpI = i;
+            var tmpClient = new NGSI10Client(brokerObj[i].brokerURL);
+            var queryReq = {}
+            queryReq.entities = [{ "type": 'Worker', "isPattern": true },{ id: 'Device.*', isPattern: true }];
+            tmpClient.queryContext(queryReq).then(function (edgeNodeList) {
+                
+                if (edgeNodeList){
+                    edgeBrokerEntityList = edgeBrokerEntityList.concat(edgeNodeList);
+                }
+                if (tmpI+1==brokerObj.length){
+                    console.log("broker length equal***    ",edgeBrokerEntityList)
+                    callback(edgeBrokerEntityList)
+                }
+            }).catch(function (error) {
+                console.log(error);
+                console.log('failed to query the list of workers');
+            });
+
+
+        }
+        
+    }
+
+    function showEdge(){
+        getBrokerList();
+    }
+
+    function displayEdgeNode() {
+        $('#info').html('list of all IoT Edge');
+        var html = '<div id="dockerRegistration" class="form-horizontal"><fieldset>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Edge(*)</label>';
+        html += '<div class="controls"><select id="allEdgeBrokerList" ></select>';
+        html += '</div></div>';
+        html += '</fieldset></div>';
+
+        html += '<div id="deviceList"></div>';
+
+
+        html += '<div id="map"  style="width: 900px; height: 500px"></div>';
+
+        $('#content').html(html);
+
+       
+        $('#allEdgeBrokerList').change(function() {
+            var selectedEdgeBroker = $('#allEdgeBrokerList option:selected').val();
+            console.log('selected edge broker is ',selectedEdgeBroker)
+            if (selectedEdgeBroker === 'All'){
+                getWorkerList(displayEdgeOnMap,brokers)
+            }
+            else
+            {
+                selectedEdgeBroker = selectedEdgeBroker.replace('Edge','Broker')
+                let obj = brokers.find(o => o.id === selectedEdgeBroker);
+                console.log('selected edge broker is obj ',obj)
+                getWorkerList(displayEdgeOnMap,[obj])
+            }
+          });
+    }
+    
+    function edgeDeviceIcon(type_){
+        var edgeIcon = undefined;
+        if (type_ === 'Worker'){
+             edgeIcon = L.icon({
+                iconUrl: '/img/gateway.png',
+                iconSize: [48, 48]
+            });
+        }else {
+
+             edgeIcon = L.icon({
+                iconUrl: '/img/device.png',
+                iconSize: [48, 48]
+            });
+        }
+        return edgeIcon;
+    }
+
+    function tableCreate(){
+
+    }
+
+    function displayEdgeOnMap(workerList) {
+        
+        var curMap = undefined;
+ 
+        console.log("map contains worker ",$('#map'));
+
+        curMap = showMap();
+        
+        $('#deviceList').html(displayDeviceList4Edge(workerList,false));
+        for (var i = 0; i < workerList.length; i++) {
+            var edgeEntity = workerList[i];
+            try{
+                var latitude = edgeEntity.metadata.location.value.latitude;
+                var longitude = edgeEntity.metadata.location.value.longitude;
+                var edgeNodeId = edgeEntity.entityId.id;
+                var edgeIcon = edgeDeviceIcon(edgeEntity.entityId.type);
+                var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
+                marker.nodeID = edgeNodeId;
+
+                if (edgeEntity.entityId.type === 'Worker'){
+                    var container = $('<div />');
+                    container.html(displayDeviceList4Edge(workerList,true));
+                    marker.addTo(curMap).bindPopup(container[0]);
+                }
+                else {
+                    marker.addTo(curMap).bindPopup(edgeNodeId);
+                }
+            // marker.on('click', showRunningTasks);
+            }catch (e) {
+                console.log(e);
+            }
+        }
+    }
+
+    function displayDeviceList4Edge(devices,isFromMap) {
+        if (devices == null || devices.length == 0) {
+            $('#deviceList').html('');
+            return
+        }
+        console.log("inside display device list ",devices);
+        var html = '<table class="table table-striped table-bordered table-condensed">';
+
+        html += '<thead><tr>';
+        html += '<th>ID</th>';
+        html += '<th>Type</th>';
+        if (!isFromMap){
+        html += '<th>Attributes</th>';
+        html += '<th>DomainMetadata</th>';
+        }
+        html += '</tr></thead>';
+
+        for (var i = 0; i < devices.length; i++) {
+            var device = devices[i];
+            if(device.entityId.type === 'Worker') continue;
+
+            if (!(device.metadata.hasOwnProperty('location'))) html += '<tr style="color:red">';
+            else html += '<tr>';
+            
+            html += '<td>' + device.entityId.id + '<br>';
+            html += '</td>';
+            html += '<td>' + device.entityId.type + '</td>';
+            if (!isFromMap){
+            html += '<td>' + JSON.stringify(device.attributes) + '</td>';
+            html += '<td>' + JSON.stringify(device.metadata) + '</td>';
+            }
+            html += '</tr>';
+        }
+
+        html += '</table>';
+        
+        return html;
+
+       // 
+
+        // associate a click handler to generate device profile on request
+        // for (var i = 0; i < devices.length; i++) {
+        //     var device = devices[i];
+        //     console.log(device.entityId.id);
+
+        //     var profileButton = document.getElementById('DOWNLOAD-' + device.entityId.id);
+        //     profileButton.onclick = function (d) {
+        //         var myProfile = d;
+        //         return function () {
+        //             downloadDeviceProfile(myProfile);
+        //         };
+        //     }(device);
+
+        //     var deleteButton = document.getElementById('DELETE-' + device.entityId.id);
+        //     deleteButton.onclick = function (d) {
+        //         var myProfile = d;
+        //         return function () {
+        //             removeDeviceProfile(myProfile);
+        //         };
+        //     }(device);
+        // }
+    }
+
+    // vinod:end
 
     function showDevices() {
         $('#info').html('list of all IoT devices');
@@ -400,7 +639,6 @@ $(function () {
             $('#deviceList').html('');
             return
         }
-
         var html = '<table class="table table-striped table-bordered table-condensed">';
 
         html += '<thead><tr>';
@@ -412,7 +650,6 @@ $(function () {
 
         for (var i = 0; i < devices.length; i++) {
             var device = devices[i];
-
             html += '<tr>';
             html += '<td>' + device.entityId.id + '<br>';
             html += '<button id="DOWNLOAD-' + device.entityId.id + '" type="button" class="btn btn-default">Profile</button>';
@@ -425,8 +662,9 @@ $(function () {
         }
 
         html += '</table>';
-
         $('#deviceList').html(html);
+
+       
 
         // associate a click handler to generate device profile on request
         for (var i = 0; i < devices.length; i++) {
@@ -682,12 +920,16 @@ $(function () {
         $('#deviceID').val(id);
     }
 
+    var map = undefined;
     function showMap() {
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            osm = L.tileLayer(osmUrl, { maxZoom: 18, zoom: 7 }),
-            map = new L.Map('map', { layers: [osm], center: new L.LatLng(35.692221, 139.709059), zoom: 7 });
-
-
+            osm = L.tileLayer(osmUrl, { maxZoom: 18, zoom: 7 });
+            try{
+                map.remove();
+            }catch(err){
+             
+            }
+        map = new L.Map('map', { layers: [osm], center: new L.LatLng(35.692221, 139.709059), zoom: 7 });
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
