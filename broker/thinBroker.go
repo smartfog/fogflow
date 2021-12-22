@@ -2799,7 +2799,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 		tb.subLinks_lock.Unlock()
 		if alreadyBack == true {
 			INFO.Println("========forward the availability notify that arrived earlier===========")
-			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
+			tb.handleNGSILDNotify(subReq.Id, notifyMessage)
 
 			tb.subLinks_lock.Lock()
 			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)
@@ -3906,7 +3906,7 @@ func (tb *ThinBroker) UpdateLDContextAvailability(subReq LDSubscriptionRequest, 
 		tb.subLinks_lock.Unlock()
 		if alreadyBack == true {
 			INFO.Println("========forward the availability notify that arrived earlier===========")
-			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
+			tb.handleNGSILDNotify(subReq.Id, notifyMessage)
 
 			tb.subLinks_lock.Lock()
 			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)

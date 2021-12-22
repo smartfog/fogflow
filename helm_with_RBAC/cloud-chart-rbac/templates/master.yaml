@@ -39,10 +39,10 @@ spec:
       - image: busybox:1.28
         imagePullPolicy: Always
         name: init-broker
-        command: ['sh', '-c', 'sleep 20s;']
+        command: ['sh', '-c', 'sleep 50s;']
       containers:
-      - image: fogflow/master:latest
-        imagePullPolicy: Always 
+      - image: fogflow/master:k8s
+        imagePullPolicy: IfNotPresent 
         name: master
         ports:
         - containerPort: 1060
@@ -68,13 +68,14 @@ spec:
         volumeMounts:
         - name: config-json
           mountPath: /config.json
+          subPath: config.json
           readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }}
+        configMap:
+          name: fogflow-configmap
 
 ---
 

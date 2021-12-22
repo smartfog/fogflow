@@ -1,4 +1,4 @@
-#Discovery deployment and service configuration
+#Cloud-broker deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,26 +6,26 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "2"
+    "helm.sh/hook-weight": "1"
   creationTimestamp: null
   labels:
-    io.kompose.service: discovery
-  name: discovery
+    io.kompose.service: edge-broker
+  name: edge-broker
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: discovery  
-  minReadySeconds: 10
+      io.kompose.service: edge-broker
+  minReadySeconds: 10    
   #strategy tells about How do want to update the pods?
   strategy:
     rollingUpdate:
       maxSurge: 25% 
       maxUnavailable: 25% 
     type: RollingUpdate
-   # This template field is a regular pod configuration
+  # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
@@ -33,63 +33,63 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: discovery
+        io.kompose.service: edge-broker
     spec:
       containers:
-      - image: fogflow/discovery:latest
+      - image: fogflow/broker:k8s
         imagePullPolicy: Always 
-        name: discovery
+        name: edge-broker
         ports:
-        - containerPort: 8090
-        #readiness and liveness to check pod's Health
+        - containerPort: 8060
+        #readiness and liveness to check pod's Health 
         readinessProbe:
           tcpSocket:
-            port: 8090
+            port: 8060
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 8090
+            port: 8060
           initialDelaySeconds: 15
           periodSeconds: 20
-        resources:
-         #CPU and memory limits for discovery deployment 
+        resources: 
+        #CPU and memory limits for cloud-broker deployment 
           limits:
-            memory: 2Gi
-            cpu: 1
+            memory: 3Gi
+            cpu: 1 
           requests:
-            memory: 1Gi
-            cpu: 1
+            memory: 2Gi
+            cpu: 1 
         volumeMounts:
-        - name: config-json       
+        - name: config-json
           mountPath: /config.json
+          subPath: config.json
           readOnly: true
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
-      - name: config-json
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }}
+       - name: config-json
+         configMap:
+          name: fogflow-edgeconfigmap
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Values.namespace }} 
+  namespace: {{ .Values.namespace }}
   annotations:
-    kompose.version: 1.21.0 (992df58d8)
+    kompose.version: 1.21.0 (992df58d8) 
   creationTimestamp: null
   labels:
-    io.kompose.service: discovery
-  name: discovery
+    io.kompose.service: edge-broker
+  name: edge-broker
 spec:
   ports:
-  - name: "8090"
-    port: 8090
-    targetPort: 8090
+  - name: "8060"
+    port: 8060
+    targetPort: 8060
   selector:
-    io.kompose.service: discovery
+    io.kompose.service: edge-broker
   externalIPs: {{ .Values.Service.spec.externalIPs }}
-status:
-  loadBalancer: {} 
+

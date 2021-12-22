@@ -1,4 +1,4 @@
-#Cloud-broker deployment and service configuration
+#rabbitmq deployment and service configuration
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -6,26 +6,26 @@ metadata:
   namespace: {{ .Values.namespace }} 
   annotations:
     kompose.version: 1.21.0 (992df58d8)
-    "helm.sh/hook-weight": "1"
+    "helm.sh/hook-weight": "2"
   creationTimestamp: null
   labels:
-    io.kompose.service: edge-broker
-  name: edge-broker
+    io.kompose.service: rabbitmq
+  name: rabbitmq
 spec:
   #replicas will make sure that no. of replicaCount mention in values.yaml
   # are running all the time for the deployment
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      io.kompose.service: edge-broker
-  minReadySeconds: 10    
+      io.kompose.service: rabbitmq
+  minReadySeconds: 10
   #strategy tells about How do want to update the pods?
-  strategy:
+  strategy: 
     rollingUpdate:
       maxSurge: 25% 
       maxUnavailable: 25% 
     type: RollingUpdate
-  # This template field is a regular pod configuration
+   # This template field is a regular pod configuration
   # nested inside the deployment spec
   template:
     metadata:
@@ -33,62 +33,62 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: edge-broker
+        io.kompose.service: rabbitmq
     spec:
       containers:
-      - image: fogflow/broker:latest
-        imagePullPolicy: Always 
-        name: edge-broker
+      - env:
+        - name: RABBITMQ_DEFAULT_PASS
+          value: mypass
+        - name: RABBITMQ_DEFAULT_USER
+          value: admin
+        image: rabbitmq:3.8
+        imagePullPolicy: IfNotPresent 
+        name: rabbitmq
         ports:
-        - containerPort: 8060
-        #readiness and liveness to check pod's Health 
+        - containerPort: 5672
+        #readiness and liveness to check pod's Health
         readinessProbe:
           tcpSocket:
-            port: 8060
+            port: 5672 
           initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
-            port: 8060
+            port: 5672 
           initialDelaySeconds: 15
           periodSeconds: 20
         resources: 
-        #CPU and memory limits for cloud-broker deployment 
+         #CPU and memory limits for rabbitmq deployment
           limits:
-            memory: 3Gi
-            cpu: 1 
+            memory: 2Gi
+            cpu: 1
           requests:
             memory: 2Gi
-            cpu: 1 
-        volumeMounts:
-        - name: config-json
-          mountPath: /config.json
-          readOnly: true
+            cpu: 1
       restartPolicy: Always
       serviceAccountName: {{ .Values.serviceAccount.name }} 
-      volumes:
-       - name: config-json
-         hostPath:
-           path: {{ .Values.configJson.hostPath.path }}
+      volumes: null
+status: {}
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Values.namespace }} 
   annotations:
-    kompose.version: 1.21.0 (992df58d8) 
+    kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: edge-broker
-  name: edge-broker
+    io.kompose.service: rabbitmq
+  name: rabbitmq
 spec:
   ports:
-  - name: "8060"
-    port: 8060
-    targetPort: 8060
+  - name: "5672"
+    port: 5672
+    targetPort: 5672
   selector:
-    io.kompose.service: edge-broker
-  externalIPs: {{ .Values.Service.spec.externalIPs }}
-
+    io.kompose.service: rabbitmq
+  externalIPs:  {{ .Values.Service.spec.externalIPs }}
+status:
+  loadBalancer: {}

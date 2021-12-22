@@ -58,6 +58,7 @@ spec:
           readOnly: true
         - name: config-json 
           mountPath: /config.json
+          subPath: config.json
           readOnly: true
         - name: dockersock
           mountPath: "/var/run/docker.sock"  
@@ -65,8 +66,8 @@ spec:
       serviceAccountName: {{ .Values.serviceAccount.name }} 
       volumes:
       - name: config-json 
-        hostPath:
-          path: {{ .Values.configJson.hostPath.path }} 
+        configMap:
+          name: fogflow-edgeconfigmap 
       - name: edge-worker
         hostPath:
           path: /tmp

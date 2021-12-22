@@ -4,6 +4,7 @@ var https = require('https');
 const bodyParser = require('body-parser');
 var axios = require('axios')
 var dgraph = require('./dgraph.js');
+var amqp = require('./rabbitmq.js');
 var jsonParser = bodyParser.json();
 var config_fs_name = './config.json';
 
@@ -51,7 +52,7 @@ config.webSrvPort = globalConfigFile.designer.webSrvPort
 console.log(config);
 
 dgraph.Init();
-
+amqp.amqpConnection();
 function uuid() {
     var uuid = "",
         i, random;
@@ -139,27 +140,56 @@ app.post('/intent', jsonParser, function(req, res) {
   api to create fogFlow internal entities
 */
 
-app.post('/internal/updateContext', jsonParser, async function (req, res) {
-    var updateContextReq = await req.body
-
-    console.log(updateContextReq);
-
-    //forward it to the cloud broker 
-    var response = await axios({
-        method: 'post',
-        url: cloudBrokerURL + '/updateContext',
-        data: updateContextReq
-    });
-
-    if (response.status == 200) {
-        if (updateContextReq.updateAction == "DELETE") {
-            await dgraph.DeleteEntity(updateContextReq);
-        } else if (updateContextReq.updateAction == "UPDATE") {
-            await dgraph.WriteEntity(updateContextReq)
-        }
+function getResult(filterBy, objList) {
+    console.log("objlist is ---- ",objList);
+    var arr = [];
+    for(var i in objList){
+            if (objList[i].hasOwnProperty("attribute") && Object.keys(objList[i].attribute).length === 0) {
+                console.log("aaaa",objList[i]);
+                continue;}
+            var fType = objList[i]['internalType'];
+            if (fType != undefined && filterBy == fType){
+                    attrObj = JSON.parse(objList[i].attribute) 
+                    attrObj.uid= objList[i].uid
+                    arr.push(attrObj);
+                    continue;
+            }
     }
+    return arr;
+  }
 
-    res.send(response.data)
+app.post('/internal/updateContext', jsonParser, async function (req, res) {
+    //var updateContextReq = await req.body
+    let updateContextReq = Object.assign({}, await req.body);
+    console.log("****************** update",updateContextReq);
+
+
+    if (updateContextReq.updateAction == "DELETE") {
+        console.log("delete entity is ",updateContextReq);
+        amqp.amqpPub(updateContextReq)
+        let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
+        await dgraph.DeleteNodeById(tmpVar.uid);
+
+        
+    } else if (updateContextReq.updateAction == "UPDATE") {
+        //console.log("main js obj  ++++ ",updateContextReq)
+        let tmpVar1 = JSON.parse(JSON.stringify(updateContextReq));
+        await amqp.amqpPub(tmpVar1)
+        let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
+        await dgraph.WriteEntity(tmpVar)
+    }
+    res.send("")
+});
+
+app.post('/internal/getContext', jsonParser, async function (req, res) {
+    var queryContext = await req.body
+    var dgraphOp = await dgraph.QueryJsonWithType(queryContext.internalType)
+    res.send({data:getResult(queryContext.internalType,dgraphOp.contextElements)})
+});
+
+app.post('/masterNotify', jsonParser, async function (req, res) {
+    dgraphSendToMaster();
+    res.json({"status":"DONE"})
 });
 
 // to remove an existing intent
@@ -202,7 +232,6 @@ app.get('/proxy', function(req, res) {
 });
 */
 
-
 // handle the received results
 function handleNotify(req, ctxObjects, res) {
     console.log('handle notify');
@@ -216,6 +245,22 @@ function handleNotify(req, ctxObjects, res) {
         }
     }
 }
+
+async function dgraphSendToMaster(){
+    var dgraphResult = await dgraph.QueryJsonWithType('all')
+    if (dgraphResult.hasOwnProperty("contextElements")){
+        dgraphData = dgraphResult.contextElements
+        for (var i in dgraphData) {
+            if (dgraphData[i].attribute == undefined) {
+                continue;
+              }
+            dgraphData[i].attribute = JSON.parse(dgraphData[i].attribute)
+            amqp.amqpPub(dgraphData[i])
+        }
+    }
+    
+}
+
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);

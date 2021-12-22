@@ -33,7 +33,7 @@ func (sMgr *ServiceMgr) Init() {
 	sMgr.service2TaskMap = make(map[string][]*TaskIntentRecord)
 }
 
-func (sMgr *ServiceMgr) handleServiceIntentUpdate(intentCtxObj *ContextObject) {
+/*func (sMgr *ServiceMgr) handleServiceIntentUpdate(intentCtxObj *ContextObject) {
 	INFO.Println("handle intent update")
 	INFO.Println(intentCtxObj)
 
@@ -52,7 +52,28 @@ func (sMgr *ServiceMgr) handleServiceIntentUpdate(intentCtxObj *ContextObject) {
 			//sMgr.updateServiceIntentStatus(intentCtxObj.Entity.ID, "NOT_ACTIVATED", "intent object is not properly defined")
 		}
 	}
-}
+}*/
+
+func (sMgr *ServiceMgr) handleServiceIntentUpdate(msg json.RawMessage) {
+	INFO.Println("handle intent update")
+        INFO.Println(string(msg))
+
+	sIntent := ServiceIntent{}
+        err := json.Unmarshal(msg, &sIntent)
+
+        if err == nil {
+		if (sIntent.Action == "DELETE") {
+			sMgr.removeServiceIntent(sIntent.ID)
+		} else {
+                        //sIntent.ID = string(msg.id)
+                        INFO.Println(sIntent)
+                        sMgr.handleServiceIntent(&sIntent)
+                }
+        } else {
+                        ERROR.Println(err)
+                        //sMgr.updateServiceIntentStatus(intentCtxObj.Entity.ID, "NOT_ACTIVATED", "intent object is not properly defined")
+                }
+        }
 
 func (sMgr *ServiceMgr) updateServiceIntentStatus(eid string, status string, reason string) {
 	ctxObj := ContextObject{}

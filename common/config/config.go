@@ -65,6 +65,11 @@ type Config struct {
 		HostIP    string `json:"host_ip"`
 		AgentPort int    `json:"ngsi_agent_port"`
 	} `json:"master"`
+	Designer struct {
+                HostIP    string `json:"host_ip"`
+                WebSrvPort int   `json:"webSrvPort"`
+                HTTPSPort  int   `json:"https_webSrvPort"`
+        }`json:"designer"`
 	Worker struct {
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
@@ -105,6 +110,23 @@ func (c *Config) GetDiscoveryURL() string {
 	}
 
 	return fmt.Sprintf("%s://%s:%d/ngsi9", protocol, hostip, port)
+}
+
+func (c *Config) GetDesignerURL() string {
+        protocol := "http"
+        port := c.Designer.WebSrvPort
+        if c.HTTPS.Enabled == true {
+                protocol = "https"
+                port = c.Designer.HTTPSPort
+        }
+
+        hostip := c.InternalIP
+        
+        if c.Designer.HostIP != "" {
+                hostip = c.Designer.HostIP
+        }
+
+        return fmt.Sprintf("%s://%s:%d", protocol, hostip, port)
 }
 
 func (c *Config) GetBrokerURL4Task() string {
