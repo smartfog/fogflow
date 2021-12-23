@@ -359,6 +359,10 @@ $(function() {
 	    name: "Health_Alert_Counter",
             description: "",
             parameters: []
+	},{
+	    name: "LDFace",
+            description: "",
+            parameters: []	
 	}];
 
         var queryReq = {}
@@ -548,7 +552,7 @@ $(function() {
             operatorName: "LDCounter",
             prefetched: false
         }, {
-	    name: "trial/soil2",
+	    name: "fogflow/soil",
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
@@ -568,6 +572,13 @@ $(function() {
             osType: "Linux",
             operatorName: "Health_Alert_Counter",
             prefetched: false
+	}, {
+	    name: "fogflow/ldfacefinder",
+            tag: "latest",
+            hwType: "X86",
+            osType: "Linux",
+            operatorName: "LDFace",
+            prefetched: false	
 	}];
 
         return imageList;
