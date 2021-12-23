@@ -360,19 +360,8 @@ $(function() {
             description: "",
             parameters: []
 	}];
-
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
-        client.queryContext(queryReq).then(function(existingOperatorList) {
-            if (existingOperatorList.length == 0) {
-                for (var i = 0; i < operatorList.length; i++) {
-                    submitOperator(operatorList[i], {});
-                }
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query the operator list');
-        });
+	
+	return operatorList
 
     }
 
@@ -548,7 +537,7 @@ $(function() {
             operatorName: "LDCounter",
             prefetched: false
         }, {
-	    name: "trial/soil2",
+	    name: "trial/soil",
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
