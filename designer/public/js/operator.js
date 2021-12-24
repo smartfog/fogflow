@@ -540,11 +540,7 @@ $(function() {
             operatorName: "LDCounter",
             prefetched: false
         }, {
-<<<<<<< HEAD
 	    name: "fogflow/soil",
-=======
-	    name: "trial/soil",
->>>>>>> development
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
@@ -564,24 +560,14 @@ $(function() {
             osType: "Linux",
             operatorName: "Health_Alert_Counter",
             prefetched: false
-<<<<<<< HEAD
 	}, {
 	    name: "fogflow/ldfacefinder",
-=======
-	},{
-            name: "fogflow/ldfacefinder",
->>>>>>> development
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
             operatorName: "LDFace",
-<<<<<<< HEAD
             prefetched: false	
 	}];
-=======
-            prefetched: false
-        }];
->>>>>>> development
 
         return imageList;
     }
