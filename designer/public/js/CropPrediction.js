@@ -29,6 +29,9 @@ $(function() {
     //connect to the broker
     var ldclient = new NGSILDclient(config.LdbrokerURL);
     var client = new NGSI10Client(config.brokerURL);
+    // connect to internal server
+    var clientDes = new NGSI10Client('./internal');
+
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -105,13 +108,26 @@ $(function() {
 
     function checkTopology() {
         var queryReq = {}
-        queryReq.entities = [{ id: 'Topology.Crop_Prediction', type: 'Topology', isPattern: false }];
+        //queryReq.entities = [{ id: 'Topology.Crop_Prediction', type: 'Topology', isPattern: false }];
 
-        client.queryContext(queryReq).then(function(resultList) {
+
+        /*client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
                 curTopology = resultList[0];
-            }
+            }*/
+
+	 var name = "Crop_Prediction"
+         queryReq = { internalType: "Topology", updateAction: "UPDATE" };
+         clientDes.getContext(queryReq).then(function(resultList) {
+
+		if (resultList.data && resultList.data.length > 0) {
+                console.log("check topology ",isDataExists(name,resultList.data));
+                var cTopolody = isDataExists(name,resultList.data);
+                if (cTopolody.length != 0) {
+                    curTopology = cTopolody[0];
+                }
+            }		
 
             showTopology();
         }).catch(function(error) {
@@ -122,17 +138,33 @@ $(function() {
 
     function checkIntent() {
         var queryReq = {};
-        queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.Crop_Prediction'}]};
+        //queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
+        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.Crop_Prediction'}]};
 
-        client.queryContext(queryReq).then(function(resultList) {
+	queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
+        scopeValue = 'Crop_Prediction'
+
+        /*client.queryContext(queryReq).then(function(resultList) {
             console.log(resultList);
             if (resultList && resultList.length > 0) {
                 curIntent = resultList[0];
 
                 //update the current geoscope as well
                 geoscope = curIntent.attributes.intent.geoscope;
+            }*/
+	clientDes.getContext(queryReq).then(function(resultList) {
+            console.log(resultList);
+            if (resultList.data && resultList.data.length > 0) {
+                var result = resultList.data.filter(x => x.topology === scopeValue);
+                if (result.length > 0) {
+                    console.log("service intent result ---- ",result);
+                    curIntent = result[0];
+                    //update the current geoscope as well
+                    geoscope = result[0].geoscope;
+                }
+                
             }
+
         }).catch(function(error) {
             console.log(error);
             console.log('failed to query context');
@@ -171,7 +203,12 @@ $(function() {
 
         var topologyCtxObj = {};
 
-        topologyCtxObj.entityId = {
+	topologyCtxObj.attributes = topology ;
+        topologyCtxObj.internalType = 'Topology';
+        topologyCtxObj.updateAction = 'UPDATE';
+
+
+        /*topologyCtxObj.entityId = {
             id: 'Topology.' + topology.name,
             type: topology.name,
             isPattern: false
@@ -179,9 +216,9 @@ $(function() {
 
         topologyCtxObj.attributes = {};
         topologyCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        topologyCtxObj.attributes.template = { type: 'object', value: topology };
+        topologyCtxObj.attributes.template = { type: 'object', value: topology };*/
 
-        client.updateContext(topologyCtxObj).then(function(data) {
+        clientDes.updateContext(topologyCtxObj).then(function(data) {
             console.log(data);
             // update the current topology
             curTopology = topologyCtxObj;
@@ -239,7 +276,7 @@ $(function() {
     }
 
     function sendIntent() {
-        if (client == null) {
+        if (clientDes == null) {
             console.log('no nearby broker');
             return;
         }
@@ -247,7 +284,7 @@ $(function() {
         console.log('issue an service intent for this service topology ', curTopology);
 
         // create the intent object
-        var topology = curTopology.attributes.template.value
+        /*var topology = curTopology.attributes.template.value
 
         var intent = {};
         intent.topology = topology.name;
@@ -272,9 +309,29 @@ $(function() {
         intentCtxObj.metadata = {};
         intentCtxObj.metadata.topology = { type: 'string', value: curTopology.entityId.id };
 
-        console.log(JSON.stringify(intentCtxObj));
+        console.log(JSON.stringify(intentCtxObj));*/
 
-        client.updateContext(intentCtxObj).then(function(data) {
+	var topology = curTopology.name
+        var intent = {};
+        var intentCtxObj = {};
+        var attribute = {};
+        attribute.topology = topology;
+        attribute.priority = {
+            'exclusive': false,
+            'level': 50
+        };
+        attribute.qos = "default";
+        attribute.geoscope = geoscope;
+        attribute.id = 'ServiceIntent.' + uuid();
+        attribute.action= 'UPDATE'
+
+      
+        console.log(JSON.stringify(intentCtxObj));
+        intentCtxObj.attribute = attribute;
+        intentCtxObj.internalType = "ServiceIntent";
+        intentCtxObj.updateAction = "UPDATE";
+
+        clientDes.updateContext(intentCtxObj).then(function(data) {
             console.log(data);
             curIntent = intentCtxObj;
 
@@ -287,20 +344,27 @@ $(function() {
     }
 
     function cancelIntent() {
-        if (client == null) {
+        if (clientDes == null) {
             console.log('no nearby broker');
             return;
         }
 
-        console.log('cancel the issued intent for this service topology ', curTopology.entityId.id);
+        console.log('cancel the issued intent for this service topology ', curTopology.name);
 
-        var entityid = {
+        /*var entityid = {
             id: curIntent.entityId.id,
             type: 'ServiceIntent',
             isPattern: false
-        };
+        };*/
 
-        client.deleteContext(entityid).then(function(data) {
+	var sIntent = {};
+        var attribute = {id:curIntent.id, action:'DELETE'}
+        sIntent.attribute = attribute
+        sIntent.updateAction = 'DELETE';
+        sIntent.internalType = 'ServiceIntent';
+        sIntent.uid = curIntent.uid
+
+        clientDes.deleteContext(sIntent).then(function(data) {
             console.log(data);
             curIntent = null;
             geoscope = {
@@ -380,7 +444,6 @@ $(function() {
         var html = '';
         html += '<thead><tr>';
         html += '<th>Field Sensor</th>';
-        html += '<th>Temperaure</th>';
 	html += '<th>Soil Moisture</th>';
         html += '<th>Air Moisture</th>';
 	html += '<th>Rainfall</th>';
@@ -396,7 +459,6 @@ $(function() {
 
             html += '<tr>';
             html += '<td>' + ctxObj.id + '</td>';
-            html += '<td>' + ctxObj.temperature.value + '</td>';
             html += '<td>' + ctxObj.soilmoisture.value + '</td>';
             html += '<td>' + ctxObj.airmoisture.value + '</td>';
 	    html += '<td>' + ctxObj.rainfall.value + '</td>';

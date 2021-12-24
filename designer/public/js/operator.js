@@ -360,14 +360,12 @@ $(function() {
             description: "",
             parameters: []
 	},{
-           name: "LDFace",
+	    name: "LDFace",
             description: "",
-            parameters: []
-        }];
-
+            parameters: []	
+	}];
 	
-	return operatorList
-
+	return operatorList;
     }
 
   
@@ -542,7 +540,7 @@ $(function() {
             operatorName: "LDCounter",
             prefetched: false
         }, {
-	    name: "trial/soil",
+	    name: "fogflow/soil",
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
@@ -562,14 +560,14 @@ $(function() {
             osType: "Linux",
             operatorName: "Health_Alert_Counter",
             prefetched: false
-	},{
-            name: "fogflow/ldfacefinder",
+	}, {
+	    name: "fogflow/ldfacefinder",
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
             operatorName: "LDFace",
-            prefetched: false
-        }];
+            prefetched: false	
+	}];
 
         return imageList;
     }
