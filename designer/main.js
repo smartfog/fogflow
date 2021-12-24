@@ -188,8 +188,16 @@ app.post('/internal/getContext', jsonParser, async function (req, res) {
 });
 
 app.post('/masterNotify', jsonParser, async function (req, res) {
-    dgraphSendToMaster();
-    res.json({"status":"DONE"})
+    //dgraphSendToMaster();
+    //res.json({"status":"DONE"})
+    if(global.isAmqpUp){
+        dgraphSendToMaster();
+        res.json({"status":"DONE"})
+    }
+    else {
+        
+        res.status(404).send({"msg":"rabbitMQ is not reachable"});
+    }
 });
 
 // to remove an existing intent
