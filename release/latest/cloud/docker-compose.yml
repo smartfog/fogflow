@@ -12,6 +12,7 @@ services:
             - discovery
             - cloud_broker
             - dgraph
+            - rabbitmq
         restart: always
                        
     discovery:

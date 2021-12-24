@@ -127,12 +127,13 @@ func (master *Master) Start(configuration *Config) {
                 }
                master.cfg.HTTPS.LoadConfig()
                client := master.cfg.HTTPS.GetHTTPClient()
-               req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
+               //req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
                for {
+                       req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
 		       time.Sleep(time.Duration(retryInterval) * time.Second)
                        resp, err := client.Do(req)
                        fmt.Println(err)
-                        if(resp != nil) {
+                        if(resp != nil && resp.StatusCode != 404) {
                                 defer resp.Body.Close()
                                 break
                         }

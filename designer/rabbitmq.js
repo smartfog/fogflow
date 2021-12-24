@@ -39,11 +39,28 @@ function string2json(data) {
 
 }
 
+function reconnect() {
+  amqpConnection()
+}
+
+var refreshIntervalId = undefined;
+var isAmqpUp = false;
+
 function amqpConnection(exchange_) {
   amqp.connect(RABBIT_URL, opt, function (error0, connection) {
     if (error0) {
-      throw error0;
+      console.log("Connection Error : Retrying to connect RabbitMQ in 10 seconds ");
+      if (refreshIntervalId === undefined){
+        refreshIntervalId = setInterval(reconnect, 10000);
+      }
+      //throw error0;
     }
+   if(connection){
+    console.log("connected with RabbitMQ");
+    clearInterval(refreshIntervalId);
+    refreshIntervalId = undefined;
+    global.isAmqpUp = true;
+
     connection.createChannel(function (error1, channel) {
       if (error1) {
         throw error1;
@@ -57,8 +74,9 @@ function amqpConnection(exchange_) {
       });
      
     });
-    
+   } 
   });
+ 
 }
 
 

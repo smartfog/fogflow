@@ -88,9 +88,9 @@ $(function() {
 
     function initTopologyExamples() {
         for (var i = 0; i < myToplogyExamples.length; i++) {
-            var example = myToplogyExamples[i].topology;
+            var example = myToplogyExamples[i];
             var topology = {};
-            topology.attribute = example;
+            topology.attribute =  myToplogyExamples[i].topology;
             topology.attribute.designboard = myToplogyExamples[i].designboard;
             topology.internalType = 'Topology';
             topology.updateAction = 'UPDATE';

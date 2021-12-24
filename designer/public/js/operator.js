@@ -364,22 +364,8 @@ $(function() {
             description: "",
             parameters: []	
 	}];
-
-        /*var queryReq = {}
-        queryReq.entities = [{ type: 'Operator', isPattern: true }];
-        client.queryContext(queryReq).then(function(existingOperatorList) {
-            if (existingOperatorList.length == 0) {
-                for (var i = 0; i < operatorList.length; i++) {
-                    submitOperator(operatorList[i], {});
-                }
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query the operator list');
-        });*/
 	
 	return operatorList;
-
     }
 
   
@@ -554,7 +540,11 @@ $(function() {
             operatorName: "LDCounter",
             prefetched: false
         }, {
+<<<<<<< HEAD
 	    name: "fogflow/soil",
+=======
+	    name: "trial/soil",
+>>>>>>> development
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
@@ -574,14 +564,24 @@ $(function() {
             osType: "Linux",
             operatorName: "Health_Alert_Counter",
             prefetched: false
+<<<<<<< HEAD
 	}, {
 	    name: "fogflow/ldfacefinder",
+=======
+	},{
+            name: "fogflow/ldfacefinder",
+>>>>>>> development
             tag: "latest",
             hwType: "X86",
             osType: "Linux",
             operatorName: "LDFace",
+<<<<<<< HEAD
             prefetched: false	
 	}];
+=======
+            prefetched: false
+        }];
+>>>>>>> development
 
         return imageList;
     }
