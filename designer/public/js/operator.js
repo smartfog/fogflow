@@ -365,7 +365,7 @@ $(function() {
             parameters: []	
 	}];
 
-        var queryReq = {}
+        /*var queryReq = {}
         queryReq.entities = [{ type: 'Operator', isPattern: true }];
         client.queryContext(queryReq).then(function(existingOperatorList) {
             if (existingOperatorList.length == 0) {
@@ -376,7 +376,9 @@ $(function() {
         }).catch(function(error) {
             console.log(error);
             console.log('failed to query the operator list');
-        });
+        });*/
+	
+	return operatorList;
 
     }
 
