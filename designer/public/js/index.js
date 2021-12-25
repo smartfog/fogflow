@@ -355,7 +355,7 @@ $(function () {
         $('#content').html(html);
     }
 
-    // vinod : start
+    // visualization : start
     var edgeNodesList = undefined;
     var brokers = [];
     function getBrokerList() {
@@ -409,10 +409,11 @@ $(function () {
         });
        // return brokers;
     }
-
+    var workerWithDeviceList = {};
     function getWorkerList(callback,brokerObj) {
         console.log("inside in get worker list ",brokerObj);
         var edgeBrokerEntityList = [];
+        workerWithDeviceList = {};
         for (var i = 0; i < brokerObj.length; i++){
             var tmpI = i;
             var tmpClient = new NGSI10Client(brokerObj[i].brokerURL);
@@ -422,6 +423,13 @@ $(function () {
                 
                 if (edgeNodeList){
                     edgeBrokerEntityList = edgeBrokerEntityList.concat(edgeNodeList);
+                    console.log("entity list is 0000000 ",edgeNodeList);
+                    let workerObj = edgeNodeList.find(o => o.entityId.type === 'Worker');
+                    console.log("fileter data ",workerObj);
+                    if (workerObj){
+                    var workerId = workerObj.entityId.id;
+                    workerWithDeviceList[workerId] = edgeNodeList;
+                    }
                 }
                 if (tmpI+1==brokerObj.length){
                     console.log("broker length equal***    ",edgeBrokerEntityList)
@@ -451,7 +459,6 @@ $(function () {
         html += '</fieldset></div>';
 
         html += '<div id="deviceList"></div>';
-
 
         html += '<div id="map"  style="width: 900px; height: 500px"></div>';
 
@@ -491,15 +498,11 @@ $(function () {
         return edgeIcon;
     }
 
-    function tableCreate(){
-
-    }
 
     function displayEdgeOnMap(workerList) {
         
         var curMap = undefined;
  
-        console.log("map contains worker ",$('#map'));
 
         curMap = showMap();
         
@@ -515,8 +518,10 @@ $(function () {
                 marker.nodeID = edgeNodeId;
 
                 if (edgeEntity.entityId.type === 'Worker'){
+                    var id = edgeEntity.entityId.id;
+                    console.log("get all worker data ",workerWithDeviceList[id]);
                     var container = $('<div />');
-                    container.html(displayDeviceList4Edge(workerList,true));
+                    container.html(displayDeviceList4Edge(workerWithDeviceList[id],true));
                     marker.addTo(curMap).bindPopup(container[0]);
                 }
                 else {
@@ -567,32 +572,9 @@ $(function () {
         
         return html;
 
-       // 
-
-        // associate a click handler to generate device profile on request
-        // for (var i = 0; i < devices.length; i++) {
-        //     var device = devices[i];
-        //     console.log(device.entityId.id);
-
-        //     var profileButton = document.getElementById('DOWNLOAD-' + device.entityId.id);
-        //     profileButton.onclick = function (d) {
-        //         var myProfile = d;
-        //         return function () {
-        //             downloadDeviceProfile(myProfile);
-        //         };
-        //     }(device);
-
-        //     var deleteButton = document.getElementById('DELETE-' + device.entityId.id);
-        //     deleteButton.onclick = function (d) {
-        //         var myProfile = d;
-        //         return function () {
-        //             removeDeviceProfile(myProfile);
-        //         };
-        //     }(device);
-        // }
     }
 
-    // vinod:end
+    // visualization:end
 
     function showDevices() {
         $('#info').html('list of all IoT devices');
