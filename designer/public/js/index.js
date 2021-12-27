@@ -23,7 +23,7 @@ $(function () {
     addMenuItem('Master', showMaster);
     addMenuItem('Worker', showWorkers);
     addMenuItem('Device', showDevices);
-    addMenuItem('edge', showEdge);
+    addMenuItem('Edge', showEdge);
     addMenuItem('uService', showEndPointService);
     addMenuItem('Stream', showStreams);
 
@@ -333,7 +333,6 @@ $(function () {
         }
 
         var html = '<table class="table table-striped table-bordered table-condensed">';
-
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Attributes</th>';
@@ -342,22 +341,20 @@ $(function () {
 
         for (var i = 0; i < workers.length; i++) {
             var worker = workers[i];
-
             html += '<tr>';
             html += '<td>' + worker.entityId.id + '</td>';
             html += '<td>' + JSON.stringify(worker.attributes) + '</td>';
             html += '<td>' + JSON.stringify(worker.metadata) + '</td>';
             html += '</tr>';
         }
-
         html += '</table>';
-
         $('#content').html(html);
     }
 
     // visualization : start
     var edgeNodesList = undefined;
     var brokers = [];
+
     function getBrokerList() {
         brokers =[]
         var discoverReq = {}
@@ -388,7 +385,9 @@ $(function () {
                             allEdgeBrokerList.add(option);
                         }
                         var option = document.createElement("option");
-                        option.text =brokerID.replace('Broker','Edge'); 
+                        var edgeName = brokerID.replace('Broker','Edge');
+                        if (edgeName.includes(".001")) edgeName = edgeName.replace('Edge','Cloud');
+                        option.text = edgeName
                         console.log("get broker ID: " + brokerID);
                         var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
                         console.log("all edge obje ",allEdgeBrokerList);
@@ -409,9 +408,9 @@ $(function () {
         });
        // return brokers;
     }
+
     var workerWithDeviceList = {};
     function getWorkerList(callback,brokerObj) {
-        console.log("inside in get worker list ",brokerObj);
         var edgeBrokerEntityList = [];
         workerWithDeviceList = {};
         for (var i = 0; i < brokerObj.length; i++){
@@ -423,26 +422,20 @@ $(function () {
                 
                 if (edgeNodeList){
                     edgeBrokerEntityList = edgeBrokerEntityList.concat(edgeNodeList);
-                    console.log("entity list is 0000000 ",edgeNodeList);
                     let workerObj = edgeNodeList.find(o => o.entityId.type === 'Worker');
-                    console.log("fileter data ",workerObj);
                     if (workerObj){
                     var workerId = workerObj.entityId.id;
                     workerWithDeviceList[workerId] = edgeNodeList;
                     }
                 }
                 if (tmpI+1==brokerObj.length){
-                    console.log("broker length equal***    ",edgeBrokerEntityList)
                     callback(edgeBrokerEntityList)
                 }
             }).catch(function (error) {
                 console.log(error);
                 console.log('failed to query the list of workers');
             });
-
-
         }
-        
     }
 
     function showEdge(){
@@ -463,8 +456,6 @@ $(function () {
         html += '<div id="map"  style="width: 900px; height: 500px"></div>';
 
         $('#content').html(html);
-
-       
         $('#allEdgeBrokerList').change(function() {
             var selectedEdgeBroker = $('#allEdgeBrokerList option:selected').val();
             console.log('selected edge broker is ',selectedEdgeBroker)
@@ -473,7 +464,7 @@ $(function () {
             }
             else
             {
-                selectedEdgeBroker = selectedEdgeBroker.replace('Edge','Broker')
+                selectedEdgeBroker = selectedEdgeBroker.replace(/Edge|Cloud/gi,'Broker')
                 let obj = brokers.find(o => o.id === selectedEdgeBroker);
                 console.log('selected edge broker is obj ',obj)
                 getWorkerList(displayEdgeOnMap,[obj])
@@ -498,12 +489,8 @@ $(function () {
         return edgeIcon;
     }
 
-
     function displayEdgeOnMap(workerList) {
-        
         var curMap = undefined;
- 
-
         curMap = showMap();
         
         $('#deviceList').html(displayDeviceList4Edge(workerList,false));
@@ -539,7 +526,6 @@ $(function () {
             $('#deviceList').html('');
             return
         }
-        console.log("inside display device list ",devices);
         var html = '<table class="table table-striped table-bordered table-condensed">';
 
         html += '<thead><tr>';
@@ -567,11 +553,8 @@ $(function () {
             }
             html += '</tr>';
         }
-
         html += '</table>';
-        
         return html;
-
     }
 
     // visualization:end
