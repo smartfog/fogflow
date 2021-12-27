@@ -4,6 +4,7 @@ import (
 	. "fogflow/common/ngsi"
 	"sort"
 	"sync"
+	"fmt"
 )
 
 type Candidate struct {
@@ -48,6 +49,7 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 	er.ctxRegistrationList_lock.Lock()
 	defer er.ctxRegistrationList_lock.Unlock()
 	eid := entity.ID
+	fmt.Println("registration",registration)
 	if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
 		// update existing entity type
 		if entity.Type != "" {
@@ -167,6 +169,8 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 	defer er.ctxRegistrationList_lock.RUnlock()
 	nearby := restriction.GetNearbyFilter()
 	candidates := make([]Candidate, 0)
+	fmt.Println("er.ctxRegistrationList",er.ctxRegistrationList)
+	fmt.Println("restriction",restriction)
 	for _, registration := range er.ctxRegistrationList {
 		if matchingWithFilters(registration, entities, attributes, restriction, subfiwareService, registration.FiwareService) == true {
 			candidate := Candidate{}
@@ -189,6 +193,7 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 			candidates = append(candidates, candidate)
 		}
 	}
+
 	if nearby != nil {
 		if len(candidates) > nearby.Limit {
 			// for the nearby query, just select the closest n matched entities

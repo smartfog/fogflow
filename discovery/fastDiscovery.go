@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"fmt"
 
 	. "fogflow/common/ngsi"
 )
@@ -60,6 +61,7 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 	registerCtxReq := RegisterContextRequest{}
 	err := r.DecodeJsonPayload(&registerCtxReq)
 	if err != nil {
+		fmt.Println("err",err)
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -74,6 +76,7 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 		registerCtxReq.RegistrationId = registrationID
 	}
 	// update context registration
+	fmt.Println("&registerCtxReq",&registerCtxReq)
 	go fd.updateRegistration(&registerCtxReq)
 
 	// send out the response
@@ -153,8 +156,9 @@ func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *r
 
 	// query all relevant discovery instances to get the matched result
 	result := make([]ContextRegistrationResponse, 0)
-
+	fmt.Println("&discoverCtxReq",&discoverCtxReq)
 	registrationList := fd.handleQueryCtxAvailability(&discoverCtxReq)
+	fmt.Println("registrationList",registrationList)
 	for _, registration := range registrationList {
 		result = append(result, registration)
 	}

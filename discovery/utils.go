@@ -5,16 +5,18 @@ import (
 	"math"
 	"regexp"
 	"strings"
+	"fmt"
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
 
-	if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
+	/*if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
                 return false
         }
 
 	// (1) check entityId part
 	entity := EntityId{}
+	fmt.Println("metaFilter",metaFilter)
 	if strings.HasPrefix(registration.Type, "https://uri.etsi.org/ngsi-ld/default-context/") {
 		entity.Type = registration.Type
 	} else {
@@ -38,14 +40,22 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	// (2) check attribute set
 	if matchAttributes(registration.AttributesList, attrFilter) == false {
 		return false
-	}
+	}*/
+
 	// (3) check metadata set
-	if matchMetadatas(registration.MetadataList, metaFilter) == false {
-		return false
+	if metaFilter.RestrictionType == "ld" {
+		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
+			return false 
+		}
+	} else { 
+		if matchMetadatas(registration.MetadataList, metaFilter) == false {
+			return false
+		}
 	}
 	// if all matched, return true
 	return true
 }
+
 
 func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 	if subscribedEntity.IsPattern == true {
@@ -89,6 +99,41 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 	return true
 }
 
+//matchLdMetadatas
+
+func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
+	sp := restriction.Geometry
+	//sc := restriction.Cordinates
+	fmt.Println("metadatas",metadatas)
+	if value , ok := metadatas["location"]; ok == true {
+		fmt.Println("value",value)
+	}
+	switch strings.ToLower(sp) {
+		case "point":
+			if restriction.Georel != "" {
+				gr := restriction.Georel
+				contrains := strings.Split(gr,";")
+				if len(contrains) > 1 {
+					sws := strings.ReplaceAll(contrains[1], " ", "")
+					minMax := strings.Split(sws,"==")
+					//dist := distance()
+					if minMax[0] == "maxDistance" {
+						maxDistance := minMax[1]
+						fmt.Println("maxDistance",maxDistance)
+					} else if minMax[0] == "minDistance" {
+						minDistance := minMax[1]
+						fmt.Println("minDistance",minDistance)
+					} else {
+						fmt.Println(minMax[1])
+					}
+				}
+			}
+		case "polygon": 
+		default :
+			fmt.Println("waitting to implement")
+	}
+	return true
+}
 func matchMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	for _, scope := range restriction.Scopes {
 		switch strings.ToLower(scope.Type) {

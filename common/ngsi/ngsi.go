@@ -104,6 +104,7 @@ type ContextMetadata struct {
 	Name  string      `json:"name"`
 	Type  string      `json:"type,omitempty"`
 	Value interface{} `json:"value"`
+	Cordinates  interface{}  `json:"coordinates"`
 }
 
 /*
@@ -140,6 +141,7 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 		Name  string      `json:"name"`
 		Type  string      `json:"type,omitempty"`
 		Value interface{} `json:"value"`
+		Cordinates  interface{}  `json:"coordinates"`
 	}
 
 	m := InternalContextMetadata{}
@@ -148,14 +150,13 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 	if err == nil {
 		(*metadata).Name = m.Name
 		(*metadata).Type = m.Type
-
+		(*metadata).Cordinates = m.Cordinates
 		switch strings.ToLower(m.Type) {
 		case "circle":
 			var temp Circle
 			if err = mapstructure.Decode(m.Value, &temp); err == nil {
 				(*metadata).Value = temp
 			}
-
 		case "point":
 			var temp Point
 			if err = mapstructure.Decode(m.Value, &temp); err == nil {
@@ -605,6 +606,10 @@ func (scope *OperationScope) UnmarshalJSON(b []byte) error {
 type Restriction struct {
 	AttributeExpression string           `json:"attributeExpression, omitempty"`
 	Scopes              []OperationScope `json:"scopes,omitempty"`
+	Cordinates          interface{}       `json:"cordinates,omitempty"`
+	Geometry            string            `json:"geometry,omitempty"` 
+	Georel		    string             `json:"geoRel,omitempty"`
+	RestrictionType	    string             `json:"restrictionType,omitempty"`
 }
 
 func (restriction *Restriction) GetScope() OperationScope {
@@ -869,6 +874,7 @@ type DiscoverContextAvailabilityRequest struct {
 	Entities    []EntityId  `json:"entities"`
 	Attributes  []string    `json:"attributes,omitempty"`
 	Restriction Restriction `json:"restriction,omitempty"`
+	MsgFormat  string       `json:"msgFormat,omitempty"`
 }
 
 type DiscoverContextAvailabilityResponse struct {
@@ -1296,7 +1302,7 @@ type LDQueryContextRequest struct {
 	Entities   []EntityId  `json:"entities"`
 	Attributes []string    `json:"attrs,omitempty"`
 	Q          string      `json:"q"`
-	GeoQ       interface{} `json:"geoQ"`
+	Restriction    Restriction `json:"restriction"`
 	Csf        string      `json:"csf"`
 	TemporalQ  interface{} `json:"temporalQ"`
 }

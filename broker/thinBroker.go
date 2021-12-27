@@ -596,7 +596,7 @@ func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) 
 	discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
 	discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
 	discoverCtxAvailabilityReq.Attributes = ldQueryContext.Attributes
-	//discoverCtxAvailabilityReq.Restriction = restriction
+	discoverCtxAvailabilityReq.Restriction = ldQueryContext.Restriction
 	fmt.Println("discoverCtxAvailabilityReq", discoverCtxAvailabilityReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
@@ -1909,7 +1909,7 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 	registerCtxReq.RegistrationId = ""
 	registerCtxReq.ContextRegistrations = []ContextRegistration{registration}
 	registerCtxReq.Duration = "PT10M"
-
+	fmt.Println("&registerCtxReq",&registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
@@ -2459,7 +2459,7 @@ func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface
 // Register a new context entity on Discovery
 func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq := RegisterContextRequest{}
-
+	fmt.Println("location ele", elem)
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
 	entityId.ID = elem["@id"].(string)
@@ -2477,9 +2477,10 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.EntityIdList = entities
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
+	ctxMetadatas := make([]ContextMetadata,0)
 	for k, attr := range elem { // considering properties and relationships as attributes
-		fmt.Println("k inside registration", k)
 		isLdJsonObject := checkCondition(k)
+		ctxMetaData := ContextMetadata{}
 		if isLdJsonObject == true {
 			if k == "fiwareServicePath" {
 				ctxReg.FiwareServicePath = attr.(string)
@@ -2487,9 +2488,27 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 			}
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
-			//typ := attrValue["type"].(string)
 			typ := getRegistrationType(attrValue["@type"])
-			if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
+			if strings.Contains(typ,"GeoProperty") || strings.Contains(typ, "geoProperty") {
+				if strings.Contains(k,"location") {
+					ctxMetaData.Name = "location"
+				} else {
+					ctxMetaData.Name = k
+				}
+				attrValue["@context"] = elem["@context"]
+				resolved, err := compactData(attrValue, DEFAULT_CONTEXT)
+				if err != nil {
+					continue
+				}
+				resolvedMap := resolved.(map[string]interface{})
+				value := resolvedMap["value"].(map[string]interface{})
+				fmt.Println("value",value)
+				ctxMetaData.Type = value["type"].(string)
+				ctxMetaData.Cordinates = value["coordinates"]
+				ctxMetadatas =append(ctxMetadatas, ctxMetaData)
+				fmt.Println("ctxMetadatas",ctxMetadatas)
+
+			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
 				ctxRegAttr.Type = "Property"
 			} else if strings.Contains(typ, "Relationship") || strings.Contains(typ, "relationship") {
 				ctxRegAttr.Type = "Relationship"
@@ -2498,6 +2517,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 		}
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
+	ctxReg.Metadata  = ctxMetadatas
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxReg.FiwareService = fs
@@ -2506,6 +2526,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq.ContextRegistrations = ctxRegistrations
 
 	// Send the registration to discovery
+	fmt.Println("&registerCtxReq",&registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {

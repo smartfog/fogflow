@@ -693,6 +693,23 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	return entity
 }
 
+func (sz Serializer) assignRestriction(restriction map[string]interface{}) (Restriction,error) {
+	restrictions := Restriction{}
+	if _, ok := restriction["coordinates"]; ok == true {
+		restrictions.Cordinates = restriction["coordinates"]
+	}
+	if _ , ok := restriction["geometry"]; ok == true {
+		restrictions.Geometry = restriction["geometry"].(string)
+	}
+	
+	if _, ok := restriction["georel"] ; ok == true {
+		restrictions.Georel = restriction["georel"].(string)
+	}
+	restrictions.RestrictionType = "ld"
+
+	return restrictions, nil
+
+}
 //get Entities
 func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error) {
 	entitiesList := make([]EntityId, 0)
@@ -736,7 +753,14 @@ forloop:
 				break forloop
 			}
 		case NGSI_LD_GEO_QUERY:
-
+			data := QueryData[key].([]interface{})
+			dataMap := data[0].(map[string]interface{})
+			dataMap["@context"] = DEFAULT_CONTEXT
+			resolved, newErr := compactData(dataMap, DEFAULT_CONTEXT) 
+			if newErr != nil  {
+				break forloop
+			}
+			 ngsildQueryContext.Restriction, err   = sz.assignRestriction(resolved.(map[string]interface{}))
 		case NGSI_LD_QUERY:
 
 		default:

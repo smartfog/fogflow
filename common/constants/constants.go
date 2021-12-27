@@ -1,6 +1,6 @@
 package constants
 
-const DEFAULT_CONTEXT string = "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+const DEFAULT_CONTEXT string = "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld"
 
 const ID string = "@id"
 const TYPE string = "@type"
