@@ -2,6 +2,8 @@ package geolocation
 
 import (
 	"math"
+	"strings"
+	. "fogflow/common/ngsi"
 )
 
 const (
@@ -20,7 +22,7 @@ func degreesToRadians(d float64) float64 {
 }
 
 
-func Distance(p, q Coord) (mi, km float64) {
+func LDDistance(p, q Coord) (mi, km float64) {
 	lat1 := degreesToRadians(p.Lat)
 	lon1 := degreesToRadians(p.Lon)
 	lat2 := degreesToRadians(q.Lat)
@@ -39,5 +41,36 @@ func Distance(p, q Coord) (mi, km float64) {
 
 	return mi, km
 }
-© 2021 GitHub, Inc.
-Terms
+
+func FindDist(typ string, metadatas interface{},  loc interface{}) (float64, float64){
+	var mi , km float64
+	var lag, log float64
+	switch metadatas.(type) {
+		case []float64:
+			meta := metadatas.([]interface{})
+			if len(meta) == 2 {
+				lag = meta[0].(float64)
+				log = meta[1].(float64)
+			}
+		case Point :
+			meta := metadatas.(Point)
+			lag = meta.Latitude
+			log = meta.Longitude
+	}
+        switch strings.ToLower(typ) {
+                case "point":
+                        locn := loc.([]interface{})
+			p1 := Coord {
+				Lat : lag,
+				Lon : log,
+			}
+			p2 := Coord{
+                                Lat: locn[0].(float64),
+                                Lon: locn[1].(float64),
+                        }
+			mi , km = LDDistance(p1,p2)
+        }
+        return mi, km
+}
+
+

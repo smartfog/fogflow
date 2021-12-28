@@ -2,10 +2,12 @@ package main
 
 import (
 	. "fogflow/common/ngsi"
+	. "fogflow/common/geolocation"
 	"math"
 	"regexp"
 	"strings"
 	"fmt"
+	"strconv"
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
@@ -104,25 +106,41 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	sp := restriction.Geometry
 	//sc := restriction.Cordinates
-	fmt.Println("metadatas",metadatas)
-	if value , ok := metadatas["location"]; ok == true {
-		fmt.Println("value",value)
+	var typ string
+	var coordinate interface{}
+	if meta , ok := metadatas["location"]; ok == true {
+		typ = meta.Type
+		coordinate = meta.Cordinates
+		if coordinate == nil {
+			coordinate = meta.Value
+		}
 	}
+	if coordinate == nil {
+		return false
+	}
+	var res bool
 	switch strings.ToLower(sp) {
 		case "point":
 			if restriction.Georel != "" {
 				gr := restriction.Georel
 				contrains := strings.Split(gr,";")
+				fmt.Println(coordinate,restriction.Cordinates)
+				distMi, _ := FindDist(typ, coordinate, restriction.Cordinates)
 				if len(contrains) > 1 {
 					sws := strings.ReplaceAll(contrains[1], " ", "")
 					minMax := strings.Split(sws,"==")
-					//dist := distance()
 					if minMax[0] == "maxDistance" {
 						maxDistance := minMax[1]
-						fmt.Println("maxDistance",maxDistance)
+						maxF, _ := strconv.ParseFloat(maxDistance, 64)
+						if distMi > maxF {
+							res = true
+						}
 					} else if minMax[0] == "minDistance" {
 						minDistance := minMax[1]
-						fmt.Println("minDistance",minDistance)
+						minF, _ := strconv.ParseFloat(minDistance, 64)
+						if distMi < minF {
+							res = true
+						}
 					} else {
 						fmt.Println(minMax[1])
 					}
@@ -132,7 +150,7 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 		default :
 			fmt.Println("waitting to implement")
 	}
-	return true
+	return res
 }
 func matchMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	for _, scope := range restriction.Scopes {
