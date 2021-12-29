@@ -15,7 +15,7 @@ Download the Kubernetes file and the configuration files as below.
 .. code-block:: console
 
         # the Kubernetes yaml file to start all FogFlow components on the cloud node
-        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/cloud-chart-rbac.zip
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/deployment/helm_with_RBAC/cloud-chart-rbac.zip
 
 
 install unzip tool on system to extract files from cloud-chart-RBAC.zip
@@ -185,7 +185,7 @@ For deploying edge chart, use helm3 tool with microk8s as shown below.
 
         #fetch scripts for edge-chart-RBAC
 
-        $wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm_with_RBAC/edge-chart-rbac.zip
+        $wget https://raw.githubusercontent.com/smartfog/fogflow/development/deployment/helm_with_RBAC/edge-chart-rbac.zip
 
 
 To unzip the downloaded folder, use following, 

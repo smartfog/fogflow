@@ -70,7 +70,7 @@ Here are the prerequisite commands for running FogFlow on K8s:
 3. Helm
 
 .. important:: 
-	**please also allow your user to execute the Docker Command without Sudo**
+please also allow your user to execute the Docker Command without Sudo**
 	
 To install Kubernetes, please refer to  `Kubernetes Official Site`_ or Check alternate `Install Kubernetes`_,
 
@@ -107,7 +107,7 @@ Download the Kubernetes file and the configuration files as below.
 .. code-block:: console
 
         # the Kubernetes yaml file to start all FogFlow components on the cloud node
-        wget https://raw.githubusercontent.com/smartfog/fogflow/development/helm/cloud-chart.zip
+        wget https://raw.githubusercontent.com/smartfog/fogflow/development/deployment/helm/cloud-chart.zip
 
 
 - Install unzip tool on system to extract files from **cloud-chart.zip**.
@@ -441,7 +441,7 @@ For deploying edge chart, use helm3 tool with microk8s as shown below.
 
         #fetch scripts for edge-chart
 
-        $wget https://raw.githubusercontent.com/smartfog/fogflow/master/helm/edge-chart.zip
+        $wget https://raw.githubusercontent.com/smartfog/fogflow/development/deployment/helm/edge-chart.zip
 
 
 To unzip the downloaded folder using following, 
