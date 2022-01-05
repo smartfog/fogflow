@@ -70,7 +70,7 @@ Here are the prerequisite commands for running FogFlow on K8s:
 3. Helm
 
 .. important:: 
-please also allow your user to execute the Docker Command without Sudo**
+        **please also allow your user to execute the Docker Command without Sudo**
 	
 To install Kubernetes, please refer to  `Kubernetes Official Site`_ or Check alternate `Install Kubernetes`_,
 
