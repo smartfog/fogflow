@@ -71,3 +71,4 @@ const LD_PRPERTY string = "https://uri.etsi.org/ngsi-ld/Property"
 const LD_GEOPROPERTY string = "https://uri.etsi.org/ngsi-ld/GeoProperty"
 const MSG_FORMAT string = "mgsFormat"
 const FIWARE_SERVICE_PATH string = "fiwareServicePath"
+const INF float64 = 10000

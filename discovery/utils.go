@@ -125,7 +125,7 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 				gr := restriction.Georel
 				contrains := strings.Split(gr,";")
 				fmt.Println(coordinate,restriction.Cordinates)
-				distMi, _ := FindDist(typ, coordinate, restriction.Cordinates)
+				distMi, _ := FindDistForPoint(typ, coordinate, restriction.Cordinates)
 				if len(contrains) > 1 {
 					sws := strings.ReplaceAll(contrains[1], " ", "")
 					minMax := strings.Split(sws,"==")
@@ -146,12 +146,17 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 					}
 				}
 			}
-		case "polygon": 
+		case "polygon":
+			 if restriction.Georel != "" {
+				dis , _ := FindDistForPolygon(typ, coordinate, restriction)
+				fmt.Println("dis",dis)
+			}
 		default :
 			fmt.Println("waitting to implement")
 	}
 	return res
 }
+
 func matchMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	for _, scope := range restriction.Scopes {
 		switch strings.ToLower(scope.Type) {
