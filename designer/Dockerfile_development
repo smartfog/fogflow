@@ -9,6 +9,7 @@ RUN npm install
 
 ADD main.js /app
 ADD dgraph.js /app
+ADD rabbitmq.js /app
 ADD ./public /app/public
 
 
