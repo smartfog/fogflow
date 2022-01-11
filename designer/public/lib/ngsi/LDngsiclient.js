@@ -83,6 +83,27 @@ var NGSILDclient = (function() {
         });
     };    
     
+    NGSILDclient.prototype.GetEntitiesContext = function GetEntitiesContext(type_) {
+        console.log("inside in get entities context", this.brokerURL);
+        
+        return axios({
+            method: "get",
+            url: this.brokerURL + '/v1/entities',
+            headers: {
+                    'Accept': 'application/ld+json',
+                    'content-type': 'application/json'
+                },
+            params: {type:type_},
+            data: {entities: [{type: "IoTBroker", isPattern: true}]}
+        }).then( function(response){
+            if (response.status == 200) {
+                return response.data;
+            } else {
+                return null;
+            }
+        });
+    };
+
     // query context
     NGSILDclient.prototype.queryContext = function queryContext(queryCtxReq) {        
         return axios({
