@@ -404,11 +404,11 @@ $(function () {
         var discoverReq = {}
         
         discoverReq.entities = [{ type: 'IoTBroker', isPattern: true }];
-
+        // v1 API for get broker list
         var ngsi9client = new NGSI9Client(config.discoveryURL)
         console.log('discorvery url is ',config.discoveryURL);
         displayEdgeNode();
-
+        // v1 API for get broker list      
         ngsi9client.discoverContextAvailability(discoverReq).then(function (response) {
             console.log("broker response: ",response);
             
@@ -427,7 +427,6 @@ $(function () {
                             option.text ='All'; 
                             var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
                             allEdgeBrokerList.add(option);
-                           // ldEntities()
                         }
                         var option = document.createElement("option");
                         var edgeName = brokerID.replace('Broker','Edge');
@@ -463,6 +462,7 @@ $(function () {
         $('#deviceList').html('');
     }
     
+    // for LD payload
     function getEntityProperties(ldDataList){
         for(var i=0;i<ldDataList.length;i++){
             var objKeyList = Object.keys(ldDataList[i])
@@ -487,21 +487,17 @@ $(function () {
 
         }
     }
+
+    // API call for LD devices
     function ldEntities(ldBrokerURL){
-        console.log("broker list is jjjjj ",ldBrokerURL);
-        // for (var i = 0; i < ldBrokerURL.length; i++)
-        // {
         var sourcePath=ldBrokerURL.replace("ngsi10","ngsi-ld");
-        console.log("inside in broker kkkkk ",sourcePath)
         var ldclient = new NGSILDclient(sourcePath);
         ldclient.GetEntitiesContext('All').then(function (edgeNodeList) {
-        console.log("ld data response ",edgeNodeList)
         getEntityProperties(edgeNodeList)
         for (var i = 0; i < edgeNodeList.length; i++) {
             var edgeEntity = edgeNodeList[i];
             if(i+1 == edgeNodeList.length)
             {
-                console.log("ld device length ",ldDeviceObj)
                 $('#deviceList').html(displayLDDeviceList4Edge(ldDeviceObj));
             }
             try{
@@ -512,7 +508,6 @@ $(function () {
                 var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
                 marker.nodeID = edgeNodeId;
                 marker.addTo(curMap).bindPopup(edgeNodeId);
-            // marker.on('click', showRunningTasks);
             }catch (e) {
                 console.log(e);
             }
@@ -521,8 +516,6 @@ $(function () {
             console.log(error);
             console.log('failed to query the list of ld device');
         });
-     //}
-
         
     }
 
@@ -536,6 +529,7 @@ $(function () {
             var queryReq = {}
             queryReq.entities = [{ "type": 'Worker', "isPattern": true },{ id: 'Device.*', isPattern: true }];
             ldEntities(brokerObj[i].brokerURL)
+            // call v1 API for get worker list and v1 devices
             tmpClient.queryContext(queryReq).then(function (edgeNodeList) {
                 console.log("inside in worker list ",edgeNodeList);
                 if (edgeNodeList){
@@ -611,6 +605,7 @@ $(function () {
         return edgeIcon;
     }
 
+    //for  v1 devices and worker edge 
     function displayEdgeOnMap(workerList) {
         $('#ld-device-table tr:last').after(displayDeviceList4Edge(workerList,false));
         for (var i = 0; i < workerList.length; i++) {
@@ -633,13 +628,13 @@ $(function () {
                 else {
                     marker.addTo(curMap).bindPopup(edgeNodeId);
                 }
-            // marker.on('click', showRunningTasks);
             }catch (e) {
                 console.log(e);
             }
         }
     }
-    
+
+    // for ld devices list
     function displayLDDeviceList4Edge(devices){
         if (devices == null || devices.length == 0) {
             $('#deviceList').html('');
@@ -674,16 +669,7 @@ $(function () {
             $('#deviceList').html('');
             return
         }
-        // var html = '<table class="table table-striped table-bordered table-condensed">';
-
-        // html += '<thead><tr>';
-        // html += '<th>ID</th>';
-        // html += '<th>Type</th>';
-        // if (!isFromMap){
-        // html += '<th>Attributes</th>';
-        // html += '<th>DomainMetadata</th>';
-        // }
-        // html += '</tr></thead>';
+        
         var html ='';
         for (var i = 0; i < devices.length; i++) {
             var device = devices[i];
@@ -697,7 +683,6 @@ $(function () {
             html += '<td>' + device.entityId.type + '</td>';
             if (!isFromMap){
             html += '<td>' + JSON.stringify(device.attributes) + '</td>';
-           // html += '<td>' + JSON.stringify(device.metadata) + '</td>';
             }
             html += '</tr>';
         }

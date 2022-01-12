@@ -3695,7 +3695,7 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService
 func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareService string) ([]interface{}, error) {
 	var entities []interface{}
 	typ := typs[0]
-	if link != "" {
+	if link != "" || typ != "All" {
 		typ = tb.getTypeResolved(link, typ)
 		if typ == "" {
 			err := errors.New("Type not resolved!")
@@ -3706,7 +3706,7 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
 		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
-			if entityMap["type"] == typ {
+			if entityMap["type"] == typ || typ == "All" {
 				compactEntity := tb.createOriginalPayload(entityMap)
 				compactEntityMap := compactEntity.(map[string]interface{})
 				compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))
