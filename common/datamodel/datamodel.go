@@ -2,6 +2,7 @@ package datamodel
 
 import (
 	"encoding/json"
+	"time"
 
 	. "fogflow/common/ngsi"
 )
@@ -71,7 +72,7 @@ type ServiceIntent struct {
 	Priority       Priority       `json:"priority"`
 	TopologyName   string         `json:"topology"`
 	TopologyObject *Topology
-	Action		string	      `json:"action"` 
+	Action         string `json:"action"`
 }
 
 type TaskIntent struct {
@@ -147,7 +148,7 @@ type Topology struct {
 	Description string `json:"description"`
 	Name        string `json:"name"`
 	Tasks       []Task `json:"tasks"`
-	Action	    string `json:"action"`
+	Action      string `json:"action"`
 }
 
 type FogFunction struct {
@@ -155,7 +156,7 @@ type FogFunction struct {
 	Name     string        `json:"name"`
 	Topology Topology      `json:"topology"`
 	Intent   ServiceIntent `json:"intent"`
-	Action   string	       `json:"action"`
+	Action   string        `json:"action"`
 }
 
 type DockerImage struct {
@@ -264,6 +265,8 @@ type WorkerProfile struct {
 	Workload     int
 	CAdvisorPort int
 	EdgeAddress  string
+
+	Last_Hearbeat_Update time.Time
 }
 
 func (worker *WorkerProfile) IsOverloaded() bool {
@@ -271,6 +274,16 @@ func (worker *WorkerProfile) IsOverloaded() bool {
 		return true
 	} else {
 		return false
+	}
+}
+
+func (worker *WorkerProfile) IsLive(duration int) bool {
+	delta := time.Since(worker.Last_Hearbeat_Update)
+
+	if int(delta.Seconds()) >= duration {
+		return false
+	} else {
+		return true
 	}
 }
 
@@ -304,8 +317,7 @@ func SetFiwareServicePath(scheduledTaskInstance ScheduledTaskInstance, fiwareSer
 }
 
 func AddFiwareServicePath(flowInfo FlowInfo, fiwareServicePath string, msgFormat string) FlowInfo {
-        flowInfo.InputStream.FiwareServicePath = fiwareServicePath
-        flowInfo.InputStream.MsgFormat = msgFormat
-        return flowInfo
+	flowInfo.InputStream.FiwareServicePath = fiwareServicePath
+	flowInfo.InputStream.MsgFormat = msgFormat
+	return flowInfo
 }
-
