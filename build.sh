@@ -1,3 +1,10 @@
+if (( $# != 1 )); then
+	echo "Illegal number of parameters"
+	echo "usage: ./build [multistage|development|arm]"
+	echo "For "development" or  "arm" options to work, golang must be setup in the system." 
+	exit 1
+fi
+
 cd discovery
 echo "======start to build fogflow/discovery======"
 ./build $1
