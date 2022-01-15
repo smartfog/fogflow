@@ -531,7 +531,6 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	link := r.Header.Get("Link")
 	context, contextInpayload := extractcontext(cType, link)
 	resolved, err := tb.ExpandPayload(LDqueryCtxReq, context, contextInpayload)
-	fmt.Println("===========resolved==============", resolved)
 	LDQueryContext := LDQueryContextRequest{}
 	var resolveError error
 	if err != nil {
@@ -583,7 +582,6 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		responseEle["@id"] = actualEid[0]
 		returnvalue, err := compactData(responseEle, responseEle["@context"])
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 		queryContextResponse = append(queryContextResponse, returnvalue)
@@ -597,7 +595,6 @@ func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) 
 	discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
 	discoverCtxAvailabilityReq.Attributes = ldQueryContext.Attributes
 	discoverCtxAvailabilityReq.Restriction = ldQueryContext.Restriction
-	fmt.Println("discoverCtxAvailabilityReq", discoverCtxAvailabilityReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
 
@@ -618,12 +615,10 @@ func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) 
 
 func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs string, fsp string) []interface{} {
 	newEntityList := make([]EntityId, 0)
-	fmt.Println("ids", ids)
 	for _, entity := range ids {
 		id := entity.ID
 		idSplit := strings.Split(id, "@")
 		entity.ID = idSplit[0]
-		//fmt.Println("index",index)
 		newEntityList = append(newEntityList, entity)
 	}
 	queryCtxLDReq := LDQueryContextRequest{}
@@ -826,7 +821,6 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 
 func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		fmt.Println("This is notification from anather broker")
 		var context []interface{}
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
@@ -1909,7 +1903,6 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 	registerCtxReq.RegistrationId = ""
 	registerCtxReq.ContextRegistrations = []ContextRegistration{registration}
 	registerCtxReq.Duration = "PT10M"
-	fmt.Println("&registerCtxReq",&registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
@@ -2148,7 +2141,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 					context = append(context, DEFAULT_CONTEXT)
 				}
 			}
-			fmt.Println("context", context)
 			ctxEle := ctx.(map[string]interface{})
 			_, ok1 := ctxEle["id"]
 			_, ok2 := ctxEle["@id"]
@@ -2172,7 +2164,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 			} else {
 				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 				if err != nil {
-					fmt.Println(err.Error())
 					problemSet := ProblemDetails{}
 					problemSet.Details = err.Error()
 					res.Errors = append(res.Errors, problemSet)
@@ -2182,7 +2173,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 					// Deserialize the payload here.
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-					fmt.Println("deSerializedEntity", deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
 						problemSet.Details = err.Error()
@@ -2373,11 +2363,8 @@ func (tb *ThinBroker) updateLdContextElement(ctxEle map[string]interface{}) {
 	if _, exist := tb.ldEntities[eid]; exist {
 		tb.updateCtxElemet(ctxEle, eid)
 	} else {
-		fmt.Println("ctxEle", ctxEle)
 		typ := getRegistrationType(ctxEle["@type"])
-		fmt.Println("typ", typ)
 		tb.entityTypeTOEntityId[typ] = append(tb.entityTypeTOEntityId[typ], eid)
-		fmt.Println("tb.entityTypeTOEntityId[typ]", tb.entityTypeTOEntityId[typ])
 		tb.ldEntities[eid] = ctxEle
 	}
 }
@@ -2459,14 +2446,12 @@ func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface
 // Register a new context entity on Discovery
 func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq := RegisterContextRequest{}
-	fmt.Println("location ele", elem)
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
 	entityId.ID = elem["@id"].(string)
 	_, fs := FiwareId(elem["@id"].(string))
 	//}
 	//fmt.Println("Fs", Fs)
-	fmt.Println("elem inside registration", elem)
 	entityId.Type = getRegistrationType(elem["@type"])
 	//entityId.Type = elem["type"].(string)
 	entities = append(entities, entityId)
@@ -2502,11 +2487,9 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 				}
 				resolvedMap := resolved.(map[string]interface{})
 				value := resolvedMap["value"].(map[string]interface{})
-				fmt.Println("value",value)
 				ctxMetaData.Type = value["type"].(string)
 				ctxMetaData.Cordinates = value["coordinates"]
 				ctxMetadatas =append(ctxMetadatas, ctxMetaData)
-				fmt.Println("ctxMetadatas",ctxMetadatas)
 
 			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
 				ctxRegAttr.Type = "Property"

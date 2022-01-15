@@ -515,7 +515,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 			element["id"] = id
 			element["type"] = ldEle["type"]
 			for k, _ := range ldEle {
-				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
+				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace"  && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
 					attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
 					element[k] = attr
 				}

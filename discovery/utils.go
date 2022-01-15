@@ -12,7 +12,7 @@ import (
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
 
-	/*if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
+	if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
                 return false
         }
 
@@ -42,7 +42,7 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	// (2) check attribute set
 	if matchAttributes(registration.AttributesList, attrFilter) == false {
 		return false
-	}*/
+	}
 
 	// (3) check metadata set
 	if metaFilter.RestrictionType == "ld" {
@@ -124,7 +124,6 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 			if restriction.Georel != "" {
 				gr := restriction.Georel
 				contrains := strings.Split(gr,";")
-				fmt.Println(coordinate,restriction.Cordinates)
 				distMi, _ := FindDistForPoint(typ, coordinate, restriction.Cordinates)
 				if len(contrains) > 1 {
 					sws := strings.ReplaceAll(contrains[1], " ", "")
@@ -132,13 +131,15 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 					if minMax[0] == "maxDistance" {
 						maxDistance := minMax[1]
 						maxF, _ := strconv.ParseFloat(maxDistance, 64)
-						if distMi > maxF {
+						fmt.Println("maxF",maxF)
+						if distMi < maxF {
+							fmt.Println("res",res)
 							res = true
 						}
 					} else if minMax[0] == "minDistance" {
 						minDistance := minMax[1]
 						minF, _ := strconv.ParseFloat(minDistance, 64)
-						if distMi < minF {
+						if distMi > minF {
 							res = true
 						}
 					} else {
@@ -148,11 +149,10 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 			}
 		case "polygon":
 			 if restriction.Georel != "" {
-				dis , _ := FindDistForPolygon(typ, coordinate, restriction)
-				fmt.Println("dis",dis)
+				res = FindDistForPolygon(typ, coordinate, restriction)
 			}
 		default :
-			fmt.Println("waitting to implement")
+			fmt.Println("To be implemented latter")
 	}
 	return res
 }

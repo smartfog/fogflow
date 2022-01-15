@@ -40,7 +40,6 @@ func LDDistance(p, q Coord) (mi, km float64) {
 
 	mi = c * earthRadiusMi
 	km = c * earthRaidusKm
-
 	return mi, km
 }
 
@@ -190,16 +189,20 @@ func convertInStructure(coor interface{}) []geoPoint {
 }
 
 func commonConverter(entityP interface{}, queryP interface{}) ([]geoPoint,[]geoPoint) {
-	entityA := entityP.([]interface{})
-	queryA := queryP.([]interface{})
 	entityMeta := make([]geoPoint,0)
 	queryMeta := make([]geoPoint,0)
-	for _ , val := range entityA {
-                entityMeta = convertInStructure(val)
-        }
-        for _ , val := range queryA {
-                queryMeta = convertInStructure(val)
-        }
+	if entityP != nil {
+		entityA := entityP.([]interface{})
+		for _ , val := range entityA {
+		entityMeta = convertInStructure(val)
+		}
+	}
+	if queryP != nil {
+		queryA := queryP.([]interface{})
+		for _ , val := range queryA {
+		queryMeta = convertInStructure(val)
+		}
+	}
 	return entityMeta,queryMeta
 }
 
@@ -232,9 +235,9 @@ func checkDisjoint(entityP interface{}, queryP interface{}) bool {
 func checkWithin(entityP interface{}, queryP interface{}) bool {
 	entityMeta,queryMeta := commonConverter(entityP,queryP)
 	within := true
-	for _ , val := range queryP {
-                size := len(entityP)
-                status := isInside(entityP,size,val)
+	for _ , val := range queryMeta {
+                size := len(entityMeta)
+                status := isInside(entityMeta,size,val)
                 if status == false {
                         within = false
                         break
@@ -250,21 +253,37 @@ func checkContains(entityP interface{}, queryP interface{}) bool {
                 size := len(queryMeta)
                 status := isInside(queryMeta,size,val)
                 if status == false {
-                        within = false
+                        contain = false
                         break
                 }
         }
         return contain
 }
 
-func FindDistForPolygon(typ string , metaData interface{}, res Restriction) (float64, float64) {
-	var mi, km float64
-	fmt.Println("res",res)
-	fmt.Println(res.Cordinates)
-	var status bool 
+func checkPoint(meta Point, queryP interface{}) bool {
+	metaPoint :=geoPoint{}
+	metaPoint.x = meta.Latitude
+	metaPoint.y = meta.Longitude
+	_,queryMeta := commonConverter(nil,queryP)
+	//inside := false
+	//fmt.Println("MetaPoint, queryMeta",metaPoint,queryMeta)
+	//for _, val := range queryMeta {
+	size := len(queryMeta)
+	inside := isInside(queryMeta,size,metaPoint)
+		/*if status == true {
+			inside = true
+			break 
+		}*/
+	return inside
+
+}
+func FindDistForPolygon(typ string , metaData interface{}, res Restriction) (bool) {
+	//var mi, km float64
+	var status bool
 	geoRel := strings.ReplaceAll(res.Georel, " ", "")
 	switch strings.ToLower(typ) {
-		case "point" :
+		case "point":
+			status = checkPoint(metaData.(Point),res.Cordinates)
 		case "polygon":
 			if geoRel == "equals" {
 				status = checkEquals(metaData,res.Cordinates)
@@ -281,5 +300,5 @@ func FindDistForPolygon(typ string , metaData interface{}, res Restriction) (flo
 			}
 		default:
 	}
-	return mi, km
+	return status
 }
