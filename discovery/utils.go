@@ -47,9 +47,9 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	// (3) check metadata set
 	if metaFilter.RestrictionType == "ld" {
 		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
-			return false 
+			return false
 		}
-	} else { 
+	} else {
 		if matchMetadatas(registration.MetadataList, metaFilter) == false {
 			return false
 		}

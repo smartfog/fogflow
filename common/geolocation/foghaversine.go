@@ -210,11 +210,20 @@ func checkEquals(entityP interface{}, queryP interface{}) bool {
 	entityMeta,queryMeta := commonConverter(entityP,queryP)
 	fmt.Println(entityMeta)
 	fmt.Println(queryMeta)
-	/*if entityP == queryP {
-		fmt.Println("matched")
-		return true 
-	}*/
-	return false
+	equal := true
+	if len(entityMeta) != len(queryMeta) {
+		return false 
+	}
+	hashMap := make(map[geoPoint]bool)
+	for _ , val := range queryMeta {
+		hashMap[val] = true
+	}
+	for _ , val := range entityMeta {
+		if hashMap[val] == false {
+			return false
+		}
+	}
+	return equal
 }
 
 func checkDisjoint(entityP interface{}, queryP interface{}) bool {
