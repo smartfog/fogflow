@@ -577,9 +577,12 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	for _, val := range matchedCtxElement {
 		responseEle := val.(map[string]interface{})
 		delete(responseEle, "fiwareServicePath")
-		eid := responseEle["@id"].(string)
-		actualEid := strings.Split(eid, "@")
-		responseEle["@id"] = actualEid[0]
+		fmt.Println("responseEle",responseEle)
+		if _ , ok := responseEle["@id"] ; ok == true {
+			eid := responseEle["@id"].(string)
+			actualEid := strings.Split(eid, "@")
+			responseEle["@id"] = actualEid[0]
+		}
 		returnvalue, err := compactData(responseEle, responseEle["@context"])
 		if err != nil {
 			continue
