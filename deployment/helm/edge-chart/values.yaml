@@ -9,6 +9,16 @@ namespace: fogflow
 # are running all the time for the deployment
 replicaCount: 1 
 
+readinessProbe:
+  initialDelaySeconds: 40
+  failureThreshold: 6
+  periodSeconds: 10
+
+livenessProbe:
+  initialDelaySeconds: 40
+  failureThreshold: 6
+  periodSeconds: 10
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
