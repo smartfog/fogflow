@@ -47,10 +47,10 @@ spec:
         resources:
         #CPU and memory limits for dgraph deployment
           limits:
-            memory: 500Mi
+            memory: 2Gi
             cpu: 2
           requests: 
-            memory: 500Mi
+            memory: 2Gi
             cpu: 1 
         volumeMounts:
         - name: dgraph 

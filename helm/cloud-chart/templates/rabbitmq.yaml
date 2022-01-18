@@ -41,7 +41,7 @@ spec:
           value: mypass
         - name: RABBITMQ_DEFAULT_USER
           value: admin
-        image: rabbitmq:3.8.0-alpine
+        image: rabbitmq:3.8
         imagePullPolicy: IfNotPresent 
         name: rabbitmq
         ports:
@@ -50,12 +50,12 @@ spec:
         readinessProbe:
           tcpSocket:
             port: 5672 
-          initialDelaySeconds: 120
+          initialDelaySeconds: 5
           periodSeconds: 10
         livenessProbe:
           tcpSocket:
             port: 5672 
-          initialDelaySeconds: 120
+          initialDelaySeconds: 15
           periodSeconds: 20
         resources: 
          #CPU and memory limits for rabbitmq deployment
