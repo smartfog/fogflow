@@ -414,7 +414,7 @@ $(function () {
             
             if (response.errorCode.code == 200 && response.hasOwnProperty('contextRegistrationResponses')) {
                 for (var i in response.contextRegistrationResponses) {
-                    var tmpIn = i;
+                    var tmpIn = parseInt(i)+1;
                     var contextRegistrationResponse = response.contextRegistrationResponses[i];
                     console.log("broker details is *** ",contextRegistrationResponse);
                     var brokerID = contextRegistrationResponse.contextRegistration.entities[0].id;
@@ -436,10 +436,14 @@ $(function () {
                         var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
                         console.log("all edge obje ",allEdgeBrokerList);
                         allEdgeBrokerList.add(option);
-                        if (tmpIn+1==response.contextRegistrationResponses.length){
-                            if($('#allEdgeBrokerList option:selected').val() == 'All'){
-                                getWorkerList(displayEdgeOnMap,brokers)
-                            }
+                        console.log("inside in broker last indexeee ",response.contextRegistrationResponses.length)
+                        console.log("inside in broker last index ",tmpIn);
+
+                        if (tmpIn === response.contextRegistrationResponses.length){
+                            getWorkerList(displayEdgeOnMap,brokers)
+                            // if($('#allEdgeBrokerList option:selected').val() == 'All'){
+                            //     getWorkerList(displayEdgeOnMap,brokers)
+                            // }
                         }
                     }
                 }
@@ -527,7 +531,11 @@ $(function () {
             var tmpI = i;
             var tmpClient = new NGSI10Client(brokerObj[i].brokerURL);
             var queryReq = {}
-            queryReq.entities = [{ "type": 'Worker', "isPattern": true },{ id: 'Device.*', isPattern: true }];
+            /**
+             * get only worker list from the broker
+             */
+            queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
+            console.log("get broker id is --- ",brokerObj[i].brokerURL);
             ldEntities(brokerObj[i].brokerURL)
             // call v1 API for get worker list and v1 devices
             tmpClient.queryContext(queryReq).then(function (edgeNodeList) {
@@ -604,7 +612,20 @@ $(function () {
         }
         return edgeIcon;
     }
-
+    
+    function selectedWorkerValidate(workerID) {
+     var selectedEdge =  $('#allEdgeBrokerList option:selected').val();
+     if (selectedEdge === 'All') return true;
+     if (workerID.includes(".") && selectedEdge !== undefined) {
+        let wId = workerID.substr(workerID.indexOf('.'));
+        let selectedId = selectedEdge.substr(selectedEdge.indexOf('.'));
+        if (wId === selectedId) {
+            return true;
+        }
+     }
+     return false;
+    }
+    
     //for  v1 devices and worker edge 
     function displayEdgeOnMap(workerList) {
         $('#ld-device-table tr:last').after(displayDeviceList4Edge(workerList,false));
@@ -617,8 +638,9 @@ $(function () {
                 var edgeIcon = edgeDeviceIcon(edgeEntity.entityId.type,false);
                 var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
                 marker.nodeID = edgeNodeId;
-
-                if (edgeEntity.entityId.type === 'Worker'){
+                  
+                if (edgeEntity.entityId.type === 'Worker' && selectedWorkerValidate(edgeNodeId)){
+                    console.log("selected edge -- ",$('#allEdgeBrokerList option:selected').val());
                     var id = edgeEntity.entityId.id;
                     console.log("get all worker data ",workerWithDeviceList[id]);
                     var container = $('<div />');
@@ -626,7 +648,7 @@ $(function () {
                     marker.addTo(curMap).bindPopup(id);
                 }
                 else {
-                    marker.addTo(curMap).bindPopup(edgeNodeId);
+                    //marker.addTo(curMap).bindPopup(edgeNodeId);
                 }
             }catch (e) {
                 console.log(e);
