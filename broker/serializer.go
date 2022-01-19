@@ -149,25 +149,26 @@ func (sz Serializer) getType(typ []interface{}) string {
 }
 
 func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string]interface{}, error) {
-	hasValueExist := false
+	//hasValueExist := false
 	Property := make(map[string]interface{})
+	//fmt.Println("propertyMap",propertyMap)
 	for propertyField, fieldValue := range propertyMap {
 		if strings.Contains(propertyField, "@type") {
 			if fieldValue != nil {
 				Property["type"] = sz.getType(fieldValue.([]interface{}))
 			}
 		} else if strings.Contains(propertyField, "hasValue") {
-			hasValueExist = true
+			//hasValueExist = true
 			if fieldValue != nil {
 				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
-				if Property["value"].([]interface{})[0] == "nil" || Property["value"].([]interface{})[0] == "Nil" || Property["value"].([]interface{})[0] == "Null" || Property["value"].([]interface{})[0] == "null" {
+				/*if Property["value"].([]interface{})[0] == "nil" || Property["value"].([]interface{})[0] == "Nil" || Property["value"].([]interface{})[0] == "Null" || Property["value"].([]interface{})[0] == "null" {
 					err := errors.New("Property value can not be null/nil !")
 					return Property, err
-				}
-			} else {
+				}*/
+			} /*else {
 				err := errors.New("Property value can not be null/nil !")
 				return Property, err
-			}
+			}*/
 		} else if strings.Contains(propertyField, "observedAt") {
 			if fieldValue != nil {
 				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
@@ -218,10 +219,10 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		}
 	}
-	if hasValueExist == false {
+	/*if hasValueExist == false {
 		err := errors.New("Property value can not be null/nil !")
 		return Property, err
-	}
+	}*/
 	//Property["modifiedAt"] = time.Now().String()
 	return Property, nil
 }
