@@ -436,14 +436,9 @@ $(function () {
                         var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
                         console.log("all edge obje ",allEdgeBrokerList);
                         allEdgeBrokerList.add(option);
-                        console.log("inside in broker last indexeee ",response.contextRegistrationResponses.length)
-                        console.log("inside in broker last index ",tmpIn);
 
                         if (tmpIn === response.contextRegistrationResponses.length){
                             getWorkerList(displayEdgeOnMap,brokers)
-                            // if($('#allEdgeBrokerList option:selected').val() == 'All'){
-                            //     getWorkerList(displayEdgeOnMap,brokers)
-                            // }
                         }
                     }
                 }
@@ -613,6 +608,7 @@ $(function () {
         return edgeIcon;
     }
     
+    // selected broker validate with worker 
     function selectedWorkerValidate(workerID) {
      var selectedEdge =  $('#allEdgeBrokerList option:selected').val();
      if (selectedEdge === 'All') return true;
