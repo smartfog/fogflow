@@ -1,10 +1,21 @@
 var amqp = require('amqplib/callback_api');
+var config_fs_name = './config.json';
 
+var args = process.argv.slice(2);
+if (args.length > 0) {
+    config_fs_name = args[0];
+}
+var globalConfigFile = require(config_fs_name)
 
-RABBIT_URL = 'amqp://localhost'
-EXCHANGE = 'Op'
-USER = 'admin'
-PASSWORD = 'mypass'
+const IP = globalConfigFile.my_hostip || "127.0.0.1"; 
+const PORT = globalConfigFile.rabbitmq.port || 5672;
+const RABBIT_URL = 'amqp://'+IP+':'+PORT.toString();
+const EXCHANGE = 'Op'
+const USER =  globalConfigFile.rabbitmq.username || 'admin';
+const PASSWORD = globalConfigFile.rabbitmq.password || 'mypass';
+
+console.log("RabbitMQ URL "+RABBIT_URL);
+
 var exchange = undefined;
 var channel_ = undefined;
 const opt = { credentials: require('amqplib').credentials.plain(USER, PASSWORD) };
