@@ -266,7 +266,7 @@ type WorkerProfile struct {
 	CAdvisorPort int
 	EdgeAddress  string
 
-	Last_Hearbeat_Update time.Time
+	Last_Heartbeat_Update time.Time
 }
 
 func (worker *WorkerProfile) IsOverloaded() bool {
@@ -278,7 +278,7 @@ func (worker *WorkerProfile) IsOverloaded() bool {
 }
 
 func (worker *WorkerProfile) IsLive(duration int) bool {
-	delta := time.Since(worker.Last_Hearbeat_Update)
+	delta := time.Since(worker.Last_Heartbeat_Update)
 
 	if int(delta.Seconds()) >= duration {
 		return false
