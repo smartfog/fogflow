@@ -6,7 +6,6 @@ $(function() {
         scopeType: "local",
         scopeValue: "local"
     };
-    console.log("call to utility function ",testfunction())
     var RuleSet = { threshold: 30 };
     var curTopology = null;
     var curIntent = null;

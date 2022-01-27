@@ -37,6 +37,7 @@ $(function() {
 
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
+    var clientDes = new NGSI10Client('./internal');
     subscribeResult();
     checkTopology();
     checkIntent();
