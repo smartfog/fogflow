@@ -50,7 +50,14 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 				geoResult[key] = getInstanceID(val.([]interface{}))
 			}
 		default:
-			interfaceArray := val.([]interface{})
+			var interfaceArray []interface{}
+			switch val.(type) {
+				case []interface{}:
+					interfaceArray = val.([]interface{})
+				default:
+					interfaceArray = make([]interface{},0)
+					geoResult[key] = val
+			}
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
 				if err != nil {
@@ -77,7 +84,8 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 		switch key {
 		case NGSI_LD_TYPE:
 			if val != nil {
-				propertyResult[key] = getType(val.([]interface{}))
+				//propertyResult[key] = getType(val.([]interface{}))
+				propertyResult[key] = getType(val)
 			}
 		case NGSI_LD_OBSERVED_AT:
                         if val != nil {
@@ -105,7 +113,15 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 				propertyResult[key] = getInstanceID(val.([]interface{}))
 			}
 		default:
-			interfaceArray := val.([]interface{})
+			fmt.Println("val",val)
+			interfaceArray := make([]interface{},0)
+			switch val.(type) {
+				case []interface{}:
+					interfaceArray = val.([]interface{})
+				default:
+					propertyValue = true
+					propertyResult[key] = val
+			}
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
 				if err != nil {
@@ -160,7 +176,14 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 				relResult[key] = getInstanceID(val.([]interface{}))
 			}
 		default:
-			interfaceArray := val.([]interface{})
+			interfaceArray := make([]interface{},0)
+                        switch val.(type) {
+                                case []interface{}:
+                                        interfaceArray = val.([]interface{})
+                                default:
+                                        ralationobject = true
+                                        relResult[key] = val
+                        }
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
 				if err != nil {
@@ -215,40 +238,63 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 
 		}
 	}
-	compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
+	/*compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 	fmt.Println(compaced)
-	fmt.Println("+++++resultEntity++++", resultEntity)
+	fmt.Println("+++++resultEntity++++", resultEntity)*/
 	return resultEntity, nil
 }
-
+func (sz Serializer)getTypeValue(typ string) (fName, error) {
+	var funcName fName
+	var err error
+	switch typ {
+		case LD_RELATIONSHIP:
+			funcName = sz.relHandler
+                case LD_PRPERTY:
+			funcName = sz.proprtyHandler
+                case LD_GEOPROPERTY:
+			funcName = sz.geoHandler
+                default:
+			err = errors.New("Unknown Type !")
+               }
+	return funcName ,err
+}
 func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
+	fmt.Println("attr",attr)
 	//var  Type1 string
 	var funcName fName
 	var err error
+	fmt.Println("attr",attr)
 	if _, okey := attr["@type"]; okey == false {
+		fmt.Println("okey",okey)
 		err := errors.New("attribute type can not be nil!")
 		return funcName, err
 	}
-	var resType []interface{}
+	fmt.Println("attr",attr)
+	var resType interface{}
+	var tValue int
 	switch  attr["@type"].(type) {
 		case []interface{}:
-			resType = attr["@type"].([]interface{})
+			resType = attr["@type"]
+			tValue = 1
+		case string :
+			resType = attr["@type"]
+			tValue = 2 
 		default:
 			err := errors.New("Unknown Type!")
 			return funcName, err
 	}
-	if len(resType) > 0 {
-		Type1 := resType[0].(string)
-		switch Type1 {
-		case LD_RELATIONSHIP:
-			funcName = sz.relHandler
-		case LD_PRPERTY:
-			funcName = sz.proprtyHandler
-		case LD_GEOPROPERTY:
-			funcName = sz.geoHandler
-		default:
-			err = errors.New("Unknown Type !")
+	if tValue == 1 {
+		resType1 := resType.([]interface{})
+		if len(resType1) > 0 {
+			Type1 := resType1[0].(string)
+			funcName, err  = sz.getTypeValue(Type1)
 		}
+	} else if tValue == 2 {
+		resType2 := resType.(string)
+		funcName, err  = sz.getTypeValue(resType2)
+	} else {
+		err := errors.New("Unknown Type!")
+		return funcName, err
 	}
 	return funcName, err
 }

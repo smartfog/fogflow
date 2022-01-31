@@ -863,7 +863,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 			if err != nil {
 				continue
 			} else {
-				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+				deSerializedEntity["@id"] = getIoTID(deSerializedEntity["@id"].(string), fiwareService)
 				var fsp string
 				if r.Header.Get("fiware-servicePath") != "" {
 					fsp = r.Header.Get("fiware-servicePath")
@@ -874,8 +874,8 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				deSerializedEntity["fiwareServicePath"] = fsp
 
 				deSerializedEntity["@context"] = context
-				deSerializedEntity["createdAt"] = time.Now().String()
-				eid := deSerializedEntity["id"].(string)
+				//deSerializedEntity["createdAt"] = time.Now().String()
+				eid := deSerializedEntity["@id"].(string)
 				tb.LDe2sub_lock.RLock()
 				subscriberList := tb.entityId2LDSubcriptions[eid]
 				tb.LDe2sub_lock.RUnlock()

@@ -13,7 +13,7 @@ func getEntityId(id interface{}) string {
 	return Id
 }
 
-func getType(typ []interface{}) interface{} {
+func getType(typ interface{}) interface{} {
 	return typ
 }
 
@@ -60,8 +60,16 @@ func getPropertyValue(val []interface{}) interface{} {
 //getType
 
 func getRegistrationType(typ interface{}) string {
-	typeArray := typ.([]interface{})
-	return typeArray[0].(string)
+	var result string
+	typeArray := make([]interface{},0)
+	switch typ.(type) {
+		case []interface{}:
+			typeArray = typ.([]interface{})
+			result = typeArray[0].(string)
+		case string :
+			result = typ.(string)
+	}
+	return result
 }
 
 func reslice(slice []string, s int) []string {
@@ -153,3 +161,4 @@ func getAttribute(attributes interface{}) string {
 	}
 	return ""
 }
+
