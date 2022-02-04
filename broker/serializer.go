@@ -190,7 +190,7 @@ func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string
 			}
 		} else if strings.Contains(propertyField, "createdAt") {
 			continue
-		} else if strings.Contains(propertyField, "modifiedA") {
+		} else if strings.Contains(propertyField, "modifiedAt") {
 			continue
 		} else { // Nested property or relationship
 
