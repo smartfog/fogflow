@@ -238,11 +238,9 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 
 		}
 	}
-	/*compaced, _ := compactData(resultEntity, "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
-	fmt.Println(compaced)
-	fmt.Println("+++++resultEntity++++", resultEntity)*/
 	return resultEntity, nil
 }
+
 func (sz Serializer)getTypeValue(typ string) (fName, error) {
 	var funcName fName
 	var err error
@@ -258,9 +256,8 @@ func (sz Serializer)getTypeValue(typ string) (fName, error) {
                }
 	return funcName ,err
 }
+
 func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
-	fmt.Println("attr",attr)
-	//var  Type1 string
 	var funcName fName
 	var err error
 	fmt.Println("attr",attr)
@@ -348,8 +345,21 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 				if v != nil {
 					subscription.WatchedAttributes = sz.getArrayOfIds(v.([]interface{}))
 				}
+			} else if strings.Contains(k, "georel") {
+				if v != nil {
+					switch v.(type) {
+						case []interface{}:
+						data := v.([]interface{})
+						dataMap := data[0].(map[string]interface{})
+						dataMap["@context"] = DEFAULT_CONTEXT
+						resolved, _ := compactData(dataMap, DEFAULT_CONTEXT)
+						subscription.Restriction, _ = sz.assignRestriction(resolved.(map[string]interface{}))
+						default:
+							err := errors.New("Unknown Type!")
+							return subscription , err
+					}
+				}
 			} else {
-				// other subscription fields
 			}
 		}
 	}
@@ -420,7 +430,7 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 				}
 				if val["@value"] != nil {
 					value = append(value, val["@value"].(interface{}))
-				} //Value is not  overwritten, in case of multiple values in payload, value array never return
+				}
 			}
 		}
 	}
@@ -747,7 +757,6 @@ func (sz Serializer) assignRestriction(restriction map[string]interface{}) (Rest
 	if _ , ok := restriction["geometry"]; ok == true {
 		restrictions.Geometry = restriction["geometry"].(string)
 	}
-	
 	if _, ok := restriction["georel"] ; ok == true {
 		restrictions.Georel = restriction["georel"].(string)
 	}

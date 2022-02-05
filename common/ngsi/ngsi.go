@@ -1222,6 +1222,7 @@ type LDSubscriptionRequest struct {
 	Subscriber        Subscriber         `json:"subscriber,omitempty`
 	CreatedAt         string             `json:"createdAt",omitemtpy`
 	ModifiedAt        string             `json:"modifiedAt",omitemtpy`
+	Restriction       Restriction        `json:"restriction,omitempty"`
 }
 
 type GeoQuery struct {

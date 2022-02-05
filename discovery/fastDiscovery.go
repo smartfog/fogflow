@@ -101,6 +101,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 	fd.subscriptions_lock.RLock()
 	defer fd.subscriptions_lock.RUnlock()
 	providerURL := registration.ProvidingApplication
+	fmt.Println("registration",registration)
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
 		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction, subscription.FiwareService, registration.FiwareService) == true {

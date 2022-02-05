@@ -2750,6 +2750,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
+	ctxAvailabilityRequest.Restriction = subReq.Restriction
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
@@ -3661,7 +3662,6 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	typ := typs[0]
 	if link != "" {
 		typ = tb.getTypeResolved(link, typ)
-		fmt.Println("type", typ)
 		if typ == "" {
 			err := errors.New("Type not resolved!")
 			return nil, err

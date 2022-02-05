@@ -18,7 +18,6 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 
 	// (1) check entityId part
 	entity := EntityId{}
-	fmt.Println("metaFilter",metaFilter)
 	if strings.HasPrefix(registration.Type, "https://uri.etsi.org/ngsi-ld/default-context/") {
 		entity.Type = registration.Type
 	} else {
@@ -46,6 +45,7 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 
 	// (3) check metadata set
 	if metaFilter.RestrictionType == "ld" {
+		fmt.Println("metaFilter.RestrictionType",metaFilter.RestrictionType)
 		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
 			return false
 		}

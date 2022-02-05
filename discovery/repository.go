@@ -171,6 +171,8 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 	candidates := make([]Candidate, 0)
 	fmt.Println("er.ctxRegistrationList",er.ctxRegistrationList)
 	fmt.Println("restriction",restriction)
+	fmt.Println("attributes",attributes)
+	fmt.Println("entities",entities)
 	for _, registration := range er.ctxRegistrationList {
 		if matchingWithFilters(registration, entities, attributes, restriction, subfiwareService, registration.FiwareService) == true {
 			candidate := Candidate{}

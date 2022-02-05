@@ -5,7 +5,7 @@ import (
 	"strings"
 	"fmt"
 	. "fogflow/common/ngsi"
-	. "fogflow/common/constants"
+	//. "fogflow/common/constants"
 )
 
 const (
@@ -88,122 +88,45 @@ func FindDistForPoint(typ string , metaData interface{}, loc interface{}) (float
 }
 
 type geoPoint struct {
-	x float64
-	y float64
+	Latitude float64
+	Longitude float64
 }
 
-func onSegment(p, q,  r geoPoint ) bool { 
-    if (q.x <= math.Max(p.x, r.x) && q.x >= math.Min(p.x, r.x) &&  q.y <= math.Max(p.y, r.y) && q.y >= math.Min(p.y, r.y))  {
-        return true; 
-     }
-    return false; 
-} 
-
-func orientation(p,q, r geoPoint) int {
-	val := (q.y - p.y) * (r.x - q.x) -
-			(q.x - p.x) * (r.y - q.y);
-
-	if val == 0 {
-	    return 0
-	}
-	var res int 
-	if val > 0 {
-		res = 1
-	} else {
-		res = 2
-	}
-	return res 
+type Poly struct {
+	Vertices []geoPoint `json:"vertices"`
 }
 
-
-
-func doIntersect(p1, q1, p2, q2 geoPoint) bool {
-	 o1 := orientation(p1, q1, p2)
-	 o2 := orientation(p1, q1, q2)
-	 o3 := orientation(p2, q2, p1)
-	 o4 := orientation(p2, q2, q1)
-
-	if o1 != o2 && o3 != o4 {
-		return true
-	}
-
-	if o1 == 0 && onSegment(p1, p2, q1) {
-		return true
-	}
-
-	if o2 == 0 && onSegment(p1, q2, q1) {
-		return true
-	}
-
-	if o3 == 0 && onSegment(p2, p1, q2) {
-		 return true
-	}
-
-	if o4 == 0 && onSegment(p2, q1, q2) {
-		return true
-	}
-
-	return false
-}
-
-func isInside(polygon []geoPoint, n int , p geoPoint) bool {
-	if n < 3 {
-		return false 
-	}
-	extreme := geoPoint {
-			x: INF,
-			y: p.y,
-		}
-	count := 0
-	i := 0
-	for i !=0 {
-		next := (i +1 )%n
-		if doIntersect(polygon[i], polygon[next], p, extreme) {
-			if orientation(polygon[i], p, polygon[next]) == 0 {
-				return onSegment(polygon[i], p, polygon[next])
-			}
-		count  = count +1
-		}
-		i = next
-	}
-	var res bool 
-	if count&1 == 1 {
-		res = true
-	} else {
-		res = false
-	}
-	return res
-}
-
-func convertInStructure(coor interface{}) []geoPoint {
+func convertInStructure(coor interface{}) Poly {
 	coorA := coor.([]interface{})
 	res := make([]geoPoint, 0)
 	for _ , val := range coorA {
 		valA := val.([]interface{})
 		var geo geoPoint
-		geo.x = valA[0].(float64)
-		geo.y = valA[1].(float64)
+		geo.Latitude = valA[0].(float64)
+		geo.Longitude = valA[1].(float64)
 		res = append(res, geo)
 	}
-	return res
+	polygon := Poly{}
+	polygon.Vertices = res
+	return polygon
 }
 
-func commonConverter(entityP interface{}, queryP interface{}) ([]geoPoint,[]geoPoint) {
-	entityMeta := make([]geoPoint,0)
-	queryMeta := make([]geoPoint,0)
+func commonConverter(entityP interface{}, queryP interface{}) (Poly,Poly) {
+	entityMeta := Poly{}
+	queryMeta := Poly{}
 	if entityP != nil {
 		entityA := entityP.([]interface{})
 		for _ , val := range entityA {
-		entityMeta = convertInStructure(val)
+			entityMeta = convertInStructure(val)
 		}
 	}
 	if queryP != nil {
 		queryA := queryP.([]interface{})
 		for _ , val := range queryA {
-		queryMeta = convertInStructure(val)
+			queryMeta = convertInStructure(val)
 		}
 	}
-	return entityMeta,queryMeta
+	return entityMeta, queryMeta
 }
 
 func checkEquals(entityP interface{}, queryP interface{}) bool {
@@ -211,14 +134,14 @@ func checkEquals(entityP interface{}, queryP interface{}) bool {
 	fmt.Println(entityMeta)
 	fmt.Println(queryMeta)
 	equal := true
-	if len(entityMeta) != len(queryMeta) {
-		return false 
+	if len(entityMeta.Vertices) != len(queryMeta.Vertices) {
+		return false
 	}
 	hashMap := make(map[geoPoint]bool)
-	for _ , val := range queryMeta {
+	for _ , val := range queryMeta.Vertices {
 		hashMap[val] = true
 	}
-	for _ , val := range entityMeta {
+	for _ , val := range entityMeta.Vertices {
 		if hashMap[val] == false {
 			return false
 		}
@@ -226,13 +149,15 @@ func checkEquals(entityP interface{}, queryP interface{}) bool {
 	return equal
 }
 
+
+
 func checkDisjoint(entityP interface{}, queryP interface{}) bool {
 	entityMeta,queryMeta := commonConverter(entityP,queryP)
 	var  disjoint bool
 	disjoint = true
-	for _ , val := range queryMeta {
-		size := len(entityMeta)
-		status := isInside(entityMeta,size,val)
+	for _ , val := range queryMeta.Vertices {
+		//size := len(entityMeta.Vertices)
+		status := isInside(&val,&entityMeta)
 		if status == true {
 			disjoint = false
 			break
@@ -244,9 +169,9 @@ func checkDisjoint(entityP interface{}, queryP interface{}) bool {
 func checkWithin(entityP interface{}, queryP interface{}) bool {
 	entityMeta,queryMeta := commonConverter(entityP,queryP)
 	within := true
-	for _ , val := range queryMeta {
-                size := len(entityMeta)
-                status := isInside(entityMeta,size,val)
+	for _ , val := range queryMeta.Vertices {
+                //size := len(entityMeta)
+                status := isInside(&val,&entityMeta)
                 if status == false {
                         within = false
                         break
@@ -258,9 +183,8 @@ func checkWithin(entityP interface{}, queryP interface{}) bool {
 func checkContains(entityP interface{}, queryP interface{}) bool {
         entityMeta,queryMeta := commonConverter(entityP,queryP)
         contain:= true
-        for _ , val := range entityMeta {
-                size := len(queryMeta)
-                status := isInside(queryMeta,size,val)
+        for _ , val := range entityMeta.Vertices {
+		status := isInside(&val ,&queryMeta)
                 if status == false {
                         contain = false
                         break
@@ -269,30 +193,23 @@ func checkContains(entityP interface{}, queryP interface{}) bool {
         return contain
 }
 
-func checkPoint(meta Point, queryP interface{}) bool {
+func checkPoint(meta geoPoint, queryP interface{}) bool {
 	metaPoint :=geoPoint{}
-	metaPoint.x = meta.Latitude
-	metaPoint.y = meta.Longitude
+	metaPoint.Latitude = meta.Latitude
+	metaPoint.Longitude = meta.Longitude
 	_,queryMeta := commonConverter(nil,queryP)
-	//inside := false
-	//fmt.Println("MetaPoint, queryMeta",metaPoint,queryMeta)
-	//for _, val := range queryMeta {
-	size := len(queryMeta)
-	inside := isInside(queryMeta,size,metaPoint)
-		/*if status == true {
-			inside = true
-			break 
-		}*/
+	inside := isInside(&metaPoint,&queryMeta)
 	return inside
 
 }
+
 func FindDistForPolygon(typ string , metaData interface{}, res Restriction) (bool) {
 	//var mi, km float64
 	var status bool
 	geoRel := strings.ReplaceAll(res.Georel, " ", "")
 	switch strings.ToLower(typ) {
 		case "point":
-			status = checkPoint(metaData.(Point),res.Cordinates)
+			status = checkPoint(metaData.(geoPoint),res.Cordinates)
 		case "polygon":
 			if geoRel == "equals" {
 				status = checkEquals(metaData,res.Cordinates)
@@ -311,3 +228,69 @@ func FindDistForPolygon(typ string , metaData interface{}, res Restriction) (boo
 	}
 	return status
 }
+
+// Returns whether or not the current Polygon contains the passed in Point.
+func isInside(point *geoPoint, polygon *Poly) bool {
+	start := len(polygon.Vertices) - 1
+	end := 0
+
+	contains := intersectsWithRaycast(point, &polygon.Vertices[start], &polygon.Vertices[end])
+
+	for i := 1; i < len(polygon.Vertices); i++ {
+		if intersectsWithRaycast(point, &polygon.Vertices[i-1], &polygon.Vertices[i]) {
+			contains = !contains
+		}
+	}
+
+	return contains
+}
+
+// Using the raycast algorithm, this returns whether or not the passed in point
+// Intersects with the edge drawn by the passed in start and end points.
+// Original implementation: http://rosettacode.org/wiki/Ray-casting_algorithm#Go
+func intersectsWithRaycast(point *geoPoint, start *geoPoint, end *geoPoint) bool {
+	// Always ensure that the the first point
+	// has a y coordinate that is less than the second point
+	if start.Longitude > end.Longitude {
+
+		// Switch the points if otherwise.
+		start, end = end, start
+
+	}
+
+	// Move the point's y coordinate
+	// outside of the bounds of the testing region
+	// so we can start drawing a ray
+	for point.Longitude == start.Longitude || point.Longitude == end.Longitude {
+		newLng := math.Nextafter(point.Longitude, math.Inf(1))
+		point = &geoPoint{Latitude: point.Latitude, Longitude: newLng}
+	}
+
+	// If we are outside of the polygon, indicate so.
+	if point.Longitude < start.Longitude || point.Longitude > end.Longitude {
+		return false
+	}
+
+	if start.Latitude > end.Latitude {
+		if point.Latitude > start.Latitude {
+			return false
+		}
+		if point.Latitude < end.Latitude {
+			return true
+		}
+
+	} else {
+		if point.Latitude > end.Latitude {
+			return false
+		}
+		if point.Latitude < start.Latitude {
+			return true
+		}
+	}
+
+	raySlope := (point.Longitude - start.Longitude) / (point.Latitude - start.Latitude)
+	diagSlope := (end.Longitude - start.Longitude) / (end.Latitude - start.Latitude)
+
+	return raySlope >= diagSlope
+}
+
