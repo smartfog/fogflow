@@ -105,9 +105,6 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 
 func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	sp := restriction.Geometry
-	//sc := restriction.Cordinates
-	fmt.Println("metadatas",metadatas)
-	fmt.Println("restriction",restriction)
 	var typ string
 	var coordinate interface{}
 	if meta , ok := metadatas["location"]; ok == true {
@@ -126,14 +123,13 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 			if restriction.Georel != "" {
 				gr := restriction.Georel
 				contrains := strings.Split(gr,";")
-				distMi, _ := FindDistForPoint(typ, coordinate, restriction.Cordinates)
+				distMi := FindDistForPoint(typ, coordinate, restriction.Cordinates)
 				if len(contrains) > 1 {
 					sws := strings.ReplaceAll(contrains[1], " ", "")
 					minMax := strings.Split(sws,"==")
 					if minMax[0] == "maxDistance" {
 						maxDistance := minMax[1]
 						maxF, _ := strconv.ParseFloat(maxDistance, 64)
-						fmt.Println("maxF",maxF)
 						if distMi < maxF {
 							fmt.Println("res",res)
 							res = true
@@ -156,6 +152,7 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 		default :
 			fmt.Println("To be implemented latter")
 	}
+	fmt.Println(res)
 	return res
 }
 

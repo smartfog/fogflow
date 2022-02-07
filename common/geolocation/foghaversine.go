@@ -19,42 +19,56 @@ type Coord struct {
 	Lon float64
 }
 
-func degreesToRadians(d float64) float64 {
-	return d * math.Pi / 180
+/*This routine calculates the distance between two points (given the    
+latitude/longitude of those points). It is being used to calculate    
+the distance between two locations using GeoDataSource (TM) products */
+
+//The main implementation is here https://www.geodatasource.com/developers/go
+
+func LDDistance(p, q Coord, unit ...string) float64 {
+	const PI float64 = 3.141592653589793
+	lat1 := p.Lat
+	lat2 := q.Lat
+	lng1 := p.Lon
+	lng2 := q.Lon
+	fmt.Println(lat1,lat2, lng1, lng2)
+	radlat1 := float64(PI * lat1 / 180)
+	radlat2 := float64(PI * lat2 / 180)
+	theta := float64(lng1 - lng2)
+	radtheta := float64(PI * theta / 180)
+	dist := math.Sin(radlat1)*math.Sin(radlat2) + math.Cos(radlat1)*math.Cos(radlat2)*math.Cos(radtheta)
+	if dist > 1 {
+		dist = 1
+	}
+	dist = math.Acos(dist)
+	dist = dist * 180 / PI
+	dist = dist * 60 * 1.1515
+	if len(unit) > 0 {
+		if unit[0] == "K" {
+			dist = dist * 1.609344
+		} else if unit[0] == "N" {
+			dist = dist * 0.8684
+		}
+	}
+
+	return dist
 }
 
-
-func LDDistance(p, q Coord) (mi, km float64) {
-	lat1 := degreesToRadians(p.Lat)
-	lon1 := degreesToRadians(p.Lon)
-	lat2 := degreesToRadians(q.Lat)
-	lon2 := degreesToRadians(q.Lon)
-
-	diffLat := lat2 - lat1
-	diffLon := lon2 - lon1
-
-	a := math.Pow(math.Sin(diffLat/2), 2) + math.Cos(lat1)*math.Cos(lat2)*
-		math.Pow(math.Sin(diffLon/2), 2)
-
-	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
-
-	mi = c * earthRadiusMi
-	km = c * earthRaidusKm
-	return mi, km
-}
-
-func DistForPoint(typ string, metadatas interface{},  loc interface{}) (float64, float64){
-	var mi , km float64
+func DistForPoint(typ string, metadatas interface{},  loc interface{}) float64{
+	fmt.Println("metadatas",metadatas)
+	fmt.Println("loc",loc)
+	var mi  float64
 	var lag, log float64
-	fmt.Println("1-Point")
 	switch metadatas.(type) {
-		case []float64:
+		case []interface{}:
+			fmt.Println("comming in this part--1")
 			meta := metadatas.([]interface{})
 			if len(meta) == 2 {
 				lag = meta[0].(float64)
 				log = meta[1].(float64)
 			}
 		case Point :
+			fmt.Println("Comming in this part ---2")
 			meta := metadatas.(Point)
 			lag = meta.Latitude
 			log = meta.Longitude
@@ -70,21 +84,22 @@ func DistForPoint(typ string, metadatas interface{},  loc interface{}) (float64,
                                 Lat: locn[0].(float64),
                                 Lon: locn[1].(float64),
                         }
-			mi , km = LDDistance(p1,p2)
+			fmt.Println(p1,p2)
+			mi  = LDDistance(p1,p2, "M")
         }
-        return mi, km
+        return mi
 }
 
-func FindDistForPoint(typ string , metaData interface{}, loc interface{}) (float64, float64) {
-	var mi, km float64
+func FindDistForPoint(typ string , metaData interface{}, loc interface{}) float64 {
+	var mi float64
 	fmt.Println("1-point")
 	switch strings.ToLower(typ) {
 		case "point" :
-			mi, km = DistForPoint(typ,metaData,loc)
+			mi = DistForPoint(typ,metaData,loc)
 		case "polygon":
 		default : 
 	}
-	return mi, km
+	return mi
 }
 
 type geoPoint struct {
