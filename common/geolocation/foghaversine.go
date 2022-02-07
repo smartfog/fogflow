@@ -245,28 +245,18 @@ func isInside(point *geoPoint, polygon *Poly) bool {
 	return contains
 }
 
-// Using the raycast algorithm, this returns whether or not the passed in point
-// Intersects with the edge drawn by the passed in start and end points.
-// Original implementation: http://rosettacode.org/wiki/Ray-casting_algorithm#Go
 func intersectsWithRaycast(point *geoPoint, start *geoPoint, end *geoPoint) bool {
-	// Always ensure that the the first point
-	// has a y coordinate that is less than the second point
 	if start.Longitude > end.Longitude {
 
-		// Switch the points if otherwise.
 		start, end = end, start
 
 	}
 
-	// Move the point's y coordinate
-	// outside of the bounds of the testing region
-	// so we can start drawing a ray
 	for point.Longitude == start.Longitude || point.Longitude == end.Longitude {
 		newLng := math.Nextafter(point.Longitude, math.Inf(1))
 		point = &geoPoint{Latitude: point.Latitude, Longitude: newLng}
 	}
 
-	// If we are outside of the polygon, indicate so.
 	if point.Longitude < start.Longitude || point.Longitude > end.Longitude {
 		return false
 	}

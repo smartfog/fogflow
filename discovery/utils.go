@@ -106,6 +106,8 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	sp := restriction.Geometry
 	//sc := restriction.Cordinates
+	fmt.Println("metadatas",metadatas)
+	fmt.Println("restriction",restriction)
 	var typ string
 	var coordinate interface{}
 	if meta , ok := metadatas["location"]; ok == true {
