@@ -49,6 +49,10 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 			if val != nil {
 				geoResult[key] = getInstanceID(val.([]interface{}))
 			}
+		case NGSILD_UniCode : 
+			if val != nil {
+				geoResult[key] = val
+			}
 		default:
 			var interfaceArray []interface{}
 			switch val.(type) {
@@ -81,6 +85,7 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 	var err error
 	propertyValue := false 
 	for key, val := range propertyMap {
+		fmt.Println("key",key)
 		switch key {
 		case NGSI_LD_TYPE:
 			if val != nil {
@@ -112,6 +117,10 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 			if val != nil {
 				propertyResult[key] = getInstanceID(val.([]interface{}))
 			}
+		case NGSILD_UniCode :
+                        if val != nil {
+                                propertyResult[key] = val
+                        }
 		default:
 			fmt.Println("val",val)
 			interfaceArray := make([]interface{},0)
@@ -175,6 +184,10 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 			if val != nil {
 				relResult[key] = getInstanceID(val.([]interface{}))
 			}
+		case NGSILD_UniCode :
+                        if val != nil {
+                                relResult[key] = val
+                        }
 		default:
 			interfaceArray := make([]interface{},0)
                         switch val.(type) {
