@@ -668,7 +668,7 @@ subdata33=\
                                                                 "value": "0.7"
                                                 },
                                                 "providedBy": {
-                                                                "type": "relationship",
+                                                                "type": "Relationship",
                                                                 "object": "urn:ngsi-ld:camera:c1"
                                                 }
                                 }
@@ -703,7 +703,7 @@ subdata34=\
                                                                 "value": "0.7"
                                                 },
                                                 "providedBy": {
-                                                                "type": "relationship",
+                                                                "type": "Relationship",
                                                                 "object": "urn:ngsi-ld:camera:c1"
                                                 }
                                 }
