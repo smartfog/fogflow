@@ -828,6 +828,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
+		fmt.Println("reqBytes",string(reqBytes))
 		var notifyRequest interface{}
 
 		err := json.Unmarshal(reqBytes, &notifyRequest)
@@ -1073,6 +1074,7 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
+			fmt.Println("returnedElement",returnedElement)
 			elements = append(elements, returnedElement)
 		}
 	}
@@ -2123,7 +2125,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		res := ResponseError{}
-
+		fmt.Println("LDupdateCtxReq",LDupdateCtxReq)
 		for _, ctx := range LDupdateCtxReq {
 			var context []interface{}
 			contextInPayload := false
@@ -2448,6 +2450,7 @@ func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface
 
 // Register a new context entity on Discovery
 func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
+	fmt.Println("elem for register", elem)
 	registerCtxReq := RegisterContextRequest{}
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}

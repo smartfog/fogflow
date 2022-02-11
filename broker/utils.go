@@ -509,6 +509,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	var newBody []byte
 	if integration != "IoTI" {
 		LdElementList := make([]interface{}, 0)
+		fmt.Println("ldCompactedElems",ldCompactedElems)
 		for _, ldEle := range ldCompactedElems {
 			element := make(map[string]interface{})
 			id, _ := FiwareId(ldEle["id"].(string))
@@ -639,23 +640,30 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 }
 
 func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
+	fmt.Println("selectedAttributes",)
 	if len(selectedAttributes) == 0 {
 		return ldElem
 	} else {
 		preparedCopy := make(map[string]interface{})
 		for key, val := range ldElem {
-			if key == "id" {
-				preparedCopy["id"] = val
-			} else if key == "type" {
-				preparedCopy["type"] = val
-			} else if key == "createdAt" {
-				preparedCopy["createdAt"] = val
-			} else if key == "modifiedAt" {
-				//preparedCopy["modifiedAt"] = val
-			} else if key == "location" {
-				preparedCopy["location"] = val
-			} else if key == "@context" {
-				preparedCopy["@context"] = val
+			if key == NGSI_LD_ID {
+				preparedCopy[NGSI_LD_ID] = val
+			} else if key == NGSI_LD_TYPE {
+				preparedCopy[NGSI_LD_TYPE] = val
+			} else if key == NGSI_LD_CREATEDAT {
+				preparedCopy[NGSI_LD_CREATEDAT] = val
+			} else if key ==  NGSI_LD_MODIFIEDAT {
+				preparedCopy[NGSI_LD_MODIFIEDAT] = val
+			} else if key == NGSI_LD_OBSERVED_AT {
+				preparedCopy[NGSI_LD_OBSERVED_AT] = val
+			} else if key == NGSI_LD_DATASETID {
+				preparedCopy[NGSI_LD_DATASETID] = val
+			} else if key == NGSI_LD_INSTANCEID {
+				 preparedCopy[NGSI_LD_INSTANCEID] = val
+			} else if key == NGSILD_UniCode {
+				preparedCopy[NGSILD_UniCode] = val
+			} else if key == NGSILD_CONTEXT {
+				preparedCopy[NGSILD_CONTEXT] = val
 			} else {
 				// add attribute only if present in selectedAttributes
 				for _, requiredAttrName := range selectedAttributes {
