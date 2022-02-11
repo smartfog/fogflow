@@ -653,7 +653,7 @@ subdata33=\
                                 "type": "Relationship",
                                 "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
                                 "providedBy": {
-                                                "type": "person",
+                                                "type": "Relationship",
                                                 "object": "urn:ngsi-ld:Person:Bob"
                                 },
                                 "parkingDate": {
@@ -688,7 +688,7 @@ subdata34=\
                                 "type": "Relationship",
                                 "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
                                 "providedBy": {
-                                                "type": "person",
+                                                "type": "Relationship",
                                                 "object": "urn:ngsi-ld:Person:Bob"
                                 },
                                 "parkingDate": {
