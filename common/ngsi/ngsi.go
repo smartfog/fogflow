@@ -1357,7 +1357,7 @@ func GetNGSIV1DomainMetaData(typ string, location interface{}) (string, interfac
 		points = resolveMultipont(location)
 	} else {
 		valuetyp = typ
-		points = changeInv1cordinates(float64(0),float64(0))
+		points = changeInv1cordinates(float64(0), float64(0))
 	}
 	return valuetyp, points
 }

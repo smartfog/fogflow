@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/ant0ine/go-json-rest/rest"
 
 	. "fogflow/common/communicator"
 	. "fogflow/common/datamodel"
@@ -29,7 +29,8 @@ type Master struct {
 	messageBus   string
 	discoveryURL string
 	designerURL  string
-	SecurityCfg  *HTTPS
+
+	SecurityCfg *HTTPS
 
 	communicator  *Communicator
 	communicator2 *Communicator
@@ -99,84 +100,27 @@ func (master *Master) Start(configuration *Config) {
 	master.serviceMgr = NewServiceMgr(master)
 	master.serviceMgr.Init()
 
-	// announce myself to the nearby IoT Broker
-	for {
-		// announce myself to the nearby IoT Broker
-		err := master.registerMyself()
-		if err != nil {
-			INFO.Println("wait for the assigned broker to be ready")
-			time.Sleep(5 * time.Second)
-		} else {
-			INFO.Println("annouce myself to the nearby broker")
-			break
-		}
-	}
-
 	master.myURL = "http://" + configuration.GetMasterIP() + ":" + strconv.Itoa(configuration.Master.AgentPort)
 
 	// start the NGSI agent
 	master.agent = &NGSIAgent{Port: configuration.Master.AgentPort, SecurityCfg: master.cfg.HTTPS}
 	master.agent.Start()
-	//master.agent.SetContextNotifyHandler(master.onReceiveContextNotify)
 	master.agent.SetContextAvailabilityNotifyHandler(master.onReceiveContextAvailability)
 
-	go func() {
-		retryInterval := 5
-		body, err := json.Marshal(map[string]string{
-			"status": "Master is Up"})
-		if err != nil {
-			fmt.Println(err)
-		}
-		master.cfg.HTTPS.LoadConfig()
-		client := master.cfg.HTTPS.GetHTTPClient()
-		//req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
-		for {
-			req, err := http.NewRequest("POST", master.designerURL+"/masterNotify", bytes.NewBuffer(body))
-			time.Sleep(time.Duration(retryInterval) * time.Second)
-			resp, err := client.Do(req)
-			fmt.Println(err)
-			if resp != nil && resp.StatusCode != 404 {
-				defer resp.Body.Close()
-				break
-			}
+	cfg := MessageBusConfig{}
+	cfg.Broker = configuration.GetMessageBus()
+	cfg.Exchange = "fogflow"
+	cfg.ExchangeType = "topic"
+	cfg.DefaultQueue = master.id
+	cfg.BindingKeys = []string{master.id + ".", "heartbeat.*", "orchestration.*"}
 
-		}
-	}()
+	// create the communicator with the broker info and topics
+	master.communicator = NewCommunicator(&cfg)
 
 	// start the message consumer
 	go func() {
-		cfg := MessageBusConfig{}
-		cfg.Broker = configuration.GetMessageBus()
-		cfg.Exchange = "fogflow"
-		cfg.ExchangeType = "topic"
-		cfg.DefaultQueue = master.id
-		cfg.BindingKeys = []string{master.id + ".", "heartbeat.*"}
-
-		// create the communicator with the broker info and topics
-		master.communicator = NewCommunicator(&cfg)
 		for {
 			retry, err := master.communicator.StartConsuming(master.id, master)
-			if retry {
-				INFO.Printf("Going to retry launching the rabbitmq. Error: %v", err)
-			} else {
-				INFO.Printf("stop retrying")
-				break
-			}
-		}
-	}()
-
-	go func() {
-		cfg1 := MessageBusConfig{}
-		cfg1.Broker = configuration.GetMessageBus()
-		cfg1.Exchange = "Op"
-		cfg1.ExchangeType = "topic"
-		cfg1.DefaultQueue = "Operator"
-		cfg1.BindingKeys = []string{"Operator.", "heartbeat.*"}
-
-		// create the communicator with the broker info and topics
-		master.communicator2 = NewCommunicator(&cfg1)
-		for {
-			retry, err := master.communicator2.StartConsuming("Operator", master)
 			if retry {
 				INFO.Printf("Going to retry launching the rabbitmq. Error: %v", err)
 			} else {
@@ -198,14 +142,13 @@ func (master *Master) Start(configuration *Config) {
 		}
 	}()
 
-	// subscribe to the update of required context information
-	//master.triggerInitialSubscriptions()
+	master.registerMyself()
 }
 
 func (master *Master) onTimer() {
 	master.counter_lock.Lock()
-	delta := master.curNumOfTasks - master.prevNumOfTask
-	fmt.Printf("# of orchestrated tasks = %d, throughput = %d/s\r\n", master.curNumOfTasks, delta)
+	// delta := master.curNumOfTasks - master.prevNumOfTask
+	// fmt.Printf("# of orchestrated tasks = %d, throughput = %d/s\r\n", master.curNumOfTasks, delta)
 	master.prevNumOfTask = master.curNumOfTasks
 	master.counter_lock.Unlock()
 
@@ -232,36 +175,24 @@ func (master *Master) Quit() {
 	INFO.Println("stop consuming the message")
 }
 
-func (master *Master) registerMyself() error {
-	ctxObj := ContextObject{}
+func (master *Master) registerMyself() {
+	profile := MasterProfile{}
+	profile.WID = master.id
+	profile.PLocation = master.cfg.Location
+	profile.AgentURL = master.myURL
 
-	ctxObj.Entity.ID = master.id
-	ctxObj.Entity.Type = "Master"
-	ctxObj.Entity.IsPattern = false
-
-	ctxObj.Metadata = make(map[string]ValueObject)
-
-	mylocation := Point{}
-	mylocation.Latitude = master.cfg.Location.Latitude
-	mylocation.Longitude = master.cfg.Location.Longitude
-	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
-
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	err := client.UpdateContextObject(&ctxObj)
-	return err
+	taskMsg := SendMessage{Type: "MASTER_JOIN", RoutingKey: "designer.", From: master.id, PayLoad: profile}
+	INFO.Println(taskMsg)
+	master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) unregisterMyself() {
-	entity := EntityId{}
-	entity.ID = master.id
-	entity.Type = "Master"
-	entity.IsPattern = false
+	profile := MasterProfile{}
+	profile.WID = master.id
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	err := client.DeleteContext(&entity)
-	if err != nil {
-		ERROR.Println(err)
-	}
+	taskMsg := SendMessage{Type: "MASTER_LEAVE", RoutingKey: "designer.", From: master.id, PayLoad: profile}
+	INFO.Println(taskMsg)
+	master.communicator.Publish(&taskMsg)
 }
 
 func (master *Master) subscribeContextEntity(entityType string) {
@@ -287,7 +218,6 @@ func (master *Master) subscribeContextEntity(entityType string) {
 // to handle the registry of operator
 func (master *Master) handleOperatorRegistration(msg json.RawMessage) {
 	INFO.Println(string(msg))
-	//fmt.Println(len(msg))
 	var operator = Operator{}
 	err := json.Unmarshal(msg, &operator)
 	if len(msg) <= 2 || len(operator.Name) == 0 {
@@ -333,18 +263,6 @@ func (master *Master) handleDockerImageRegistration(msg json.RawMessage) {
 	if dockerImage.Prefetched == true {
 		// inform all workers to prefetch this docker image in advance
 		master.prefetchDockerImages(dockerImage)
-	}
-}
-
-func (master *Master) prefetchDockerImages(image DockerImage) {
-	master.workerList_lock.RLock()
-	defer master.workerList_lock.RUnlock()
-
-	for _, worker := range master.workers {
-		workerID := worker.WID
-		taskMsg := SendMessage{Type: "PREFETCH_IMAGE", RoutingKey: workerID + ".", From: master.id, PayLoad: image}
-		INFO.Println(taskMsg)
-		master.communicator.Publish(&taskMsg)
 	}
 }
 
@@ -440,13 +358,16 @@ func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
 
 }
 
-func (master *Master) getTopologyByName(name string) *Topology {
-	// find the required topology object
-	master.topologyList_lock.RLock()
-	defer master.topologyList_lock.RUnlock()
+func (master *Master) prefetchDockerImages(image DockerImage) {
+	master.workerList_lock.RLock()
+	defer master.workerList_lock.RUnlock()
 
-	topology := master.topologyList[name]
-	return topology
+	for _, worker := range master.workers {
+		workerID := worker.WID
+		taskMsg := SendMessage{Type: "PREFETCH_IMAGE", RoutingKey: workerID + ".", From: master.id, PayLoad: image}
+		INFO.Println(taskMsg)
+		master.communicator.Publish(&taskMsg)
+	}
 }
 
 func (master *Master) queryWorkers() []*ContextObject {
@@ -676,7 +597,7 @@ func (master *Master) unsubscribeContextAvailability(sid string) {
 //
 func (master *Master) Process(msg *RecvMessage) error {
 	switch msg.Type {
-	case "heart_beat":
+	case "WORKER_HEARTBEAT":
 		profile := WorkerProfile{}
 		err := json.Unmarshal(msg.PayLoad, &profile)
 		if err == nil {
@@ -696,11 +617,11 @@ func (master *Master) Process(msg *RecvMessage) error {
 	case "DockerImage":
 		master.handleDockerImageRegistration(msg.PayLoad)
 
-	case "FogFunction":
-		master.handleFogFunctionUpdate(msg.PayLoad)
-
 	case "Topology":
 		master.handleTopologyUpdate(msg.PayLoad)
+
+	case "FogFunction":
+		master.handleFogFunctionUpdate(msg.PayLoad)
 
 	case "ServiceIntent":
 		master.serviceMgr.handleServiceIntentUpdate(msg.PayLoad)
@@ -805,63 +726,21 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 	}
 }
 
-//
-// to select the right docker image of an operator for the selected worker
-//
-func (master *Master) DetermineDockerImage(operatorName string, wID string) string {
-	INFO.Println("select a suitable image to execute on the selected worker")
-
-	master.workerList_lock.RLock()
-	wProfile := master.workers[wID]
-	master.workerList_lock.RUnlock()
-
-	if wProfile == nil {
-		ERROR.Println("could not find this worker from the curent worker list: ", wID)
-		return ""
-	}
-
-	//select a suitable image to execute on the selected worker
-	selectedDockerImageName := ""
-
-	master.dockerImageList_lock.RLock()
-	for _, image := range master.dockerImageList[operatorName] {
-		fmt.Println("*****image*******", image)
-		DEBUG.Println(wProfile)
-
-		hwType := "X86"
-		osType := "Linux"
-
-		if wProfile.HWType == "arm" {
-			hwType = "ARM"
-		}
-
-		if wProfile.OSType == "linux" {
-			osType = "Linux"
-		}
-
-		if image.TargetedOSType == osType && image.TargetedHWType == hwType {
-			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
-			break
-		}
-	}
-
-	master.dockerImageList_lock.RUnlock()
-
-	DEBUG.Println(selectedDockerImageName)
-
-	return selectedDockerImageName
+func (master *Master) GetWorkerList(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(master.workers)
 }
 
-func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
-	master.operatorList_lock.RLock()
+func (master *Master) GetTaskList(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteJson(master.workers)
+}
 
-	operator := master.operatorList[operatorName]
-	parameters := make([]Parameter, len(operator.Parameters))
-	copy(parameters, operator.Parameters)
+func (master *Master) GetStatus(w rest.ResponseWriter, r *rest.Request) {
+	profile := MasterProfile{}
+	profile.WID = master.id
+	profile.PLocation = master.cfg.Location
+	profile.AgentURL = master.myURL
 
-	master.operatorList_lock.RUnlock()
-
-	return parameters
+	w.WriteJson(profile)
 }
 
 //
@@ -920,4 +799,72 @@ func (master *Master) SelectWorker(locations []Point) string {
 	// select the one with lowest capacity if there are more than one with the closest distance
 
 	return closestWorkerID
+}
+
+func (master *Master) getTopologyByName(name string) *Topology {
+	// find the required topology object
+	master.topologyList_lock.RLock()
+	defer master.topologyList_lock.RUnlock()
+
+	topology := master.topologyList[name]
+	return topology
+}
+
+//
+// to select the right docker image of an operator for the selected worker
+//
+func (master *Master) DetermineDockerImage(operatorName string, wID string) string {
+	INFO.Println("select a suitable image to execute on the selected worker")
+
+	master.workerList_lock.RLock()
+	wProfile := master.workers[wID]
+	master.workerList_lock.RUnlock()
+
+	if wProfile == nil {
+		ERROR.Println("could not find this worker from the curent worker list: ", wID)
+		return ""
+	}
+
+	//select a suitable image to execute on the selected worker
+	selectedDockerImageName := ""
+
+	master.dockerImageList_lock.RLock()
+	for _, image := range master.dockerImageList[operatorName] {
+		fmt.Println("*****image*******", image)
+		DEBUG.Println(wProfile)
+
+		hwType := "X86"
+		osType := "Linux"
+
+		if wProfile.HWType == "arm" {
+			hwType = "ARM"
+		}
+
+		if wProfile.OSType == "linux" {
+			osType = "Linux"
+		}
+
+		if image.TargetedOSType == osType && image.TargetedHWType == hwType {
+			selectedDockerImageName = image.ImageName + ":" + image.ImageTag
+			break
+		}
+	}
+
+	master.dockerImageList_lock.RUnlock()
+
+	DEBUG.Println(selectedDockerImageName)
+
+	return selectedDockerImageName
+}
+
+func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
+	master.operatorList_lock.RLock()
+
+	operator := master.operatorList[operatorName]
+	parameters := make([]Parameter, len(operator.Parameters))
+	copy(parameters, operator.Parameters)
+
+	master.operatorList_lock.RUnlock()
+
+	return parameters
 }

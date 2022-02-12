@@ -42,11 +42,7 @@ func main() {
 
 	// start the worker to deal with tasks
 	var worker = &Worker{id: myID}
-	ok := worker.Start(&config)
-	if ok == false {
-		ERROR.Println("failed to start the worker instance")
-		return
-	}
+	worker.Start(&config)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)

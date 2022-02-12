@@ -65,8 +65,8 @@ type QoS struct {
 }
 
 type ServiceIntent struct {
-	ID string `json:"id"`
-	//	SType          string         `json:"stype"`
+	ID             string         `json:"id"`
+	SType          string         `json:"stype"`
 	QoS            string         `json:"qos"`
 	GeoScope       OperationScope `json:"geoscope"`
 	Priority       Priority       `json:"priority"`
@@ -144,15 +144,15 @@ type Priority struct {
 }
 
 type Topology struct {
-	Id          string `json:"id"`
-	Description string `json:"description"`
+	// Id          string `json:"id"`
 	Name        string `json:"name"`
+	Description string `json:"description"`
 	Tasks       []Task `json:"tasks"`
 	Action      string `json:"action"`
 }
 
 type FogFunction struct {
-	Id       string        `json:"id"`
+	// Id       string        `json:"id"`
 	Name     string        `json:"name"`
 	Topology Topology      `json:"topology"`
 	Intent   ServiceIntent `json:"intent"`
@@ -256,13 +256,13 @@ type ScheduledTaskInstance struct {
 }
 
 type WorkerProfile struct {
-	WID          string
-	PLocation    PhysicalLocation
-	GeohashID    string
-	OSType       string
-	HWType       string
-	Capacity     int
-	Workload     int
+	WID          string           `json:"id"`
+	PLocation    PhysicalLocation `json:"location"`
+	GeohashID    string           `json:"geohash_id"`
+	OSType       string           `json:"os"`
+	HWType       string           `json:"hardware"`
+	Capacity     int              `json:"capacity"`
+	Workload     int              `json:"workload"`
 	CAdvisorPort int
 	EdgeAddress  string
 
@@ -285,6 +285,12 @@ func (worker *WorkerProfile) IsLive(duration int) bool {
 	} else {
 		return true
 	}
+}
+
+type MasterProfile struct {
+	WID       string           `json:"id"`
+	PLocation PhysicalLocation `json:"location"`
+	AgentURL  string           `json:"agent"`
 }
 
 type StreamProfile struct {

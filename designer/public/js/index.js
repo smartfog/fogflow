@@ -23,8 +23,8 @@ $(function () {
     addMenuItem('Broker', showBrokers);
     addMenuItem('Master', showMaster);
     addMenuItem('Worker', showWorkers);
+    addMenuItem('Edge', showEdge);    
     addMenuItem('Device', showDevices);
-    addMenuItem('Edge', showEdge);
     addMenuItem('uService', showEndPointService);
     addMenuItem('Stream', showStreams);
 
@@ -128,17 +128,13 @@ $(function () {
     function showMaster() {
         $('#info').html('list of all topology masters');
 
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Master', isPattern: true }];
-        client.queryContext(queryReq).then(function (masterList) {
-            displayMasterList(masterList);
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+        fetch('/info/master').then(res => res.json()).then(masters => {            
+            displayMasterList(masters)                      
+        }); 
     }
 
     function displayMasterList(masters) {
+        
         if (masters == null || masters.length == 0) {
             $('#content').html('there is no topology master running');
             return
@@ -148,12 +144,14 @@ $(function () {
 
         html += '<thead><tr>';
         html += '<th>ID</th>';
-        html += '<th>DomainMetadata</th>';
+        html += '<th>Location</th>';
+        html += '<th>Agent</th>';      
         html += '</tr></thead>';
 
         for (var i = 0; i < masters.length; i++) {
             var master = masters[i];
-            html += '<tr><td>' + master.entityId.id + '</td><td>' + JSON.stringify(master.metadata) + '</td></tr>';
+            console.log(master);
+            html += '<tr><td>' + master.id + '</td><td>' + JSON.stringify(master.location) + '</td><td>' + master.agent + '</td></tr>';
         }
 
         html += '</table>';
@@ -209,22 +207,38 @@ $(function () {
 
         $('#content').html(html);
 
-        var queryReq = {}
-        queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
-        client.queryContext(queryReq).then(function (edgeNodeList) {
-            // list all edge nodes in the table
-            displayWorkerList(edgeNodeList);
-
-            // show edge nodes on the map
-            displayWorkerOnMap(edgeNodeList);
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query the list of workers');
-        });
+        fetch('/info/worker').then(res => res.json()).then(workers => {            
+            displayWorkerList(workers)                      
+        }); 
     }
 
-
     function displayWorkerList(workerList) {
+        var html = '<thead><tr>';
+        html += '<th>ID</th>';
+        html += '<th>location</th>';
+        html += '<th>capacity</th>';
+        html += '<th># of tasks</th>';
+        html += '</tr></thead>';
+        
+        for (var i = 0; i < workerList.length; i++) {
+            var worker = workerList[i];
+        
+            console.log(worker);
+        
+            var wid = worker.id;
+        
+            html += '<tr>';
+            html += '<td>' + wid + '</td>';
+            html += '<td>' + JSON.stringify(worker.location) + '</td>';
+            html += '<td>' + worker.capacity + '</td>';
+            html += '<td>' + worker.workload + '</td>';
+            html += '</tr>';
+        }
+
+        $('#workerList').html(html);        
+    }
+    
+    function displayWorkerList2(workerList) {
         var queryReq = {}
         queryReq.entities = [{ type: 'Task', isPattern: true }];
 

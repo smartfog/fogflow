@@ -3,13 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/google/uuid"
-	_ "github.com/lib/pq"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	_ "github.com/lib/pq"
 
 	. "fogflow/common/ngsi"
 )
@@ -457,6 +458,11 @@ func (fd *FastDiscovery) getSubscriptions(w rest.ResponseWriter, r *rest.Request
 	defer fd.subscriptions_lock.RUnlock()
 
 	w.WriteJson(fd.subscriptions)
+}
+
+func (fd *FastDiscovery) getEntityTypes(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteHeader(200)
+	w.WriteJson(fd.repository.GetEntityTypes())
 }
 
 func (fd *FastDiscovery) getStatus(w rest.ResponseWriter, r *rest.Request) {

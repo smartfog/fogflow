@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]inter
 	for _, val := range expanded {
 		stringsMap := val.(map[string]interface{})
 		for k, v := range stringsMap {
-			if strings.Contains(k, "id") {
+			if k == "id" {
 				if v != nil {
 					entity["id"] = sz.getId(v.(interface{}))
 				}
@@ -123,6 +124,7 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 }
 
 func (sz Serializer) getId(id interface{}) string {
+	fmt.Println(id)
 	Id := id.(string)
 	return Id
 }

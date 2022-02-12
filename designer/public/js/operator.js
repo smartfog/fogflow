@@ -3,20 +3,11 @@ $(function() {
     // initialization  
     var handlers = {};
 
-    //connect to the broker
-    var client = new NGSI10Client(config.brokerURL);
-
-    // to interact with designer for internal fogflow entities
-    var clientDes = new NGSI10Client('./internal');
-
-    console.log(config.brokerURL);
-
     addMenuItem('Operator', 'Operator', showOperator);
     addMenuItem('DockerImage', 'Docker Image', showDockerImage);
+    
     initOperatorList();
-    initDockerImageList();
-    showOperator();
-
+    initDockerImageList();    
 
     $(window).on('hashchange', function() {
         var hash = window.location.hash;
@@ -51,64 +42,49 @@ $(function() {
         $("#registerOperator").click(function() {
             showOperatorEditor();
         });
-
-        var queryReq = {}
-        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(operators) {
-            console.log("show operator ",operators);
-            displayOperatorList(operators)
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+        
+        fetch('/operator').then(res => res.json()).then(operators => {
+            var opList = Object.values(operators)
+            displayOperatorList(opList)
+        });        
     }
 
     function initOperatorList(){
-        var queryReq = {}
-        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(opList) {
-            console.log("inside init operator list ",opList);
-            if (opList.data.length == 0) {
-                console.log("inside init operator list ******* ",opList);
-                for (var i = 0; i < defaultOperatorList().length; i++) { 
-                    opObj = defaultOperatorList()[i];
-                    var operator ={} 
-                    var attribute = opObj;
-                    operator.attribute = attribute;
-                    operator.updateAction = "UPDATE"
-                    operator.internalType = "Operator"
-                    submitOperator(operator,"")
-                }
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query fog functions');
-        });
+        fetch('/operator').then(res => res.json()).then(opList => {
+            if (Object.keys(opList).length === 0) {
+                var operators = defaultOperatorList();
+                fetch("/operator", {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(operators)
+                })
+                .then(response => {
+                    console.log("send the initial list of operators", response.status)
+                    showOperator();
+                })
+                .catch(err => console.log(err));
+            } else {
+                showOperator();
+            }               
+        })
     }
 
     function queryOperatorList() {
-        var queryReq = {}
-        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(operators) {
-            for (var i = 0; i < operators.data.length; i++) {
-                if (Object.keys(operators.data[i]).length === 0) continue;
+        fetch('/operator').then(res => res.json()).then(operators => {
+            Object.values(operators).forEach(operator => {
                 var option = document.createElement("option");
-                option.text = operators.data[i].name; 
+                option.text = operator.name; 
+                
                 var operatorList = document.getElementById("OperatorList");
-                operatorList.add(option);
-            }
-
-            // add it into the select list        
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+                operatorList.add(option);                
+            });           
+        }); 
     }
 
-    //vinod: start
     function displayOperatorList(operators) {
-        operators = operators.data
-        console.log("new operator list",operators)
         if (operators == undefined || operators.length == 0) {
             $('#operatorList').html('');
             return
@@ -118,22 +94,19 @@ $(function() {
 
         html += '<thead><tr>';
         html += '<th>Operator</th>';
-        html += '<th>Name</th>';
         html += '<th>Description</th>';
         html += '<th>#Parameters</th>';
-        html += '<th>#Implementations</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < operators.length; i++) {
-            if (Object.keys(operators[i]).length === 0) continue;
-            console.log("for loop ",operators[i].name)
-
             html += '<tr>';
             html += '<td>' + operators[i].name + '</td>';
-            html += '<td>' + operators[i].name + '</td>';
             html += '<td>' + operators[i].description + '</td>';
-            html += '<td>' + operators[i].parameters.length + '</td>';
-            html += '<td>' + 0 + '</td>';
+            
+            if ('parameters' in operators[i])
+                html += '<td>' + operators[i].parameters.length + '</td>';
+            else
+                html += '<td>' + 0 + '</td>';
 
             html += '</tr>';
         }
@@ -141,8 +114,9 @@ $(function() {
         html += '</table>';
 
         $('#operatorList').html(html);
-    }// vinod:end
-
+    }
+    
+    
     function showOperatorEditor() {
         $('#info').html('to specify an operator');
 
@@ -169,36 +143,33 @@ $(function() {
         });
     }
 
-
     function generateOperator(scene) {
         // construct the operator based on the design board
-        var operator ={} 
-        var attribute = boardScene2Operator(scene);
-        operator.attribute = attribute;
-        operator.updateAction = "UPDATE"
-        operator.internalType = "Operator"
-        console.log("------------------op gen---",operator);
-
-        // submit this operator
+        var operator = boardScene2Operator(scene);
         
-        if(operator.attribute && operator.attribute.name && operator.attribute.name != "unknown")
-        submitOperator(operator, scene);
-        else {
+        if(operator.name && operator.name != "unknown")
+            submitOperator(operator, scene);
+        else
             alert('please provide the required inputs');
-            return;
-        }
     }
 
-    function submitOperator(operator, designboard) {
-        clientDes.updateContext(operator).then(function(data) {
+    function submitOperator(operator) {
+        fetch("/operator", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([operator])
+        })
+        .then(response => {
+            console.log("send the initial list of operators: ", response.status)
             showOperator();
-        }).catch(function(error) {
-            console.log('failed to submit the defined operator');
-        });
+        })
+        .catch(err => console.log(err));
     }
 
     function boardScene2Operator(scene) {
-        console.log(scene);
         var operator = {};
 
         for (var i = 0; i < scene.blocks.length; i++) {
@@ -215,7 +186,6 @@ $(function() {
             }
         }
 
-        console.log(operator);
         return operator;
     }
 
@@ -245,7 +215,6 @@ $(function() {
     }
 
     function showDockerImage() {
-        console.log("show docker +++++")
         $('#info').html('list of docker images in the docker registry');
 
         var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
@@ -259,385 +228,43 @@ $(function() {
             dockerImageRegistration();
         });
     }
+        
 
+
+    function initDockerImageList(){                        
+        fetch('/dockerimage').then(res => res.json()).then(imageList => {
+            if (Object.keys(imageList).length === 0) {
+                var images = defaultDockerImageList();
+                fetch("/dockerimage", {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(images)
+                })
+                .then(response => {
+                    console.log("send the initial list of docker images: ", response.status)
+                })
+                .catch(err => console.log(err));
+            }               
+        })          
+    }
     
-    
-    function defaultOperatorList(){
-        var operatorList = [{
-            name: "nodejs",
-            description: "",
-            parameters: []
-        }, {
-            name: "python",
-            description: "",
-            parameters: []
-        }, {
-            name: "iotagent",
-            description: "",
-            parameters: []
-        }, {
-            name: "counter",
-            description: "",
-            parameters: []
-        }, {
-            name: "anomaly",
-            description: "",
-            parameters: []
-        }, {
-            name: "facefinder",
-            description: "",
-            parameters: []
-        }, {
-            name: "connectedcar",
-            description: "",
-            parameters: []
-        }, {
-            name: "recommender",
-            description: "",
-            parameters: []
-        }, {
-            name: "privatesite",
-            description: "",
-            parameters: []
-        }, {
-            name: "publicsite",
-            description: "",
-            parameters: []
-        }, {
-            name: "pushbutton",
-            description: "",
-            parameters: []
-        }, {
-            name: "acoustic",
-            description: "",
-            parameters: []
-        }, {
-            name: "speaker",
-            description: "",
-            parameters: []
-        }, {
-            name: "dummy",
-            description: "",
-            parameters: []
-        }, {
-            name: "geohash",
-            description: "",
-            parameters: []
-        }, {
-            name: "converter",
-            description: "",
-            parameters: []
-        }, {
-            name: "predictor",
-            description: "",
-            parameters: []
-        }, {
-            name: "controller",
-            description: "",
-            parameters: []
-        }, {
-            name: "detector",
-            description: "",
-            parameters: []
-        }, {
-            name: "LDanomaly",
-            description: "",
-            parameters: []
-        }, {
-            name: "LDCounter",
-            description: "",
-            parameters: []
-        }, {
-	    name: "Crop_Predict",
-	    description: "",
-	    parameters: []
-	}, {
-	    name: "Health_Predictor",
-            description: "",
-            parameters: []
-	},{
-	    name: "Health_Alert_Counter",
-            description: "",
-            parameters: []
-	},{
-	    name: "LDFace",
-            description: "",
-            parameters: []	
-	}];
-	
-	return operatorList;
-    }
-
-  
-
-    function defaultDockerImageList() {
-        var imageList = [{
-            name: "fogflow/nodejs",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "nodejs",
-            prefetched: true
-        }, {
-            name: "fogflow/python",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "python",
-            prefetched: false
-        }, {
-            name: "fogflow/counter",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "counter",
-            prefetched: false
-        }, {
-            name: "fogflow/anomaly",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "anomaly",
-            prefetched: false
-        }, {
-            name: "fogflow/facefinder",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "facefinder",
-            prefetched: false
-        }, {
-            name: "fogflow/connectedcar",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "connectedcar",
-            prefetched: false
-        }, {
-            name: "fiware/iotagent-json",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "iotagent",
-            prefetched: false
-        }, {
-            name: "fogflow/recommender",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "recommender",
-            prefetched: false
-        }, {
-            name: "fogflow/privatesite",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "privatesite",
-            prefetched: false
-        }, {
-            name: "fogflow/publicsite",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "publicsite",
-            prefetched: false
-        }, {
-            name: "pushbutton",
-            tag: "latest",
-            hwType: "ARM",
-            osType: "Linux",
-            operatorName: "pushbutton",
-            prefetched: false
-        }, {
-            name: "acoustic",
-            tag: "latest",
-            hwType: "ARM",
-            osType: "Linux",
-            operatorName: "acoustic",
-            prefetched: false
-        }, {
-            name: "speaker",
-            tag: "latest",
-            hwType: "ARM",
-            osType: "Linux",
-            operatorName: "speaker",
-            prefetched: false
-        }, {
-            name: "pushbutton",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "pushbutton",
-            prefetched: false
-        }, {
-            name: "acoustic",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "acoustic",
-            prefetched: false
-        }, {
-            name: "speaker",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "speaker",
-            prefetched: false
-        }, {
-            name: "fogflow/dummy",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "dummy",
-            prefetched: false
-        }, {
-            name: "geohash",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "geohash",
-            prefetched: false
-        }, {
-            name: "converter",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "converter",
-            prefetched: false
-        }, {
-            name: "predictor",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "predictor",
-            prefetched: false
-        }, {
-            name: "controller",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "controller",
-            prefetched: false
-        }, {
-            name: "detector",
-            tag: "latest",
-            hwType: "ARM",
-            osType: "Linux",
-            operatorName: "detector",
-            prefetched: false
-        }, {
-            name: "fogflow/ldanomaly",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "LDanomaly",
-            prefetched: false
-        }, {
-            name: "fogflow/ldcounter",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "LDCounter",
-            prefetched: false
-        }, {
-	    name: "fogflow/soil",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "Crop_Predict",
-            prefetched: false
-	}, {
-	    name: "fogflow/hearthealth",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "Health_Predictor",
-            prefetched: false
-	}, {
-	    name: "fogflow/ldcounter",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "Health_Alert_Counter",
-            prefetched: false
-	}, {
-	    name: "fogflow/ldfacefinder",
-            tag: "latest",
-            hwType: "X86",
-            osType: "Linux",
-            operatorName: "LDFace",
-            prefetched: false	
-	}];
-
-        return imageList;
-    }
-
-    function initDockerImageList(){
-        var queryReq = {}
-        queryReq = { internalType: "DockerImage", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(doList) {
-            if (doList.data.length == 0) {
-                for (var i = 0; i < defaultDockerImageList().length; i++) { 
-                    dockerObj = defaultDockerImageList()[i];
-                    var newImageObject = {};
-                    var attribute = {};
-                    attribute.name = dockerObj.name;
-                    attribute.hwType = dockerObj.hwType;
-                    attribute.osType = dockerObj.osType;
-                    attribute.operatorName = dockerObj.operatorName;
-                    attribute.prefetched = dockerObj.prefetched;
-                    attribute.tag = dockerObj.tag;
-                    newImageObject.attribute = attribute;
-                    newImageObject.internalType = "DockerImage"
-                    newImageObject.updateAction = "UPDATE"
-
-                    clientDes.updateContext(newImageObject).then(function(data) {
-                        console.log(data);
-                    }).catch(function(error) {
-                        console.log('failed to register the new device object');
-                    });
-                }
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query fog functions');
-        });
-    }
     function addDockerImage(image) {
-        //register a new docker image
-        var newImageObject = {};
-
-        newImageObject.entityId = {
-            id: image.name + '.' + image.tag,
-            type: 'DockerImage',
-            isPattern: false
-        };
-
-        newImageObject.attributes = {};
-        newImageObject.attributes.image = { type: 'string', value: image.name };
-        newImageObject.attributes.tag = { type: 'string', value: image.tag };
-        newImageObject.attributes.hwType = { type: 'string', value: image.hwType };
-        newImageObject.attributes.osType = { type: 'string', value: image.osType };
-        newImageObject.attributes.operator = { type: 'string', value: image.operatorName };
-        newImageObject.attributes.prefetched = { type: 'boolean', value: image.prefetched };
-
-        newImageObject.metadata = {};
-        newImageObject.metadata.operator = {
-            type: 'string',
-            value: image.operatorName
-        };
-
-        var geoScope = {};
-        geoScope.type = "global"
-        geoScope.value = "global"
-        newImageObject.metadata.location = geoScope;
-
-        clientDes.updateContext(newImageObject).then(function(data) {
-            console.log(data);
-        }).catch(function(error) {
-            console.log('failed to register the new device object');
-        });
-
+        //register a new docker image        
+        fetch("/dockerimage", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([image])
+        })
+        .then(response => {
+            console.log("add a new docker image: ", response.status)
+        })
+        .catch(err => console.log(err));        
     }
 
     function dockerImageRegistration() {
@@ -721,41 +348,42 @@ $(function() {
 
         //register a new docker image
         var newImageObject = {};
-        var attribute = {};
-        attribute.name = image
-        attribute.hwType = hwType
-        attribute.osType = osType
-        attribute.operatorName = operatorName
-        attribute.prefetched = prefetched
-        attribute.tag = tag
-        newImageObject.attribute = attribute
-        newImageObject.internalType = "DockerImage"
-        newImageObject.updateAction = "UPDATE"
-       
-        clientDes.updateContext(newImageObject).then(function(data) {
+        newImageObject.name = image
+        newImageObject.hwType = hwType
+        newImageObject.osType = osType
+        newImageObject.operatorName = operatorName
+        newImageObject.prefetched = prefetched
+        newImageObject.tag = tag
+        
+        fetch("/dockerimage", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([newImageObject])
+        })
+        .then(data => {
             console.log(data);
-
-            // show the updated image list
-            showDockerImage();
-        }).catch(function(error) {
+            showDockerImage();            
+        })
+        .catch(err => {
             console.log('failed to register the new device object');
-        });
-
+            console.log(err)
+        });      
     }
 
 
     function updateDockerImageList() {
-        var queryReq = {}
-        queryReq = { internalType: "DockerImage", updateAction: "UPDATE" };
-
-        clientDes.getContext(queryReq).then(function(imageList) {
-            imageList = imageList.data
+        fetch('/dockerimage').then(res => res.json()).then(dockerimages => {
+            var imageList = Object.values(dockerimages);
             console.log("get docker image list ",imageList)
             displayDockerImageList(imageList);
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+        })
+        .catch(err => {
+            console.log('failed to fetch the list of docker images');
+            console.log(err)
+        });          
     }
 
     function displayDockerImageList(images) {
@@ -777,7 +405,6 @@ $(function() {
 
         for (var i = 0; i < images.length; i++) {
             var dockerImage = images[i];
-            console.log("test9999999999999999999 ",dockerImage.hasOwnProperty("operatorName")?dockerImage.operatorName:dockerImage.operater);
 
             html += '<tr>';
             html += '<td>' + dockerImage.operatorName + '</td>';

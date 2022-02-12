@@ -21,6 +21,7 @@ $(function() {
 
     // the list of all registered operators
     var operatorList = [];
+    var eTypeList = [];
     var selectedServiceIntent = null;
     // design board
     var blocks = null;
@@ -28,41 +29,13 @@ $(function() {
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
 
-    // to interact with designer for internal fogflow entities
-    var clientDes = new NGSI10Client('./internal');
-
-
-
-	var myToplogyExamples = [{
-        topology: { "name": "anomaly-detection", "description": "detect anomaly events in shops", "tasks": [{ "name": "Counting", "operator": "counter", "input_streams": [{ "selected_type": "Anomaly", "selected_attributes": [], "groupby": "ALL", "scoped": true }], "output_streams": [{ "entity_type": "Stat" }] }, { "name": "Detector", "operator": "anomaly", "input_streams": [{ "selected_type": "PowerPanel", "selected_attributes": [], "groupby": "EntityID", "scoped": true }, { "selected_type": "Rule", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "Anomaly" }] }] },
-        designboard: { "edges": [{ "id": 2, "block1": 3, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }, { "id": 3, "block1": 2, "connector1": ["outputs", "output", 0], "block2": 3, "connector2": ["in", "input"] }, { "id": 4, "block1": 4, "connector1": ["stream", "output"], "block2": 2, "connector2": ["streams", "input"] }, { "id": 5, "block1": 5, "connector1": ["stream", "output"], "block2": 2, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 202, "y": -146, "type": "Task", "module": null, "values": { "name": "Counting", "operator": "counter", "outputs": ["Stat"] } }, { "id": 2, "x": -194, "y": -134, "type": "Task", "module": null, "values": { "name": "Detector", "operator": "anomaly", "outputs": ["Anomaly"] } }, { "id": 3, "x": 4, "y": -18, "type": "Shuffle", "module": null, "values": { "selectedattributes": ["all"], "groupby": "ALL" } }, { "id": 4, "x": -447, "y": -179, "type": "EntityStream", "module": null, "values": { "selectedtype": "PowerPanel", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": true } }, { "id": 5, "x": -438, "y": -5, "type": "EntityStream", "module": null, "values": { "selectedtype": "Rule", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] }
-    } , {
-        topology: { "name": "anomaly-detection.ld", "description": "detect anomaly events in shops", "tasks": [{ "name": "Counting", "operator": "LDCounter", "input_streams": [{ "selected_type": "Anomaly", "selected_attributes": [], "groupby": "ALL", "scoped": true }], "output_streams": [{ "entity_type": "ldStat" }] }, { "name": "Detector", "operator": "LDanomaly", "input_streams": [{ "selected_type": "PowerPanelNew", "selected_attributes": [], "groupby": "EntityID", "scoped": true }, { "selected_type": "Rule", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "Anomaly" }] }] },
-        designboard: { "edges": [{ "id": 2, "block1": 3, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }, { "id": 3, "block1": 2, "connector1": ["outputs", "output", 0], "block2": 3, "connector2": ["in", "input"] }, { "id": 4, "block1": 4, "connector1": ["stream", "output"], "block2": 2, "connector2": ["streams", "input"] }, { "id": 5, "block1": 5, "connector1": ["stream", "output"], "block2": 2, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 202, "y": -146, "type": "Task", "module": null, "values": { "name": "Counting", "operator": "LDCounter", "outputs": ["ldStat"] } }, { "id": 2, "x": -194, "y": -134, "type": "Task", "module": null, "values": { "name": "Detector", "operator": "LDanomaly", "outputs": ["Anomaly"] } }, { "id": 3, "x": 4, "y": -18, "type": "Shuffle", "module": null, "values": { "selectedattributes": ["all"], "groupby": "ALL" } }, { "id": 4, "x": -447, "y": -179, "type": "EntityStream", "module": null, "values": { "selectedtype": "PowerPanelNew", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": true } }, { "id": 5, "x": -438, "y": -5, "type": "EntityStream", "module": null, "values": { "selectedtype": "Rule", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] }
-    }, {
-        topology: { "name": "child-finder", "description": "search for a lost child based on face recognition", "tasks": [{ "name": "childfinder", "operator": "facefinder", "input_streams": [{ "selected_type": "Camera", "selected_attributes": [], "groupby": "EntityID", "scoped": true }, { "selected_type": "ChildLost", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "ChildFound" }] }] },
-        designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }, { "id": 2, "block1": 3, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 7, "y": -107, "type": "Task", "module": null, "values": { "name": "childfinder", "operator": "facefinder", "outputs": ["ChildFound"] } }, { "id": 2, "x": -292, "y": -161, "type": "EntityStream", "module": null, "values": { "selectedtype": "Camera", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": true } }, { "id": 3, "x": -286, "y": -2, "type": "EntityStream", "module": null, "values": { "selectedtype": "ChildLost", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] }
-    }, {
-	topology: {"name":"Crop_Prediction","description":"This is a ML based approach for crop selection in farming","tasks":[{"name":"Crop","operator":"Crop_Predict","input_streams":[{"selected_type":"SoilSensor","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"CropPrediction"}]}]},
-	designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":-64,"y":-154,"type":"Task","module":null,"values":{"name":"Crop","operator":"Crop_Predict","outputs":["CropPrediction"]}},{"id":2,"x":-405,"y":-122,"type":"EntityStream","module":null,"values":{"selectedtype":"SoilSensor","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]} 
-    }, {
-	topology: {"name":"Heart_Health_Predictor","description":"ML based health prediction of Human Heart","tasks":[{"name":"Heart_health","operator":"Health_Predictor","input_streams":[{"selected_type":"HeartSensor","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"predictor"}]},{"name":"Alert counter","operator":"Health_Alert_Counter","input_streams":[{"selected_type":"predictor","selected_attributes":[],"groupby":"EntityID","scoped":true}],"output_streams":[{"entity_type":"ldStat_health"}]}]},
-	designboard: {"edges":[{"id":1,"block1":1,"connector1":["stream","output"],"block2":2,"connector2":["streams","input"]},{"id":2,"block1":2,"connector1":["outputs","output",0],"block2":3,"connector2":["in","input"]},{"id":3,"block1":3,"connector1":["stream","output"],"block2":4,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":-469,"y":4,"type":"EntityStream","module":null,"values":{"selectedtype":"HeartSensor","selectedattributes":["all"],"groupby":"EntityID","scoped":false}},{"id":2,"x":-236,"y":-154,"type":"Task","module":null,"values":{"name":"Heart_health","operator":"Health_Predictor","outputs":["predictor"]}},{"id":3,"x":45,"y":-1,"type":"Shuffle","module":null,"values":{"selectedattributes":["all"],"groupby":"EntityID"}},{"id":4,"x":285,"y":-159,"type":"Task","module":null,"values":{"name":"Alert counter","operator":"Health_Alert_Counter","outputs":["ldStat_health"]}}]}
-    }, {
-	topology: {"name":"ld-child-finder","description":"","tasks":[{"name":"ldchildfinder","operator":"LDFace","input_streams":[{"selected_type":"lDCamera","selected_attributes":[],"groupby":"EntityID","scoped":true},{"selected_type":"ChildLost","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"ChildFound"}]}]},
-	designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]},{"id":2,"block1":3,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":19,"y":-95,"type":"Task","module":null,"values":{"name":"ldchildfinder","operator":"LDFace","outputs":["ChildFound"]}},{"id":2,"x":-344,"y":-175,"type":"EntityStream","module":null,"values":{"selectedtype":"lDCamera","selectedattributes":["all"],"groupby":"EntityID","scoped":true}},{"id":3,"x":-303,"y":16,"type":"EntityStream","module":null,"values":{"selectedtype":"ChildLost","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]}
-    }];
-
     addMenuItem('Topology', 'Service Topology', showTopologies);
     addMenuItem('Intent', 'Service Intent', showIntents);
     addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
-    queryTopology();
-
-    showTopologies();
-
+    
+    initTopologyExamples();
     queryOperatorList();
-
-
+    queryEntityTypeList();
 
     $(window).on('hashchange', function() {
         var hash = window.location.hash;
@@ -87,29 +60,25 @@ $(function() {
     }
 
     function initTopologyExamples() {
-        for (var i = 0; i < myToplogyExamples.length; i++) {
-            var example = myToplogyExamples[i];
-            var topology = {};
-            topology.attribute =  myToplogyExamples[i].topology;
-            topology.attribute.designboard = myToplogyExamples[i].designboard;
-            topology.internalType = 'Topology';
-            topology.updateAction = 'UPDATE';
-            submitTopology(topology, example.designboard);
-        }
-    }
-
-    function queryTopology() {
-        console.log("query topology ")
-        var queryReq = {}
-        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(topologyList) {
-            if (topologyList.data.length == 0) {
-                initTopologyExamples();
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query task');
-        });
+        fetch('/service').then(res => res.json()).then(ontologies => {
+            if (Object.keys(ontologies).length === 0) {
+                fetch("/service", {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(myToplogyExamples)
+                })
+                .then(response => {
+                    console.log("create a list of service ontologies", response.status)
+                    showTopologies();                                                       
+                })
+                .catch(err => console.log(err));                                                                 
+            } else {
+                showTopologies();
+            }               
+        })
     }
 
 
@@ -119,7 +88,6 @@ $(function() {
         var html = '';
 
         html += '<div id="topologySpecification" class="form-horizontal"><fieldset>';
-        //html +=    '<div id="uidTopology" style="display: none;"> </div>';
         html += '<div class="control-group"><label class="control-label">name</label>';
         html += '<div class="controls"><input type="text" class="input-large" id="serviceName">';
         html += '</div></div>';
@@ -142,7 +110,7 @@ $(function() {
 
         blocks = new Blocks();
 
-        registerAllBlocks(blocks, operatorList);
+        registerAllBlocks(blocks, operatorList, eTypeList);
 
         blocks.run('#blocks');
 
@@ -171,49 +139,47 @@ $(function() {
             CurrentScene = topologyEntity.designboard;
             showTopologyEditor();
 
-            var topology = topologyEntity;
-            $('#uidTopology').val(topology.uid);
+            var topology = topologyEntity.topology;
             $('#serviceName').val(topology.name);
             $('#serviceDescription').val(topology.description);
         }
     }
 
     function deleteTopology(topologyEntity) {
-        console.log("delete topology entity ",topologyEntity);
-
-        var topEntity = {};
-        var attribute = {id: topologyEntity.name, action:'DELETE'}
-        topEntity.attribute = attribute
-        topEntity.updateAction = 'DELETE';
-        topEntity.internalType = 'Topology';
-        topEntity.uid = topologyEntity.uid
-        clientDes.deleteContext(topEntity).then(function(data) {
-            console.log(data);
-            updateTopologyList();
-        }).catch(function(error) {
-            console.log('failed to delete a service topology');
-        });
+        console.log("DELETE");
+        var msg = {name: topologyEntity.topology.name}
+        
+        fetch("/service", {
+            method: "DELETE",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(msg)
+        })
+        .then(response => {
+            console.log("delete a service ontology: ", response.status)
+            showTopologies();
+        })
+        .catch(err => console.log(err));           
     }
-
 
 
     function queryOperatorList() {
-        var queryReq = {}
-        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
-
-        clientDes.getContext(queryReq).then(function(operators) {
-            for (var i = 0; i < operators.data.length; i++) {
-                var entity = operators.data[i];
-                var operator = entity.name;
-                operatorList.push(operator);
-            }
-
-            // add it into the select list        
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+        fetch('/operator').then(res => res.json()).then(operators => {
+            Object.values(operators).forEach(operator => {
+                operatorList.push(operator.name);
+            })           
+        }); 
     }
+    
+    function queryEntityTypeList() {
+        fetch('/info/type').then(res => res.json()).then(dtypes => {
+            for (var i = 0; i < dtypes.length; i++) {
+                eTypeList.push(dtypes[i]);
+            }            
+        }); 
+    }    
 
     function boardScene2Topology(scene) {
         // construct a topology from the provided information
@@ -222,24 +188,21 @@ $(function() {
         var topologyName = $('#serviceName').val();
         var serviceDescription = $('#serviceDescription').val();
 
+        var serviceTopology = {};
+
         var topology = {};
-        var attribute = {};
-        attribute.name = topologyName;
-        attribute.description = serviceDescription;
-        attribute.tasks = generateTaskList(scene);
-        attribute.designboard = scene;
-        attribute.action = 'UPDATE'
-        topology.attribute = attribute;
-        topology.internalType = 'Topology';
-        topology.updateAction = 'UPDATE';
+        topology.name = topologyName;
+        topology.description = serviceDescription;
+        topology.tasks = generateTaskList(scene);
         if (uidTopology){
             topology.uid = uidTopology;
         }
-
+        
+        serviceTopology.topology = topology;
+        serviceTopology.designboard = scene;
        
-
         // submit the generated topology
-        submitTopology(topology, scene);
+        submitTopology(serviceTopology);
     }
 
 
@@ -346,25 +309,22 @@ $(function() {
         return inputType;
     }
 
-    function submitTopology(topologyData, designboard) {
-        var topology = topologyData.attribute;
-        console.log("==============test========");
-        console.log("save in db topology   ",JSON.stringify(topology));
-       
-
-        if (topology == '' || topology.name == '' || topology.tasks.length==0 || topology.tasks[0].operator == 'null' || 
-        topology.tasks[0].operator == '' || topology.tasks[0].input_streams.length==0){
-            alert('please provide the required inputs');
-            return;
-        }
-
-        clientDes.updateContext(topologyData).then(function(data) {
-            console.log(data);
-            // update the list of submitted topologies
+    function submitTopology(topology) {
+        console.log(topology)
+        
+        fetch("/service", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([topology])
+        })
+        .then(response => {
+            console.log("submit a new service topology: ", response.status)
             showTopologies();
-        }).catch(function(error) {
-            console.log('failed to submit the topology');
-        });
+        })
+        .catch(err => console.log(err));
     }
 
     function showTopologies() {
@@ -384,14 +344,13 @@ $(function() {
     }
 
     function updateTopologyList() {
-        var queryReq = {}
-        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(topologyList) {
-            console.log("get topology list ",topologyList)
-            displayTopologyList(topologyList.data);
+        fetch('/service').then(res => res.json()).then(topologies => {
+            var topologyList = Object.values(topologies);
+            console.log("get topology list ", topologyList)
+            displayTopologyList(topologyList);             
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query context');
+            console.log('failed to fetch the list of service ontologies');
         });
     }
 
@@ -403,34 +362,27 @@ $(function() {
         var html = '<table class="table table-striped table-bordered table-condensed">';
 
         html += '<thead><tr>';
-        html += '<th>ID</th>';
         html += '<th>Name</th>';
-        html += '<th>Actions</th>';
         html += '<th>Description</th>';
-        html += '<th>Tasks</th>';
+        html += '<th>#Tasks</th>';
+        html += '<th>Actions</th>';        
         html += '</tr></thead>';
 
         for (var i = 0; i < topologies.length; i++) {
-            var topology = topologies[i];
+            var topologyEntity = topologies[i];
+            
+            console.log(topologyEntity)
 
-            var topology_id = topology.name;
-            html += '<tr>';
-            html += '<td>' + topology_id;
-            html += '</td>';
+            html += '<td>' + topologyEntity.topology.name + '</td>';
 
-            topology = topology;
-
-            html += '<td>' + topology.name + '</td>';
+            html += '<td>' + topologyEntity.topology.description + '</td>';
+            html += '<td>' + topologyEntity.topology.tasks.length + '</td>';
 
             html += '<td class="singlecolumn">';
-            html += '<button id="editor-' + topology_id + '" type="button" class="btn btn-primary btn-separator">view</button>';
-            html += '<button id="delete-' + topology_id + '" type="button" class="btn btn-primary btn-separator">delete</button>';
+            html += '<button id="editor-' + topologyEntity.topology.name  + '" type="button" class="btn btn-primary btn-separator">view</button>';
+            html += '<button id="delete-' + topologyEntity.topology.name + '" type="button" class="btn btn-primary btn-separator">delete</button>';
             html += '</td>';
-
-            html += '<td>' + topology.description + '</td>';
-            html += '<td>' + JSON.stringify(topology.tasks) + '</td>';
-
-
+            
             html += '</tr>';
         }
 
@@ -440,22 +392,21 @@ $(function() {
 
         // associate a click handler to the editor button
         for (var i = 0; i < topologies.length; i++) {
-            var topology = topologies[i];
-            console.log("topolody list val --- ",topology);
+            var topologyEntity = topologies[i];
             // association handlers to the buttons
-            var editorButton = document.getElementById('editor-' + topology.name);
+            var editorButton = document.getElementById('editor-' + topologyEntity.topology.name );
             editorButton.onclick = function(mytopology) {
                 return function() {
                     openTopologyEditor(mytopology);
                 };
-            }(topology);
+            }(topologyEntity);
 
-            var deleteButton = document.getElementById('delete-' + topology.name);
+            var deleteButton = document.getElementById('delete-' + topologyEntity.topology.name );
             deleteButton.onclick = function(mytopology) {
                 return function() {
                     deleteTopology(mytopology);
                 };
-            }(topology);
+            }(topologyEntity);
         }
     }
 
@@ -471,19 +422,17 @@ $(function() {
             addIntent();
         });
 
-        var queryReq = {}
-        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(intents) {
-            displayIntentList(intents.data);
+        fetch('/intent').then(res => res.json()).then(intents => {
+            var intentList = Object.values(intents);
+            displayIntentList(intentList);            
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query intent entities');
+            console.log('failed to fetch the list of service intents');
         });
     }
 
 
     function displayIntentList(intents) {
-        console.log("display service intent ** ",intents);
         if (intents == null || intents.length == 0) {
             $('#intentList').html('');
             return
@@ -499,29 +448,23 @@ $(function() {
         html += '<th>Priority</th>';
         html += '<th>Sevice Level Objective</th>';
         html += '<th>GeoScope</th>';
-        //html += '<th>Status</th>';
-        //html += '<th>Reason</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < intents.length; i++) {
-            var entity = intents[i];
-
-            var intent = entity;
+            var intent = intents[i];
 
             html += '<tr>';
-            html += '<td>' + entity.id;
+            html += '<td>' + intent.id;
             html += '</td>';
             html += '<td class="singlecolumn">';
-            html += '<button id="UPDATE-' + entity.id + '" type="button" class="btn btn-primary">Update</button>  ';
-            html += '<button id="DELETE-' + entity.id + '" type="button" class="btn btn-primary">Delete</button>';
+            html += '<button id="UPDATE-' + intent.id + '" type="button" class="btn btn-primary">Update</button>  ';
+            html += '<button id="DELETE-' + intent.id + '" type="button" class="btn btn-primary">Delete</button>';
             html += '</td>';
             html += '<td>' + intent.topology + '</td>';
             html += '<td>' + intent.stype + '</td>';
             html += '<td>' + JSON.stringify(intent.priority) + '</td>';
-            html += '<td>' + intent.slo + '</td>';
-            html += '<td>' + JSON.stringify(intent.geoscope) + '</td>';
-            //html += '<td>' + JSON.stringify(entity.metadata.status) + '</td>';                
-            //html += '<td>' + JSON.stringify(intent.metadata.reason) + '</td>';                
+            html += '<td>' + intent.qos + '</td>';
+            html += '<td>' + JSON.stringify(intent.geoscope) + '</td>';            
 
             html += '</tr>';
         }
@@ -532,15 +475,15 @@ $(function() {
 
         // associate a click handler to generate device profile on request
         for (var i = 0; i < intents.length; i++) {
-            var entity = intents[i];
-            var deleteButton = document.getElementById('DELETE-' + entity.id);
+            var intent = intents[i];
+            var deleteButton = document.getElementById('DELETE-' + intent.id);
             deleteButton.onclick = function(intentID) {
                 return function() {
                     removeIntent(intentID);
                 };
-            }(entity);
+            }(intent);
 
-            var updateButton = document.getElementById('UPDATE-' + entity.id);
+            var updateButton = document.getElementById('UPDATE-' + intent.id);
             updateButton.onclick = function(intentID) {
                 return function() {
                     console.log("***********update intent uid ",intentID.uid);
@@ -548,12 +491,11 @@ $(function() {
                     selectedServiceIntent = intentID;
                     showIntent(intentID);
                 };
-            }(entity);
+            }(intent);
         }
     }
 
     function showIntent(intentEntity) {
-        console.log("show service intent -- ",intentEntity);
         var html = '<div id="intentRegistration" class="form-horizontal"><fieldset>';
         html +=    '<div id="intentDgraphUID" style="display: none;"> </div>';
         html += '<div class="control-group hidediv"><label class="control-label hidediv" for="input01">ID</label>';
@@ -563,13 +505,13 @@ $(function() {
         html += '<div class="control-group"><label class="control-label" for="input01">Topology</label>';
         html += '<div class="controls"><select id="topologyItems"></select></div>'
         html += '</div>';
-        /*
-                html += '<div class="control-group"><label class="control-label">Type</label><div class="controls">';
-                html += '<select id="SType">';
-                html += '<option value="SYN">Synchronous</option>';
-                html += '<option value="ASYN">Asynchronous</option></select>';
-                html += '</div></div>';
-        */
+
+        html += '<div class="control-group"><label class="control-label">Type</label><div class="controls">';
+        html += '<select id="SType">';
+        html += '<option value="SYN">Synchronous</option>';
+        html += '<option value="ASYN">Asynchronous</option></select>';
+        html += '</div></div>';
+                
         html += '<div class="control-group"><label class="control-label">Priority</label><div class="controls">';
         html += '<select id="priorityLevel"><option>low</option><option>middle</option><option>high</option></select>';
         html += '</div></div>';
@@ -605,8 +547,7 @@ $(function() {
         listAllTopologies();
 
         // set the value accordingly
-        if (intentEntity == undefined) {
-            
+        if (intentEntity == undefined) {            
             var uid = uuid();
             var sid = 'ServiceIntent.' + uid;
 
@@ -645,7 +586,6 @@ $(function() {
                 geoscope = intent.geoscope;
                 showMap();
             }
-
         }
 
         // associate functions to clickable buttons
@@ -671,45 +611,30 @@ $(function() {
     }
 
     function removeIntent(intentObj) {
-        console.log("service intent is ",intentObj)
-        var sInent = {};
-        var attribute = {id:intentObj.id, action:'DELETE'}
-        sInent.attribute = attribute
-        sInent.updateAction = 'DELETE';
-        sInent.internalType = 'ServiceIntent';
-        sInent.uid = intentObj.uid
-        clientDes.deleteContext(sInent).then(function(data) {
-            console.log('remove the service intent');
-            // show the updated intent list
+        var msg = {id:intentObj.id}
+        
+        fetch("/intent", {
+            method: "DELETE",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(msg)
+        })
+        .then(data => {
             showIntents();
-        }).catch(function(error) {
-            console.log('failed to delete this service intent');
-        });
+        })
+        .catch(err => console.log(err));    
     }
-
-    function updateIntent(eid) {
-        $('#info').html('to update an existing service intent');
-
-        console.log("aaaaaaaaaa intent ",eid);
-        submitIntent();
-      
-
-    }
-
 
     function listAllTopologies() {
-        var queryReq = {}
-        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(topologyList) {
-            var topologySelect = document.getElementById('topologyItems');
-            for (var i = 0; i < topologyList.data.length; i++) {
-                var topology = topologyList.data[i];
-                topologySelect.options[topologySelect.options.length] = new Option(topology.name, topology.name);
+        fetch('/topologies').then(res => res.json()).then(names => {
+            for(var i=0; i<names.length; i++){
+                var name = names[i];
+                var topologySelect = document.getElementById('topologyItems');                    
+                topologySelect.options[topologySelect.options.length] = new Option(name, name);
             }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query topology');
-        });
+        }); 
     }
 
     function uuid() {
@@ -729,14 +654,11 @@ $(function() {
 
     function submitIntent() {
         var intent = {};
-        var attribute = {};
-        console.log("intent uid is 88888888 ",intentDgraphUID);
+
         var topology = $('#topologyItems option:selected').val();
-        attribute.topology = topology;
-        /*
-                var sType = $('#SType option:selected').val();
-                intent.stype = sType;
-        */
+        intent.topology = topology;
+        var sType = $('#SType option:selected').val();
+        intent.stype = sType;
         var temp1 = $('#priorityLevel option:selected').val();
         var priorityLevel = 0;
         switch (temp1) {
@@ -757,13 +679,13 @@ $(function() {
             exclusiveResourceUsage = true;
         }
 
-        attribute.priority = {
+        intent.priority = {
             'exclusive': exclusiveResourceUsage,
             'level': priorityLevel
         };
 
         var slo = $('#SLO option:selected').val();
-        attribute.qos = slo;
+        intent.qos = slo;
 
         var scope = $('#geoscope option:selected').val();
 
@@ -771,34 +693,29 @@ $(function() {
         if (scope == 'custom') {
             operationScope.scopeType = geoscope.type;
             operationScope.scopeValue = geoscope.value;
-            attribute.geoscope = operationScope;
+            intent.geoscope = operationScope;
         } else {
             operationScope.scopeType = scope;
             operationScope.scopeValue = scope;
-            attribute.geoscope = operationScope;
+            intent.geoscope = operationScope;
         }
-
 
         var sid = $("#SID").text();
-        attribute.id = sid;
-        attribute.action= 'UPDATE'
-       
-    
-        if (selectedServiceIntent!=null) {
-            intent.uid = selectedServiceIntent.uid;;
-        }
-        intent.attribute = attribute;
+        intent.id = sid;
         
-        intent.internalType = "ServiceIntent";
-        intent.updateAction = "UPDATE";
-        console.log("service intent ", intent);
-        clientDes.updateContext(intent).then(function(data) {
-            console.log(data);
-            // update the list of submitted intents
+        fetch("/intent", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(intent)
+        })
+        .then(response => {
+            console.log("issue a new intent: ", response.status)
             showIntents();
-        }).catch(function(error) {
-            console.log('failed to submit the defined intent');
-        });
+        })
+        .catch(err => console.log(err));        
     }
 
 

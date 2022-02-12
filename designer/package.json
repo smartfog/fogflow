@@ -7,6 +7,7 @@
     "scripts": {
         "start": "node main.js"
     },
+    "type": "module",
     "dependencies": {
         "amqplib": "^0.8.0",
         "axios": "*",
@@ -14,7 +15,9 @@
         "dgraph-js": "^20.3.0",
         "express": "^4.17.1",
         "logops": "^2.1.1",
+        "lowdb": "^3.0.0",
         "multer": "^1.4.2",
+        "node-fetch": "^3.2.0",
         "socket.io": "^2.3.0"
     }
 }

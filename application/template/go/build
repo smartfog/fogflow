@@ -1,3 +1,0 @@
-go build
-docker build -t "fogflow/gofunction"  .
-

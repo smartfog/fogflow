@@ -42,6 +42,22 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 }
 
 //
+// return all available entity types
+//
+func (er *EntityRepository) GetEntityTypes() []string {
+	er.ctxRegistrationList_lock.RLock()
+	defer er.ctxRegistrationList_lock.RUnlock()
+
+	typeList := make([]string, 0)
+
+	for _, registration := range er.ctxRegistrationList {
+		typeList = append(typeList, registration.Type)
+	}
+
+	return typeList
+}
+
+//
 // for the performance purpose, we still keep the latest view of all registrations
 //
 func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registration *ContextRegistration) *EntityRegistration {
