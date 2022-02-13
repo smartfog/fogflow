@@ -3634,23 +3634,22 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	tb.ldEntities_lock.Unlock()
 	return entities
 }
+
 func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService string) []interface{} {
 	var newEid string
 	tb.ldEntities_lock.Lock()
 	var entities []interface{}
-
 	for index, eid := range eids {
 		newEid = eid + "@" + fiwareService
 		if entity, ok := tb.ldEntities[newEid]; ok == true {
 			entityMap := entity.(map[string]interface{})
-			//compactEntity := tb.createOriginalPayload(entityMap)
-			//resultEntity := compactEntity.(map[string]interface{})
-			if entityMap["type"] == typ[index] {
+			typeArray := entityMap["@type"].([]interface{})
+			newType := typeArray[0].(string)
+			if newType == typ[index] {
 				compactEntity := tb.createOriginalPayload(entityMap)
 				resultEntity := compactEntity.(map[string]interface{})
-				//compactEntity := tb.createOriginalPayload(entity)
 				actualId := getActualEntity(resultEntity)
-				resultEntity["id"] = actualId
+				resultEntity["@id"] = actualId
 				delete(resultEntity, "fiwareServicePath")
 				entities = append(entities, resultEntity)
 			}
