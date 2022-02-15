@@ -1,10 +1,12 @@
 package main
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"net/http"
 	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -12,12 +14,10 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-
-	"k8s.io/client-go/rest"
 
 	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type EdgeController struct {
@@ -27,7 +27,7 @@ type EdgeController struct {
 
 func (mec *EdgeController) Init(cfg *Config) bool {
 	// retrieve the accessible URL of the edge controller
-	mec.edgeControllerURL = "http://localhost"
+	mec.edgeControllerURL = cfg.GetEdgeControllerURL()
 
 	return true
 }
@@ -83,23 +83,11 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 
 	jsonString, _ := json.Marshal(commands)
 
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-
 	iport, err := strconv.ParseInt(freePort, 10, 32)
 	pport := int32(iport)
 	if err != nil {
 		panic(err.Error())
 	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	deploymentsClient := clientset.AppsV1().Deployments("fogflow")
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -148,12 +136,12 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 	}
 
 	// Create Deployment
-	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
+	jsonPayload, err := json.Marshal(deployment)
 	if err != nil {
-		panic(err)
+		ERROR.Fatalf("Error occured during marshaling. Error: %s", err.Error())
 	}
 
-	coreV1Client := clientset.CoreV1()
+	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/deployment/fogflow", jsonPayload)
 
 	serviceSpec := &coreV1.Service{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -172,43 +160,39 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 		},
 	}
 
-	service, err := coreV1Client.Services("fogflow").Create(context.TODO(), serviceSpec, metaV1.CreateOptions{})
+	// create a k8s service
+	jsonPayload, err = json.Marshal(serviceSpec)
 	if err != nil {
-		panic(err)
+		ERROR.Fatalf("Error occured during marshaling. Error: %s", err.Error())
 	}
-	fmt.Printf("Created service %s\n", service.ObjectMeta.Name)
 
-	return result.GetObjectMeta().GetName(), freePort, err
+	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/service/fogflow", jsonPayload)
+
+	return "", freePort, err
 }
 
 func (mec *EdgeController) StopTask(podId string) {
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
+	deploymentName := "test"
+	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/deployment/fogflow/"+deploymentName, nil)
+
+	serviceName := "test"
+	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/service/fogflow/"+serviceName, nil)
+}
+
+func (mec *EdgeController) sendRequest(method string, url string, payload []byte) bool {
+	INFO.Println(method, url, string(payload))
+
+	request, error := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	client := &http.Client{}
+	response, error := client.Do(request)
+	if error != nil {
+		panic(error)
 	}
+	defer response.Body.Close()
 
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	deploymentsClient := clientset.AppsV1().Deployments("fogflow")
-
-	fmt.Println("Deleting Deployment ", podId)
-	deletePolicy := metav1.DeletePropagationForeground
-	if err := deploymentsClient.Delete(context.TODO(), podId, metav1.DeleteOptions{
-		PropagationPolicy: &deletePolicy,
-	}); err != nil {
-		panic(err)
-	}
-	fmt.Println("Deployment Deleted : ", podId)
-
-	coreV1Client := clientset.CoreV1()
-
-	err2 := coreV1Client.Services("fogflow").Delete(context.TODO(), podId, metaV1.DeleteOptions{})
-	if err2 != nil {
-		panic(err2)
-	}
-	fmt.Printf("Deleted service %s\n", podId)
+	body, _ := ioutil.ReadAll(response.Body)
+	fmt.Println("response Body:", string(body))
+	return true
 }
