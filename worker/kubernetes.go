@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net"
+	"path/filepath"
 	"strconv"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -12,19 +14,64 @@ import (
 	coreV1 "k8s.io/api/core/v1"
 	metaV1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
+
 	"k8s.io/client-go/rest"
 
 	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
+	. "fogflow/common/ngsi"
 )
 
 type Kubernetes struct {
 	workerCfg *Config
+	clientset *kubernetes.Clientset
 }
 
-func (k8s *Kubernetes) Init(cfg *Config) {
+func (k8s *Kubernetes) Init(cfg *Config) bool {
+	config := readFileConfig()
 
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		ERROR.Println(err.Error())
+		return false
+	}
+
+	k8s.clientset = clientset
+
+	return true
+}
+
+func readFileConfig() *rest.Config {
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		ERROR.Println(err.Error())
+		return nil
+	}
+
+	return config
+}
+
+// creates the in-cluster config
+func fetchClusterConfig() *rest.Config {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		ERROR.Println(err.Error())
+		return nil
+	}
+
+	return config
 }
 
 func (k8s *Kubernetes) PullImage(dockerImage string, tag string) (string, error) {
@@ -78,23 +125,13 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 
 	jsonString, _ := json.Marshal(commands)
 
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-
 	iport, err := strconv.ParseInt(freePort, 10, 32)
 	pport := int32(iport)
 	if err != nil {
 		panic(err.Error())
 	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
 
-	deploymentsClient := clientset.AppsV1().Deployments("fogflow")
+	deploymentsClient := k8s.clientset.AppsV1().Deployments("fogflow")
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -148,7 +185,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 		panic(err)
 	}
 
-	coreV1Client := clientset.CoreV1()
+	coreV1Client := k8s.clientset.CoreV1()
 
 	serviceSpec := &coreV1.Service{
 		ObjectMeta: metaV1.ObjectMeta{
@@ -177,18 +214,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 }
 
 func (k8s *Kubernetes) StopTask(podId string) {
-	// creates the in-cluster config
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		panic(err.Error())
-	}
-
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	deploymentsClient := clientset.AppsV1().Deployments("fogflow")
+	deploymentsClient := k8s.clientset.AppsV1().Deployments("fogflow")
 
 	fmt.Println("Deleting Deployment ", podId)
 	deletePolicy := metav1.DeletePropagationForeground
@@ -199,8 +225,7 @@ func (k8s *Kubernetes) StopTask(podId string) {
 	}
 	fmt.Println("Deployment Deleted : ", podId)
 
-	coreV1Client := clientset.CoreV1()
-
+	coreV1Client := k8s.clientset.CoreV1()
 	err2 := coreV1Client.Services("fogflow").Delete(context.TODO(), podId, metaV1.DeleteOptions{})
 	if err2 != nil {
 		panic(err2)

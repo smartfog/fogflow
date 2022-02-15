@@ -83,12 +83,12 @@ services:
         #     - designer
         # restart: always
 
-    dgraph:                                   
-        image: dgraph/standalone:latest
-        volumes:
-            - ./dgraph:/dgraph           
-        ports:
-            - 6080:6080
-            - 8082:8080
-            - 9082:9080
-            - 8000:8000
+    # dgraph:                                   
+    #     image: dgraph/standalone:latest
+    #     volumes:
+    #         - ./dgraph:/dgraph           
+    #     ports:
+    #         - 6080:6080
+    #         - 8082:8080
+    #         - 9082:9080
+    #         - 8000:8000

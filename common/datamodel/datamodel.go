@@ -23,10 +23,10 @@ type RecvMessage struct {
 }
 
 type TaskUpdate struct {
-	ServiceName string
-	TaskName    string
-	TaskID      string
-	Status      string
+	TopologyName string
+	TaskName     string
+	TaskID       string
+	Status       string
 }
 
 // =========== messages used as the interfaces between different components ====================
@@ -78,11 +78,12 @@ type ServiceIntent struct {
 type TaskIntent struct {
 	ID string `json:"id"`
 	//	SType       string         `json:"stype"`
-	QoS         string         `json:"qos"`
-	GeoScope    OperationScope `json:"geoscope"`
-	Priority    Priority       `json:"priority"`
-	ServiceName string         `json:"service"`
-	TaskObject  Task           `json:"task"`
+	QoS             string         `json:"qos"`
+	GeoScope        OperationScope `json:"geoscope"`
+	Priority        Priority       `json:"priority"`
+	TopologyName    string         `json:"topology"`
+	TaskObject      Task           `json:"task"`
+	ServiceIntentID string
 }
 
 type InputStreamConfig struct {
@@ -102,9 +103,10 @@ type Parameter struct {
 }
 
 type Operator struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	Parameters  []Parameter `json:"parameters"`
+	Name         string        `json:"name"`
+	Description  string        `json:"description"`
+	Parameters   []Parameter   `json:"parameters"`
+	DockerImages []DockerImage `json:"dockerimages"`
 }
 
 type Task struct {
@@ -145,10 +147,11 @@ type Priority struct {
 
 type Topology struct {
 	// Id          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Tasks       []Task `json:"tasks"`
-	Action      string `json:"action"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	Tasks       []Task     `json:"tasks"`
+	Operators   []Operator `json:"operators"`
+	// Action      string     `json:"action"`
 }
 
 type FogFunction struct {
@@ -233,9 +236,9 @@ type FlowInfo struct {
 }
 
 type ScheduledTaskInstance struct {
-	ID          string
-	ServiceName string
-	TaskName    string
+	ID           string
+	TopologyName string
+	TaskName     string
 
 	OperatorName string
 

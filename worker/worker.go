@@ -27,7 +27,7 @@ type Worker struct {
 	profile WorkerProfile
 }
 
-func (w *Worker) Start(config *Config) {
+func (w *Worker) Start(config *Config) bool {
 	w.cfg = config
 
 	w.profile.WID = w.id
@@ -50,7 +50,10 @@ func (w *Worker) Start(config *Config) {
 
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	w.executor.Init(w.cfg, w.selectedBrokerURL)
+	if w.executor.Init(w.cfg, w.selectedBrokerURL) == false {
+		ERROR.Println("Failed to initialize the underlying container engine: ", config.Worker.ContainerManagement)
+		return false
+	}
 
 	// create the communicator with the broker info and topics
 	w.communicator = NewCommunicator(&cfg)
@@ -77,6 +80,8 @@ func (w *Worker) Start(config *Config) {
 	}()
 
 	w.publishMyself()
+
+	return true
 }
 
 func (w *Worker) Quit() {
@@ -165,7 +170,7 @@ func (w *Worker) onRemoveInput(from string, flow *FlowInfo) {
 
 func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state string) {
 	tp := TaskUpdate{}
-	tp.ServiceName = task.ServiceName
+	tp.TopologyName = task.TopologyName
 	tp.TaskName = task.TaskName
 	tp.TaskID = task.ID
 	tp.Status = state

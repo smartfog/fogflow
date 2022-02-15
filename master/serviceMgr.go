@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"sync"
 
 	"github.com/google/uuid"
@@ -37,45 +36,11 @@ func (sMgr *ServiceMgr) GetTasks() {
 
 }
 
-/*func (sMgr *ServiceMgr) handleServiceIntentUpdate(intentCtxObj *ContextObject) {
-	INFO.Println("handle intent update")
-	INFO.Println(intentCtxObj)
-
-	if intentCtxObj.IsEmpty() == true {
-		sMgr.removeServiceIntent(intentCtxObj.Entity.ID)
+func (sMgr *ServiceMgr) handleServiceIntentUpdate(sIntent *ServiceIntent) {
+	if sIntent.Action == "DELETE" {
+		sMgr.removeServiceIntent(sIntent.ID)
 	} else {
-		sIntent := ServiceIntent{}
-		jsonText, _ := json.Marshal(intentCtxObj.Attributes["intent"].Value.(map[string]interface{}))
-		err := json.Unmarshal(jsonText, &sIntent)
-		if err == nil {
-			sIntent.ID = intentCtxObj.Entity.ID
-			INFO.Println(sIntent)
-			sMgr.handleServiceIntent(&sIntent)
-		} else {
-			ERROR.Println(err)
-			//sMgr.updateServiceIntentStatus(intentCtxObj.Entity.ID, "NOT_ACTIVATED", "intent object is not properly defined")
-		}
-	}
-}*/
-
-func (sMgr *ServiceMgr) handleServiceIntentUpdate(msg json.RawMessage) {
-	INFO.Println("handle intent update")
-	INFO.Println(string(msg))
-
-	sIntent := ServiceIntent{}
-	err := json.Unmarshal(msg, &sIntent)
-
-	if err == nil {
-		if sIntent.Action == "DELETE" {
-			sMgr.removeServiceIntent(sIntent.ID)
-		} else {
-			//sIntent.ID = string(msg.id)
-			INFO.Println(sIntent)
-			sMgr.handleServiceIntent(&sIntent)
-		}
-	} else {
-		ERROR.Println(err)
-		//sMgr.updateServiceIntentStatus(intentCtxObj.Entity.ID, "NOT_ACTIVATED", "intent object is not properly defined")
+		sMgr.handleServiceIntent(sIntent)
 	}
 }
 
@@ -145,7 +110,7 @@ func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent
 		taskIntent.Priority = serviceIntent.Priority
 		//taskIntent.SType = serviceIntent.SType
 		taskIntent.QoS = serviceIntent.QoS
-		taskIntent.ServiceName = serviceIntent.TopologyName
+		taskIntent.TopologyName = serviceIntent.TopologyName
 		taskIntent.TaskObject = task
 
 		INFO.Printf("%+v\n", taskIntent)
@@ -179,7 +144,6 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 	var topologyObject = sMgr.master.getTopologyByName(serviceIntent.TopologyName)
 	if topologyObject == nil {
 		ERROR.Println("failed to find the associated topology")
-		//sMgr.updateServiceIntentStatus(serviceIntent.ID, "NOT_ACTIVATED", "failed to find the associated topology")
 		return
 	}
 
@@ -200,7 +164,7 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 		taskIntent.Priority = serviceIntent.Priority
 		//taskIntent.SType = serviceIntent.SType
 		taskIntent.QoS = serviceIntent.QoS
-		taskIntent.ServiceName = serviceIntent.TopologyName
+		taskIntent.TopologyName = serviceIntent.TopologyName
 		taskIntent.TaskObject = task
 
 		INFO.Printf("%+v\n", taskIntent)
@@ -255,7 +219,7 @@ func (sMgr *ServiceMgr) intentPartition(taskIntent *TaskIntent) []*TaskIntentRec
 				intent.GeoScope = geoscope
 				intent.Priority = taskIntent.Priority
 				intent.QoS = taskIntent.QoS
-				intent.ServiceName = taskIntent.ServiceName
+				intent.TopologyName = taskIntent.TopologyName
 				intent.TaskObject = taskIntent.TaskObject
 
 				// handle a sub-intent locally
@@ -280,7 +244,7 @@ func (sMgr *ServiceMgr) intentPartition(taskIntent *TaskIntent) []*TaskIntentRec
 				intent.GeoScope = geoscope
 				intent.Priority = taskIntent.Priority
 				intent.QoS = taskIntent.QoS
-				intent.ServiceName = taskIntent.ServiceName
+				intent.TopologyName = taskIntent.TopologyName
 				intent.TaskObject = taskIntent.TaskObject
 
 				sMgr.ForwardIntentToRemoteSite(&intent, site)

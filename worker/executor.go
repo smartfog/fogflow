@@ -35,16 +35,22 @@ type Executor struct {
 	taskMap_lock  sync.RWMutex
 }
 
-func (e *Executor) Init(cfg *Config, selectedBrokerURL string) {
-	// set up a correct engine based on the configuration
-	client := DockerEngine{}
-
-	client.Init(cfg)
-
+func (e *Executor) Init(cfg *Config, selectedBrokerURL string) bool {
 	e.workerCfg = cfg
 	e.brokerURL = selectedBrokerURL
-
 	e.taskInstances = make(map[string]*taskContext)
+
+	if strings.EqualFold(cfg.Worker.ContainerManagement, "docker") {
+		e.client = &DockerEngine{}
+	} else if strings.EqualFold(cfg.Worker.ContainerManagement, "kubernetes") {
+		e.client = &Kubernetes{}
+	} else if strings.EqualFold(cfg.Worker.ContainerManagement, "mec") {
+		e.client = &EdgeController{}
+	} else {
+		e.client = &DockerEngine{}
+	}
+
+	return e.client.Init(cfg)
 }
 
 func (e *Executor) Shutdown() {
@@ -117,7 +123,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	if len(servicePorts) > 0 {
 		// currently, we assume that each task will only provide one end-point service
-		eid := e.registerEndPointService(task.ServiceName, task.ID, task.OperatorName, e.workerCfg.ExternalIP, servicePorts[0], e.workerCfg.Location)
+		eid := e.registerEndPointService(task.TopologyName, task.ID, task.OperatorName, e.workerCfg.ExternalIP, servicePorts[0], e.workerCfg.Location)
 		taskCtx.EndPointServiceIDs = append(taskCtx.EndPointServiceIDs, eid)
 	}
 
@@ -240,10 +246,10 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 
 	ctxObj.Attributes["task"] = ValueObject{Type: "string", Value: task.TaskName}
 	ctxObj.Attributes["operator"] = ValueObject{Type: "string", Value: task.OperatorName}
-	ctxObj.Attributes["service"] = ValueObject{Type: "string", Value: task.ServiceName}
+	ctxObj.Attributes["service"] = ValueObject{Type: "string", Value: task.TopologyName}
 
 	ctxObj.Metadata = make(map[string]ValueObject)
-	ctxObj.Metadata["topology"] = ValueObject{Type: "string", Value: task.ServiceName}
+	ctxObj.Metadata["topology"] = ValueObject{Type: "string", Value: task.TopologyName}
 	ctxObj.Metadata["worker"] = ValueObject{Type: "string", Value: task.WorkerID}
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}

@@ -1,9 +1,3 @@
-//const express =   require('express');
-//const multer  =   require('multer');
-//const https = require('https');
-//const axios = require('axios')
-//const bodyParser = require('body-parser');
-
 import express from 'express'
 import multer from 'multer'
 //import http from 'http'
@@ -35,7 +29,12 @@ const db = new Low(adapter);
 
 await db.read()
 
-db.data ||= { operators: {}, dockerimages: {}, services: {},  serviceintents: {}, fogfunctions: {} } 
+db.data ||= {   operators: {}, 
+                dockerimages: {}, 
+                topologies: {},
+                services: {},  
+                serviceintents: {}, 
+                fogfunctions: {} } 
 
 var app = express();
 
@@ -249,13 +248,45 @@ app.post('/dockerimage', jsonParser, async function (req, res) {
     for(var i=0; i<dockerimages.length; i++){
         var dockerimage = dockerimages[i];
         console.log(dockerimage);
-        db.data.dockerimages[dockerimage.name] = dockerimage;
+        db.data.dockerimages[dockerimage.name] = dockerimage;     
     }
     
     await db.write();
     
     res.sendStatus(200)    
 });
+
+app.get('/topology', async function(req, res) {    
+    var topologies = [];    
+    Object.values(db.data.topologies).forEach(topology => {
+        topologies.push(topology)
+    })
+    
+    res.json(topologies);    
+});
+app.get('/topology/:name', async function(req, res) {    
+    var name = req.params.name;
+    var topology = db.data.topologies[name];
+    
+    topology.dockerimages = [];
+    topology.operators = [];
+        
+    // include the related docker images for the operators used by this topology
+    for(var i=0; i<topology.tasks.length; i++){        
+        var task = topology.tasks[i];
+        var name = task.operator;
+        
+        var dockerimages = getDockerImages(name);        
+        var operator = getOperator(name);                
+        if (operator != null) {
+            operator.dockerimages = dockerimages;            
+            topology.operators.push(operator);            
+        }
+    }    
+    
+    res.json(topology);
+});
+
 
 app.get('/service', async function(req, res) {    
     var services = db.data.services;    
@@ -266,31 +297,6 @@ app.get('/service/:name', async function(req, res) {
     var service = db.data.services[name];
     res.json(service);
 });
-
-app.get('/topology', async function(req, res) {    
-    var topologies = [];    
-    Object.values(db.data.services).forEach(service => {
-        topologies.push(service.topology)
-    })
-    
-    res.json(topologies);    
-});
-app.get('/topology/:name', async function(req, res) {    
-    var name = req.params.name;
-    var service = db.data.services[name];
-    res.json(service.topology);
-});
-
-app.get('/topologies', function(req, res) {    
-    var names = [];
-    
-    Object.values(db.data.services).forEach(service => {
-        names.push(service.topology.name)
-    })    
-    
-    res.json(names);
-});
-
 app.post('/service', jsonParser, async function (req, res) {
     var services = req.body;    
     
@@ -299,6 +305,7 @@ app.post('/service', jsonParser, async function (req, res) {
         console.log(service);   
         var name = service.topology.name     
         db.data.services[name] = service;
+        db.data.topologies[name] = service.topology;
     }
     
     await db.write();    
@@ -310,6 +317,7 @@ app.delete('/service', jsonParser, async function (req, res) {
        
     var name = msg.name;
     delete db.data.services[name];
+    delete db.data.topologies[name];    
     await db.write();  
         
     res.sendStatus(200)      
@@ -331,11 +339,23 @@ app.post('/intent', jsonParser, async function (req, res) {
     db.data.serviceintents[serviceintent.id] = serviceintent;    
     await db.write();    
     
+    serviceintent.action = 'ADD';    
+    publishMetadata("ServiceIntent", serviceintent);                            
+    
     res.sendStatus(200)       
 });
 app.delete('/intent', jsonParser, async function (req, res) {
     var msg = req.body    
     console.log(msg.id)
+    
+    if (!db.data.serviceintents.hasOwnProperty(msg.id) ) {
+        console.log("the requested service intent does not exist: ", msg.id);
+        return
+    }
+    
+    var serviceintent = db.data.serviceintents[msg.id];
+    serviceintent.action = 'DELETE';
+    publishMetadata("ServiceIntent", serviceintent);       
     
     delete db.data.serviceintents[msg.id];    
     await db.write();    
@@ -360,6 +380,17 @@ app.post('/fogfunction', jsonParser, async function (req, res) {
         var fogfunction = fogfunctions[i];
         console.log(fogfunction);      
         db.data.fogfunctions[fogfunction.name] = fogfunction;
+        db.data.topologies[fogfunction.name] = fogfunction.topology;
+        
+        if (fogfunction.intent.hasOwnProperty('id') == false) {
+            var uid = uuid();
+            var sid = 'ServiceIntent.' + uid;            
+            fogfunction.intent.id = sid;
+        }
+        
+        var serviceintent = fogfunction.intent;
+        serviceintent.action = 'ADD';
+        publishMetadata("ServiceIntent", serviceintent);                             
     }
     
     await db.write();    
@@ -370,8 +401,15 @@ app.delete('/fogfunction', jsonParser, async function (req, res) {
     var msg = req.body    
     console.log(msg.name)
     
+    var fogfunction = db.data.fogfunctions[msg.name]
+    
+    var serviceintent = fogfunction.intent
+    serviceintent.action = 'DELETE';    
+    publishMetadata("ServiceIntent", serviceintent);                                
+    
+    delete db.data.topologies[msg.name];        
     delete db.data.fogfunctions[msg.name];    
-    await db.write();    
+    await db.write();        
     
     res.sendStatus(200)        
 });
@@ -428,6 +466,30 @@ app.get('/config.js', function(req, res) {
     res.end(data);
 });
 
+
+// return the docker images for a given operator name
+function getDockerImages(name)
+{
+    var dockerimages = [];
+    Object.values(db.data.dockerimages).forEach(dockerimage => {
+        if (dockerimage.operatorName == name) {
+            dockerimages.push(dockerimage);    
+        }        
+    });
+    
+    return dockerimages;
+}
+
+
+// return the operator for a given operator name
+function getOperator(name)
+{
+    if (name in db.data.operators) {
+        return db.data.operators[name];    
+    } else {
+        return null
+    };
+}
 
 // publish the created metadata related to service orchestration
 function publishMetadata(dType, dObject)

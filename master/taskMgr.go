@@ -160,7 +160,7 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 	}
 
 	inputSubscription := flow.Subscriptions[subID]
-	fmt.Println("********* inputSubscription***********",inputSubscription)
+	fmt.Println("********* inputSubscription***********", inputSubscription)
 	entityID := registredEntity.ID
 	switch entityAction {
 	case "CREATE", "UPDATE":
@@ -206,9 +206,9 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 // for all required and subscribed context availability
 //
 func (flow *FogFlow) checkInputAvailability() bool {
-	fmt.Println("****** flow.Subscriptions **********",flow.Subscriptions)
+	fmt.Println("****** flow.Subscriptions **********", flow.Subscriptions)
 	for _, inputSubscription := range flow.Subscriptions {
-		fmt.Println("****** inputSubscription *******",inputSubscription.ReceivedEntityRegistrations)
+		fmt.Println("****** inputSubscription *******", inputSubscription.ReceivedEntityRegistrations)
 		if len(inputSubscription.ReceivedEntityRegistrations) == 0 {
 			return false
 		}
@@ -294,7 +294,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 		} else {
 			task := TaskConfig{}
 
-			task.TaskID = "Task." + flow.Intent.ServiceName + "." + flow.Intent.TaskObject.Name + "." + hashID
+			task.TaskID = "Task." + flow.Intent.TopologyName + "." + flow.Intent.TaskObject.Name + "." + hashID
 			task.Operator = flow.Intent.TaskObject.Operator
 			task.Name = flow.Intent.TaskObject.Name
 
@@ -314,7 +314,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 
 			taskInstance.ID = task.TaskID
 
-			taskInstance.ServiceName = flow.Intent.ServiceName
+			taskInstance.TopologyName = flow.Intent.TopologyName
 			taskInstance.OperatorName = task.Operator
 			taskInstance.TaskName = task.Name
 
@@ -691,7 +691,7 @@ func (tMgr *TaskMgr) handleSynchronousTaskIntent(taskIntent *TaskIntent) {
 	fogflow.Init()
 	fogflow.Intent = taskIntent
 
-	fID := taskIntent.ServiceName + "." + taskIntent.TaskObject.Name
+	fID := taskIntent.TopologyName + "." + taskIntent.TaskObject.Name
 
 	task := taskIntent.TaskObject
 
@@ -733,7 +733,7 @@ func (tMgr *TaskMgr) handleASynchronousTaskIntent(taskIntent *TaskIntent) {
 	fogflow.Init()
 	fogflow.Intent = taskIntent
 
-	fID := taskIntent.ServiceName + "." + taskIntent.TaskObject.Name
+	fID := taskIntent.TopologyName + "." + taskIntent.TaskObject.Name
 
 	task := taskIntent.TaskObject
 
@@ -770,7 +770,7 @@ func (tMgr *TaskMgr) removeTaskIntent(taskIntent *TaskIntent) {
 	INFO.Printf("remove the task intent")
 	INFO.Println(taskIntent)
 
-	fID := taskIntent.ServiceName + "." + taskIntent.TaskObject.Name
+	fID := taskIntent.TopologyName + "." + taskIntent.TaskObject.Name
 
 	// remove all related subscriptions to IoT Discovery
 	sidList := make([]string, 0)
@@ -864,7 +864,7 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 		return
 	}
 
-	fmt.Println("***** subid, entityAction, entityregistration***********",subID,entityAction, entityRegistration)
+	fmt.Println("***** subid, entityAction, entityregistration***********", subID, entityAction, entityRegistration)
 
 	deploymentActions := fogflow.MetadataDrivenTaskOrchestration(subID, entityAction, entityRegistration)
 
@@ -886,9 +886,9 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			// find out the worker close to the available inputs
 			locations := fogflow.getLocationOfInputs(hashID)
-			fmt.Println("**** Locations ******",locations)
+			fmt.Println("**** Locations ******", locations)
 			selectedWorkerID := tMgr.master.SelectWorker(locations)
-			fmt.Println("**** selectedWorkerID ******",selectedWorkerID)
+			fmt.Println("**** selectedWorkerID ******", selectedWorkerID)
 
 			if selectedWorkerID == "" {
 				ERROR.Println("==NOT ABLE TO FIND A WORKER FOR THIS TASK===")
@@ -899,10 +899,10 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			// find out which implementation image to be used by the assigned worker
 			operator := scheduledTaskInstance.OperatorName
-			fmt.Println(" * * * * * Inside taskmgr *  * * * ",operator)
+			fmt.Println(" * * * * * Inside taskmgr *  * * * ", operator)
 			workerID := scheduledTaskInstance.WorkerID
 			scheduledTaskInstance.DockerImage = tMgr.master.DetermineDockerImage(operator, workerID)
-			fmt.Println(" * * * * * Inside taskmgr docker image*  * * * ",scheduledTaskInstance.DockerImage)
+			fmt.Println(" * * * * * Inside taskmgr docker image*  * * * ", scheduledTaskInstance.DockerImage)
 
 			// carry the paramemters associated with this operator
 			scheduledTaskInstance.Parameters = tMgr.master.GetOperatorParamters(operator)

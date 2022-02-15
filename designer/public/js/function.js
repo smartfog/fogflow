@@ -180,6 +180,11 @@ $(function() {
 
         // step 2: construct an intent object
         var intent = {};
+
+        var uid = uuid();
+        var sid = 'ServiceIntent.' + uid;
+                    
+        intent.id = sid;        
         intent.topology = topologyName;
         intent.priority = {
             'exclusive': false,

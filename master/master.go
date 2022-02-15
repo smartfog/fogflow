@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,16 +48,16 @@ type Master struct {
 	operatorList_lock sync.RWMutex
 
 	//list of all docker images
-	dockerImageList      map[string][]DockerImage
-	dockerImageList_lock sync.RWMutex
+	// dockerImageList      map[string][]DockerImage
+	// dockerImageList_lock sync.RWMutex
 
-	//list of all submitted topologies
-	topologyList      map[string]*Topology
-	topologyList_lock sync.RWMutex
+	// //list of all submitted topologies
+	// topologyList      map[string]*Topology
+	// topologyList_lock sync.RWMutex
 
-	//list of all submitted topologies
-	fogfunctionList      map[string]*FogFunction
-	fogfunctionList_lock sync.RWMutex
+	// //list of all submitted topologies
+	// fogfunctionList      map[string]*FogFunction
+	// fogfunctionList_lock sync.RWMutex
 
 	//to manage the orchestration of service topology
 	serviceMgr *ServiceMgr
@@ -83,9 +85,9 @@ func (master *Master) Start(configuration *Config) {
 	master.workers = make(map[string]*WorkerProfile)
 
 	master.operatorList = make(map[string]Operator)
-	master.dockerImageList = make(map[string][]DockerImage)
-	master.topologyList = make(map[string]*Topology)
-	master.fogfunctionList = make(map[string]*FogFunction)
+	// master.dockerImageList = make(map[string][]DockerImage)
+	// master.topologyList = make(map[string]*Topology)
+	// master.fogfunctionList = make(map[string]*FogFunction)
 
 	master.subID2Type = make(map[string]string)
 
@@ -193,169 +195,6 @@ func (master *Master) unregisterMyself() {
 	taskMsg := SendMessage{Type: "MASTER_LEAVE", RoutingKey: "designer.", From: master.id, PayLoad: profile}
 	INFO.Println(taskMsg)
 	master.communicator.Publish(&taskMsg)
-}
-
-func (master *Master) subscribeContextEntity(entityType string) {
-	subscription := SubscribeContextRequest{}
-
-	newEntity := EntityId{}
-	newEntity.Type = entityType
-	newEntity.IsPattern = true
-	subscription.Entities = make([]EntityId, 0)
-	subscription.Entities = append(subscription.Entities, newEntity)
-	subscription.Reference = master.myURL
-
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	sid, err := client.SubscribeContext(&subscription, true)
-	if err != nil {
-		ERROR.Println(err)
-	}
-	INFO.Println(sid)
-
-	master.subID2Type[sid] = entityType
-}
-
-// to handle the registry of operator
-func (master *Master) handleOperatorRegistration(msg json.RawMessage) {
-	INFO.Println(string(msg))
-	var operator = Operator{}
-	err := json.Unmarshal(msg, &operator)
-	if len(msg) <= 2 || len(operator.Name) == 0 {
-		//does not handle the removal of operator
-		return
-	}
-	INFO.Println("Operator : ", &operator)
-
-	if err != nil {
-		ERROR.Println("failed to read the given operator")
-	} else {
-		master.operatorList_lock.Lock()
-		master.operatorList[operator.Name] = operator
-		master.operatorList_lock.Unlock()
-	}
-}
-
-// to handle the management of docker images
-func (master *Master) handleDockerImageRegistration(msg json.RawMessage) {
-	if len(msg) <= 2 {
-		//does not handle the removal of dockerImage
-		return
-	}
-	INFO.Println(string(msg))
-
-	var dockerImage = DockerImage{}
-	err := json.Unmarshal(msg, &dockerImage)
-	fmt.Println("******* Docker Image ********", dockerImage.ImageName)
-	fmt.Println("***** dockerImage operator name ****", dockerImage.OperatorName)
-	if len(dockerImage.OperatorName) == 0 || len(dockerImage.ImageName) == 0 || len(dockerImage.ImageTag) == 0 || len(dockerImage.TargetedHWType) == 0 || len(dockerImage.TargetedOSType) == 0 {
-		//does not handle the removal of dockerImage
-		return
-	}
-	INFO.Println("dockerImage : ", &dockerImage)
-
-	if err != nil {
-		ERROR.Println("failed to read the given dockerImage")
-	} else {
-		master.dockerImageList_lock.Lock()
-		master.dockerImageList[dockerImage.OperatorName] = append(master.dockerImageList[dockerImage.OperatorName], dockerImage)
-		master.dockerImageList_lock.Unlock()
-	}
-	if dockerImage.Prefetched == true {
-		// inform all workers to prefetch this docker image in advance
-		master.prefetchDockerImages(dockerImage)
-	}
-}
-
-// to update the fog function list
-func (master *Master) handleFogFunctionUpdate(msg json.RawMessage) {
-	var fogfunction = FogFunction{}
-	err := json.Unmarshal(msg, &fogfunction)
-	fogfunction.Intent.ID = fogfunction.Id
-	fmt.Println("***** Intent.ID *********", fogfunction.Intent.ID)
-
-	if fogfunction.Action == "DELETE" {
-		var eid = fogfunction.Id
-
-		master.fogfunctionList_lock.RLock()
-		fogfunction := master.fogfunctionList[eid]
-		master.fogfunctionList_lock.RUnlock()
-
-		DEBUG.Printf("%+v\r\n", fogfunction)
-		master.serviceMgr.removeServiceIntent(fogfunction.Intent.ID)
-
-		topology := fogfunction.Topology
-		master.topologyList_lock.Lock()
-		master.topologyList[topology.Name] = &topology
-		master.topologyList_lock.Unlock()
-
-		// remove this fog function entity
-		master.fogfunctionList_lock.Lock()
-		delete(master.fogfunctionList, eid)
-		master.fogfunctionList_lock.Unlock()
-
-		return
-
-	}
-
-	fmt.Println("&&&&&&&&& topology and name &&&&&&&&", &fogfunction.Topology, &fogfunction.Topology.Name)
-	master.topologyList_lock.Lock()
-	master.topologyList[fogfunction.Topology.Name] = &fogfunction.Topology
-	master.topologyList_lock.Unlock()
-	master.serviceMgr.handleServiceIntent(&fogfunction.Intent)
-	fmt.Println("&&&&&&&&& topology from fogfunction and error &&&&&&&&", &fogfunction, err)
-
-	// create or update this fog function
-	master.fogfunctionList_lock.Lock()
-	master.fogfunctionList[fogfunction.Id] = &fogfunction
-	master.fogfunctionList_lock.Unlock()
-
-	INFO.Println(fogfunction)
-
-}
-
-// to update the topology list
-func (master *Master) handleTopologyUpdate(msg json.RawMessage) {
-	INFO.Println(string(msg))
-
-	topology := Topology{}
-	err := json.Unmarshal(msg, &topology)
-	fmt.Println("***** len(topology.Tasks)*****", len(topology.Tasks))
-	fmt.Println("******* unmarshalled topology********", &topology)
-
-	if topology.Action == "DELETE" {
-		master.topologyList_lock.Lock()
-
-		var eid = "Topology." + topology.Id
-
-		// find which one has this id
-		for _, topologyToCheck := range master.topologyList {
-			if topologyToCheck.Id == eid {
-				var name = topologyToCheck.Name
-				delete(master.topologyList, name)
-				INFO.Println(name, " this topology is deleted ~~~~~~~~~~", master.topologyList)
-				break
-			}
-		}
-
-		master.topologyList_lock.Unlock()
-
-		return
-	}
-
-	if err == nil {
-		INFO.Println(topology)
-
-		topology.Id = "Topology." + topology.Name
-		fmt.Println("****** topology.Id *****", topology.Id)
-
-		master.topologyList_lock.Lock()
-		fmt.Println("******** topology list ****", master.topologyList)
-		master.topologyList[topology.Name] = &topology
-		master.topologyList_lock.Unlock()
-
-		INFO.Println(topology)
-	}
-
 }
 
 func (master *Master) prefetchDockerImages(image DockerImage) {
@@ -611,21 +450,15 @@ func (master *Master) Process(msg *RecvMessage) error {
 			master.onTaskUpdate(msg.From, &update)
 		}
 
-	case "Operator":
-		master.handleOperatorRegistration(msg.PayLoad)
-
-	case "DockerImage":
-		master.handleDockerImageRegistration(msg.PayLoad)
-
-	case "Topology":
-		master.handleTopologyUpdate(msg.PayLoad)
-
-	case "FogFunction":
-		master.handleFogFunctionUpdate(msg.PayLoad)
+	// case "FogFunction":
+	// 	master.handleFogFunctionUpdate(msg.PayLoad)
 
 	case "ServiceIntent":
-		master.serviceMgr.handleServiceIntentUpdate(msg.PayLoad)
-
+		serviceIntent := ServiceIntent{}
+		err := json.Unmarshal(msg.PayLoad, &serviceIntent)
+		if err == nil {
+			master.serviceMgr.handleServiceIntentUpdate(&serviceIntent)
+		}
 	}
 
 	return nil
@@ -674,17 +507,20 @@ func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
 }
 
 func (master *Master) TerminateTask(taskInstance *ScheduledTaskInstance) {
-	taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
-	INFO.Println(taskMsg)
-	master.communicator.Publish(&taskMsg)
+	master.workerList_lock.Lock()
+	defer master.workerList_lock.Unlock()
 
 	// update the workload of this worker
 	workerID := taskInstance.WorkerID
 
-	master.workerList_lock.Lock()
 	workerProfile := master.workers[workerID]
-	workerProfile.Workload = workerProfile.Workload - 1
-	master.workerList_lock.Unlock()
+	if workerProfile != nil {
+		workerProfile.Workload = workerProfile.Workload - 1
+
+		taskMsg := SendMessage{Type: "REMOVE_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
+		INFO.Println(taskMsg)
+		master.communicator.Publish(&taskMsg)
+	}
 }
 
 func (master *Master) AddInputEntity(flowInfo FlowInfo) {
@@ -801,13 +637,50 @@ func (master *Master) SelectWorker(locations []Point) string {
 	return closestWorkerID
 }
 
+//
+// query the topology from Designer based on the given name
+//
 func (master *Master) getTopologyByName(name string) *Topology {
-	// find the required topology object
-	master.topologyList_lock.RLock()
-	defer master.topologyList_lock.RUnlock()
+	designerURL := fmt.Sprintf("%s/topology/%s", master.cfg.GetDesignerURL(), name)
+	fmt.Println(designerURL)
 
-	topology := master.topologyList[name]
-	return topology
+	req, err1 := http.NewRequest(http.MethodGet, designerURL, nil)
+	if err1 != nil {
+		ERROR.Println(err1)
+		return nil
+	}
+
+	client := http.Client{
+		Timeout: time.Second * 2, // Timeout after 2 seconds
+	}
+
+	resp, err2 := client.Do(req)
+	if err2 != nil {
+		ERROR.Println(err2)
+		return nil
+	}
+	defer resp.Body.Close()
+
+	body, _ := ioutil.ReadAll(resp.Body)
+	INFO.Println("response Body:", string(body))
+
+	topology := Topology{}
+	jsonErr := json.Unmarshal(body, &topology)
+	if jsonErr != nil {
+		ERROR.Println(jsonErr)
+		return nil
+	}
+
+	INFO.Printf("%+v", topology)
+
+	// // update the list of operators
+	master.operatorList_lock.Lock()
+	for _, operator := range topology.Operators {
+		master.operatorList[operator.Name] = operator
+	}
+	master.operatorList_lock.Unlock()
+
+	return &topology
 }
 
 //
@@ -828,8 +701,14 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	//select a suitable image to execute on the selected worker
 	selectedDockerImageName := ""
 
-	master.dockerImageList_lock.RLock()
-	for _, image := range master.dockerImageList[operatorName] {
+	master.operatorList_lock.RLock()
+	defer master.operatorList_lock.RUnlock()
+
+	operator := master.operatorList[operatorName]
+
+	dockerimages := operator.DockerImages
+
+	for _, image := range dockerimages {
 		fmt.Println("*****image*******", image)
 		DEBUG.Println(wProfile)
 
@@ -850,8 +729,6 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 		}
 	}
 
-	master.dockerImageList_lock.RUnlock()
-
 	DEBUG.Println(selectedDockerImageName)
 
 	return selectedDockerImageName
@@ -867,4 +744,24 @@ func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
 	master.operatorList_lock.RUnlock()
 
 	return parameters
+}
+
+func (master *Master) subscribeContextEntity(entityType string) {
+	subscription := SubscribeContextRequest{}
+
+	newEntity := EntityId{}
+	newEntity.Type = entityType
+	newEntity.IsPattern = true
+	subscription.Entities = make([]EntityId, 0)
+	subscription.Entities = append(subscription.Entities, newEntity)
+	subscription.Reference = master.myURL
+
+	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
+	sid, err := client.SubscribeContext(&subscription, true)
+	if err != nil {
+		ERROR.Println(err)
+	}
+	INFO.Println(sid)
+
+	master.subID2Type[sid] = entityType
 }

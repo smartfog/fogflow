@@ -72,6 +72,7 @@ type Config struct {
 		HTTPSPort  int    `json:"https_webSrvPort"`
 	} `json:"designer"`
 	Worker struct {
+		ContainerManagement string                `json:"container_management"`
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`

@@ -29,7 +29,7 @@
     "designer": {
         "webSrvPort": 8080,
         "agentPort": 1030,
-	"ldAgentPort":1090
+	    "ldAgentPort":1090
     },
     "rabbitmq": {
         "port": 5672,
@@ -38,8 +38,5 @@
     },
     "https": {
         "enabled": false
-    },
-    "persistent_storage": {
-        "port": 9082
     }
 }

@@ -628,9 +628,10 @@ $(function() {
     }
 
     function listAllTopologies() {
-        fetch('/topologies').then(res => res.json()).then(names => {
-            for(var i=0; i<names.length; i++){
-                var name = names[i];
+        fetch('/topology').then(res => res.json()).then(topologies => {
+            for(var i=0; i<topologies.length; i++){
+                var topology = topologies[i];
+                var name = topology.name;
                 var topologySelect = document.getElementById('topologyItems');                    
                 topologySelect.options[topologySelect.options.length] = new Option(name, name);
             }
