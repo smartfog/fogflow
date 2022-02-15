@@ -468,7 +468,6 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	master.workerList_lock.Lock()
 
 	workerID := profile.WID
-	fmt.Println("**** workerID and profile ******", workerID, profile)
 	if worker, exist := master.workers[workerID]; exist {
 		worker.Capacity = profile.Capacity
 		worker.Last_Heartbeat_Update = time.Now()
