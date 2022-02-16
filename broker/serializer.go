@@ -29,9 +29,9 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 				geoResult[key] = getCreatedTime(val.([]interface{}))
 			}
 		case NGSI_LD_OBSERVED_AT:
-                        if val != nil {
-                                geoResult[key] = getObservedTime(val.([]interface{}))
-                        }
+			if val != nil {
+				geoResult[key] = getObservedTime(val.([]interface{}))
+			}
 		case NGSI_LD_MODIFIEDAT:
 			if val != nil {
 				geoResult[key] = getModifiedTime(val.([]interface{}))
@@ -49,18 +49,18 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 			if val != nil {
 				geoResult[key] = getInstanceID(val.([]interface{}))
 			}
-		case NGSILD_UniCode : 
+		case NGSILD_UniCode:
 			if val != nil {
 				geoResult[key] = val
 			}
 		default:
 			var interfaceArray []interface{}
 			switch val.(type) {
-				case []interface{}:
-					interfaceArray = val.([]interface{})
-				default:
-					interfaceArray = make([]interface{},0)
-					geoResult[key] = val
+			case []interface{}:
+				interfaceArray = val.([]interface{})
+			default:
+				interfaceArray = make([]interface{}, 0)
+				geoResult[key] = val
 			}
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -83,9 +83,9 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[string]interface{}, error) {
 	propertyResult := make(map[string]interface{})
 	var err error
-	propertyValue := false 
+	propertyValue := false
 	for key, val := range propertyMap {
-		fmt.Println("key",key)
+		fmt.Println("key", key)
 		switch key {
 		case NGSI_LD_TYPE:
 			if val != nil {
@@ -93,9 +93,9 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 				propertyResult[key] = getType(val)
 			}
 		case NGSI_LD_OBSERVED_AT:
-                        if val != nil {
-                                propertyResult[key] = getObservedTime(val.([]interface{}))
-                        }
+			if val != nil {
+				propertyResult[key] = getObservedTime(val.([]interface{}))
+			}
 		case NGSI_LD_CREATEDAT:
 			if val != nil {
 				propertyResult[key] = getCreatedTime(val.([]interface{}))
@@ -117,19 +117,18 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 			if val != nil {
 				propertyResult[key] = getInstanceID(val.([]interface{}))
 			}
-		case NGSILD_UniCode :
-                        if val != nil {
-                                propertyResult[key] = val
-                        }
+		case NGSILD_UniCode:
+			if val != nil {
+				propertyResult[key] = val
+			}
 		default:
-			fmt.Println("val",val)
-			interfaceArray := make([]interface{},0)
+			interfaceArray := make([]interface{}, 0)
 			switch val.(type) {
-				case []interface{}:
-					interfaceArray = val.([]interface{})
-				default:
-					propertyValue = true
-					propertyResult[key] = val
+			case []interface{}:
+				interfaceArray = val.([]interface{})
+			default:
+				propertyValue = true
+				propertyResult[key] = val
 			}
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
@@ -184,19 +183,19 @@ func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]inter
 			if val != nil {
 				relResult[key] = getInstanceID(val.([]interface{}))
 			}
-		case NGSILD_UniCode :
-                        if val != nil {
-                                relResult[key] = val
-                        }
+		case NGSILD_UniCode:
+			if val != nil {
+				relResult[key] = val
+			}
 		default:
-			interfaceArray := make([]interface{},0)
-                        switch val.(type) {
-                                case []interface{}:
-                                        interfaceArray = val.([]interface{})
-                                default:
-                                        ralationobject = true
-                                        relResult[key] = val
-                        }
+			interfaceArray := make([]interface{}, 0)
+			switch val.(type) {
+			case []interface{}:
+				interfaceArray = val.([]interface{})
+			default:
+				ralationobject = true
+				relResult[key] = val
+			}
 			if len(interfaceArray) > 0 {
 				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
 				if err != nil {
@@ -254,54 +253,56 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 	return resultEntity, nil
 }
 
-func (sz Serializer)getTypeValue(typ string) (fName, error) {
+func (sz Serializer) getTypeValue(typ string) (fName, error) {
 	var funcName fName
 	var err error
+	fmt.Println("type+++++++++++++", typ)
 	switch typ {
-		case LD_RELATIONSHIP:
-			funcName = sz.relHandler
-                case LD_PRPERTY:
-			funcName = sz.proprtyHandler
-                case LD_GEOPROPERTY:
-			funcName = sz.geoHandler
-                default:
-			err = errors.New("Unknown Type !")
-               }
-	return funcName ,err
+	case LD_RELATIONSHIP:
+		funcName = sz.relHandler
+	case LD_PRPERTY:
+		funcName = sz.proprtyHandler
+	case LD_GEOPROPERTY:
+		funcName = sz.geoHandler
+	default:
+		err = errors.New("Unknown Type !")
+	}
+	fmt.Println("err++++++++++++", err)
+	return funcName, err
 }
 
 func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	var funcName fName
 	var err error
-	fmt.Println("attr",attr)
+	fmt.Println("attr", attr)
 	if _, okey := attr["@type"]; okey == false {
-		fmt.Println("okey",okey)
+		fmt.Println("okey", okey)
 		err := errors.New("attribute type can not be nil!")
 		return funcName, err
 	}
-	fmt.Println("attr",attr)
+	fmt.Println("attr", attr)
 	var resType interface{}
 	var tValue int
-	switch  attr["@type"].(type) {
-		case []interface{}:
-			resType = attr["@type"]
-			tValue = 1
-		case string :
-			resType = attr["@type"]
-			tValue = 2 
-		default:
-			err := errors.New("Unknown Type!")
-			return funcName, err
+	switch attr["@type"].(type) {
+	case []interface{}:
+		resType = attr["@type"]
+		tValue = 1
+	case string:
+		resType = attr["@type"]
+		tValue = 2
+	default:
+		err := errors.New("Unknown Type!")
+		return funcName, err
 	}
 	if tValue == 1 {
 		resType1 := resType.([]interface{})
 		if len(resType1) > 0 {
 			Type1 := resType1[0].(string)
-			funcName, err  = sz.getTypeValue(Type1)
+			funcName, err = sz.getTypeValue(Type1)
 		}
 	} else if tValue == 2 {
 		resType2 := resType.(string)
-		funcName, err  = sz.getTypeValue(resType2)
+		funcName, err = sz.getTypeValue(resType2)
 	} else {
 		err := errors.New("Unknown Type!")
 		return funcName, err
@@ -361,15 +362,15 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 			} else if strings.Contains(k, "georel") {
 				if v != nil {
 					switch v.(type) {
-						case []interface{}:
+					case []interface{}:
 						data := v.([]interface{})
 						dataMap := data[0].(map[string]interface{})
 						dataMap["@context"] = DEFAULT_CONTEXT
 						resolved, _ := compactData(dataMap, DEFAULT_CONTEXT)
 						subscription.Restriction, _ = sz.assignRestriction(resolved.(map[string]interface{}))
-						default:
-							err := errors.New("Unknown Type!")
-							return subscription , err
+					default:
+						err := errors.New("Unknown Type!")
+						return subscription, err
 					}
 				}
 			} else {
@@ -762,15 +763,15 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	return entity
 }
 
-func (sz Serializer) assignRestriction(restriction map[string]interface{}) (Restriction,error) {
+func (sz Serializer) assignRestriction(restriction map[string]interface{}) (Restriction, error) {
 	restrictions := Restriction{}
 	if _, ok := restriction["coordinates"]; ok == true {
 		restrictions.Cordinates = restriction["coordinates"]
 	}
-	if _ , ok := restriction["geometry"]; ok == true {
+	if _, ok := restriction["geometry"]; ok == true {
 		restrictions.Geometry = restriction["geometry"].(string)
 	}
-	if _, ok := restriction["georel"] ; ok == true {
+	if _, ok := restriction["georel"]; ok == true {
 		restrictions.Georel = restriction["georel"].(string)
 	}
 	restrictions.RestrictionType = "ld"
@@ -778,6 +779,7 @@ func (sz Serializer) assignRestriction(restriction map[string]interface{}) (Rest
 	return restrictions, nil
 
 }
+
 //get Entities
 func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error) {
 	entitiesList := make([]EntityId, 0)
@@ -824,11 +826,11 @@ forloop:
 			data := QueryData[key].([]interface{})
 			dataMap := data[0].(map[string]interface{})
 			dataMap["@context"] = DEFAULT_CONTEXT
-			resolved, newErr := compactData(dataMap, DEFAULT_CONTEXT) 
-			if newErr != nil  {
+			resolved, newErr := compactData(dataMap, DEFAULT_CONTEXT)
+			if newErr != nil {
 				break forloop
 			}
-			 ngsildQueryContext.Restriction, err   = sz.assignRestriction(resolved.(map[string]interface{}))
+			ngsildQueryContext.Restriction, err = sz.assignRestriction(resolved.(map[string]interface{}))
 		case NGSI_LD_QUERY:
 
 		default:

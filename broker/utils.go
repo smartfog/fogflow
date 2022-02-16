@@ -509,14 +509,14 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	var newBody []byte
 	if integration != "IoTI" {
 		LdElementList := make([]interface{}, 0)
-		fmt.Println("ldCompactedElems",ldCompactedElems)
+		fmt.Println("ldCompactedElems", ldCompactedElems)
 		for _, ldEle := range ldCompactedElems {
 			element := make(map[string]interface{})
 			id, _ := FiwareId(ldEle["id"].(string))
 			element["id"] = id
 			element["type"] = ldEle["type"]
 			for k, _ := range ldEle {
-				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace"  && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
+				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
 					attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
 					element[k] = attr
 				}
@@ -640,7 +640,7 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 }
 
 func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
-	fmt.Println("selectedAttributes",)
+	fmt.Println("selectedAttributes")
 	if len(selectedAttributes) == 0 {
 		return ldElem
 	} else {
@@ -652,14 +652,14 @@ func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttrib
 				preparedCopy[NGSI_LD_TYPE] = val
 			} else if key == NGSI_LD_CREATEDAT {
 				preparedCopy[NGSI_LD_CREATEDAT] = val
-			} else if key ==  NGSI_LD_MODIFIEDAT {
+			} else if key == NGSI_LD_MODIFIEDAT {
 				preparedCopy[NGSI_LD_MODIFIEDAT] = val
 			} else if key == NGSI_LD_OBSERVED_AT {
 				preparedCopy[NGSI_LD_OBSERVED_AT] = val
 			} else if key == NGSI_LD_DATASETID {
 				preparedCopy[NGSI_LD_DATASETID] = val
 			} else if key == NGSI_LD_INSTANCEID {
-				 preparedCopy[NGSI_LD_INSTANCEID] = val
+				preparedCopy[NGSI_LD_INSTANCEID] = val
 			} else if key == NGSILD_UniCode {
 				preparedCopy[NGSILD_UniCode] = val
 			} else if key == NGSILD_CONTEXT {
@@ -735,6 +735,7 @@ func contentTypeValidator(cType string) error {
 }
 
 func getActualEntity(resultEntity map[string]interface{}) string {
+	fmt.Println(resultEntity)
 	id := resultEntity["id"].(string)
 	idSplit := strings.Split(id, "@")
 	actualId := idSplit[0]

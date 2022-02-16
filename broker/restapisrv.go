@@ -379,6 +379,7 @@ func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
 // To get query parameters from NGSI-LD Entity Query Requests
 func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.Request) {
 	queryValues := r.URL.Query()
+	fmt.Println("queryValues", queryValues)
 	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" {
 		var fiwareService string
 		if r.Header.Get("fiware-service") != "" {

@@ -1,20 +1,20 @@
 package main
 
 import (
-	. "fogflow/common/ngsi"
+	"fmt"
 	. "fogflow/common/geolocation"
+	. "fogflow/common/ngsi"
 	"math"
 	"regexp"
-	"strings"
-	"fmt"
 	"strconv"
+	"strings"
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
 
 	if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
-                return false
-        }
+		return false
+	}
 
 	// (1) check entityId part
 	entity := EntityId{}
@@ -45,7 +45,7 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 
 	// (3) check metadata set
 	if metaFilter.RestrictionType == "ld" {
-		fmt.Println("metaFilter.RestrictionType",metaFilter.RestrictionType)
+		fmt.Println("metaFilter.RestrictionType", metaFilter.RestrictionType)
 		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
 			return false
 		}
@@ -57,7 +57,6 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	// if all matched, return true
 	return true
 }
-
 
 func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 	if subscribedEntity.IsPattern == true {
@@ -107,7 +106,7 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 	sp := restriction.Geometry
 	var typ string
 	var coordinate interface{}
-	if meta , ok := metadatas["location"]; ok == true {
+	if meta, ok := metadatas["location"]; ok == true {
 		typ = meta.Type
 		coordinate = meta.Cordinates
 		if coordinate == nil {
@@ -119,38 +118,38 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 	}
 	var res bool
 	switch strings.ToLower(sp) {
-		case "point":
-			if restriction.Georel != "" {
-				gr := restriction.Georel
-				contrains := strings.Split(gr,";")
-				distMi := FindDistForPoint(typ, coordinate, restriction.Cordinates)
-				if len(contrains) > 1 {
-					sws := strings.ReplaceAll(contrains[1], " ", "")
-					minMax := strings.Split(sws,"==")
-					if minMax[0] == "maxDistance" {
-						maxDistance := minMax[1]
-						maxF, _ := strconv.ParseFloat(maxDistance, 64)
-						if distMi < maxF {
-							fmt.Println("res",res)
-							res = true
-						}
-					} else if minMax[0] == "minDistance" {
-						minDistance := minMax[1]
-						minF, _ := strconv.ParseFloat(minDistance, 64)
-						if distMi > minF {
-							res = true
-						}
-					} else {
-						fmt.Println(minMax[1])
+	case "point":
+		if restriction.Georel != "" {
+			gr := restriction.Georel
+			contrains := strings.Split(gr, ";")
+			distMi := FindDistForPoint(typ, coordinate, restriction.Cordinates)
+			if len(contrains) > 1 {
+				sws := strings.ReplaceAll(contrains[1], " ", "")
+				minMax := strings.Split(sws, "==")
+				if minMax[0] == "maxDistance" {
+					maxDistance := minMax[1]
+					maxF, _ := strconv.ParseFloat(maxDistance, 64)
+					if distMi < maxF {
+						fmt.Println("res", res)
+						res = true
 					}
+				} else if minMax[0] == "minDistance" {
+					minDistance := minMax[1]
+					minF, _ := strconv.ParseFloat(minDistance, 64)
+					if distMi > minF {
+						res = true
+					}
+				} else {
+					fmt.Println(minMax[1])
 				}
 			}
-		case "polygon":
-			 if restriction.Georel != "" {
-				res = FindDistForPolygon(typ, coordinate, restriction)
-			}
-		default :
-			fmt.Println("To be implemented latter")
+		}
+	case "polygon":
+		if restriction.Georel != "" {
+			res = FindDistForPolygon(typ, coordinate, restriction)
+		}
+	default:
+		fmt.Println("To be implemented latter")
 	}
 	fmt.Println(res)
 	return res

@@ -7,10 +7,10 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
-	"regexp"
 
 	. "fogflow/common/config"
 	. "fogflow/common/constants"
@@ -578,8 +578,8 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	for _, val := range matchedCtxElement {
 		responseEle := val.(map[string]interface{})
 		delete(responseEle, "fiwareServicePath")
-		fmt.Println("responseEle",responseEle)
-		if _ , ok := responseEle["@id"] ; ok == true {
+		fmt.Println("responseEle", responseEle)
+		if _, ok := responseEle["@id"]; ok == true {
 			eid := responseEle["@id"].(string)
 			actualEid := strings.Split(eid, "@")
 			responseEle["@id"] = actualEid[0]
@@ -829,7 +829,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
-		fmt.Println("reqBytes",string(reqBytes))
+		fmt.Println("reqBytes", string(reqBytes))
 		var notifyRequest interface{}
 
 		err := json.Unmarshal(reqBytes, &notifyRequest)
@@ -1075,7 +1075,7 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
-			fmt.Println("returnedElement",returnedElement)
+			fmt.Println("returnedElement", returnedElement)
 			elements = append(elements, returnedElement)
 		}
 	}
@@ -2126,7 +2126,7 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		res := ResponseError{}
-		fmt.Println("LDupdateCtxReq",LDupdateCtxReq)
+		fmt.Println("LDupdateCtxReq", LDupdateCtxReq)
 		for _, ctx := range LDupdateCtxReq {
 			var context []interface{}
 			contextInPayload := false
@@ -2469,7 +2469,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.EntityIdList = entities
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
-	ctxMetadatas := make([]ContextMetadata,0)
+	ctxMetadatas := make([]ContextMetadata, 0)
 	for k, attr := range elem { // considering properties and relationships as attributes
 		isLdJsonObject := checkCondition(k)
 		ctxMetaData := ContextMetadata{}
@@ -2481,8 +2481,8 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
 			typ := getRegistrationType(attrValue["@type"])
-			if strings.Contains(typ,"GeoProperty") || strings.Contains(typ, "geoProperty") {
-				if strings.Contains(k,"location") {
+			if strings.Contains(typ, "GeoProperty") || strings.Contains(typ, "geoProperty") {
+				if strings.Contains(k, "location") {
 					ctxMetaData.Name = "location"
 				} else {
 					ctxMetaData.Name = k
@@ -2496,7 +2496,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 				value := resolvedMap["value"].(map[string]interface{})
 				ctxMetaData.Type = value["type"].(string)
 				ctxMetaData.Cordinates = value["coordinates"]
-				ctxMetadatas =append(ctxMetadatas, ctxMetaData)
+				ctxMetadatas = append(ctxMetadatas, ctxMetaData)
 
 			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
 				ctxRegAttr.Type = "Property"
@@ -2507,7 +2507,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 		}
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
-	ctxReg.Metadata  = ctxMetadatas
+	ctxReg.Metadata = ctxMetadatas
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxReg.FiwareService = fs
@@ -2516,7 +2516,7 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq.ContextRegistrations = ctxRegistrations
 
 	// Send the registration to discovery
-	fmt.Println("&registerCtxReq",&registerCtxReq)
+	fmt.Println("&registerCtxReq", &registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
@@ -3760,19 +3760,19 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	return entities
 }*/
 
-func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
+func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns, typ []string) []interface{} {
 	var entities []interface{}
 	matchedIds := make([]string, 0)
-	for indx , value := range typ {
-		for _ , ids := range tb.entityTypeTOEntityId[value] {
-			matched , _ := regexp.MatchString(idPatterns[indx], ids)
-			if matched  == true {
-				matchedIds = append(matchedIds, ids) 
+	for indx, value := range typ {
+		for _, ids := range tb.entityTypeTOEntityId[value] {
+			matched, _ := regexp.MatchString(idPatterns[indx], ids)
+			if matched == true {
+				matchedIds = append(matchedIds, ids)
 			}
 		}
 	}
-	for _, value := range  matchedIds {
-		entity :=  tb.ldGetEntity(value)
+	for _, value := range matchedIds {
+		entity := tb.ldGetEntity(value)
 		entities = append(entities, entity)
 	}
 	return entities
