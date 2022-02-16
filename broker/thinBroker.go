@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"regexp"
 
 	. "fogflow/common/config"
 	. "fogflow/common/constants"
@@ -3700,7 +3701,7 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 	return entities, nil
 }
 
-func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
+/*func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
 	var entities []interface{}
 
 	for eid, entity := range tb.ldEntities {
@@ -3710,7 +3711,9 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				idPattern = strings.Trim(idPattern, ".*")
 				idPattern = strings.Trim(idPattern, "*.")
 				if strings.Contains(eid, idPattern) {
-					if entityMap["type"] == typ[index] {
+					typeArray := entityMap["@type"].([]interface{})
+		                        newType := typeArray[0].(string)
+					if newType == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
 						resultEntity2 := compactEntity.(map[string]interface{})
 						actualEId2 := getActualEntity(resultEntity2)
@@ -3753,6 +3756,24 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				}
 			}
 		}
+	}
+	return entities
+}*/
+
+func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
+	var entities []interface{}
+	matchedIds := make([]string, 0)
+	for indx , value := range typ {
+		for _ , ids := range tb.entityTypeTOEntityId[value] {
+			matched , _ := regexp.MatchString(idPatterns[indx], ids)
+			if matched  == true {
+				matchedIds = append(matchedIds, ids) 
+			}
+		}
+	}
+	for _, value := range  matchedIds {
+		entity :=  tb.ldGetEntity(value)
+		entities = append(entities, entity)
 	}
 	return entities
 }

@@ -466,7 +466,7 @@ def test_case28():
   To test to To retrieve a specific entity by IdPattern and Type
 '''
 
-'''
+
 def test_case29():
         url=brokerIp+"/ngsi-ld/v1/entities?idPattern=urn:ngsi-ld:Vehicle:A.*&type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
@@ -482,7 +482,6 @@ def test_case29():
         print(r.status_code)
         assert r.status_code == 200
 
-'''
 #testCase 30
 '''
   To test to retrieve an entity registered over Discovery
