@@ -1,6 +1,6 @@
 {
-    "coreservice_ip": "192.168.0.59",   
-    "my_hostip": "192.168.0.16",  
+    "coreservice_ip": "10.0.0.10",   
+    "my_hostip": "10.0.0.10",  
     "physical_location":{
         "longitude": 138.709059,
         "latitude": 36.692221
@@ -19,6 +19,7 @@
         "http_port": 8060
     },     
     "worker": {
+        "container_management": "docker",
         "container_autoremove": false,
         "start_actual_task": true,
         "capacity": 4              

@@ -32,7 +32,11 @@ type Kubernetes struct {
 }
 
 func (k8s *Kubernetes) Init(cfg *Config) bool {
-	config := readFileConfig()
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		ERROR.Println(err.Error())
+		return false
+	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {

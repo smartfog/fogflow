@@ -48,10 +48,17 @@ func (er *EntityRepository) GetEntityTypes() []string {
 	er.ctxRegistrationList_lock.RLock()
 	defer er.ctxRegistrationList_lock.RUnlock()
 
-	typeList := make([]string, 0)
-
+	typeMap := make(map[string]bool)
 	for _, registration := range er.ctxRegistrationList {
-		typeList = append(typeList, registration.Type)
+		etype := registration.Type
+		if _, found := typeMap[etype]; !found {
+			typeMap[etype] = true
+		}
+	}
+
+	typeList := make([]string, 0, len(typeMap))
+	for k := range typeMap {
+		typeList = append(typeList, k)
 	}
 
 	return typeList

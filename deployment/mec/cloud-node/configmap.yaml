@@ -28,7 +28,8 @@ data:
                 "rest_api_port": 8010                                                
             },
             "worker": {
-                "container_management": "kubernetes", 
+                "container_management": "mec", 
+                "edge_controller_port": 31125,
                 "container_autoremove": false,
                 "start_actual_task": true,
                 "capacity": 8

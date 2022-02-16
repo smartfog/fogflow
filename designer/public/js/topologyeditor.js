@@ -11,7 +11,7 @@ blocks.register({
             name: "Name",
             type: "string",
             attrs: "editable",
-            defaultValue: "",            
+            defaultValue: "main",            
         },    
         {
             name: "Operator",

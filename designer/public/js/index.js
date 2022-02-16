@@ -987,9 +987,9 @@ $(function () {
         newDeviceObject.attributes = {};
         newDeviceObject.attributes.DeviceID = { type: 'string', value: id };
 
-        var url = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/' + contentImageFileName;
+        var url = 'http://' + config.agentIP + ':' + config.webSrvPort + '/data/photo/' + contentImageFileName;
         newDeviceObject.attributes.url = { type: 'string', value: url };
-        newDeviceObject.attributes.iconURL = { type: 'string', value: '/photo/' + iconImageFileName };
+        newDeviceObject.attributes.iconURL = { type: 'string', value: '/data/photo/' + iconImageFileName };
 
         if (type == "PowerPanel") {
             newDeviceObject.attributes.usage = {

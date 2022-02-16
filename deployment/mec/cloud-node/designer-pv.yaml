@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: designer-pv
+spec:
+  capacity:
+    storage: 512Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /tmp/fogflow

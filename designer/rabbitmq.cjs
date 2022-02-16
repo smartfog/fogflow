@@ -13,7 +13,8 @@ const subscribed_keys = ['designer.*'];
 const TIME_INTERVAL_RECONNECT = 5000;
 
 function Init(rabbitmqURL, fnConsumer) 
-{    
+{
+    console.log("[RabbitMQ] connecting to ", rabbitmqURL);    
     amqp_url = rabbitmqURL;
     msgHandler = fnConsumer
     
@@ -24,7 +25,21 @@ function Init(rabbitmqURL, fnConsumer)
         whenConnected();
     }).catch( function(err) {
         console.error("[RabbitMQ]", err.message);
-        return setTimeout(Init, TIME_INTERVAL_RECONNECT);
+        return setTimeout(reConnect, TIME_INTERVAL_RECONNECT);
+    });
+}
+
+function reConnect() {
+    console.log("[RabbitMQ] reconnecting to ", amqp_url);    
+	
+    amqplib.connect(amqp_url).then(function(conn) {       
+        console.log("[RabbitMQ] connected");
+        amqpConn = conn;
+        
+        whenConnected();
+    }).catch( function(err) {
+        console.error("[RabbitMQ]", err.message);
+        return setTimeout(reConnect, TIME_INTERVAL_RECONNECT);
     });
 }
 

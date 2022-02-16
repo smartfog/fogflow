@@ -73,6 +73,7 @@ type Config struct {
 	} `json:"designer"`
 	Worker struct {
 		ContainerManagement string                `json:"container_management"`
+		EdgeControllerPort  int                   `json:"edge_controller_port"`
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
@@ -112,6 +113,18 @@ func (c *Config) GetDiscoveryURL() string {
 	}
 
 	return fmt.Sprintf("%s://%s:%d/ngsi9", protocol, hostip, port)
+}
+
+func (c *Config) GetEdgeControllerURL() string {
+	protocol := "http"
+	port := c.Worker.EdgeControllerPort
+
+	hostip := c.InternalIP
+	if c.ExternalIP != "" {
+		hostip = c.ExternalIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d", protocol, hostip, port)
 }
 
 func (c *Config) GetDesignerURL() string {

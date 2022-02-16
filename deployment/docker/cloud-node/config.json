@@ -1,5 +1,5 @@
 {
-    "my_hostip": "192.168.0.59",
+    "my_hostip": "10.0.0.10",
     "physical_location":{
         "longitude": 139,
         "latitude": 35
@@ -12,20 +12,26 @@
         "debug": "stdout"
     },
     "discovery": {
+        "host_ip":"discovery",        
         "http_port": 8090
     },
     "broker": {
+        "host_ip":"cloud_broker",                             
         "http_port": 8070
     },     
     "master": {
-        "ngsi_agent_port": 1060    
+        "host_ip":"master",                                                          
+        "ngsi_agent_port": 1060,    
+        "rest_api_port": 8010                            
     },
     "worker": {
+        "container_management": "docker",
         "container_autoremove": false,
         "start_actual_task": true,
         "capacity": 8
     },
     "designer": {
+        "host_ip":"designer",                                                             
         "webSrvPort": 8080,
         "agentPort": 1030,
         "ldAgentPort":1090
@@ -37,8 +43,5 @@
     },
     "https": {
         "enabled" : false
-    },
-    "persistent_storage": {
-        "port": 9082
-    }     
+    } 
 }

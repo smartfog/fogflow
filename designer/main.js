@@ -24,7 +24,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 var jsonParser = bodyParser.json();
 
-const adapter = new JSONFile('db.json');
+const adapter = new JSONFile('public/data/meta/db.json');
 const db = new Low(adapter);
 
 await db.read()
@@ -38,10 +38,6 @@ db.data ||= {   operators: {},
 
 var app = express();
 
-//var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
-//var NGSILDAgent = require('./public/lib/ngsi/LDngsiagent.js');
-//var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
-
 var config = globalConfigFile.designer;
 
 var masterList = [];
@@ -51,7 +47,6 @@ var masterList = [];
 if ( !('host_ip' in globalConfigFile.broker)) {
     globalConfigFile.broker.host_ip = globalConfigFile.my_hostip    
 }
-
 var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
 
 if (config.host_ip) {
@@ -70,10 +65,24 @@ config.brokerURL = './ngsi10';
 config.LdbrokerURL = './ngsi-ld';
 config.webSrvPort = globalConfigFile.designer.webSrvPort;
 
-const masterURL = "http://" + globalConfigFile.my_hostip + ":" + globalConfigFile.master.rest_api_port;
-const discoveryURL = "http://" + globalConfigFile.my_hostip + ":" + globalConfigFile.discovery.http_port;
 
-const rabbitmq_ip = globalConfigFile.my_hostip || "127.0.0.1"; 
+if ( !('host_ip' in globalConfigFile.master)) {
+    globalConfigFile.master.host_ip = globalConfigFile.my_hostip    
+}
+const masterURL = "http://" + globalConfigFile.master.host_ip + ":" + globalConfigFile.master.rest_api_port;
+
+
+if ( !('host_ip' in globalConfigFile.discovery)) {
+    globalConfigFile.discovery.host_ip = globalConfigFile.my_hostip    
+}
+const discoveryURL = "http://" + globalConfigFile.discovery.host_ip + ":" + globalConfigFile.discovery.http_port;
+
+
+if ( !('host_ip' in globalConfigFile.rabbitmq)) {
+    globalConfigFile.rabbitmq.host_ip = globalConfigFile.my_hostip    
+}
+const rabbitmq_ip = globalConfigFile.rabbitmq.host_ip; 
+
 const rabbitmq_port = globalConfigFile.rabbitmq.port || 5672;
 const rabbitmq_user =  globalConfigFile.rabbitmq.username || 'admin';
 const rabbitmq_password = globalConfigFile.rabbitmq.password || 'mypass';
@@ -130,7 +139,7 @@ app.use(express.static(__dirname + '/public', { cache: false }));
 // to receive and save uploaded image content
 var storage = multer.diskStorage({
     destination: function(req, file, callback) {
-        callback(null, './public/photo');
+        callback(null, './public/data/photo');
     },
     filename: function(req, file, callback) {
         console.log(file.fieldname);
@@ -413,52 +422,6 @@ app.delete('/fogfunction', jsonParser, async function (req, res) {
     
     res.sendStatus(200)        
 });
-
-
-/*
-app.get('/fogfunction', async function(req, res) {    
-    var fogfunctions = dgraph.GetObjectList('FogFunction');        
-    
-    for(var i=0; i<fogfunctions.length; i++) {
-        fogfunctions[i].topology = JSON.parse(fogfunctions[i].topology)
-        fogfunctions[i].designboard = JSON.parse(fogfunctions[i].designboard)        
-        fogfunctions[i].intent = JSON.parse(fogfunctions[i].intent)        
-    }                         
-    
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify(fogfunctions));
-});
-app.get('/fogfunction/:name', async function(req, res) {    
-    var fogfunction = dgraph.GetObject('FogFunction', req.params.name)    
-    res.end(fogfunction);
-});
-app.post('/fogfunction', jsonParser, async function (req, res) {
-    var fogfunction = req.body    
-
-    var topology = fogfunction.topology
-    fogfunction.topology = JSON.stringify(topology)    
-            
-    var designboard = fogfunction.designboard
-    fogfunction.designboard = JSON.stringify(designboard)
-    
-    var intent = fogfunction.intent
-    fogfunction.intent = JSON.stringify(intent)  
-    
-    console.log(fogfunction)
-        
-    await dgraph.WriteJsonWithType(fogfunction, 'FogFunction');    
-        
-    res.sendStatus(200)      
-});
-app.delete('/fogfunction', jsonParser, async function (req, res) {
-    var msg = req.body    
-    console.log(msg);
-    await dgraph.DeleteNodeById(msg.uid);
-    res.sendStatus(200)   
-});
-*/
-
-
 
 app.get('/config.js', function(req, res) {
     res.setHeader('Content-Type', 'application/json');

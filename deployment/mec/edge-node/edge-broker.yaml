@@ -1,45 +1,47 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cloudbroker
+  namespace: fogflow
+  name: edgebroker01
 spec:
   selector:
     matchLabels:
-      run: cloudbroker
+      run: edgebroker01
   replicas: 1
   template:
     metadata:
       labels:
-        run: cloudbroker
+        run: edgebroker01
     spec:
       containers:
       - name: cloudbroker
         image: fogflow/broker:k8s
         ports:
-        - containerPort: 8070  
+        - containerPort: 8060
         volumeMounts:
-        - name: config-json       
+        - name: config-json
           mountPath: /config.json
-          subPath: config.json          
+          subPath: config.json
           readOnly: true
       volumes:
-      - name: config-json 
+      - name: config-json
         configMap:
-          name: fogflow-configmap       
-      serviceAccountName: default  
----          
-          
+          name: edge-configmap
+      serviceAccountName: edge
+---
+
 apiVersion: v1
 kind: Service
 metadata:
-  name: cloudbroker
+  namespace: fogflow
+  name: edgebroker01
   labels:
-    run: cloudbroker
+    run: edgebroker01
 spec:
-  type: ClusterIP
   ports:
-  - port: 8070
+  - port: 8060
     protocol: TCP
   selector:
-    run: cloudbroker
+    run: edgebroker01
+  externalIPs: [172.30.48.46]
 
