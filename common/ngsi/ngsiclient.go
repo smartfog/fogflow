@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 	"strings"
 )
 
@@ -815,36 +815,36 @@ func (nc *NGSI10Client) CreateLDEntityOnRemote(elem map[string]interface{}, link
 	return nil*/
 
 	id := elem["id"].(string)
-        idSplit := strings.Split(id, "@")
-        elem["id"] = idSplit[0]
-        fiwareService := idSplit[1]
-        fiwareServicePath := elem["fiwareServicePath"].(string)
-        delete(elem, "fiwareServicePath")
-        var upsertBody [1]interface{}
-        fmt.Println("Ele",elem)
-        upsertBody[0] = elem
-        fmt.Println("upsertBody",upsertBody)
-        body, err := json.Marshal(upsertBody)
-        if err != nil {
-                return err
-        }
-        req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entityOperations/upsert", bytes.NewBuffer(body))
-        req.Header.Add("Accept", "application/ld+json")
+	idSplit := strings.Split(id, "@")
+	elem["id"] = idSplit[0]
+	fiwareService := idSplit[1]
+	fiwareServicePath := elem["fiwareServicePath"].(string)
+	delete(elem, "fiwareServicePath")
+	var upsertBody [1]interface{}
+	fmt.Println("Ele", elem)
+	upsertBody[0] = elem
+	fmt.Println("upsertBody", upsertBody)
+	body, err := json.Marshal(upsertBody)
+	if err != nil {
+		return err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/entityOperations/upsert", bytes.NewBuffer(body))
+	req.Header.Add("Accept", "application/ld+json")
 
-        if link != "" {
-                req.Header.Add("Link", link)
-                req.Header.Add("Content-Type", "application/json")
-        } else {
-                req.Header.Add("Content-Type", "application/ld+json")
-        }
-        if fiwareService != "default" {
-                req.Header.Add("fiware-service", fiwareService)
-        }
-        if fiwareServicePath != "default" {
-                req.Header.Add("fiware-servicepath", fiwareServicePath)
-        }
-        client := nc.SecurityCfg.GetHTTPClient()
-        resp, err := client.Do(req)
+	if link != "" {
+		req.Header.Add("Link", link)
+		req.Header.Add("Content-Type", "application/json")
+	} else {
+		req.Header.Add("Content-Type", "application/ld+json")
+	}
+	if fiwareService != "default" {
+		req.Header.Add("fiware-service", fiwareService)
+	}
+	if fiwareServicePath != "default" {
+		req.Header.Add("fiware-servicepath", fiwareServicePath)
+	}
+	client := nc.SecurityCfg.GetHTTPClient()
+	resp, err := client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -922,18 +922,18 @@ func (nc *NGSI10Client) UpdateLDEntityspecificAttributeOnRemote(elem map[string]
 	return nil, 0
 }
 
-func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool, fs string , fsp string) (string, error) {
+func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireReliability bool, fs string, fsp string) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
-                return "", err
-        }
-        req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
-        if fs != "" {
-                req.Header.Add("fiware-service", fs)
-        }
-        if fsp != "" {
-                req.Header.Add("fiware-servicepath", fsp)
-        }
+		return "", err
+	}
+	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body))
+	if fs != "" {
+		req.Header.Add("fiware-service", fs)
+	}
+	if fsp != "" {
+		req.Header.Add("fiware-servicepath", fsp)
+	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
 	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
@@ -1025,9 +1025,9 @@ func (nc *NGSI9Client) UpdateLDContextAvailability(sub *SubscribeContextAvailabi
 	}
 }
 
-// LD QueryContext 
+// LD QueryContext
 
-func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs string, fsp string) ([]interface{}, error) {
+func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest, fs string, fsp string) ([]interface{}, error) {
 	/*for index, entity := *query.Entities {
 		id := entity.ID
 		idSplit := strings.Split(id, "@")
@@ -1042,18 +1042,18 @@ func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs
 	BrokerURL := strings.TrimSuffix(nc.IoTBrokerURL, "/ngsi10")
 	req, err := http.NewRequest("POST", BrokerURL+"/ngsi-ld/v1/entityOperations/query", bytes.NewBuffer(body))
 	if fs != "default" {
-                req.Header.Add("fiware-service", fs)
-        }
-        if fsp != "" {
-                req.Header.Add("fiware-servicepath", fsp)
-        }
+		req.Header.Add("fiware-service", fs)
+	}
+	if fsp != "" {
+		req.Header.Add("fiware-servicepath", fsp)
+	}
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
 
 	client := nc.SecurityCfg.GetHTTPClient()
 	resp, err := client.Do(req)
-	fmt.Println("resp",resp)
+	fmt.Println("resp", resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -1063,7 +1063,7 @@ func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	var queryCtxResp  []interface{}
+	var queryCtxResp []interface{}
 	err = json.Unmarshal(text, &queryCtxResp)
 	if err != nil {
 		return nil, err
@@ -1071,7 +1071,7 @@ func (nc *NGSI10Client) InternalLDQueryContext(query *LDQueryContextRequest , fs
 	return queryCtxResp, nil
 }
 
-func (nc *NGSI10Client) QueryLdContext(query * LDQueryContextRequest, fs,fsp string) ([]interface{}, error) {
+func (nc *NGSI10Client) QueryLdContext(query *LDQueryContextRequest, fs, fsp string) ([]interface{}, error) {
 	body, err := json.Marshal(*query)
 	if err != nil {
 		return nil, err
@@ -1082,12 +1082,12 @@ func (nc *NGSI10Client) QueryLdContext(query * LDQueryContextRequest, fs,fsp str
 	req.Header.Add("Accept", "application/json")
 
 	if fs != "default" {
-                req.Header.Add("fiware-service", fs)
-        }
+		req.Header.Add("fiware-service", fs)
+	}
 
-        if fsp != "" {
-                req.Header.Add("fiware-servicepath", fsp)
-        }
+	if fsp != "" {
+		req.Header.Add("fiware-servicepath", fsp)
+	}
 
 	client := nc.SecurityCfg.GetHTTPClient()
 	resp, err := client.Do(req)
@@ -1100,13 +1100,12 @@ func (nc *NGSI10Client) QueryLdContext(query * LDQueryContextRequest, fs,fsp str
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
-	var queryCtxResp  []interface{}
-        err = json.Unmarshal(text, &queryCtxResp)
-        if err != nil {
-                return nil, err
-        }
-        fmt.Println("queryCtxResp",queryCtxResp)
-        return queryCtxResp, nil
+	var queryCtxResp []interface{}
+	err = json.Unmarshal(text, &queryCtxResp)
+	if err != nil {
+		return nil, err
+	}
+	fmt.Println("queryCtxResp", queryCtxResp)
+	return queryCtxResp, nil
 
 }
-

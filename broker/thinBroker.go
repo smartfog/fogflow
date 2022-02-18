@@ -578,7 +578,6 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	for _, val := range matchedCtxElement {
 		responseEle := val.(map[string]interface{})
 		delete(responseEle, "fiwareServicePath")
-		fmt.Println("responseEle", responseEle)
 		if _, ok := responseEle["@id"]; ok == true {
 			eid := responseEle["@id"].(string)
 			actualEid := strings.Split(eid, "@")
@@ -829,7 +828,6 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
 		reqBytes, _ := ioutil.ReadAll(r.Body)
-		fmt.Println("reqBytes", string(reqBytes))
 		var notifyRequest interface{}
 
 		err := json.Unmarshal(reqBytes, &notifyRequest)
@@ -1075,7 +1073,6 @@ func (tb *ThinBroker) notifyOneLDSubscriberWithCurrentStatus(entities []EntityId
 		if element, exist := tb.ldEntities[entity.ID]; exist {
 			elementMap := element.(map[string]interface{})
 			returnedElement := ldCloneWithSelectedAttributes(elementMap, selectedAttributes)
-			fmt.Println("returnedElement", returnedElement)
 			elements = append(elements, returnedElement)
 		}
 	}
@@ -2126,7 +2123,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		res := ResponseError{}
-		fmt.Println("LDupdateCtxReq", LDupdateCtxReq)
 		for _, ctx := range LDupdateCtxReq {
 			var context []interface{}
 			contextInPayload := false
@@ -2451,7 +2447,6 @@ func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface
 
 // Register a new context entity on Discovery
 func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
-	fmt.Println("elem for register", elem)
 	registerCtxReq := RegisterContextRequest{}
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
@@ -2516,7 +2511,6 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq.ContextRegistrations = ctxRegistrations
 
 	// Send the registration to discovery
-	fmt.Println("&registerCtxReq", &registerCtxReq)
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
@@ -2600,7 +2594,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-		fmt.Println("err", err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2628,7 +2621,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
-		fmt.Println("err", err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
@@ -2922,7 +2914,6 @@ func (tb *ThinBroker) ExpandAttributePayload(r *rest.Request, context []interfac
 
 func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 	newLink := extractLinkHeaderFields(link) // Keys in returned map are: "link", "rel" and "type"
-	fmt.Println("newLink", newLink)
 	var context []interface{}
 
 	if newLink == "default" {
@@ -2932,7 +2923,6 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 	context = append(context, newLink)
 
 	itemsMap := make(map[string]interface{})
-	fmt.Println("itemsMap", itemsMap)
 	itemsMap["@context"] = context
 	itemsMap["type"] = typ //Error, when entire slice typ is assigned :  invalid type value: @type value must be a string or array of strings
 	resolved, err := tb.ExpandData(itemsMap)
@@ -3684,9 +3674,7 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 		}
 	}*/
 	for index, value := range tb.entityTypeTOEntityId[typ] {
-		fmt.Println("value", tb.ldEntities[value])
 		if result, okey := tb.ldEntities[value]; okey == true {
-			fmt.Println("result", result)
 			compactEntity := tb.createOriginalPayload(result)
 			compactEntityMap := compactEntity.(map[string]interface{})
 			compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))

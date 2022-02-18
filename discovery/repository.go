@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	. "fogflow/common/ngsi"
 	"sort"
 	"sync"
@@ -49,7 +48,6 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 	er.ctxRegistrationList_lock.Lock()
 	defer er.ctxRegistrationList_lock.Unlock()
 	eid := entity.ID
-	fmt.Println("registration", registration)
 	if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
 		// update existing entity type
 		if entity.Type != "" {
@@ -169,10 +167,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 	defer er.ctxRegistrationList_lock.RUnlock()
 	nearby := restriction.GetNearbyFilter()
 	candidates := make([]Candidate, 0)
-	fmt.Println("er.ctxRegistrationList", er.ctxRegistrationList)
-	fmt.Println("restriction", restriction)
-	fmt.Println("attributes", attributes)
-	fmt.Println("entities", entities)
 	for _, registration := range er.ctxRegistrationList {
 		if matchingWithFilters(registration, entities, attributes, restriction, subfiwareService, registration.FiwareService) == true {
 			candidate := Candidate{}

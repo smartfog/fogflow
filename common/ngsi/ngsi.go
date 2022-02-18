@@ -101,10 +101,10 @@ type Polygon struct {
 }
 
 type ContextMetadata struct {
-	Name  string      `json:"name"`
-	Type  string      `json:"type,omitempty"`
-	Value interface{} `json:"value"`
-	Cordinates  interface{}  `json:"coordinates"`
+	Name       string      `json:"name"`
+	Type       string      `json:"type,omitempty"`
+	Value      interface{} `json:"value"`
+	Cordinates interface{} `json:"coordinates"`
 }
 
 /*
@@ -138,10 +138,10 @@ func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 
 func (metadata *ContextMetadata) UnmarshalJSON(b []byte) error {
 	type InternalContextMetadata struct {
-		Name  string      `json:"name"`
-		Type  string      `json:"type,omitempty"`
-		Value interface{} `json:"value"`
-		Cordinates  interface{}  `json:"coordinates"`
+		Name       string      `json:"name"`
+		Type       string      `json:"type,omitempty"`
+		Value      interface{} `json:"value"`
+		Cordinates interface{} `json:"coordinates"`
 	}
 
 	m := InternalContextMetadata{}
@@ -606,10 +606,10 @@ func (scope *OperationScope) UnmarshalJSON(b []byte) error {
 type Restriction struct {
 	AttributeExpression string           `json:"attributeExpression, omitempty"`
 	Scopes              []OperationScope `json:"scopes,omitempty"`
-	Cordinates          interface{}       `json:"cordinates,omitempty"`
-	Geometry            string            `json:"geometry,omitempty"` 
-	Georel		    string             `json:"geoRel,omitempty"`
-	RestrictionType	    string             `json:"restrictionType,omitempty"`
+	Cordinates          interface{}      `json:"cordinates,omitempty"`
+	Geometry            string           `json:"geometry,omitempty"`
+	Georel              string           `json:"geoRel,omitempty"`
+	RestrictionType     string           `json:"restrictionType,omitempty"`
 }
 
 func (restriction *Restriction) GetScope() OperationScope {
@@ -874,7 +874,7 @@ type DiscoverContextAvailabilityRequest struct {
 	Entities    []EntityId  `json:"entities"`
 	Attributes  []string    `json:"attributes,omitempty"`
 	Restriction Restriction `json:"restriction,omitempty"`
-	MsgFormat  string       `json:"msgFormat,omitempty"`
+	MsgFormat   string      `json:"msgFormat,omitempty"`
 }
 
 type DiscoverContextAvailabilityResponse struct {
@@ -1299,13 +1299,13 @@ type ProblemDetails struct {
 //NGSILD QueryContext
 
 type LDQueryContextRequest struct {
-	Type       string      `json:"type"`
-	Entities   []EntityId  `json:"entities"`
-	Attributes []string    `json:"attrs,omitempty"`
-	Q          string      `json:"q"`
-	Restriction    Restriction `json:"restriction"`
-	Csf        string      `json:"csf"`
-	TemporalQ  interface{} `json:"temporalQ"`
+	Type        string      `json:"type"`
+	Entities    []EntityId  `json:"entities"`
+	Attributes  []string    `json:"attrs,omitempty"`
+	Q           string      `json:"q"`
+	Restriction Restriction `json:"restriction"`
+	Csf         string      `json:"csf"`
+	TemporalQ   interface{} `json:"temporalQ"`
 }
 
 type ResponseError struct {
@@ -1364,7 +1364,7 @@ func GetNGSIV1DomainMetaData(typ string, location interface{}) (string, interfac
 		points = resolveMultipont(location)
 	} else {
 		valuetyp = typ
-		points = changeInv1cordinates(float64(0),float64(0))
+		points = changeInv1cordinates(float64(0), float64(0))
 	}
 	return valuetyp, points
 }

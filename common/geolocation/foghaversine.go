@@ -1,10 +1,9 @@
-package geolocation 
+package geolocation
 
 import (
+	. "fogflow/common/ngsi"
 	"math"
 	"strings"
-	"fmt"
-	. "fogflow/common/ngsi"
 	//. "fogflow/common/constants"
 )
 
@@ -13,14 +12,13 @@ const (
 	earthRaidusKm = 6371
 )
 
-
 type Coord struct {
 	Lat float64
 	Lon float64
 }
 
-/*This routine calculates the distance between two points (given the    
-latitude/longitude of those points). It is being used to calculate    
+/*This routine calculates the distance between two points (given the
+latitude/longitude of those points). It is being used to calculate
 the distance between two locations using GeoDataSource (TM) products */
 
 //The main implementation is here https://www.geodatasource.com/developers/go
@@ -31,7 +29,6 @@ func LDDistance(p, q Coord, unit ...string) float64 {
 	lat2 := q.Lat
 	lng1 := p.Lon
 	lng2 := q.Lon
-	fmt.Println(lat1,lat2, lng1, lng2)
 	radlat1 := float64(PI * lat1 / 180)
 	radlat2 := float64(PI * lat2 / 180)
 	theta := float64(lng1 - lng2)
@@ -54,56 +51,50 @@ func LDDistance(p, q Coord, unit ...string) float64 {
 	return dist
 }
 
-func DistForPoint(typ string, metadatas interface{},  loc interface{}) float64{
-	fmt.Println("metadatas",metadatas)
-	fmt.Println("loc",loc)
-	var mi  float64
+func DistForPoint(typ string, metadatas interface{}, loc interface{}) float64 {
+	var mi float64
 	var lag, log float64
 	switch metadatas.(type) {
-		case []interface{}:
-			fmt.Println("comming in this part--1")
-			meta := metadatas.([]interface{})
-			if len(meta) == 2 {
-				lag = meta[0].(float64)
-				log = meta[1].(float64)
-			}
-		case Point :
-			fmt.Println("Comming in this part ---2")
-			meta := metadatas.(Point)
-			lag = meta.Latitude
-			log = meta.Longitude
+	case []interface{}:
+		meta := metadatas.([]interface{})
+		if len(meta) == 2 {
+			lag = meta[0].(float64)
+			log = meta[1].(float64)
+		}
+	case Point:
+		meta := metadatas.(Point)
+		lag = meta.Latitude
+		log = meta.Longitude
 	}
-        switch strings.ToLower(typ) {
-                case "point":
-                        locn := loc.([]interface{})
-			p1 := Coord {
-				Lat : lag,
-				Lon : log,
-			}
-			p2 := Coord{
-                                Lat: locn[0].(float64),
-                                Lon: locn[1].(float64),
-                        }
-			fmt.Println(p1,p2)
-			mi  = LDDistance(p1,p2, "M")
-        }
-        return mi
+	switch strings.ToLower(typ) {
+	case "point":
+		locn := loc.([]interface{})
+		p1 := Coord{
+			Lat: lag,
+			Lon: log,
+		}
+		p2 := Coord{
+			Lat: locn[0].(float64),
+			Lon: locn[1].(float64),
+		}
+		mi = LDDistance(p1, p2, "M")
+	}
+	return mi
 }
 
-func FindDistForPoint(typ string , metaData interface{}, loc interface{}) float64 {
+func FindDistForPoint(typ string, metaData interface{}, loc interface{}) float64 {
 	var mi float64
-	fmt.Println("1-point")
 	switch strings.ToLower(typ) {
-		case "point" :
-			mi = DistForPoint(typ,metaData,loc)
-		case "polygon":
-		default : 
+	case "point":
+		mi = DistForPoint(typ, metaData, loc)
+	case "polygon":
+	default:
 	}
 	return mi
 }
 
 type geoPoint struct {
-	Latitude float64
+	Latitude  float64
 	Longitude float64
 }
 
@@ -114,7 +105,7 @@ type Poly struct {
 func convertInStructure(coor interface{}) Poly {
 	coorA := coor.([]interface{})
 	res := make([]geoPoint, 0)
-	for _ , val := range coorA {
+	for _, val := range coorA {
 		valA := val.([]interface{})
 		var geo geoPoint
 		geo.Latitude = valA[0].(float64)
@@ -126,18 +117,18 @@ func convertInStructure(coor interface{}) Poly {
 	return polygon
 }
 
-func commonConverter(entityP interface{}, queryP interface{}) (Poly,Poly) {
+func commonConverter(entityP interface{}, queryP interface{}) (Poly, Poly) {
 	entityMeta := Poly{}
 	queryMeta := Poly{}
 	if entityP != nil {
 		entityA := entityP.([]interface{})
-		for _ , val := range entityA {
+		for _, val := range entityA {
 			entityMeta = convertInStructure(val)
 		}
 	}
 	if queryP != nil {
 		queryA := queryP.([]interface{})
-		for _ , val := range queryA {
+		for _, val := range queryA {
 			queryMeta = convertInStructure(val)
 		}
 	}
@@ -145,18 +136,16 @@ func commonConverter(entityP interface{}, queryP interface{}) (Poly,Poly) {
 }
 
 func checkEquals(entityP interface{}, queryP interface{}) bool {
-	entityMeta,queryMeta := commonConverter(entityP,queryP)
-	fmt.Println(entityMeta)
-	fmt.Println(queryMeta)
+	entityMeta, queryMeta := commonConverter(entityP, queryP)
 	equal := true
 	if len(entityMeta.Vertices) != len(queryMeta.Vertices) {
 		return false
 	}
 	hashMap := make(map[geoPoint]bool)
-	for _ , val := range queryMeta.Vertices {
+	for _, val := range queryMeta.Vertices {
 		hashMap[val] = true
 	}
-	for _ , val := range entityMeta.Vertices {
+	for _, val := range entityMeta.Vertices {
 		if hashMap[val] == false {
 			return false
 		}
@@ -164,15 +153,13 @@ func checkEquals(entityP interface{}, queryP interface{}) bool {
 	return equal
 }
 
-
-
 func checkDisjoint(entityP interface{}, queryP interface{}) bool {
-	entityMeta,queryMeta := commonConverter(entityP,queryP)
-	var  disjoint bool
+	entityMeta, queryMeta := commonConverter(entityP, queryP)
+	var disjoint bool
 	disjoint = true
-	for _ , val := range queryMeta.Vertices {
+	for _, val := range queryMeta.Vertices {
 		//size := len(entityMeta.Vertices)
-		status := isInside(&val,&entityMeta)
+		status := isInside(&val, &entityMeta)
 		if status == true {
 			disjoint = false
 			break
@@ -182,64 +169,62 @@ func checkDisjoint(entityP interface{}, queryP interface{}) bool {
 }
 
 func checkWithin(entityP interface{}, queryP interface{}) bool {
-	entityMeta,queryMeta := commonConverter(entityP,queryP)
+	entityMeta, queryMeta := commonConverter(entityP, queryP)
 	within := true
-	for _ , val := range queryMeta.Vertices {
-                //size := len(entityMeta)
-                status := isInside(&val,&entityMeta)
-                if status == false {
-                        within = false
-                        break
-                }
-        }
-        return within
+	for _, val := range queryMeta.Vertices {
+		//size := len(entityMeta)
+		status := isInside(&val, &entityMeta)
+		if status == false {
+			within = false
+			break
+		}
+	}
+	return within
 }
 
 func checkContains(entityP interface{}, queryP interface{}) bool {
-        entityMeta,queryMeta := commonConverter(entityP,queryP)
-        contain:= true
-        for _ , val := range entityMeta.Vertices {
-		status := isInside(&val ,&queryMeta)
-                if status == false {
-                        contain = false
-                        break
-                }
-        }
-        return contain
+	entityMeta, queryMeta := commonConverter(entityP, queryP)
+	contain := true
+	for _, val := range entityMeta.Vertices {
+		status := isInside(&val, &queryMeta)
+		if status == false {
+			contain = false
+			break
+		}
+	}
+	return contain
 }
 
 func checkPoint(meta geoPoint, queryP interface{}) bool {
-	metaPoint :=geoPoint{}
+	metaPoint := geoPoint{}
 	metaPoint.Latitude = meta.Latitude
 	metaPoint.Longitude = meta.Longitude
-	_,queryMeta := commonConverter(nil,queryP)
-	inside := isInside(&metaPoint,&queryMeta)
+	_, queryMeta := commonConverter(nil, queryP)
+	inside := isInside(&metaPoint, &queryMeta)
 	return inside
 
 }
 
-func FindDistForPolygon(typ string , metaData interface{}, res Restriction) (bool) {
+func FindDistForPolygon(typ string, metaData interface{}, res Restriction) bool {
 	//var mi, km float64
 	var status bool
 	geoRel := strings.ReplaceAll(res.Georel, " ", "")
 	switch strings.ToLower(typ) {
-		case "point":
-			status = checkPoint(metaData.(geoPoint),res.Cordinates)
-		case "polygon":
-			if geoRel == "equals" {
-				status = checkEquals(metaData,res.Cordinates)
-				fmt.Println(status)
-			} else if geoRel == "disjoint" {
-				status =  checkDisjoint(metaData,res.Cordinates)
-			} else if geoRel == "intersects" {
-				fmt.Println("To be implemented latter")
-			} else if geoRel == "within" {
-				status = checkWithin(metaData,res.Cordinates)
-			} else if geoRel == "contains" {
-				status = checkContains(metaData,res.Cordinates)
-			} else if geoRel == "overlaps" {
-			}
-		default:
+	case "point":
+		status = checkPoint(metaData.(geoPoint), res.Cordinates)
+	case "polygon":
+		if geoRel == "equals" {
+			status = checkEquals(metaData, res.Cordinates)
+		} else if geoRel == "disjoint" {
+			status = checkDisjoint(metaData, res.Cordinates)
+		} else if geoRel == "intersects" {
+		} else if geoRel == "within" {
+			status = checkWithin(metaData, res.Cordinates)
+		} else if geoRel == "contains" {
+			status = checkContains(metaData, res.Cordinates)
+		} else if geoRel == "overlaps" {
+		}
+	default:
 	}
 	return status
 }
@@ -298,4 +283,3 @@ func intersectsWithRaycast(point *geoPoint, start *geoPoint, end *geoPoint) bool
 
 	return raySlope >= diagSlope
 }
-

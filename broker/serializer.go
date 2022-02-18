@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	. "fogflow/common/constants"
 	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
@@ -85,7 +84,6 @@ func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[str
 	var err error
 	propertyValue := false
 	for key, val := range propertyMap {
-		fmt.Println("key", key)
 		switch key {
 		case NGSI_LD_TYPE:
 			if val != nil {
@@ -256,7 +254,6 @@ func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, err
 func (sz Serializer) getTypeValue(typ string) (fName, error) {
 	var funcName fName
 	var err error
-	fmt.Println("type+++++++++++++", typ)
 	switch typ {
 	case LD_RELATIONSHIP:
 		funcName = sz.relHandler
@@ -267,20 +264,16 @@ func (sz Serializer) getTypeValue(typ string) (fName, error) {
 	default:
 		err = errors.New("Unknown Type !")
 	}
-	fmt.Println("err++++++++++++", err)
 	return funcName, err
 }
 
 func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
 	var funcName fName
 	var err error
-	fmt.Println("attr", attr)
 	if _, okey := attr["@type"]; okey == false {
-		fmt.Println("okey", okey)
 		err := errors.New("attribute type can not be nil!")
 		return funcName, err
 	}
-	fmt.Println("attr", attr)
 	var resType interface{}
 	var tValue int
 	switch attr["@type"].(type) {

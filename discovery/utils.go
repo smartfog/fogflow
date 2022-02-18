@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	. "fogflow/common/geolocation"
 	. "fogflow/common/ngsi"
 	"math"
@@ -45,7 +44,6 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 
 	// (3) check metadata set
 	if metaFilter.RestrictionType == "ld" {
-		fmt.Println("metaFilter.RestrictionType", metaFilter.RestrictionType)
 		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
 			return false
 		}
@@ -130,7 +128,6 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 					maxDistance := minMax[1]
 					maxF, _ := strconv.ParseFloat(maxDistance, 64)
 					if distMi < maxF {
-						fmt.Println("res", res)
 						res = true
 					}
 				} else if minMax[0] == "minDistance" {
@@ -140,7 +137,6 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 						res = true
 					}
 				} else {
-					fmt.Println(minMax[1])
 				}
 			}
 		}
@@ -149,9 +145,7 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 			res = FindDistForPolygon(typ, coordinate, restriction)
 		}
 	default:
-		fmt.Println("To be implemented latter")
 	}
-	fmt.Println(res)
 	return res
 }
 
