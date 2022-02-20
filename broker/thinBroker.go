@@ -2476,7 +2476,8 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
 			typ := getRegistrationType(attrValue["@type"])
-			if strings.Contains(typ, "GeoProperty") || strings.Contains(typ, "geoProperty") {
+			//if strings.Contains(typ, "GeoProperty") || strings.Contains(typ, "geoProperty") {
+			if typ == LD_GEOPROPERTY {
 				if strings.Contains(k, "location") {
 					ctxMetaData.Name = "location"
 				} else {
@@ -2493,9 +2494,9 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 				ctxMetaData.Cordinates = value["coordinates"]
 				ctxMetadatas = append(ctxMetadatas, ctxMetaData)
 
-			} else if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
+			} else if typ == LD_PRPERTY {
 				ctxRegAttr.Type = "Property"
-			} else if strings.Contains(typ, "Relationship") || strings.Contains(typ, "relationship") {
+			} else if typ == LD_RELATIONSHIP {
 				ctxRegAttr.Type = "Relationship"
 			}
 			ctxRegAttrs = append(ctxRegAttrs, ctxRegAttr)

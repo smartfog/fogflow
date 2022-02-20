@@ -17,8 +17,8 @@ func getType(typ interface{}) interface{} {
 	return typ
 }
 
-func getObservedTime(obsevedTime []interface{}) interface{} {
-	return obsevedTime
+func getObservedTime(observedTime []interface{}) interface{} {
+	return observedTime
 }
 
 func getCreatedTime(createdTime []interface{}) interface{} {
@@ -84,13 +84,13 @@ func checkCondition(k string) bool {
 		return false
 	} else if k == "@context" {
 		return false
-	} else if strings.Contains(k, "modifiedAt") {
+	} else if k == NGSI_LD_MODIFIEDAT  {
 		return false
-	} else if strings.Contains(k, "createdAt") {
+	} else if k == NGSI_LD_CREATEDAT {
 		return false
-	} else if strings.Contains(k, "observationSpace") {
+	} else if k == NGSI_LD_OBSERVED_AT  {
 		return false
-	} else if strings.Contains(k, "operationSpace") {
+	} else if k == NGSI_LD_OPERATIONSPACE  {
 		return false
 	} else {
 		return true
@@ -104,11 +104,11 @@ func checkCondition(k string) bool {
 func checkAttributeType(typ interface{}) string {
 	attrType := getRegistrationType(typ)
 	var typeResult string
-	if strings.Contains(attrType, "GeoProperty") || strings.Contains(attrType, "geoproperty") {
+	if attrType == LD_GEOPROPERTY {
 		typeResult = "GeoProperty"
-	} else if strings.Contains(attrType, "Relationship") || strings.Contains(attrType, "relationship") {
+	} else if attrType == LD_RELATIONSHIP {
 		typeResult = "Relationship"
-	} else if strings.Contains(attrType, "Property") || strings.Contains(attrType, "property") {
+	} else if attrType == LD_PRPERTY  {
 		typeResult = "Property"
 	} else {
 		typeResult = ""
