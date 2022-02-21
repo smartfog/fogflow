@@ -653,17 +653,18 @@ $(function () {
     }
 
     // for ld devices list
-    function displayLDDeviceList4Edge(devices){
+    function displayLDDeviceList4Edge(devices,isFromDevice=false){
         if (devices == null || devices.length == 0) {
             $('#deviceList').html('');
             return
         }
         var html = '<table id="ld-device-table" class="table table-striped table-bordered table-condensed">';
-
+        if (isFromDevice)   html += '<br><div><b>NGSI-LD Table</b></div><br>';
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Type</th>';
         html += '<th>Attributes</th>';
+        if (isFromDevice)   html += '<th>Action</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < devices.length; i++) {
@@ -675,6 +676,8 @@ $(function () {
             html += '</td>';
             html += '<td>' + device.type + '</td>';
             html += '<td>' + (device.attribute) + '</td>';
+            if (isFromDevice) html += '<td><button id="DELETE-' + device.id + '" type="button" class="btn btn-primary">Delete</button></td>';
+
             html += '</tr>';
         }
         html += '</table>';
@@ -714,17 +717,70 @@ $(function () {
         $('#info').html('list of all IoT devices');
 
         var html = '<div style="margin-bottom: 10px;"><button id="addNewDevice" type="button" class="btn btn-primary">add</button></div>';
+       
+
         html += '<div id="deviceList"></div>';
 
-        $('#content').html(html);
+        
+        html += '<div id="lddeviceList"></div>';
 
+        $('#content').html(html);
+        $('#lddeviceList').html('');
+        ldDeviceObj = []
         updateDeviceList();
+        ldEntities4DeviceTab();
 
         $("#addNewDevice").click(function () {
             deviceRegistration();
         });
     }
 
+    function ldEntities4DeviceTab(){
+        
+        var ldclient = new NGSILDclient(config.LdbrokerURL);
+        ldclient.GetEntitiesContext('All').then(function (edgeNodeList) {
+
+        getEntityProperties(edgeNodeList)
+        $('#lddeviceList').html(displayLDDeviceList4Edge(ldDeviceObj,true));
+        // associate a click handler to generate device profile on request
+        for (var i = 0; i < edgeNodeList.length; i++) {
+            var device = edgeNodeList[i];
+            console.log(device.id);
+            var deleteButton = document.getElementById('DELETE-' + device.id);
+            deleteButton.onclick = function (d) {
+                var myProfile = d;
+                return function () {
+                    console.log("delete obj ",myProfile)
+                    if (confirm('Do you want to delete the entity '+d.id)) {
+                        removeLDDevice(d.id);
+                      } else {
+                        console.log('Thing was not saved to the database.');
+                      }
+                   
+                };
+            }(device);
+        }
+
+        }).catch(function (error) {
+            console.log(error);
+            console.log('failed to query the list of ld device');
+        });
+        
+    }
+
+    function removeLDDevice(entityID){
+        var ldclient = new NGSILDclient(config.LdbrokerURL);
+        
+        ldclient.deleteContext(entityID,true).then(function (res) {
+            if (res.status == 204){
+                showDevices();
+            }
+            console.log("ld re aaa ",res);
+            }).catch(function (error) {
+                console.log(error);
+                console.log('failed to upsert API of ld device');
+            });
+    }
     function showWorkerList() {
         var queryReq = {}
         queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
@@ -756,24 +812,29 @@ $(function () {
             return
         }
         var html = '<table class="table table-striped table-bordered table-condensed">';
-
+        html += '<div><b>NGSI-V1 Table</b></div><br>';
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Type</th>';
         html += '<th>Attributes</th>';
         html += '<th>DomainMetadata</th>';
+        html += '<th>Action</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < devices.length; i++) {
             var device = devices[i];
             html += '<tr>';
             html += '<td>' + device.entityId.id + '<br>';
-            html += '<button id="DOWNLOAD-' + device.entityId.id + '" type="button" class="btn btn-default">Profile</button>';
-            html += '<button id="DELETE-' + device.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
+           // html += '<button id="DOWNLOAD-' + device.entityId.id + '" type="button" class="btn btn-default">Profile</button>';
+           // html += '<button id="DELETE-' + device.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
             html += '</td>';
             html += '<td>' + device.entityId.type + '</td>';
             html += '<td>' + JSON.stringify(device.attributes) + '</td>';
             html += '<td>' + JSON.stringify(device.metadata) + '</td>';
+            html += '<td>'
+            html += '<button id="DOWNLOAD-' + device.entityId.id + '" type="button" class="btn btn-default">Profile</button>';
+            html += '<button id="DELETE-' + device.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
+            html += '</td>'
             html += '</tr>';
         }
 
@@ -782,10 +843,10 @@ $(function () {
 
        
 
-        // associate a click handler to generate device profile on request
+        //associate a click handler to generate device profile on request
         for (var i = 0; i < devices.length; i++) {
             var device = devices[i];
-            console.log(device.entityId.id);
+           // console.log(device.entityId.id);
 
             var profileButton = document.getElementById('DOWNLOAD-' + device.entityId.id);
             profileButton.onclick = function (d) {
@@ -838,12 +899,39 @@ $(function () {
             console.log('failed to cancel a requirement');
         });
     }
-
-
+  
     function deviceRegistration() {
         $('#info').html('to register a new IoT device');
+        var html = '<p>'
+        html += '<input type="radio" checked="checked" name="r1" id="e1" value="NGSIV1"/> NGSI-V1&emsp;&emsp;'   
+        html += '<input type="radio"  name="r1" id="e2" value="NGSILD"/> NGSI-LD'
+        html += '</p>'
+        
+        html += '<div class="form-horizontal"><fieldset>';
+        html += '<div id="ngsildDeviceRegistration" style="display: none">';
 
-        var html = '<div id="deviceRegistration" class="form-horizontal"><fieldset>';
+        html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
+        html += '<div class="controls"><select id="ldDeviceType"><option>Temperature</option><option>PowerPanel</option></select></div>'
+        html += '</div>';
+
+  
+        html += '<div class="control-group"><label class="control-label" for="input01">LD Device ID(*)</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceID">';
+        html += '<span>  </span><button id="ldAutoIDGenerator" type="button" class="btn btn-primary">Autogen</button>';
+        html += '</div></div>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Device Name</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceName">';
+        html += '</div></div>';
+
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Device Value</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceValue" placeholder="only number value">';
+        html += '</div></div>';
+    
+        html += '</div>';
+       
+        html += '<div id="deviceRegistration">';
 
         html += '<div class="control-group"><label class="control-label" for="input01">Device ID(*)</label>';
         html += '<div class="controls"><input type="text" class="input-xlarge" id="deviceID">';
@@ -862,6 +950,8 @@ $(function () {
         html += '<div class="controls"><input class="input-file" id="imageContent" type="file" accept="image/png"></div>'
         html += '</div>';
 
+        html += '</div>'; // for v1 tag
+
         html += '<div class="control-group"><label class="control-label" for="input01">Location(*)</label>';
         html += '<div class="controls"><div id="map"  style="width: 500px; height: 400px"></div></div>'
         html += '</div>';
@@ -872,13 +962,26 @@ $(function () {
 
         html += '</fieldset></div>';
 
+       
         $('#content').html(html);
 
-        showWorkerList();
-
+        var type = $('#ldDeviceType option:selected').val();
+        $('#ldDeviceName').val(type.toLowerCase());
         // associate functions to clickable buttons
-        $('#submitRegistration').click(registerNewDevice);
+        $('#submitRegistration').click(function () {
+            console.log("aaaaaaaa")
+            var radioVal = $('input[name="r1"]:checked').val();
+            console.log("radio val 000000 ",radioVal);
+            if( radioVal === 'NGSILD'){
+                registerLDNewDevice()
+            }else  registerNewDevice()
+
+            });
+
         $('#autoIDGenerator').click(autoIDGenerator);
+
+        $('#ldAutoIDGenerator').click(ldAutoIDGenerator);
+
 
         $('#iconImage').change(function () {
             readIconImage(this);
@@ -886,6 +989,111 @@ $(function () {
         $('#imageContent').change(function () {
             readContentImage(this);
         });
+       // confirm("Press a button!");
+        $('#e1').change(function () {
+            var a = $('input[name="r1"]:checked').val();
+            console.log('radio button val ',a)
+            document.getElementById('ngsildDeviceRegistration').style.display = 'none';
+            document.getElementById('deviceRegistration').style.display = 'block';
+            showWorkerList();
+        });
+        $('#e2').change(function () {
+            var a = $('input[name="r1"]:checked').val();
+            console.log('radio button val ',a)
+            document.getElementById('ngsildDeviceRegistration').style.display = 'block';
+            document.getElementById('deviceRegistration').style.display = 'none';
+            showWorkerList();
+        });
+
+        $('#ldDeviceType').change(function () {
+            console.log("value of ldDeviceType ",$('#ldDeviceType option:selected').val());
+            $('#ldDeviceID').val('');
+            var type = $('#ldDeviceType option:selected').val();
+            $('#ldDeviceName').val(type.toLowerCase());
+        });
+
+        //console.log("radio button check ",$('#e1').checked)
+    }
+
+    function ldAutoIDGenerator(){
+        
+
+        var type = $('#ldDeviceType option:selected').val();
+        console.log(type);
+
+        if(type == '') return;
+        var date = new Date();
+        var epochForId = Math.floor(date.getTime()/1000)
+        var uid = "urn:ngsi-ld:"+type.toLowerCase()+":"+epochForId.toString();
+        //var uid = "urn:ngsi-ld:"+"device"+":"+epochForId.toString();
+        console.log("ngsi ld auto ID",uid);
+        $('#ldDeviceID').val(uid);
+        
+    }
+
+
+    function registerLDNewDevice(){
+        // take the inputs    
+        var id = $('#ldDeviceID').val();
+        console.log(id);
+
+        var type = $('#ldDeviceType option:selected').val();
+        console.log(type);
+        
+
+        var deviceName = $('#ldDeviceName').val();
+        console.log(deviceName);
+        
+        var deviceValue = $('#ldDeviceValue').val();
+        console.log(deviceValue);
+
+        console.log(locationOfNewDevice);
+        
+
+        if (id == '' || type == '' || locationOfNewDevice == '') {
+            alert('please provide the required inputs');
+            return;
+        }
+        if (type === 'Temperature') type = 'Device'
+        //createdAt
+        var ldPayload = {}
+        ldPayload.id = id;
+        ldPayload.type = type;
+        ldPayload[deviceName] = {
+            "type": "Property",
+            "value": deviceValue
+        }
+
+        ldPayload.location = {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [locationOfNewDevice.lat,locationOfNewDevice.lng]
+            }
+        }
+        var cTime = new Date().toISOString()
+        var createdAt = cTime.split(".")[0]
+        ldPayload.createdAt = createdAt;
+        console.log("payload ---- ",ldPayload);
+
+        var ldclient = new NGSILDclient(config.LdbrokerURL);
+        
+        ldclient.ldupdateContext(ldPayload).then(function (res) {
+            console.log("ld re aaa ",res);
+            if (confirm('Do you want to add more attributes?')) {
+                $('#ldDeviceName').val('');
+                $('#ldDeviceValue').val('');
+                // Save it!
+                console.log('Thing was saved to the database.');
+              } else {
+                showDevices();
+                // Do nothing!
+                console.log('Thing was not saved to the database.');
+              }
+            }).catch(function (error) {
+                console.log(error);
+                console.log('failed to upsert API of ld device');
+            });
     }
 
     function readIconImage(input) {
@@ -970,44 +1178,54 @@ $(function () {
             isPattern: false
         };
 
-        newDeviceObject.attributes = {};
-        newDeviceObject.attributes.DeviceID = { type: 'string', value: id };
-
+        var tmpAttr = {}
+        newDeviceObject.attributes = [];
+        tmpAttr = { name:'DeviceID', type: 'string', value: id };
+        newDeviceObject.attributes.push(tmpAttr);
         var url = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/' + contentImageFileName;
-        newDeviceObject.attributes.url = { type: 'string', value: url };
-        newDeviceObject.attributes.iconURL = { type: 'string', value: '/photo/' + iconImageFileName };
+        tmpAttr = { name:'url', type: 'string', value: url };
+        newDeviceObject.attributes.push(tmpAttr);
+        tmpAttr = { name:'iconURL', type: 'string', value: '/photo/' + iconImageFileName };
+        newDeviceObject.attributes.push(tmpAttr);
 
         if (type == "PowerPanel") {
-            newDeviceObject.attributes.usage = {
+            tmpAttr = {
+                name:'usage',
                 type: 'integer',
                 value: 20
             };
-            newDeviceObject.attributes.shop = {
+            newDeviceObject.attributes.push(tmpAttr);
+            tmpAttr = {
+                name:'shop',
                 type: 'string',
                 value: id
             };
+            newDeviceObject.attributes.push(tmpAttr);
         }
 
-        newDeviceObject.metadata = {};
-        newDeviceObject.metadata.location = {
+        newDeviceObject.domainMetadata = [];
+        var metadata = {};
+        metadata = {
+            name:'location',
             type: 'point',
             value: { 'latitude': locationOfNewDevice.lat, 'longitude': locationOfNewDevice.lng }
         };
-
+        newDeviceObject.domainMetadata.push(metadata);
         if (type == "PowerPanel") {
-            newDeviceObject.metadata.shop = {
+            metadata = {
                 type: 'string',
                 value: id
             };
+            newDeviceObject.domainMetadata.push(metadata);
         } else if (type == "Camera") {
-            newDeviceObject.metadata.cameraID = {
+            metadata = {
                 type: 'string',
                 value: id
             };
+            newDeviceObject.domainMetadata.push(metadata);
         }
-
-        client.updateContext(newDeviceObject).then(function (data) {
-            console.log(data);
+        var finalDeviceObject = {"contextElements":[newDeviceObject],"updateAction": "UPDATE"}
+        client.updateContext(finalDeviceObject).then(function (data) {
 
             // show the updated device list
             showDevices();
@@ -1016,6 +1234,7 @@ $(function () {
         });
 
     }
+
 
     function uuid() {
         var uuid = "", i, random;
