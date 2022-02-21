@@ -2476,7 +2476,6 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
 			typ := getRegistrationType(attrValue["@type"])
-			//if strings.Contains(typ, "GeoProperty") || strings.Contains(typ, "geoProperty") {
 			if typ == LD_GEOPROPERTY {
 				if strings.Contains(k, "location") {
 					ctxMetaData.Name = "location"
