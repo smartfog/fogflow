@@ -2,6 +2,8 @@ package main
 
 import (
 	"errors"
+	. "fogflow/common/constants"
+	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
@@ -9,61 +11,309 @@ import (
 
 type Serializer struct{}
 
-func (sz Serializer) DeSerializeEntity(expanded []interface{}) (map[string]interface{}, error) {
-	entity := make(map[string]interface{})
-	for _, val := range expanded {
-		stringsMap := val.(map[string]interface{})
-		for k, v := range stringsMap {
-			if strings.Contains(k, "id") {
-				if v != nil {
-					entity["id"] = sz.getId(v.(interface{}))
+type fName func(map[string]interface{}) (map[string]interface{}, error)
+
+func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]interface{}, error) {
+	geoResult := make(map[string]interface{})
+	var err error
+	geoValue := false
+	for key, val := range geoMap {
+		switch key {
+		case NGSI_LD_TYPE:
+			if val != nil {
+				geoResult[key] = getType(val.([]interface{}))
+			}
+		case NGSI_LD_CREATEDAT:
+			if val != nil {
+				geoResult[key] = getCreatedTime(val.([]interface{}))
+			}
+		case NGSI_LD_OBSERVED_AT:
+			if val != nil {
+				geoResult[key] = getObservedTime(val.([]interface{}))
+			}
+		case NGSI_LD_MODIFIEDAT:
+			if val != nil {
+				geoResult[key] = getModifiedTime(val.([]interface{}))
+			}
+		case NGSI_LD_HAS_VALUE:
+			if val != nil {
+				geoValue = true
+				geoResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		case NGSI_LD_DATASETID:
+			if val != nil {
+				geoResult[key] = getDataSetID(val.([]interface{}))
+			}
+		case NGSI_LD_INSTANCEID:
+			if val != nil {
+				geoResult[key] = getInstanceID(val.([]interface{}))
+			}
+		case NGSILD_UniCode:
+			if val != nil {
+				geoResult[key] = val
+			}
+		default:
+			var interfaceArray []interface{}
+			switch val.(type) {
+			case []interface{}:
+				interfaceArray = val.([]interface{})
+			default:
+				interfaceArray = make([]interface{}, 0)
+				geoResult[key] = val
+			}
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return geoResult, err
 				}
-			} else if strings.Contains(k, "type") {
-				if v != nil {
-					entity["type"] = sz.getType(v.([]interface{}))
-				}
-			} else if strings.Contains(k, "location") {
-				if v != nil {
-					entity["location"] = sz.getLocation(v.([]interface{}))
-				}
-			} else if strings.Contains(k, "createdAt") {
-				continue
-			} else if strings.Contains(k, "modifiedAt") {
-				continue
-			} else {
-				interfaceArray := v.([]interface{})
-				if len(interfaceArray) > 0 {
-					mp := interfaceArray[0].(map[string]interface{})
-					_, oK := mp["@type"]
-					if oK == false {
-						err := errors.New("attribute type can not be nil!")
-						return nil, err
-					}
-					typ := mp["@type"].([]interface{})
-					if len(typ) > 0 {
-						if strings.Contains(typ[0].(string), "Property") {
-							property, err := sz.getProperty(mp)
-							if err != nil {
-								return entity, err
-							} else {
-								entity[k] = property
-							}
-						} else if strings.Contains(typ[0].(string), "Relationship") {
-							relationship, err := sz.getRelationship(mp)
-							if err != nil {
-								return entity, err
-							} else {
-								entity[k] = relationship
-							}
-						}
-					}
+				geoResult[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return geoResult, err
 				}
 			}
 		}
 	}
-	entity["modifiedAt"] = time.Now().String()
-	return entity, nil
+	if geoValue == false {
+		err = errors.New("value field is mandatory!")
+	}
+	return geoResult, err
 }
+
+func (sz Serializer) proprtyHandler(propertyMap map[string]interface{}) (map[string]interface{}, error) {
+	propertyResult := make(map[string]interface{})
+	var err error
+	propertyValue := false
+	for key, val := range propertyMap {
+		switch key {
+		case NGSI_LD_TYPE:
+			if val != nil {
+				//propertyResult[key] = getType(val.([]interface{}))
+				propertyResult[key] = getType(val)
+			}
+		case NGSI_LD_OBSERVED_AT:
+			if val != nil {
+				propertyResult[key] = getObservedTime(val.([]interface{}))
+			}
+		case NGSI_LD_CREATEDAT:
+			if val != nil {
+				propertyResult[key] = getCreatedTime(val.([]interface{}))
+			}
+		case NGSI_LD_MODIFIEDAT:
+			if val != nil {
+				propertyResult[key] = getModifiedTime(val.([]interface{}))
+			}
+		case NGSI_LD_HAS_VALUE:
+			if val != nil {
+				propertyValue = true
+				propertyResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		case NGSI_LD_DATASETID:
+			if val != nil {
+				propertyResult[key] = getDataSetID(val.([]interface{}))
+			}
+		case NGSI_LD_INSTANCEID:
+			if val != nil {
+				propertyResult[key] = getInstanceID(val.([]interface{}))
+			}
+		case NGSILD_UniCode:
+			if val != nil {
+				propertyResult[key] = val
+			}
+		default:
+			interfaceArray := make([]interface{}, 0)
+			switch val.(type) {
+			case []interface{}:
+				interfaceArray = val.([]interface{})
+			default:
+				propertyValue = true
+				propertyResult[key] = val
+			}
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return propertyResult, err
+				}
+				propertyResult[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return propertyResult, err
+				}
+			}
+		}
+	}
+	if propertyValue == false {
+		err = errors.New("value field is mandatory!")
+	}
+	return propertyResult, err
+}
+
+func (sz Serializer) relHandler(relmap map[string]interface{}) (map[string]interface{}, error) {
+	relResult := make(map[string]interface{})
+	var err error
+	ralationobject := false
+	for key, val := range relmap {
+		switch key {
+		case NGSI_LD_TYPE:
+			if val != nil {
+				relResult[key] = getType(val.([]interface{}))
+			}
+		case NGSI_LD_CREATEDAT:
+			if val != nil {
+				relResult[key] = getCreatedTime(val.([]interface{}))
+			}
+		case NGSI_LD_OBSERVED_AT:
+			if val != nil {
+				relResult[key] = getObservedTime(val.([]interface{}))
+			}
+		case NGSI_LD_MODIFIEDAT:
+			if val != nil {
+				relResult[key] = getModifiedTime(val.([]interface{}))
+			}
+		case NGSI_LD_HAS_OBJECT:
+			if val != nil {
+				ralationobject = true
+				relResult[key] = getPropertyValue(val.([]interface{}))
+			}
+		case NGSI_LD_DATASETID:
+			if val != nil {
+				relResult[key] = getDataSetID(val.([]interface{}))
+			}
+		case NGSI_LD_INSTANCEID:
+			if val != nil {
+				relResult[key] = getInstanceID(val.([]interface{}))
+			}
+		case NGSILD_UniCode:
+			if val != nil {
+				relResult[key] = val
+			}
+		default:
+			interfaceArray := make([]interface{}, 0)
+			switch val.(type) {
+			case []interface{}:
+				interfaceArray = val.([]interface{})
+			default:
+				ralationobject = true
+				relResult[key] = val
+			}
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return relResult, err
+				}
+				relResult[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return relResult, err
+				}
+			}
+		}
+	}
+	if ralationobject == false {
+		err = errors.New("object field is mandatory!")
+	}
+	return relResult, err
+}
+
+func (sz Serializer) handler(ExpEntity interface{}) (map[string]interface{}, error) {
+	ExpEntityMap := ExpEntity.(map[string]interface{})
+	resultEntity := make(map[string]interface{})
+	for key, val := range ExpEntityMap {
+		switch key {
+		case NGSI_LD_ID:
+			if val != nil {
+				resultEntity[key] = getEntityId(val.(interface{}))
+			}
+		case NGSI_LD_TYPE:
+			if val != nil {
+				resultEntity[key] = getType(val.([]interface{}))
+			}
+		case NGSI_LD_CREATEDAT:
+			if val != nil {
+				resultEntity[key] = getCreatedTime(val.([]interface{}))
+			}
+		case NGSI_LD_MODIFIEDAT:
+			if val != nil {
+				resultEntity[key] = getModifiedTime(val.([]interface{}))
+			}
+		default:
+			interfaceArray := val.([]interface{})
+			if len(interfaceArray) > 0 {
+				attrHandler, err := sz.getAttrType(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return resultEntity, err
+				}
+				resultEntity[key], err = attrHandler(interfaceArray[0].(map[string]interface{}))
+				if err != nil {
+					return resultEntity, err
+				}
+			}
+
+		}
+	}
+	return resultEntity, nil
+}
+
+func (sz Serializer) getTypeValue(typ string) (fName, error) {
+	var funcName fName
+	var err error
+	switch typ {
+	case LD_RELATIONSHIP:
+		funcName = sz.relHandler
+	case LD_PRPERTY:
+		funcName = sz.proprtyHandler
+	case LD_GEOPROPERTY:
+		funcName = sz.geoHandler
+	default:
+		err = errors.New("Unknown Type !")
+	}
+	return funcName, err
+}
+
+func (sz Serializer) getAttrType(attr map[string]interface{}) (fName, error) {
+	var funcName fName
+	var err error
+	if _, okey := attr["@type"]; okey == false {
+		err := errors.New("attribute type can not be nil!")
+		return funcName, err
+	}
+	var resType interface{}
+	var tValue int
+	switch attr["@type"].(type) {
+	case []interface{}:
+		resType = attr["@type"]
+		tValue = 1
+	case string:
+		resType = attr["@type"]
+		tValue = 2
+	default:
+		err := errors.New("Unknown Type!")
+		return funcName, err
+	}
+	if tValue == 1 {
+		resType1 := resType.([]interface{})
+		if len(resType1) > 0 {
+			Type1 := resType1[0].(string)
+			funcName, err = sz.getTypeValue(Type1)
+		}
+	} else if tValue == 2 {
+		resType2 := resType.(string)
+		funcName, err = sz.getTypeValue(resType2)
+	} else {
+		err := errors.New("Unknown Type!")
+		return funcName, err
+	}
+	return funcName, err
+}
+
+func (sz Serializer) getId(id interface{}) string {
+	Id := id.(string)
+	return Id
+}
+
+func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]interface{}, error) {
+	expEntity := expEntities[0]
+	result, err := sz.handler(expEntity.(map[string]interface{}))
+	return result, err
+}
+
 func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	subscription := LDSubscriptionRequest{}
 	for _, val := range expanded {
@@ -102,8 +352,21 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 				if v != nil {
 					subscription.WatchedAttributes = sz.getArrayOfIds(v.([]interface{}))
 				}
+			} else if strings.Contains(k, "georel") {
+				if v != nil {
+					switch v.(type) {
+					case []interface{}:
+						data := v.([]interface{})
+						dataMap := data[0].(map[string]interface{})
+						dataMap["@context"] = DEFAULT_CONTEXT
+						resolved, _ := compactData(dataMap, DEFAULT_CONTEXT)
+						subscription.Restriction, _ = sz.assignRestriction(resolved.(map[string]interface{}))
+					default:
+						err := errors.New("Unknown Type!")
+						return subscription, err
+					}
+				}
 			} else {
-				// other subscription fields
 			}
 		}
 	}
@@ -122,10 +385,10 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	return attr
 }
 
-func (sz Serializer) getId(id interface{}) string {
+/*func (sz Serializer) getId(id interface{}) string {
 	Id := id.(string)
 	return Id
-}
+}*/
 
 func (sz Serializer) getType(typ []interface{}) string {
 	var Type, Type1 string
@@ -146,165 +409,6 @@ func (sz Serializer) getType(typ []interface{}) string {
 		}
 	}
 	return Type
-}
-
-func (sz Serializer) getProperty(propertyMap map[string]interface{}) (map[string]interface{}, error) {
-	hasValueExist := false
-	Property := make(map[string]interface{})
-	for propertyField, fieldValue := range propertyMap {
-		if strings.Contains(propertyField, "@type") {
-			if fieldValue != nil {
-				Property["type"] = sz.getType(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(propertyField, "hasValue") {
-			hasValueExist = true
-			if fieldValue != nil {
-				Property["value"] = sz.getValueFromArray(fieldValue.([]interface{}))
-				if Property["value"].([]interface{})[0] == "nil" || Property["value"].([]interface{})[0] == "Nil" || Property["value"].([]interface{})[0] == "Null" || Property["value"].([]interface{})[0] == "null" {
-					err := errors.New("Property value can not be null/nil !")
-					return Property, err
-				}
-			} else {
-				err := errors.New("Property value can not be null/nil !")
-				return Property, err
-			}
-		} else if strings.Contains(propertyField, "observedAt") {
-			if fieldValue != nil {
-				Property["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(propertyField, "datasetId") {
-			if fieldValue != nil {
-				Property["datasetId"] = sz.getDatasetId(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(propertyField, "instanceId") {
-			if fieldValue != nil {
-				Property["instanceId"] = sz.getInstanceId(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(propertyField, "unitCode") {
-			if fieldValue != nil {
-				Property["unitCode"] = sz.getUnitCode(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(propertyField, "providedBy") {
-			if fieldValue != nil {
-				Property["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(propertyField, "createdAt") {
-			continue
-		} else if strings.Contains(propertyField, "modifiedAt") {
-			continue
-		} else { // Nested property or relationship
-
-			var typ string
-			nested := fieldValue.([]interface{})
-			for _, val := range nested {
-				mp := val.(map[string]interface{})
-				typInterface := mp["@type"].([]interface{})
-				typ = typInterface[0].(string)
-				if strings.Contains(typ, "Property") {
-					property, err := sz.getProperty(mp)
-					if err != nil {
-						return Property, err
-					} else {
-						Property[propertyField] = property
-					}
-				} else if strings.Contains(typ, "Relationship") {
-					relationship, err := sz.getRelationship(mp)
-					if err != nil {
-						return Property, err
-					} else {
-						Property[propertyField] = relationship
-					}
-				}
-			}
-		}
-	}
-	if hasValueExist == false {
-		err := errors.New("Property value can not be null/nil !")
-		return Property, err
-	}
-	//Property["modifiedAt"] = time.Now().String()
-	return Property, nil
-}
-
-func (sz Serializer) getRelationship(relationshipMap map[string]interface{}) (map[string]interface{}, error) {
-	hasObjectExist := false
-	Relationship := make(map[string]interface{})
-	for relationshipField, fieldValue := range relationshipMap {
-		if strings.Contains(relationshipField, "@type") {
-			if fieldValue != nil {
-				Relationship["type"] = sz.getType(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(relationshipField, "hasObject") {
-			hasObjectExist = true
-			if fieldValue != nil {
-				Relationship["object"] = sz.getIdFromArray(fieldValue.([]interface{}))
-				if Relationship["object"] == "nil" || Relationship["object"] == "Nil" || Relationship["object"] == "null" || Relationship["object"] == "Null" {
-					err := errors.New("Relationship Object value can not be null/nil !")
-					return Relationship, err
-				}
-			} else {
-				err := errors.New("Relationship Object value can not be null/nil !")
-				return Relationship, err
-			}
-		} else if strings.Contains(relationshipField, "Object") {
-			if fieldValue != nil {
-				Relationship["object"] = sz.getValueFromArray(fieldValue.([]interface{})).(string)
-			} else {
-				err := errors.New("Relationship Object value can not be null/nil !")
-				return Relationship, err
-			}
-		} else if strings.Contains(relationshipField, "observedAt") {
-			if fieldValue != nil {
-				Relationship["observedAt"] = sz.getDateAndTimeValue(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(relationshipField, "providedBy") {
-			if fieldValue != nil {
-				Relationship["providedBy"] = sz.getProvidedBy(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(relationshipField, "datasetId") {
-			if fieldValue != nil {
-				Relationship["datasetId"] = sz.getDatasetId(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(relationshipField, "instanceId") {
-			if fieldValue != nil {
-				Relationship["instanceId"] = sz.getInstanceId(fieldValue.([]interface{}))
-			}
-		} else if strings.Contains(relationshipField, "createdAt") {
-			continue
-		} else if strings.Contains(relationshipField, "modifiedA") {
-			continue
-		} else { // Nested property or relationship
-			var typ string
-			nested := fieldValue.([]interface{})
-			for _, val := range nested {
-				mp := val.(map[string]interface{})
-				typInterface := mp["@type"].([]interface{})
-				typ = typInterface[0].(string)
-
-				if strings.Contains(typ, "Property") {
-					property, err := sz.getProperty(mp)
-					if err != nil {
-						return Relationship, err
-					} else {
-						Relationship[relationshipField] = property
-					}
-				} else if strings.Contains(typ, "Relationship") {
-					relationship, err := sz.getRelationship(mp)
-					if err != nil {
-						return Relationship, err
-					} else {
-						Relationship[relationshipField] = relationship
-					}
-				}
-			}
-		}
-	}
-	if hasObjectExist == false {
-		err := errors.New("Relationship Object value can not be null/nil !")
-		return Relationship, err
-	}
-	//Relationship["modifiedAt"] = time.Now().String()
-	return Relationship, nil
 }
 
 func (sz Serializer) getValue(hasValue []interface{}) interface{} {
@@ -333,7 +437,7 @@ func (sz Serializer) getValueFromArray(hasValue []interface{}) interface{} {
 				}
 				if val["@value"] != nil {
 					value = append(value, val["@value"].(interface{}))
-				} //Value is not  overwritten, in case of multiple values in payload, value array never return
+				}
 			}
 		}
 	}
@@ -608,16 +712,19 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, err
 }
 
 // get NGSILD attributes
-
-func (sz Serializer) getQueryAttributes(attributes []interface{}) ([]string, error) {
+func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]string, error) {
 	attributesList := make([]string, 0)
 	if len(attributes) <= 0 {
 		err := errors.New("Zero length attribute list is not allowed")
 		return attributesList, err
 	}
-	for _, value := range attributes {
-		valuemap := value.(map[string]interface{})
-		attributesList = append(attributesList, valuemap["@value"].(string))
+	for _, attr := range attributes {
+		//fmt.Println("attr",attr)
+		valueMap := attr.(map[string]interface{})
+		ldobject := getLDobject(valueMap["@value"], context)
+		ExpandedAttr, _ := ExpandEntity(ldobject)
+		attrUri := getAttribute(ExpandedAttr)
+		attributesList = append(attributesList, attrUri)
 	}
 	return attributesList, nil
 }
@@ -649,6 +756,23 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	return entity
 }
 
+func (sz Serializer) assignRestriction(restriction map[string]interface{}) (Restriction, error) {
+	restrictions := Restriction{}
+	if _, ok := restriction["coordinates"]; ok == true {
+		restrictions.Cordinates = restriction["coordinates"]
+	}
+	if _, ok := restriction["geometry"]; ok == true {
+		restrictions.Geometry = restriction["geometry"].(string)
+	}
+	if _, ok := restriction["georel"]; ok == true {
+		restrictions.Georel = restriction["georel"].(string)
+	}
+	restrictions.RestrictionType = "ld"
+
+	return restrictions, nil
+
+}
+
 //get Entities
 func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]EntityId, error) {
 	entitiesList := make([]EntityId, 0)
@@ -668,7 +792,7 @@ func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]Enti
 }
 
 // serialize NGSIld Query
-func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQueryContextRequest, error) {
+func (sz Serializer) uploadQueryContext(expanded interface{}, fs string, context []interface{}) (LDQueryContextRequest, error) {
 	ngsildQueryContext := LDQueryContextRequest{}
 	expandedArray := expanded.([]interface{})
 	QueryData := expandedArray[0].(map[string]interface{})
@@ -678,19 +802,32 @@ func (sz Serializer) uploadQueryContext(expanded interface{}, fs string) (LDQuer
 	}
 	ngsildQueryContext.Type = typ
 	var newErr error
+forloop:
 	for key, value := range QueryData {
-		if strings.Contains(key, "attrs") {
-			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}))
+		switch key {
+		case NGSI_LD_ATTRS:
+			ngsildQueryContext.Attributes, newErr = sz.getQueryAttributes(value.([]interface{}), context)
 			if newErr != nil {
-				break
+				break forloop
 			}
-		} else if strings.Contains(key, "entities") {
+		case NGSI_LD_ENTITIES:
 			ngsildQueryContext.Entities, newErr = sz.getQueryEntities(value.([]interface{}), fs)
 			if newErr != nil {
-				break
+				break forloop
 			}
-		} else {
-			continue
+		case NGSI_LD_GEO_QUERY:
+			data := QueryData[key].([]interface{})
+			dataMap := data[0].(map[string]interface{})
+			dataMap["@context"] = DEFAULT_CONTEXT
+			resolved, newErr := compactData(dataMap, DEFAULT_CONTEXT)
+			if newErr != nil {
+				break forloop
+			}
+			ngsildQueryContext.Restriction, err = sz.assignRestriction(resolved.(map[string]interface{}))
+		case NGSI_LD_QUERY:
+
+		default:
+			continue forloop
 		}
 	}
 	return ngsildQueryContext, newErr
