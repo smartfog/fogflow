@@ -6,7 +6,6 @@ import (
 	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
 	"strings"
-	"fmt"
 	"time"
 )
 
@@ -17,7 +16,6 @@ type fName func(map[string]interface{}) (map[string]interface{}, error)
 func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]interface{}, error) {
 	geoResult := make(map[string]interface{})
 	var err error
-	fmt.Println("test username")
 	geoValue := false
 	for key, val := range geoMap {
 		switch key {
