@@ -1437,7 +1437,7 @@ def test_case79():
         #print(r.status_code)
 	assert r.status_code == 500
 
-def test_case80():
+'''def test_case80():
         upsertURL=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
         headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json', 'Require-Reliability':'true','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
         rUpsert=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
@@ -1452,7 +1452,7 @@ def test_case80():
 	rget = requests.post(postURL,json={"id" : "urn:ngsi-ld:Device:water080"})
 	print(rget.content)
         assert rget.content == "200"
-
+'''
 #To test get Entity by Eid from broker if FiwareService is provided
 def test_case81():
         url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
