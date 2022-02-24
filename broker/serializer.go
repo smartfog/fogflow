@@ -7,6 +7,7 @@ import (
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
+	"fmt"
 )
 
 type Serializer struct{}
@@ -17,6 +18,7 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 	geoResult := make(map[string]interface{})
 	var err error
 	geoValue := false
+	fmt.Println("test file")
 	for key, val := range geoMap {
 		switch key {
 		case NGSI_LD_TYPE:
