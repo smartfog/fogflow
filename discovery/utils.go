@@ -1,17 +1,20 @@
 package main
 
 import (
+	. "fogflow/common/geolocation"
 	. "fogflow/common/ngsi"
 	"math"
 	"regexp"
+	"fmt"
+	"strconv"
 	"strings"
 )
 
 func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
 
 	if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
-                return false
-        }
+		return false
+	}
 
 	// (1) check entityId part
 	entity := EntityId{}
@@ -39,9 +42,17 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 	if matchAttributes(registration.AttributesList, attrFilter) == false {
 		return false
 	}
+
 	// (3) check metadata set
-	if matchMetadatas(registration.MetadataList, metaFilter) == false {
-		return false
+	if metaFilter.RestrictionType == "ld" {
+		fmt.Println("Comming in this part")
+		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
+			return false
+		}
+	} else {
+		if matchMetadatas(registration.MetadataList, metaFilter) == false {
+			return false
+		}
 	}
 	// if all matched, return true
 	return true
@@ -87,6 +98,60 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 	}
 
 	return true
+}
+
+//matchLdMetadatas
+
+func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
+	sp := restriction.Geometry
+	var typ string
+	var coordinate interface{}
+	if meta, ok := metadatas["location"]; ok == true {
+		typ = meta.Type
+		coordinate = meta.Cordinates
+		if coordinate == nil {
+			coordinate = meta.Value
+		}
+	}
+	if coordinate == nil {
+		return false
+	}
+	var res bool
+	fmt.Println("++++++sp+++++",sp)
+	switch strings.ToLower(sp) {
+	case "point":
+		if restriction.Georel != "" {
+			gr := restriction.Georel
+			contrains := strings.Split(gr, ";")
+			distMi := FindDistForPoint(typ, coordinate, restriction.Cordinates)
+			if len(contrains) > 1 {
+				sws := strings.ReplaceAll(contrains[1], " ", "")
+				minMax := strings.Split(sws, "==")
+				if minMax[0] == "maxDistance" {
+					maxDistance := minMax[1]
+					maxF, _ := strconv.ParseFloat(maxDistance, 64)
+					if distMi < maxF {
+						res = true
+					}
+				} else if minMax[0] == "minDistance" {
+					minDistance := minMax[1]
+					minF, _ := strconv.ParseFloat(minDistance, 64)
+					if distMi > minF {
+						res = true
+					}
+				} else {
+				}
+			}
+		}
+	case "polygon":
+		fmt.Println("restriction.Georel",restriction.Georel)
+		if restriction.Georel != "" {
+			res = FindDistForPolygon(typ, coordinate, restriction)
+		}
+	default:
+	}
+	fmt.Println("res",res)
+	return res
 }
 
 func matchMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
