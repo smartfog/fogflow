@@ -149,13 +149,8 @@ $(function() {
         console.log("DELETE");
         var msg = {name: topologyEntity.topology.name}
         
-        fetch("/service", {
-            method: "DELETE",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(msg)
+        fetch("/service/" + topologyEntity.topology.name, {
+            method: "DELETE"
         })
         .then(response => {
             console.log("delete a service ontology: ", response.status)
@@ -611,15 +606,8 @@ $(function() {
     }
 
     function removeIntent(intentObj) {
-        var msg = {id:intentObj.id}
-        
-        fetch("/intent", {
-            method: "DELETE",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(msg)
+        fetch("/intent/" + intentObj.id, {
+            method: "DELETE"
         })
         .then(data => {
             showIntents();

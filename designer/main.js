@@ -321,10 +321,9 @@ app.post('/service', jsonParser, async function (req, res) {
     
     res.sendStatus(200)     
 });
-app.delete('/service', jsonParser, async function (req, res) {
-    var msg = req.body; 
-       
-    var name = msg.name;
+app.delete('/service/:name', async function (req, res) {
+    var name = req.params.name;
+
     delete db.data.services[name];
     delete db.data.topologies[name];    
     await db.write();  
@@ -353,20 +352,14 @@ app.post('/intent', jsonParser, async function (req, res) {
     
     res.sendStatus(200)       
 });
-app.delete('/intent', jsonParser, async function (req, res) {
-    var msg = req.body    
-    console.log(msg.id)
+app.delete('/intent/:id', async function (req, res) {
+    var id = req.params.id;
     
-    if (!db.data.serviceintents.hasOwnProperty(msg.id) ) {
-        console.log("the requested service intent does not exist: ", msg.id);
-        return
-    }
-    
-    var serviceintent = db.data.serviceintents[msg.id];
+    var serviceintent = db.data.serviceintents[id];
     serviceintent.action = 'DELETE';
     publishMetadata("ServiceIntent", serviceintent);       
     
-    delete db.data.serviceintents[msg.id];    
+    delete db.data.serviceintents[id];    
     await db.write();    
     
     res.sendStatus(200)        
@@ -406,18 +399,17 @@ app.post('/fogfunction', jsonParser, async function (req, res) {
     
     res.sendStatus(200)  
 });
-app.delete('/fogfunction', jsonParser, async function (req, res) {
-    var msg = req.body    
-    console.log(msg.name)
-    
-    var fogfunction = db.data.fogfunctions[msg.name]
+app.delete('/fogfunction/:name', async function (req, res) {
+    var name = req.params.name;
+
+    var fogfunction = db.data.fogfunctions[name]
     
     var serviceintent = fogfunction.intent
     serviceintent.action = 'DELETE';    
     publishMetadata("ServiceIntent", serviceintent);                                
     
-    delete db.data.topologies[msg.name];        
-    delete db.data.fogfunctions[msg.name];    
+    delete db.data.topologies[name];        
+    delete db.data.fogfunctions[name];    
     await db.write();        
     
     res.sendStatus(200)        

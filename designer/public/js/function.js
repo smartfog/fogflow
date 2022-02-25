@@ -423,16 +423,9 @@ $(function() {
         }
     }
 
-    function deleteFogFunction(fogfunction) {
-        var msg = {name: fogfunction.name}
-                
-        fetch("/fogfunction", {
-            method: "DELETE",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(msg)
+    function deleteFogFunction(fogfunction) {                
+        fetch("/fogfunction/" + fogfunction.name, {
+            method: "DELETE"
         })
         .then(response => {
             console.log("delete a fog function: ", response.status)
