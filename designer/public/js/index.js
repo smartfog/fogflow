@@ -753,10 +753,7 @@ $(function () {
                     console.log("delete obj ",myProfile)
                     if (confirm('Do you want to delete the entity '+d.id)) {
                         removeLDDevice(d.id);
-                      } else {
-                        console.log('Thing was not saved to the database.');
                       }
-                   
                 };
             }(device);
         }
@@ -825,8 +822,6 @@ $(function () {
             var device = devices[i];
             html += '<tr>';
             html += '<td>' + device.entityId.id + '<br>';
-           // html += '<button id="DOWNLOAD-' + device.entityId.id + '" type="button" class="btn btn-default">Profile</button>';
-           // html += '<button id="DELETE-' + device.entityId.id + '" type="button" class="btn btn-primary">Delete</button>';
             html += '</td>';
             html += '<td>' + device.entityId.type + '</td>';
             html += '<td>' + JSON.stringify(device.attributes) + '</td>';
@@ -846,7 +841,6 @@ $(function () {
         //associate a click handler to generate device profile on request
         for (var i = 0; i < devices.length; i++) {
             var device = devices[i];
-           // console.log(device.entityId.id);
 
             var profileButton = document.getElementById('DOWNLOAD-' + device.entityId.id);
             profileButton.onclick = function (d) {
@@ -989,6 +983,8 @@ $(function () {
         $('#imageContent').change(function () {
             readContentImage(this);
         });
+
+       showWorkerList();
        // confirm("Press a button!");
         $('#e1').change(function () {
             var a = $('input[name="r1"]:checked').val();
@@ -1012,7 +1008,6 @@ $(function () {
             $('#ldDeviceName').val(type.toLowerCase());
         });
 
-        //console.log("radio button check ",$('#e1').checked)
     }
 
     function ldAutoIDGenerator(){
@@ -1050,7 +1045,7 @@ $(function () {
         console.log(locationOfNewDevice);
         
 
-        if (id == '' || type == '' || locationOfNewDevice == '') {
+        if (id == '' || type == '' || locationOfNewDevice == '' || locationOfNewDevice == null) {
             alert('please provide the required inputs');
             return;
         }
