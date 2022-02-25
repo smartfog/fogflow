@@ -52,6 +52,7 @@ func main() {
 		rest.Get("/ngsi9/ngsi-ld/registration/#eid", iotDiscovery.getRegisteredLDEntity),
 		rest.Get("/ngsi9/subscription/#sid", iotDiscovery.getSubscription),
 		rest.Get("/ngsi9/subscription", iotDiscovery.getSubscriptions),
+		rest.Get("/etype", iotDiscovery.getEntityTypes),
 
 		// for health check
 		rest.Get("/ngsi9/status", iotDiscovery.getStatus),

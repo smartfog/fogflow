@@ -1,9 +1,0 @@
-#!/bin/sh
-
-echo "Started FogFlow ConfigUpdater"
-/bin/PrometheusConfigUpdaterAPI &
-echo "Listening for new Config"
-
-echo "Starting the Prometheus Engine"
-/bin/prometheus $1
-

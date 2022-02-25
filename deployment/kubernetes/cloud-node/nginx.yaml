@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: fogflow                      
   name: nginx
 spec:
   selector:
@@ -27,13 +26,12 @@ spec:
       - name: nginx-conf
         configMap:
           name: fogflow-configmap                   
-      serviceAccountName: default    
+
 ---          
           
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow                      
   name: nginx
   labels:
     run: nginx
@@ -44,6 +42,5 @@ spec:
       targetPort: 80
   selector:
     run: nginx
-  externalIPs: [172.30.48.24]
-
+  externalIPs: [10.0.0.10]
 

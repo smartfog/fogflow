@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
+
+	"github.com/ant0ine/go-json-rest/rest"
 
 	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
@@ -27,6 +31,39 @@ func main() {
 
 	master := Master{id: myID}
 	master.Start(&config)
+
+	// start REST API server
+	router, err := rest.MakeRouter(
+		rest.Get("/workers", master.GetWorkerList),
+		rest.Get("/tasks", master.GetTaskList),
+		rest.Get("/status", master.GetStatus),
+	)
+	if err != nil {
+		ERROR.Fatal(err)
+		os.Exit(-1)
+	}
+
+	api := rest.NewApi()
+	api.Use(rest.DefaultCommonStack...)
+
+	api.Use(&rest.CorsMiddleware{
+		RejectNonCorsRequests: false,
+		OriginValidator: func(origin string, request *rest.Request) bool {
+			return true
+		},
+		AllowedMethods:                []string{"GET", "POST", "PUT"},
+		AllowedHeaders:                []string{"Accept", "Content-Type", "X-Custom-Header", "Origin"},
+		AccessControlAllowCredentials: true,
+		AccessControlMaxAge:           3600,
+	})
+
+	api.SetApp(router)
+
+	// for internal HTTP-based communication
+	go func() {
+		INFO.Printf("Starting REST API server on port %d\n", config.Master.RESTAPIPort)
+		panic(http.ListenAndServe(":"+strconv.Itoa(config.Master.RESTAPIPort), api.MakeHandler()))
+	}()
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)

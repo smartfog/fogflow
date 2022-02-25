@@ -17,97 +17,25 @@ $(function() {
     // the list of all registered operators
     var operatorList = [];
 
+    // the list of all available entity type registered by brokers
+    var eTypeList = [];
+
     // design board
     var blocks = null;
 
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
 
-    // to interact with designer for internal fogflow entities
-    var clientDes = new NGSI10Client('./internal');
     var selectedFogFunction = null;
-
-    var myFogFunctionExamples = [{
-            name: "Convert1",
-            topology: { "name": "Convert1", "description": "test", "tasks": [{ "name": "Main", "operator": "converter", "input_streams": [{ "selected_type": "RainSensor", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "RainObservation" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "converter", "outputs": ["RainObservation"] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "RainSensor", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] },
-            intent: { "topology": "Convert1", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "Convert2",
-            topology: { "name": "Convert2", "description": "test", "tasks": [{ "name": "Main", "operator": "geohash", "input_streams": [{ "selected_type": "SmartAwning", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "geohash", "outputs": [] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "SmartAwning", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] },
-            intent: { "topology": "Convert2", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "Convert3",
-            topology: { "name": "Convert3", "description": "test", "tasks": [{ "name": "Main", "operator": "converter", "input_streams": [{ "selected_type": "ConnectedCar", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "RainObservation" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "converter", "outputs": ["RainObservation"] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "ConnectedCar", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] },
-            intent: { "topology": "Convert3", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "Prediction",
-            topology: { "name": "Prediction", "description": "test", "tasks": [{ "name": "Main", "operator": "predictor", "input_streams": [{ "selected_type": "RainObservation", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "Prediction" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "predictor", "outputs": [""] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "RainObservation", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] },
-            intent: { "topology": "Prediction", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "Prediction",
-            topology: { "name": "Prediction", "description": "test", "tasks": [{ "name": "Main", "operator": "predictor", "input_streams": [{ "selected_type": "RainObservation", "selected_attributes": [], "groupby": "ALL", "scoped": false }], "output_streams": [{ "entity_type": "Prediction" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "predictor", "outputs": [""] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "RainObservation", "selectedattributes": ["all"], "groupby": "ALL", "scoped": false } }] },
-            intent: { "topology": "Prediction", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "Controller",
-            topology: { "name": "Controller", "description": "test", "tasks": [{ "name": "Main", "operator": "controller", "input_streams": [{ "selected_type": "SmartAwning", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "ControlAction" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "controller", "outputs": ["ControlAction"] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "SmartAwning", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "Controller", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "Detector",
-            topology: { "name": "Detector", "description": "test", "tasks": [{ "name": "Main", "operator": "detector", "input_streams": [{ "selected_type": "Camera", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "detector", "outputs": [] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "Camera", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "Detector", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        },
-        {
-            name: "Test",
-            topology: { "name": "Test", "description": "just for a simple test", "tasks": [{ "name": "Main", "operator": "dummy", "input_streams": [{ "selected_type": "Temperature", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "Out" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 123, "y": -99, "type": "Task", "module": null, "values": { "name": "Main", "operator": "dummy", "outputs": ["Out"] } }, { "id": 2, "x": -194, "y": -97, "type": "EntityStream", "module": null, "values": { "selectedtype": "Temperature", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "Test", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        },
-        /*{
-            name: "Agent",
-            topology: {"name":"Agent","description":"just for a simple test","tasks":[{"name":"Main","operator":"iotagent","input_streams":[{"selected_type":"Worker","selected_attributes":[],"groupby":"EntityID","scoped":false}],"output_streams":[{"entity_type":"Out"}]}]},
-            designboard: {"edges":[{"id":1,"block1":2,"connector1":["stream","output"],"block2":1,"connector2":["streams","input"]}],"blocks":[{"id":1,"x":123,"y":-99,"type":"Task","module":null,"values":{"name":"Main","operator":"iotagent","outputs":["Out"]}},{"id":2,"x":-194,"y":-97,"type":"EntityStream","module":null,"values":{"selectedtype":"Worker","selectedattributes":["all"],"groupby":"EntityID","scoped":false}}]},
-            intent: {"topology":"Agent","priority":{"exclusive":false,"level":0},"qos":"Max Throughput","geoscope":{"scopeType":"global","scopeValue":"global"}}
-        },*/
-        {
-            name: "PrivateSiteEstimation",
-            topology: { "name": "PrivateSiteEstimation", "description": "to estimate the free parking lots from a private parking site", "tasks": [{ "name": "Estimation", "operator": "privatesite", "input_streams": [{ "selected_type": "PrivateSite", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "Out" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": 26, "y": -47, "type": "Task", "module": null, "values": { "name": "Estimation", "operator": "privatesite", "outputs": ["Out"] } }, { "id": 2, "x": -302, "y": -87, "type": "EntityStream", "module": null, "values": { "selectedtype": "PrivateSite", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "PrivateSiteEstimation", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "PublicSiteEstimation",
-            topology: { "name": "PublicSiteEstimation", "description": "to estimate the free parking lot from a public parking site", "tasks": [{ "name": "PubFreeLotEstimation", "operator": "publicsite", "input_streams": [{ "selected_type": "PublicSite", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "Out" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": -37, "y": -108, "type": "Task", "module": null, "values": { "name": "PubFreeLotEstimation", "operator": "publicsite", "outputs": ["Out"] } }, { "id": 2, "x": -340, "y": -128, "type": "EntityStream", "module": null, "values": { "selectedtype": "PublicSite", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "PublicSiteEstimation", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "ArrivalTimeEstimation",
-            topology: { "name": "ArrivalTimeEstimation", "description": "to estimate when the car will arrive at the destination", "tasks": [{ "name": "CalculateArrivalTime", "operator": "connectedcar", "input_streams": [{ "selected_type": "ConnectedCar", "selected_attributes": [], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "Out" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": -106, "y": -93, "type": "Task", "module": null, "values": { "name": "CalculateArrivalTime", "operator": "connectedcar", "outputs": ["Out"] } }, { "id": 2, "x": -420, "y": -145, "type": "EntityStream", "module": null, "values": { "selectedtype": "ConnectedCar", "selectedattributes": ["all"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "ArrivalTimeEstimation", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }, {
-            name: "ParkingLotRecommendation",
-            topology: { "name": "ParkingLotRecommendation", "description": "to recommend where to park around the destination", "tasks": [{ "name": "WhereToParking", "operator": "recommender", "input_streams": [{ "selected_type": "ConnectedCar", "selected_attributes": ["ParkingRequest"], "groupby": "EntityID", "scoped": false }], "output_streams": [{ "entity_type": "Out" }] }] },
-            designboard: { "edges": [{ "id": 1, "block1": 2, "connector1": ["stream", "output"], "block2": 1, "connector2": ["streams", "input"] }], "blocks": [{ "id": 1, "x": -14, "y": -46, "type": "Task", "module": null, "values": { "name": "WhereToParking", "operator": "recommender", "outputs": ["Out"] } }, { "id": 2, "x": -379, "y": -110, "type": "EntityStream", "module": null, "values": { "selectedtype": "ConnectedCar", "selectedattributes": ["ParkingRequest"], "groupby": "EntityID", "scoped": false } }] },
-            intent: { "topology": "ParkingLotRecommendation", "priority": { "exclusive": false, "level": 0 }, "qos": "Max Throughput", "geoscope": { "scopeType": "global", "scopeValue": "global" } }
-        }
-    ];
 
 
     addMenuItem('FogFunction', 'Fog Function', showFogFunctions);
     addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
-
    
-    queryFogFunctions();
-    showFogFunctions();
-    queryOperatorList();
-
+    initFogFunctionExamples();
     
+    queryOperatorList();
+    queryEntityTypeList();
 
 
     $(window).on('hashchange', function() {
@@ -133,41 +61,26 @@ $(function() {
     }
 
     function initFogFunctionExamples() {
-        for (var i = 0; i < myFogFunctionExamples.length; i++) {
-            var fogfunction = myFogFunctionExamples[i];
-
-            var functionCtxObj = {};
-            
-            functionCtxObj.attribute = {};
-            functionCtxObj.attribute.id = 'FogFunction.' + fogfunction.name
-            functionCtxObj.attribute.name = fogfunction.name ;
-            functionCtxObj.attribute.topology =fogfunction.topology ;
-            functionCtxObj.attribute.designboard = fogfunction.designboard ;
-            functionCtxObj.attribute.intent = fogfunction.intent ;
-            functionCtxObj.attribute.status =  'enabled';
-            functionCtxObj.attribute.action = 'UPDATE'
-            functionCtxObj.updateAction = 'UPDATE';
-            functionCtxObj.internalType = 'FogFunction';
-             console.log("init fog function ----- ",functionCtxObj);
-
-            submitFogFunction(functionCtxObj);
-        }
+        fetch('/fogfunction').then(res => res.json()).then(fogfunctions => {
+            if (Object.keys(fogfunctions).length === 0) {
+                fetch("/fogfunction", {
+                    method: "POST",
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(myFogFunctionExamples)
+                })
+                .then(response => {
+                    console.log("create the initial set of fog functions: ", response.status)
+                    showFogFunctions();
+                })
+                .catch(err => console.log(err));                                                                
+            } else {
+                showFogFunctions();
+            }               
+        })        
     }
-
-    function queryFogFunctions() {
-        var queryReq = {}
-        queryReq = { internalType: "FogFunction", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(fogFunctionList) {
-            if (fogFunctionList.data.length == 0) {
-                initFogFunctionExamples();
-                //showFogFunctions();
-            }
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query fog functions');
-        });
-    }
-
 
     function showFogFunctionEditor() {
         $('#info').html('to design a fog function');
@@ -198,7 +111,7 @@ $(function() {
 
         blocks = new Blocks();
 
-        registerAllBlocks(blocks, operatorList);
+        registerAllBlocks(blocks, operatorList, eTypeList);
 
         blocks.run('#blocks');
 
@@ -211,7 +124,7 @@ $(function() {
         blocks.ready(function() {
             // associate functions to clickable buttons
             $('#generateFunction').click(function() {
-                boardScene2Topology(blocks.export());
+                boardScene2FogFunction(blocks.export());
             });
             $('#cleanBoard').click(function() {
                 blocks.clear();
@@ -238,25 +151,23 @@ $(function() {
 
 
     function queryOperatorList() {
-        var queryReq = {}
-        queryReq = { internalType: "Operator", updateAction: "UPDATE" };
-
-        clientDes.getContext(queryReq).then(function(operators) {
-            operators = operators.data
-            for (var i = 0; i < operators.length; i++) {
-                var entity = operators[i];
-                if (Object.keys(entity).length === 0) continue;
-                operatorList.push(entity.name);
-            }
-
-            // add it into the select list        
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+        fetch('/operator').then(res => res.json()).then(operators => {
+            Object.values(operators).forEach(operator => {
+                operatorList.push(operator.name);
+            })         
+        });         
     }
+    
+    function queryEntityTypeList() {
+        fetch('/info/type').then(res => res.json()).then(dtypes => {
+            for (var i = 0; i < dtypes.length; i++) {
+                eTypeList.push(dtypes[i]);
+            }            
+        }); 
+    }    
+    
 
-    function boardScene2Topology(scene) {
+    function boardScene2FogFunction(scene) {
         // step 1: construct the service topology object   
         var attribute = {}    
         var topologyName = $('#serviceName').val();
@@ -269,6 +180,11 @@ $(function() {
 
         // step 2: construct an intent object
         var intent = {};
+
+        var uid = uuid();
+        var sid = 'ServiceIntent.' + uid;
+                    
+        intent.id = sid;        
         intent.topology = topologyName;
         intent.priority = {
             'exclusive': false,
@@ -279,42 +195,38 @@ $(function() {
             "scopeType": "global",
             "scopeValue": "global"
         };
-
        
-        var fogfunction = {};
-        attribute.id = 'FogFunction.' + topologyName;
-        attribute.name = topologyName;
-        attribute.topology = topology;
-        attribute.intent = intent;
-        attribute.designboard = scene;
-        attribute.status = 'enabled';
-        attribute.action = 'UPDATE'
+        var fogfunction = {};        
+        fogfunction.name = topologyName;
+        fogfunction.topology = topology;
+        fogfunction.intent = intent;
+        fogfunction.designboard = scene;
+        fogfunction.status = 'enabled';
         
-        fogfunction.attribute = attribute;
-        fogfunction.updateAction = 'UPDATE';
-        fogfunction.internalType = 'FogFunction';
-       
-        
+               
         if (topologyName == '' || topology.name == '' || topology.tasks.length==0 || topology.tasks[0].operator == 'null' || 
         topology.tasks[0].operator == '' || topology.tasks[0].input_streams.length==0){
             alert('please provide the required inputs');
             return;
         }
-        return clientDes.updateContext(fogfunction).then(function(data1) {
-            console.log(data1);
-            showFogFunctions();
-        }).catch(function(error) {
-            console.log('failed to record the created fog function');
-        });
+        
+        submitFogFunction(fogfunction);
     }
 
     function submitFogFunction(functionCtxObj) {
-       
-        return clientDes.updateContext(functionCtxObj).then(function(data1) {
-            console.log(data1);
-        }).catch(function(error) {
-            console.log('failed to record the created fog function');
-        });
+        fetch("/fogfunction", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify([functionCtxObj])
+        })
+        .then(response => {
+            console.log("submit a new fog function: ", response.status)
+            showFogFunctions();
+        })
+        .catch(err => console.log(err));  
     }
 
 
@@ -431,6 +343,7 @@ $(function() {
 
         $("#registerFunction").click(function() {
             selectedFogFunction = null;
+            CurrentScene = null
             showFogFunctionEditor();
         });
 
@@ -439,46 +352,42 @@ $(function() {
     }
 
     function updateFogFunctionList() {
-        var queryReq = {}
-        queryReq={ internalType: "FogFunction", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(functionList) {
-            displayFunctionList(functionList);
+        fetch('/fogfunction').then(res => res.json()).then(fogfunctions => {
+            var fogfunctionList = Object.values(fogfunctions);
+            displayFunctionList(fogfunctionList);             
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query context');
+            console.log('failed to fetch the list of fog functions');
         });
     }
 
     function displayFunctionList(fogFunctions) {
-        if (fogFunctions.data == null || fogFunctions.data.length == 0) {
+        if (fogFunctions == null || fogFunctions.length == 0) {
             return
         }
 
         var html = '<table class="table table-striped table-bordered table-condensed">';
 
         html += '<thead><tr>';
-        html += '<th>ID</th>';
         html += '<th>Name</th>';
         html += '<th>Action</th>';
         html += '<th>Topology</th>';
         html += '<th>Intent</th>';
         html += '</tr></thead>';
 
-        for (var i = 0; i < fogFunctions.data.length; i++) {
-            var fogfunction = fogFunctions.data[i];
-
-            html += '<tr>';
-            html += '<td>' + fogfunction.id;
-            html += '</td>';
+        for (var i = 0; i < fogFunctions.length; i++) {
+            var fogfunction = fogFunctions[i];
+            
+            console.log(fogfunction)
 
             html += '<td>' + fogfunction.name + '</td>';
 
             html += '<td class="singlecolumn">';
-            html += '<button id="editor-' + fogfunction.id + '" type="button" class="btn btn-primary btn-separator">view</button>';
-            html += '<button id="delete-' + fogfunction.id + '" type="button" class="btn btn-primary btn-separator">delete</button>';
+            html += '<button id="editor-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">view</button>';
+            html += '<button id="delete-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">delete</button>';
             html += '</td>';
 
-            html += '<td>' + JSON.stringify(fogfunction.topology) + '</td>';
+            html += '<td>' + JSON.stringify(fogfunction.topology.name) + '</td>';
 
             html += '<td>' + JSON.stringify(fogfunction.intent) + '</td>';
 
@@ -490,11 +399,12 @@ $(function() {
         $('#functionList').html(html);
 
         // associate a click handler to the editor button
-        for (var i = 0; i < fogFunctions.data.length; i++) {
-            var fogfunction = fogFunctions.data[i];
-            //console.log("")
+        for (var i = 0; i < fogFunctions.length; i++) {
+            var fogfunction = fogFunctions[i];
+            console.log(fogfunction)
+            
             // association handlers to the buttons
-            var editorButton = document.getElementById('editor-' + fogfunction.id);
+            var editorButton = document.getElementById('editor-' + fogfunction.name);
             editorButton.onclick = function(myFogFunction) {
                 return function() {
                     console.log("editor buttion ",myFogFunction);
@@ -503,33 +413,25 @@ $(function() {
                 };
             }(fogfunction);
 
-            var deleteButton = document.getElementById('delete-' + fogfunction.id);
+            var deleteButton = document.getElementById('delete-' + fogfunction.name);
             deleteButton.onclick = function(myFogFunction) {
                 return function() {
-                    console.log("delete buttion ",myFogFunction);
+                    console.log("delete buttion ", myFogFunction);
                     deleteFogFunction(myFogFunction);
                 };
             }(fogfunction);
         }
     }
 
-    function deleteFogFunction(fogfunction) {
-        console.log("delete function ",fogfunction.uid);
-        // delete this fog function
-        var functionEntity = {};
-        var attribute = {id :fogfunction.id, action:'DELETE'};
-        functionEntity.attribute = attribute
-        functionEntity.updateAction = 'DELETE';
-        functionEntity.internalType = 'FogFunction';
-        functionEntity.uid = fogfunction.uid
-        console.log("delete a fog function");
-        console.log(functionEntity);
-        clientDes.deleteContext(functionEntity).then(function(data) {
-            console.log(data);
+    function deleteFogFunction(fogfunction) {                
+        fetch("/fogfunction/" + fogfunction.name, {
+            method: "DELETE"
+        })
+        .then(response => {
+            console.log("delete a fog function: ", response.status)
             showFogFunctions();
-        }).catch(function(error) {
-            console.log('failed to delete a fog function');
-        });
+        })
+        .catch(err => console.log(err));   
     }
 
     function uuid() {

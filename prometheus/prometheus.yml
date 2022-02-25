@@ -1,7 +1,0 @@
-scrape_configs:
-  scrape_interval: 4s
-- job_name: 'FogFlow-monitoring'
-  file_sd_configs:
-  - files: 
-    - 'tgroups/*.json'
-    refresh_interval: 10s

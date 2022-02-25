@@ -1,15 +1,13 @@
 {
-    "coreservice_ip": "192.168.0.59",
-    "external_ip": "192.168.0.59",
-    "my_hostip": "192.168.0.59",
-    "physical_location":{
+    "my_hostip": "10.0.0.10",
+    "physical_location": {
         "longitude": 139,
         "latitude": 35
     },
     "site_id": "001",
-    "logging":{
-        "info":"stdout",
-        "error":"stdout",
+    "logging": {
+        "info": "stdout",
+        "error": "stdout",
         "protocol": "stdout",
         "debug": "stdout"
     },
@@ -18,9 +16,10 @@
     },
     "broker": {
         "http_port": 8070
-    },     
+    },
     "master": {
-        "ngsi_agent_port": 1060    
+        "ngsi_agent_port": 1060,
+        "rest_api_port": 8010                    
     },
     "worker": {
         "container_autoremove": false,
@@ -29,14 +28,15 @@
     },
     "designer": {
         "webSrvPort": 8080,
-        "agentPort": 1030               
-    },    
+        "agentPort": 1030,
+	    "ldAgentPort":1090
+    },
     "rabbitmq": {
         "port": 5672,
         "username": "admin",
-        "password":"mypass"
+        "password": "mypass"
     },
     "https": {
-        "enabled" : false
-    } 
+        "enabled": false
+    }
 }

@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudworker
+spec:
+  selector:
+    matchLabels:
+      run: cloudworker
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: cloudworker
+    spec:
+      containers:
+      - name: cloudworker
+        image: fogflow/worker:k8s
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: config-json       
+          mountPath: /config.json
+          subPath: config.json                
+          readOnly: true                  
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap     
+      serviceAccountName: default  
+          
+
+

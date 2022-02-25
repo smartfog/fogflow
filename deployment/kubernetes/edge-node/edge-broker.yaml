@@ -1,20 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: fogflow
-  name: edgebroker01
+  name: edgebroker
 spec:
   selector:
     matchLabels:
-      run: edgebroker01
+      run: edgebroker
   replicas: 1
   template:
     metadata:
       labels:
-        run: edgebroker01
+        run: edgebroker
     spec:
       containers:
-      - name: cloudbroker
+      - name: edgebroker
         image: fogflow/broker:k8s
         ports:
         - containerPort: 8060
@@ -27,21 +26,20 @@ spec:
       - name: config-json
         configMap:
           name: edge-configmap
-      serviceAccountName: edge
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow
-  name: edgebroker01
+  namespace: fogflow-edge
+  name: edgebroker
   labels:
-    run: edgebroker01
+    run: edgebroker
 spec:
   ports:
   - port: 8060
     protocol: TCP
   selector:
-    run: edgebroker01
+    run: edgebroker
   externalIPs: [172.30.48.46]
 

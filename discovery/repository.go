@@ -42,6 +42,29 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 }
 
 //
+// return all available entity types
+//
+func (er *EntityRepository) GetEntityTypes() []string {
+	er.ctxRegistrationList_lock.RLock()
+	defer er.ctxRegistrationList_lock.RUnlock()
+
+	typeMap := make(map[string]bool)
+	for _, registration := range er.ctxRegistrationList {
+		etype := registration.Type
+		if _, found := typeMap[etype]; !found {
+			typeMap[etype] = true
+		}
+	}
+
+	typeList := make([]string, 0, len(typeMap))
+	for k := range typeMap {
+		typeList = append(typeList, k)
+	}
+
+	return typeList
+}
+
+//
 // for the performance purpose, we still keep the latest view of all registrations
 //
 func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registration *ContextRegistration) *EntityRegistration {

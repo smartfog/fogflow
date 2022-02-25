@@ -2,12 +2,14 @@ package main
 
 import (
 	"errors"
+
 	. "fogflow/common/constants"
 	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
+
+	"fmt"
 	"strings"
 	"time"
-	"fmt"
 )
 
 type Serializer struct{}
@@ -387,10 +389,15 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	return attr
 }
 
-/*func (sz Serializer) getId(id interface{}) string {
-	Id := id.(string)
-	return Id
-}*/
+// <<<<<<< HEAD
+// func (sz Serializer) getId(id interface{}) string {
+// 	fmt.Println(id)
+// =======
+// /*func (sz Serializer) getId(id interface{}) string {
+// >>>>>>> development
+// 	Id := id.(string)
+// 	return Id
+// }*/
 
 func (sz Serializer) getType(typ []interface{}) string {
 	var Type, Type1 string

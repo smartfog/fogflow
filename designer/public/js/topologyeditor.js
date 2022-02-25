@@ -1,5 +1,5 @@
 
-function registerAllBlocks(blocks, operators){
+function registerAllBlocks(blocks, operators, dtypes){
 
 console.log("operator list: ", operators);
 
@@ -10,7 +10,8 @@ blocks.register({
         {
             name: "Name",
             type: "string",
-            attrs: "editable"
+            attrs: "editable",
+            defaultValue: "main",            
         },    
         {
             name: "Operator",
@@ -73,6 +74,7 @@ blocks.register({
         {
             name: "SelectedType",
             type: "string",
+            choices: dtypes,                            
             attrs: "editable"
         },
         {

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      run: rabbitmq
+  replicas: 1      
+  template:
+    metadata:
+      labels:
+        run: rabbitmq
+    spec:
+      containers:    
+      - name: rabbitmq
+        image: rabbitmq:3.8
+        ports:
+        - containerPort: 5672
+        env:
+        - name: RABBITMQ_DEFAULT_PASS
+          value: mypass
+        - name: RABBITMQ_DEFAULT_USER
+          value: admin          
+      serviceAccountName: default     
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  labels:
+    run: rabbitmq
+spec:
+  type: LoadBalancer
+  ports:  
+    - name: "5672"
+      port: 5672
+      targetPort: 5672
+  selector:
+    run: rabbitmq
+  externalIPs: [10.11.11.166]
+

@@ -23,7 +23,6 @@ type Worker struct {
 
 	cfg               *Config
 	selectedBrokerURL string
-	//httpBrokerURL     string
 
 	profile WorkerProfile
 }
@@ -49,22 +48,12 @@ func (w *Worker) Start(config *Config) bool {
 
 	w.selectedBrokerURL = config.GetBrokerURL()
 
-	INFO.Println("communicating with the broker ", w.selectedBrokerURL)
-
-	for {
-		err := w.publishMyself()
-		if err != nil {
-			INFO.Println("wait for the assigned broker to be ready")
-			time.Sleep(5 * time.Second)
-		} else {
-			INFO.Println("annouce myself to the nearby broker")
-			break
-		}
-	}
-
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	w.executor.Init(w.cfg, w.selectedBrokerURL)
+	if w.executor.Init(w.cfg, w.selectedBrokerURL) == false {
+		ERROR.Println("Failed to initialize the underlying container engine: ", config.Worker.ContainerManagement)
+		return false
+	}
 
 	// create the communicator with the broker info and topics
 	w.communicator = NewCommunicator(&cfg)
@@ -90,6 +79,8 @@ func (w *Worker) Start(config *Config) bool {
 		}
 	}()
 
+	w.publishMyself()
+
 	return true
 }
 
@@ -105,41 +96,6 @@ func (w *Worker) Quit() {
 
 	INFO.Println("to stop the worker")
 	w.executor.Shutdown()
-}
-
-func (w *Worker) publishMyself() error {
-	ctxObj := ContextObject{}
-
-	ctxObj.Entity.ID = w.id
-	ctxObj.Entity.Type = "Worker"
-	ctxObj.Entity.IsPattern = false
-
-	ctxObj.Attributes = make(map[string]ValueObject)
-	ctxObj.Attributes["capacity"] = ValueObject{Type: "integer", Value: w.profile.Capacity}
-	ctxObj.Attributes["location"] = ValueObject{Type: "object", Value: w.cfg.Location}
-
-	ctxObj.Metadata = make(map[string]ValueObject)
-	mylocation := Point{}
-	mylocation.Latitude = w.cfg.Location.Latitude
-	mylocation.Longitude = w.cfg.Location.Longitude
-	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
-
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: &w.cfg.HTTPS}
-	err := client.UpdateContextObject(&ctxObj)
-	return err
-}
-
-func (w *Worker) unpublishMyself() {
-	entity := EntityId{}
-	entity.ID = w.id
-	entity.Type = "Worker"
-	entity.IsPattern = false
-
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: &w.cfg.HTTPS}
-	err := client.DeleteContext(&entity)
-	if err != nil {
-		ERROR.Println(err)
-	}
 }
 
 func (w *Worker) Process(msg *RecvMessage) error {
@@ -187,18 +143,20 @@ func (w *Worker) onTimer() {
 	w.heartbeat()
 }
 
+func (w *Worker) publishMyself() {
+	msg := SendMessage{Type: "WORKER_JOIN", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	INFO.Println(msg)
+	w.communicator.Publish(&msg)
+}
+
+func (w *Worker) unpublishMyself() {
+	msg := SendMessage{Type: "WORKER_LEAVE", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	INFO.Println(msg)
+	w.communicator.Publish(&msg)
+}
+
 func (w *Worker) heartbeat() {
-	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
-	w.communicator.Publish(&taskUpdateMsg)
-}
-
-func (w *Worker) join() {
-	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
-	w.communicator.Publish(&taskUpdateMsg)
-}
-
-func (w *Worker) leave() {
-	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	taskUpdateMsg := SendMessage{Type: "WORKER_HEARTBEAT", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
 	w.communicator.Publish(&taskUpdateMsg)
 }
 
@@ -212,7 +170,7 @@ func (w *Worker) onRemoveInput(from string, flow *FlowInfo) {
 
 func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state string) {
 	tp := TaskUpdate{}
-	tp.ServiceName = task.ServiceName
+	tp.TopologyName = task.TopologyName
 	tp.TaskName = task.TaskName
 	tp.TaskID = task.ID
 	tp.Status = state
