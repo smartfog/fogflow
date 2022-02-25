@@ -39,5 +39,5 @@ spec:
       targetPort: 5672
   selector:
     run: rabbitmq
-  externalIPs: [10.0.0.10]
+  externalIPs: [10.11.11.166]
 

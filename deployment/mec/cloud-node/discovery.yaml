@@ -15,6 +15,7 @@ spec:
       containers:
       - name: discovery
         image: fogflow/discovery:k8s
+        imagePullPolicy: Always
         ports:
         - containerPort: 8090  
         volumeMounts:

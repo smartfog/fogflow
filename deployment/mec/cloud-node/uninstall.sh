@@ -1,5 +1,0 @@
-
-
-kubectl delete namespace fogflow
-
-

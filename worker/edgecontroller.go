@@ -89,9 +89,16 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 		panic(err.Error())
 	}
 
+	taskId := "fogflow-deployment-" + freePort
+
 	deployment := &appsv1.Deployment{
+		TypeMeta: metaV1.TypeMeta{
+			APIVersion: "apps/v1",
+			Kind:       "Deployment",
+		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "fogflow-deployment-" + freePort,
+			Namespace: "fogflow",
+			Name:      taskId,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -144,9 +151,13 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/deployment/fogflow", jsonPayload)
 
 	serviceSpec := &coreV1.Service{
+		TypeMeta: metaV1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Service",
+		},
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: "fogflow",
-			Name:      "fogflow-deployment-" + freePort,
+			Name:      taskId,
 		},
 		Spec: coreV1.ServiceSpec{
 			Selector: map[string]string{
@@ -157,6 +168,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 					Port: pport,
 				},
 			},
+			Type: "ClusterIP",
 		},
 	}
 
@@ -164,35 +176,51 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 	jsonPayload, err = json.Marshal(serviceSpec)
 	if err != nil {
 		ERROR.Fatalf("Error occured during marshaling. Error: %s", err.Error())
+		return "", "", err
 	}
 
-	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/service/fogflow", jsonPayload)
+	resp, err := mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/service/fogflow", jsonPayload)
+	if err != nil {
+		ERROR.Fatalf("NOT able to interact with Edge Controller: %s", err.Error())
+		return "", "", err
+	}
 
-	return "", freePort, err
+	msg := make(map[string]string)
+	if err := json.Unmarshal(resp, &msg); err != nil {
+		ERROR.Fatalf("fail to extrac the response from Edge Controller: %s", err.Error())
+		return "", "", err
+	}
+
+	refURL := "http://" + msg["cluster_ip"] + ":" + freePort
+	fmt.Printf("Created service at %s\n", refURL)
+
+	return taskId, refURL, nil
 }
 
-func (mec *EdgeController) StopTask(podId string) {
-	deploymentName := "test"
+func (mec *EdgeController) StopTask(taskId string) {
+	deploymentName := taskId
 	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/deployment/fogflow/"+deploymentName, nil)
 
-	serviceName := "test"
+	serviceName := taskId
 	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/service/fogflow/"+serviceName, nil)
 }
 
-func (mec *EdgeController) sendRequest(method string, url string, payload []byte) bool {
+func (mec *EdgeController) sendRequest(method string, url string, payload []byte) ([]byte, error) {
 	INFO.Println(method, url, string(payload))
 
-	request, error := http.NewRequest("POST", url, bytes.NewBuffer(payload))
+	request, _ := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	client := &http.Client{}
-	response, error := client.Do(request)
-	if error != nil {
-		panic(error)
+	response, err := client.Do(request)
+	if err != nil {
+		ERROR.Println("Failed to interact with the MEC edge controller ", err)
+		return nil, err
 	}
 	defer response.Body.Close()
 
-	body, _ := ioutil.ReadAll(response.Body)
+	body, err := ioutil.ReadAll(response.Body)
 	fmt.Println("response Body:", string(body))
-	return true
+
+	return body, err
 }

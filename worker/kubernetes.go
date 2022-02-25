@@ -212,9 +212,10 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Created service %s\n", service.ObjectMeta.Name)
+	refURL := "http://" + service.Spec.ClusterIP + ":" + freePort
+	fmt.Printf("Created service at %s\n", refURL)
 
-	return result.GetObjectMeta().GetName(), freePort, err
+	return result.GetObjectMeta().GetName(), refURL, err
 }
 
 func (k8s *Kubernetes) StopTask(podId string) {

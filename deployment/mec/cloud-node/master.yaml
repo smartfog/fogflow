@@ -15,6 +15,7 @@ spec:
       containers:
       - name: master
         image: fogflow/master:k8s
+        imagePullPolicy: Always
         ports:
         - containerPort: 1060    
         - containerPort: 8010                    

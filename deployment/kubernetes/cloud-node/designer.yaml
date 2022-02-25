@@ -16,6 +16,7 @@ spec:
       containers:
       - name: designer
         image: fogflow/designer:k8s
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080  
         - containerPort: 1030        
@@ -38,7 +39,6 @@ spec:
       - name: meta-storage
         persistentVolumeClaim:
           claimName: designer-pvc
-      serviceAccountName: default  
           
 ---          
           

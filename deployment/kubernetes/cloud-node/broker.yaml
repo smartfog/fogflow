@@ -15,6 +15,7 @@ spec:
       containers:
       - name: cloudbroker
         image: fogflow/broker:k8s
+        imagePullPolicy: Always
         ports:
         - containerPort: 8070  
         volumeMounts:
@@ -26,7 +27,6 @@ spec:
       - name: config-json 
         configMap:
           name: fogflow-configmap       
-      serviceAccountName: default  
 ---          
           
 apiVersion: v1

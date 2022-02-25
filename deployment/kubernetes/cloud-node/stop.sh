@@ -7,9 +7,4 @@ kubectl -n fogflow delete -f worker.yaml
 kubectl -n fogflow delete -f designer.yaml
 
 kubectl -n fogflow delete -f rabbitmq.yaml
-
 kubectl -n fogflow delete -f configmap.yaml
-
-kubectl -n fogflow delete pvc designer-pvc
-
-kubectl delete pv  designer-pv

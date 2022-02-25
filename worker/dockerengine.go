@@ -235,7 +235,9 @@ func (dockerengine *DockerEngine) StartTask(task *ScheduledTaskInstance, brokerU
 		return "", freePort, err
 	}
 
-	return container.ID, freePort, nil
+	refURL := "http://" + dockerengine.workerCfg.InternalIP + ":" + freePort
+
+	return container.ID, refURL, nil
 }
 
 func (dockerengine *DockerEngine) StopTask(containerID string) {

@@ -26,7 +26,6 @@ spec:
       - name: nginx-conf
         configMap:
           name: fogflow-configmap                   
-      serviceAccountName: default  
 
 ---          
           

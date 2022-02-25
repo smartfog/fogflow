@@ -15,6 +15,7 @@ spec:
       containers:
       - name: cloudworker
         image: fogflow/worker:k8s
+        imagePullPolicy: Always
         volumeMounts:
         - name: config-json       
           mountPath: /config.json
@@ -26,5 +27,3 @@ spec:
           name: fogflow-configmap     
       serviceAccountName: default  
           
-
-

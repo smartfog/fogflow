@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   config.json: |
         {
-            "my_hostip": "10.0.0.10",
+            "my_hostip": "10.11.11.166",
             "physical_location":{
                 "longitude": 139.709059,
                 "latitude": 35.692221
@@ -28,8 +28,7 @@ data:
                 "rest_api_port": 8010                                                
             },
             "worker": {
-                "container_management": "mec", 
-                "edge_controller_port": 31125,
+                "container_management": "kubernetes", 
                 "container_autoremove": false,
                 "start_actual_task": true,
                 "capacity": 8
@@ -61,18 +60,22 @@ data:
                 server_name         master-node;
         
                 location / {
+                    proxy_http_version 1.1;
                     proxy_pass   http://designer:8080/;
                 }
         
                 location /ngsi9/ {
+                    proxy_http_version 1.1;                  
                     proxy_pass   http://discovery:8090/ngsi9/;
                 }
         
                 location /ngsi10/ {
+                    proxy_http_version 1.1;                  
                     proxy_pass   http://cloudbroker:8070/ngsi10/;
                 }
             
                 location /ngsi-ld/ {
+                    proxy_http_version 1.1;                  
                     proxy_pass   http://cloudbroker:8070/ngsi-ld/;
                 }
             }

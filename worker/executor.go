@@ -17,7 +17,7 @@ import (
 )
 
 type taskContext struct {
-	ListeningPort      string
+	refURL             string
 	EndPointServiceIDs []EntityId
 	Subscriptions      []string
 	EntityID2SubID     map[string]string
@@ -100,14 +100,14 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	}
 
 	// start a container to run the scheduled task instance
-	containerId, freePort, err := e.client.StartTask(task, e.brokerURL)
+	containerId, refURL, err := e.client.StartTask(task, e.brokerURL)
 	if err != nil {
 		ERROR.Println(err)
 		return false
 	}
 	INFO.Printf(" task %s  started within container = %s\n", task.ID, containerId)
 
-	taskCtx.ListeningPort = freePort
+	taskCtx.refURL = refURL
 	taskCtx.ContainerID = containerId
 
 	// register the service ports of uservices
@@ -135,7 +135,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	for _, inputStream := range task.Inputs {
 		if inputStream.MsgFormat == "NGSIV1" {
 			DEBUG.Println("========Subscription for NGSIV1 task==========")
-			subID, err := e.subscribeInputStream(freePort, &inputStream)
+			subID, err := e.subscribeInputStream(refURL, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
 				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
@@ -144,7 +144,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 				ERROR.Println(err)
 			}
 		} else if inputStream.MsgFormat == "NGSILD" {
-			subID, err := e.subscribeLdInputStream(freePort, &inputStream)
+			subID, err := e.subscribeLdInputStream(refURL, &inputStream)
 			if err == nil {
 				DEBUG.Println("===========subID = ", subID)
 				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
@@ -165,7 +165,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	INFO.Printf("register this task")
 
 	// register this new task entity to IoT Broker
-	e.registerTask(task, freePort, containerId)
+	e.registerTask(task, refURL, containerId)
 
 	return true
 }
@@ -290,7 +290,7 @@ func (e *Executor) deregisterTask(taskID string) {
 }
 
 // Subscribe for NGSILD input stream
-func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputStream) (string, error) {
+func (e *Executor) subscribeLdInputStream(refURL string, inputStream *InputStream) (string, error) {
 	LdSubscription := LDSubscriptionRequest{}
 
 	newEntity := EntityId{}
@@ -312,7 +312,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 	LdSubscription.Type = "Subscription"
 	LdSubscription.WatchedAttributes = inputStream.AttributeList
 
-	LdSubscription.Notification.Endpoint.URI = "http://" + e.workerCfg.InternalIP + ":" + agentPort + "/notifyContext"
+	LdSubscription.Notification.Endpoint.URI = refURL + "/notifyContext"
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", LdSubscription)
 	brokerURL := e.brokerURL
@@ -329,7 +329,7 @@ func (e *Executor) subscribeLdInputStream(agentPort string, inputStream *InputSt
 }
 
 //Subscribe for NGSIV1 input stream
-func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStream) (string, error) {
+func (e *Executor) subscribeInputStream(refURL string, inputStream *InputStream) (string, error) {
 	fmt.Println("====================Subscription here ===================")
 	subscription := SubscribeContextRequest{}
 
@@ -349,7 +349,7 @@ func (e *Executor) subscribeInputStream(agentPort string, inputStream *InputStre
 
 	subscription.Attributes = inputStream.AttributeList
 
-	subscription.Reference = "http://" + e.workerCfg.InternalIP + ":" + agentPort
+	subscription.Reference = refURL
 
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 
@@ -507,7 +507,7 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 	}
 
 	if flow.InputStream.MsgFormat == "NGSIV1" {
-		subID, err := e.subscribeInputStream(taskCtx.ListeningPort, &flow.InputStream)
+		subID, err := e.subscribeInputStream(taskCtx.refURL, &flow.InputStream)
 		if err == nil {
 			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
 			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
@@ -516,7 +516,7 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 			ERROR.Println(err)
 		}
 	} else if flow.InputStream.MsgFormat == "NGSILD" {
-		subID, err := e.subscribeLdInputStream(taskCtx.ListeningPort, &flow.InputStream)
+		subID, err := e.subscribeLdInputStream(taskCtx.refURL, &flow.InputStream)
 		if err == nil {
 			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
 			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
