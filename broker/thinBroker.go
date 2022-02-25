@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -82,6 +83,7 @@ type ThinBroker struct {
 	tmpNGSIldNotifyCache    []string
 	tmpNGSILDNotifyCache    map[string]*NotifyContextAvailabilityRequest
 	entityId2LDSubcriptions map[string][]string
+	entityTypeTOEntityId    map[string][]string
 }
 
 func (tb *ThinBroker) Start(cfg *Config) {
@@ -123,7 +125,7 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	tb.ldSubscriptions = make(map[string]*LDSubscriptionRequest)
 	tb.tmpNGSILDNotifyCache = make(map[string]*NotifyContextAvailabilityRequest)
 	tb.entityId2LDSubcriptions = make(map[string][]string)
-
+	tb.entityTypeTOEntityId = make(map[string][]string)
 	// register itself to the IoT discovery
 	tb.registerMyself()
 
@@ -537,7 +539,7 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 		return
 	} else {
 		sz := Serializer{}
-		LDQueryContext, resolveError = sz.uploadQueryContext(resolved, fiwareService)
+		LDQueryContext, resolveError = sz.uploadQueryContext(resolved, fiwareService, context)
 		if resolveError != nil {
 			rest.Error(w, resolveError.Error(), 400)
 			return
@@ -576,12 +578,13 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 	for _, val := range matchedCtxElement {
 		responseEle := val.(map[string]interface{})
 		delete(responseEle, "fiwareServicePath")
-		eid := responseEle["id"].(string)
-		actualEid := strings.Split(eid, "@")
-		responseEle["id"] = actualEid[0]
+		if _, ok := responseEle["@id"]; ok == true {
+			eid := responseEle["@id"].(string)
+			actualEid := strings.Split(eid, "@")
+			responseEle["@id"] = actualEid[0]
+		}
 		returnvalue, err := compactData(responseEle, responseEle["@context"])
 		if err != nil {
-			fmt.Println(err)
 			continue
 		}
 		queryContextResponse = append(queryContextResponse, returnvalue)
@@ -593,9 +596,8 @@ func (tb *ThinBroker) LDQueryContext(w rest.ResponseWriter, r *rest.Request) {
 func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) map[string][]EntityId {
 	discoverCtxAvailabilityReq := DiscoverContextAvailabilityRequest{}
 	discoverCtxAvailabilityReq.Entities = ldQueryContext.Entities
-	//discoverCtxAvailabilityReq.Attributes = attributes
-	//discoverCtxAvailabilityReq.Restriction = restriction
-	fmt.Println("discoverCtxAvailabilityReq", discoverCtxAvailabilityReq)
+	discoverCtxAvailabilityReq.Attributes = ldQueryContext.Attributes
+	discoverCtxAvailabilityReq.Restriction = ldQueryContext.Restriction
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	registrationList, _ := client.DiscoverContextAvailability(&discoverCtxAvailabilityReq)
 
@@ -616,12 +618,10 @@ func (tb *ThinBroker) ldDiscoveryEntities(ldQueryContext LDQueryContextRequest) 
 
 func (tb *ThinBroker) fetchLDEntities(ids []EntityId, providerURL string, fs string, fsp string) []interface{} {
 	newEntityList := make([]EntityId, 0)
-	fmt.Println("ids", ids)
 	for _, entity := range ids {
 		id := entity.ID
 		idSplit := strings.Split(id, "@")
 		entity.ID = idSplit[0]
-		//fmt.Println("index",index)
 		newEntityList = append(newEntityList, entity)
 	}
 	queryCtxLDReq := LDQueryContextRequest{}
@@ -824,7 +824,6 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 
 func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 	if ctype := r.Header.Get("Content-Type"); ctype == "application/json" || ctype == "application/ld+json" {
-		fmt.Println("This is notification from anather broker")
 		var context []interface{}
 		context = append(context, DEFAULT_CONTEXT)
 		//notifyElement, _ := tb.getStringInterfaceMap(r)
@@ -864,7 +863,7 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 			if err != nil {
 				continue
 			} else {
-				deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+				deSerializedEntity["@id"] = getIoTID(deSerializedEntity["@id"].(string), fiwareService)
 				var fsp string
 				if r.Header.Get("fiware-servicePath") != "" {
 					fsp = r.Header.Get("fiware-servicePath")
@@ -875,8 +874,8 @@ func (tb *ThinBroker) NotifyLdContext(w rest.ResponseWriter, r *rest.Request) {
 				deSerializedEntity["fiwareServicePath"] = fsp
 
 				deSerializedEntity["@context"] = context
-				deSerializedEntity["createdAt"] = time.Now().String()
-				eid := deSerializedEntity["id"].(string)
+				//deSerializedEntity["createdAt"] = time.Now().String()
+				eid := deSerializedEntity["@id"].(string)
 				tb.LDe2sub_lock.RLock()
 				subscriberList := tb.entityId2LDSubcriptions[eid]
 				tb.LDe2sub_lock.RUnlock()
@@ -1907,7 +1906,6 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 	registerCtxReq.RegistrationId = ""
 	registerCtxReq.ContextRegistrations = []ContextRegistration{registration}
 	registerCtxReq.Duration = "PT10M"
-
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	_, err := client.RegisterContext(&registerCtxReq)
 	if err != nil {
@@ -2106,7 +2104,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 	if r.Header.Get("fiware-servicePath") != "" {
 		fsp = r.Header.Get("fiware-servicePath")
 	} else {
-		//deSerializedEntity["fiwareServicePath"] = "default"
 		fsp = "default"
 	}
 
@@ -2126,7 +2123,6 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 		}
 
 		res := ResponseError{}
-
 		for _, ctx := range LDupdateCtxReq {
 			var context []interface{}
 			contextInPayload := false
@@ -2170,35 +2166,8 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 			} else {
 				resolved, err := tb.ExpandPayload(ctx, context, contextInPayload)
 				if err != nil {
-
-					if err.Error() == "EmptyPayload!" {
-						//res.Errors.Details  = "EmptyPayload is not allowed"
-						problemSet := ProblemDetails{}
-						problemSet.Details = "EmptyPayload is not allowed"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					if err.Error() == "Id can not be nil!" {
-						problemSet := ProblemDetails{}
-						problemSet.Details = "Id can not be nil!"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					if err.Error() == "Type can not be nil!" {
-						problemSet := ProblemDetails{}
-						problemSet.Details = "Type can not be nil!"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					if err.Error() == "@context is Empty" {
-						problemSet := ProblemDetails{}
-						problemSet.Details = "@context can not be nil if Content-Type is application/ld+json"
-						res.Errors = append(res.Errors, problemSet)
-						continue
-					}
-					//res.Errors.Details  = "Unknown"
 					problemSet := ProblemDetails{}
-					problemSet.Details = "Unknown!"
+					problemSet.Details = err.Error()
 					res.Errors = append(res.Errors, problemSet)
 					continue
 				} else {
@@ -2206,26 +2175,25 @@ func (tb *ThinBroker) LDUpdateContext(w rest.ResponseWriter, r *rest.Request) {
 
 					// Deserialize the payload here.
 					deSerializedEntity, err := sz.DeSerializeEntity(resolved)
-					fmt.Println("deSerializedEntity", deSerializedEntity)
 					if err != nil {
 						problemSet := ProblemDetails{}
-						problemSet.Details = "Unknown!"
+						problemSet.Details = err.Error()
 						res.Errors = append(res.Errors, problemSet)
 						continue
 					} else {
 						//Update createdAt value.
-						if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+						if !strings.HasPrefix(deSerializedEntity[NGSI_LD_ID].(string), "urn:ngsi-ld:") {
 							problemSet := ProblemDetails{}
 							problemSet.Details = "Entity id must contain uri!"
 							res.Errors = append(res.Errors, problemSet)
 							continue
 						}
-						deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+						deSerializedEntity[NGSI_LD_ID] = getIoTID(deSerializedEntity[NGSI_LD_ID].(string), fiwareService)
 						//deSerializedEntity["createdAt"] = time.Now().String()
 						// Store Context
 						deSerializedEntity["@context"] = context
 						deSerializedEntity["fiwareServicePath"] = fsp
-						res.Success = append(res.Success, deSerializedEntity["id"].(string))
+						res.Success = append(res.Success, deSerializedEntity[NGSI_LD_ID].(string))
 						tb.UpdateLdContext2LocalSite(deSerializedEntity)
 					}
 				}
@@ -2342,17 +2310,17 @@ func (tb *ThinBroker) LDCreateEntity(w rest.ResponseWriter, r *rest.Request) {
 					return
 				} else {
 					//Update createdAt value.
-					deSerializedEntity["createdAt"] = time.Now().String()
+					//deSerializedEntity["createdAt"] = time.Now().String()
 					// Store Context
 					deSerializedEntity["@context"] = context
 
-					if !strings.HasPrefix(deSerializedEntity["id"].(string), "urn:ngsi-ld:") {
+					if !strings.HasPrefix(deSerializedEntity[NGSI_LD_ID].(string), "urn:ngsi-ld:") {
 						rest.Error(w, "Entity id must contain uri!", 400)
 						return
 					}
-					deSerializedEntity["id"] = getIoTID(deSerializedEntity["id"].(string), fiwareService)
+					deSerializedEntity[NGSI_LD_ID] = getIoTID(deSerializedEntity[NGSI_LD_ID].(string), fiwareService)
 					deSerializedEntity["@context"] = context
-					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity["id"].(string))
+					w.Header().Set("Location", "/ngis-ld/v1/entities/"+deSerializedEntity[NGSI_LD_ID].(string))
 					w.WriteHeader(201)
 					deSerializedEntity["fiwareServicePath"] = fsp
 					tb.UpdateLdContext2LocalSite(deSerializedEntity)
@@ -2369,52 +2337,24 @@ func (tb *ThinBroker) updateCtxElemet(elem map[string]interface{}, eid string) e
 	entity := tb.ldEntities[eid]
 	entityMap := entity.(map[string]interface{})
 	for k, v := range elem {
-		if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "mgsFormat" && k != "fiwareServicePath" {
+		isLdJsonOject := checkCondition(k)
+		if isLdJsonOject == true && k != "mgsFormat" && k != "fiwareServicePath" {
 			if _, ok := entityMap[k]; ok == true {
-				entityAttrMap := entityMap[k].(map[string]interface{}) // existing
-				attrMap := elem[k].(map[string]interface{})            // to be updated as
-				if strings.Contains(attrMap["type"].(string), "Property") {
-					if attrMap["value"] != nil {
-						entityAttrMap["value"] = attrMap["value"]
-					}
-					if attrMap["observedAt"] != nil {
-						entityAttrMap["observedAt"] = attrMap["observedAt"]
-					}
-					if attrMap["datasetId"] != nil {
-						entityAttrMap["datasetId"] = attrMap["datasetId"]
-					}
-					if attrMap["instanceId"] != nil {
-						entityAttrMap["instanceId"] = attrMap["instanceId"]
-					}
-					if attrMap["unitCode"] != nil {
-						entityAttrMap["unitCode"] = attrMap["unitCode"]
-					}
-				} else if strings.Contains(attrMap["type"].(string), "Relationship") {
-					if attrMap["object"] != nil {
-						entityAttrMap["object"] = attrMap["object"]
-					}
-					if attrMap["providedBy"] != nil {
-						entityAttrMap["providedBy"] = attrMap["providedBy"]
-					}
-					if attrMap["datasetId"] != nil {
-						entityAttrMap["datasetId"] = attrMap["datasetId"]
-					}
-					if attrMap["instanceId"] != nil {
-						entityAttrMap["instanceId"] = attrMap["instanceId"]
-					}
-				}
-				entityAttrMap["modifiedAt"] = time.Now().String()
-				entityMap[k] = entityAttrMap
+				updatedResult := make(map[string]interface{})
+				prevEleAttr := entityMap[k].(map[string]interface{})
+				currEleAttr := elem[k].(map[string]interface{})
+				updatedResult = update(prevEleAttr, currEleAttr)
+				updatedResult["modifiedAt"] = time.Now().String()
+				entityMap[k] = updatedResult
 			} else {
-				if k != "@context" && k != "modifiedAt" && k != "id" && k != "type" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
-
+				if isLdJsonOject == true {
 					entityMap[k] = v
 				}
 			}
 		}
 	}
-	entityMap["modifiedAt"] = time.Now().String()
-	tb.ldEntities[eid] = entityMap
+	//entityMap["modifiedAt"] = time.Now().String()
+	//tb.ldEntities[eid] = entityMap
 	return nil
 }
 
@@ -2425,6 +2365,8 @@ func (tb *ThinBroker) updateLdContextElement(ctxEle map[string]interface{}) {
 	if _, exist := tb.ldEntities[eid]; exist {
 		tb.updateCtxElemet(ctxEle, eid)
 	} else {
+		typ := getRegistrationType(ctxEle["@type"])
+		tb.entityTypeTOEntityId[typ] = append(tb.entityTypeTOEntityId[typ], eid)
 		tb.ldEntities[eid] = ctxEle
 	}
 }
@@ -2506,14 +2448,14 @@ func (tb *ThinBroker) updateLDContextElement2RemoteSite(req map[string]interface
 // Register a new context entity on Discovery
 func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	registerCtxReq := RegisterContextRequest{}
-
 	entities := make([]EntityId, 0)
 	entityId := EntityId{}
-	entityId.ID = elem["id"].(string)
-	_, fs := FiwareId(elem["id"].(string))
+	entityId.ID = elem["@id"].(string)
+	_, fs := FiwareId(elem["@id"].(string))
 	//}
 	//fmt.Println("Fs", Fs)
-	entityId.Type = elem["type"].(string)
+	entityId.Type = getRegistrationType(elem["@type"])
+	//entityId.Type = elem["type"].(string)
 	entities = append(entities, entityId)
 
 	ctxRegistrations := make([]ContextRegistration, 0)
@@ -2522,24 +2464,45 @@ func (tb *ThinBroker) registerLDContextElement(elem map[string]interface{}) {
 	ctxReg.EntityIdList = entities
 	ctxRegAttr := ContextRegistrationAttribute{}
 	ctxRegAttrs := make([]ContextRegistrationAttribute, 0)
+	ctxMetadatas := make([]ContextMetadata, 0)
 	for k, attr := range elem { // considering properties and relationships as attributes
-		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+		isLdJsonObject := checkCondition(k)
+		ctxMetaData := ContextMetadata{}
+		if isLdJsonObject == true {
 			if k == "fiwareServicePath" {
 				ctxReg.FiwareServicePath = attr.(string)
 				continue
 			}
 			attrValue := attr.(map[string]interface{})
 			ctxRegAttr.Name = k
-			typ := attrValue["type"].(string)
-			if strings.Contains(typ, "Property") || strings.Contains(typ, "property") {
+			typ := getRegistrationType(attrValue["@type"])
+			if typ == LD_GEOPROPERTY {
+				if strings.Contains(k, "location") {
+					ctxMetaData.Name = "location"
+				} else {
+					ctxMetaData.Name = k
+				}
+				attrValue["@context"] = elem["@context"]
+				resolved, err := compactData(attrValue, DEFAULT_CONTEXT)
+				if err != nil {
+					continue
+				}
+				resolvedMap := resolved.(map[string]interface{})
+				value := resolvedMap["value"].(map[string]interface{})
+				ctxMetaData.Type = value["type"].(string)
+				ctxMetaData.Cordinates = value["coordinates"]
+				ctxMetadatas = append(ctxMetadatas, ctxMetaData)
+
+			} else if typ == LD_PRPERTY {
 				ctxRegAttr.Type = "Property"
-			} else if strings.Contains(typ, "Relationship") || strings.Contains(typ, "relationship") {
+			} else if typ == LD_RELATIONSHIP {
 				ctxRegAttr.Type = "Relationship"
 			}
 			ctxRegAttrs = append(ctxRegAttrs, ctxRegAttr)
 		}
 	}
 	ctxReg.ContextRegistrationAttributes = ctxRegAttrs
+	ctxReg.Metadata = ctxMetadatas
 	ctxReg.ProvidingApplication = tb.MyURL
 	ctxReg.MsgFormat = "NGSILD"
 	ctxReg.FiwareService = fs
@@ -2572,7 +2535,7 @@ func (tb *ThinBroker) ldGetEntity(eid string) interface{} {
 		compactEntity := tb.createOriginalPayload(entityMap)
 		resultEntity := compactEntity.(map[string]interface{})
 		actualId := getActualEntity(resultEntity)
-		resultEntity["id"] = actualId
+		resultEntity["@id"] = actualId
 		delete(resultEntity, "fiwareServicePath")
 		return resultEntity
 	} else {
@@ -2631,7 +2594,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		var LDSubscribeCtxReq interface{}
 
 		err := json.Unmarshal(reqBytes, &LDSubscribeCtxReq)
-		fmt.Println("err", err)
 		if err != nil {
 			err := errors.New("Unable to decode payload/message !")
 			rest.Error(w, err.Error(), http.StatusInternalServerError)
@@ -2659,7 +2621,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 
 		resolved, err := tb.ExpandPayload(LDSubscribeCtxReq, context, contextInPayload)
 
-		fmt.Println("err", err)
 		if err != nil {
 			if err.Error() == "EmptyPayload!" {
 				rest.Error(w, "Empty payloads are not allowed in this operation!", 400)
@@ -2785,6 +2746,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	ctxAvailabilityRequest.Attributes = append(ctxAvailabilityRequest.Attributes, subReq.Notification.Attributes...)
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
+	ctxAvailabilityRequest.Restriction = subReq.Restriction
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
@@ -2799,7 +2761,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 		tb.subLinks_lock.Unlock()
 		if alreadyBack == true {
 			INFO.Println("========forward the availability notify that arrived earlier===========")
-			tb.handleNGSILDNotify(subReq.Id, notifyMessage)
+			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
 
 			tb.subLinks_lock.Lock()
 			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)
@@ -2977,15 +2939,12 @@ func (tb *ThinBroker) getTypeResolved(link string, typ string) string {
 
 // Expand the NGSI-LD Data with context
 func (tb *ThinBroker) ExpandData(v interface{}) ([]interface{}, error) {
-	//var dl *ld.RFC7324CachingDocumentLoader
 	dl := Expand_once()
 	proc := ld.NewJsonLdProcessor()
 	opts := ld.NewJsonLdOptions("")
 	opts.ProcessingMode = ld.JsonLd_1_1
 	opts.DocumentLoader = dl
 	expanded, err := proc.Expand(v, opts)
-	//LD processor expands the data and returns []interface{}
-	//expanded, err := proc.Expand(v, options)
 	return expanded, err
 }
 
@@ -3080,7 +3039,7 @@ func (tb *ThinBroker) checkMatcheLdAttr(ctxElemAttrs []string, sid string) bool 
 }
 
 func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkSelectedAttributes bool) {
-	eid := ctxElem["id"].(string)
+	eid := ctxElem["@id"].(string)
 	tb.LDe2sub_lock.RLock()
 	defer tb.LDe2sub_lock.RUnlock()
 	subscriberList := tb.entityId2LDSubcriptions[eid]
@@ -3093,7 +3052,7 @@ func (tb *ThinBroker) LDNotifySubscribers(ctxElem map[string]interface{}, checkS
 	}*/
 	ldAttr := make([]string, 0)
 	for k, _ := range ctxElem {
-		if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
+		if k != "@id" && k != "@type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" {
 			ldAttr = append(ldAttr, k)
 		}
 	}
@@ -3645,7 +3604,7 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	tb.ldEntities_lock.Lock()
 	for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
-		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
+		if strings.HasSuffix(entityMap["@id"].(string), fiwareService) == true {
 			allExist := true
 			for _, attr := range attrs {
 				if _, ok := entityMap[attr]; ok != true {
@@ -3666,23 +3625,22 @@ func (tb *ThinBroker) ldEntityGetByAttribute(attrs []string, fiwareService strin
 	tb.ldEntities_lock.Unlock()
 	return entities
 }
+
 func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService string) []interface{} {
 	var newEid string
 	tb.ldEntities_lock.Lock()
 	var entities []interface{}
-
 	for index, eid := range eids {
 		newEid = eid + "@" + fiwareService
 		if entity, ok := tb.ldEntities[newEid]; ok == true {
 			entityMap := entity.(map[string]interface{})
-			//compactEntity := tb.createOriginalPayload(entityMap)
-			//resultEntity := compactEntity.(map[string]interface{})
-			if entityMap["type"] == typ[index] {
+			typeArray := entityMap["@type"].([]interface{})
+			newType := typeArray[0].(string)
+			if newType == typ[index] {
 				compactEntity := tb.createOriginalPayload(entityMap)
 				resultEntity := compactEntity.(map[string]interface{})
-				//compactEntity := tb.createOriginalPayload(entity)
 				actualId := getActualEntity(resultEntity)
-				resultEntity["id"] = actualId
+				resultEntity["@id"] = actualId
 				delete(resultEntity, "fiwareServicePath")
 				entities = append(entities, resultEntity)
 			}
@@ -3695,7 +3653,7 @@ func (tb *ThinBroker) ldEntityGetById(eids []string, typ []string, fiwareService
 func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareService string) ([]interface{}, error) {
 	var entities []interface{}
 	typ := typs[0]
-	if link != "" || typ != "All" {
+	if link != "" {
 		typ = tb.getTypeResolved(link, typ)
 		if typ == "" {
 			err := errors.New("Type not resolved!")
@@ -3703,10 +3661,10 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 		}
 	}
 	tb.ldEntities_lock.Lock()
-	for _, entity := range tb.ldEntities {
+	/*for _, entity := range tb.ldEntities {
 		entityMap := entity.(map[string]interface{})
 		if strings.HasSuffix(entityMap["id"].(string), fiwareService) == true {
-			if entityMap["type"] == typ || typ == "All" {
+			if entityMap["type"] == typ {
 				compactEntity := tb.createOriginalPayload(entityMap)
 				compactEntityMap := compactEntity.(map[string]interface{})
 				compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))
@@ -3714,12 +3672,24 @@ func (tb *ThinBroker) ldEntityGetByType(typs []string, link string, fiwareServic
 				entities = append(entities, compactEntityMap)
 			}
 		}
+	}*/
+	for index, value := range tb.entityTypeTOEntityId[typ] {
+		if result, okey := tb.ldEntities[value]; okey == true {
+			compactEntity := tb.createOriginalPayload(result)
+			compactEntityMap := compactEntity.(map[string]interface{})
+			compactEntityMap["id"], _ = FiwareId(compactEntityMap["id"].(string))
+			delete(compactEntityMap, "fiwareServicePath")
+			entities = append(entities, compactEntityMap)
+		} else { // update tb.entityTypeTOEntityId for deleted entity
+			// reslice the slice to manage delete entity
+			tb.entityTypeTOEntityId[typ] = reslice(tb.entityTypeTOEntityId[typ], index)
+		}
 	}
 	tb.ldEntities_lock.Unlock()
 	return entities, nil
 }
 
-func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
+/*func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) []interface{} {
 	var entities []interface{}
 
 	for eid, entity := range tb.ldEntities {
@@ -3729,7 +3699,9 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				idPattern = strings.Trim(idPattern, ".*")
 				idPattern = strings.Trim(idPattern, "*.")
 				if strings.Contains(eid, idPattern) {
-					if entityMap["type"] == typ[index] {
+					typeArray := entityMap["@type"].([]interface{})
+		                        newType := typeArray[0].(string)
+					if newType == typ[index] {
 						compactEntity := tb.createOriginalPayload(entity)
 						resultEntity2 := compactEntity.(map[string]interface{})
 						actualEId2 := getActualEntity(resultEntity2)
@@ -3772,6 +3744,24 @@ func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns []string, typ []string) 
 				}
 			}
 		}
+	}
+	return entities
+}*/
+
+func (tb *ThinBroker) ldEntityGetByIdPattern(idPatterns, typ []string) []interface{} {
+	var entities []interface{}
+	matchedIds := make([]string, 0)
+	for indx, value := range typ {
+		for _, ids := range tb.entityTypeTOEntityId[value] {
+			matched, _ := regexp.MatchString(idPatterns[indx], ids)
+			if matched == true {
+				matchedIds = append(matchedIds, ids)
+			}
+		}
+	}
+	for _, value := range matchedIds {
+		entity := tb.ldGetEntity(value)
+		entities = append(entities, entity)
 	}
 	return entities
 }
@@ -3906,7 +3896,7 @@ func (tb *ThinBroker) UpdateLDContextAvailability(subReq LDSubscriptionRequest, 
 		tb.subLinks_lock.Unlock()
 		if alreadyBack == true {
 			INFO.Println("========forward the availability notify that arrived earlier===========")
-			tb.handleNGSILDNotify(subReq.Id, notifyMessage)
+			tb.handleNGSI9Notify(subReq.Id, notifyMessage)
 
 			tb.subLinks_lock.Lock()
 			delete(tb.tmpNGSILDNotifyCache, AvailabilitySubID)

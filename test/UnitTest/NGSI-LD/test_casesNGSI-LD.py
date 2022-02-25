@@ -45,7 +45,7 @@ def test_case2():
 '''
   To test create entity with context in Link header and request payload is already expanded
 '''
-def test_case3():
+'''def test_case3():
 	#time.sleep(3)
         url=brokerIp+"/ngsi-ld/v1/entities/"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
@@ -53,7 +53,7 @@ def test_case3():
         print(r.content)
         print(r.status_code)
         assert r.status_code == 201
-
+'''
 #testCase 4
 '''
   To test to append additional attributes to an existing entity
@@ -379,6 +379,7 @@ def test_case23():
 '''
   To test to retrieve a specific entity by ID and Type
 '''
+
 def test_case24():
         url=brokerIp+"/ngsi-ld/v1/entities?id=urn:ngsi-ld:Vehicle:A4580&type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
@@ -393,7 +394,6 @@ def test_case24():
                 print("\nNot Validated")
         #print(r.status_code)
         assert r.status_code == 200
-
 
 #testCase 25
 '''
@@ -465,6 +465,8 @@ def test_case28():
 '''
   To test to To retrieve a specific entity by IdPattern and Type
 '''
+
+
 def test_case29():
         url=brokerIp+"/ngsi-ld/v1/entities?idPattern=urn:ngsi-ld:Vehicle:A.*&type=https://uri.etsi.org/ngsi-ld/default-context/Vehicle"
         headers={'Content-Type' : 'application/json','Accept':'application/ld+json'}
@@ -479,7 +481,6 @@ def test_case29():
                 print("\nNot Validated")
         print(r.status_code)
         assert r.status_code == 200
-
 
 #testCase 30
 '''
@@ -1436,7 +1437,7 @@ def test_case79():
         #print(r.status_code)
 	assert r.status_code == 500
 
-def test_case80():
+'''def test_case80():
         upsertURL=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
         headers={'Integration': 'NGSILDBroker','Content-Type' : 'application/json','Accept':'application/ld+json', 'Require-Reliability':'true','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"', 'fiware-service' : 'openiot','fiware-servicepath' :'test'}
         rUpsert=requests.post(upsertURL,data=json.dumps(ld_data.upsertCommand80),headers=headers)
@@ -1451,7 +1452,7 @@ def test_case80():
 	rget = requests.post(postURL,json={"id" : "urn:ngsi-ld:Device:water080"})
 	print(rget.content)
         assert rget.content == "200"
-
+'''
 #To test get Entity by Eid from broker if FiwareService is provided
 def test_case81():
         url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
@@ -1569,7 +1570,7 @@ def test_case91():
         r=requests.post(url,data=json.dumps(ld_data.subdata91),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 400
+        assert r.status_code == 201
 	
 # testCase 92
 '''
@@ -1581,11 +1582,11 @@ def test_case92():
         r=requests.post(url,data=json.dumps(ld_data.subdata92),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 400
+        assert r.status_code == 201
 	
 # testCase 93
 '''
-  To test create entity with Nil value in Relationship Attribute
+  string nil value will be accepted 
 '''
 def test_case93():
         url=brokerIp+"/ngsi-ld/v1/entities/"
@@ -1593,11 +1594,12 @@ def test_case93():
         r=requests.post(url,data=json.dumps(ld_data.subdata93),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 400
+        assert r.status_code == 201
 	
 # testCase 94
 '''
-  To test create entity with Nil value in Property Attribute
+  string nil value will be accepted
+
 '''
 def test_case94():
         url=brokerIp+"/ngsi-ld/v1/entities/"
@@ -1605,4 +1607,4 @@ def test_case94():
         r=requests.post(url,data=json.dumps(ld_data.subdata94),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 400
+        assert r.status_code == 201

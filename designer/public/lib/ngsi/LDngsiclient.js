@@ -63,9 +63,37 @@ var NGSILDclient = (function() {
         });
     };
     
-    // delete context 
-    NGSILDclient.prototype.deleteContext = function deleteContext(entityId) {
+    
+    NGSILDclient.prototype.ldupdateContext = function ldupdateContext(ctxObj) {
+        const updateCtxElements = []
+	    updateCtxElements.push(ctxObj)
+        return axios({
+            method: 'post',
+            url: this.brokerURL + '/v1/entityOperations/upsert',
+	    headers: {
+    		'content-type': 'application/json',
+   		'Accept': 'application/ld+json',
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+  },
+            data: updateCtxElements
+        }).then( function(response){
+	    console.log("response",response)
+            if (response.status == 204) {
+		console.log("Successfully updated")
+                return response.data;
+            } else if(response.status == 207) {
+		console.log("Failed to update some entities")
+		return response.data;
+	    } else {
+                return null;
+            }
+        });
+    };
 
+    // delete context 
+    NGSILDclient.prototype.deleteContext = function deleteContext(entityId,isFromDeviceTab=false) {
+        ldURL = this.brokerURL + '/ngsi-ld/v1/entities/' + entityId
+        if (isFromDeviceTab) ldURL = this.brokerURL + '/v1/entities/' + entityId
         return axios({
             method: 'delete',
 	    headers: {
@@ -73,10 +101,13 @@ var NGSILDclient = (function() {
                 'Accept': 'application/ld+json',
 		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
             },
-            url: this.brokerURL + '/ngsi-ld/v1/entities/' + entityId
+            url: ldURL,
+            data: {entities: [{type: "IoTBroker", isPattern: true}]}
         }).then( function(response){
             if (response.status == 201) {
                 return response.data;
+            }else if (response.status == 204) {
+                return response;
             } else {
                 return null;
             }
@@ -126,7 +157,30 @@ var NGSILDclient = (function() {
                 return null;
             }
         });
-    };    
+    };
+    
+    NGSILDclient.prototype.ldUpdateContext = function queryContext(queryCtxReq) {        
+        return axios({
+            method: 'post',
+            url: this.brokerURL + '/v1/entityOperations/query',
+	          headers: {
+                'content-type': 'application/json',
+                'Accept': 'application/ld+json',
+		'Link': '<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"'
+  },
+            data: queryCtxReq
+        }).then( function(response){
+            //console.log(response);
+            if (response.status == 200) {
+                var objectList = [];
+                var ctxElements = response.data;
+		objectList.push(ctxElements)
+                return objectList;
+            } else {
+                return null;
+            }
+        });
+    };
         
     // subscribe context
     NGSILDclient.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) { 

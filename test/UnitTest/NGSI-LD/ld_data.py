@@ -653,7 +653,7 @@ subdata33=\
                                 "type": "Relationship",
                                 "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
                                 "providedBy": {
-                                                "type": "person",
+                                                "type": "Relationship",
                                                 "object": "urn:ngsi-ld:Person:Bob"
                                 },
                                 "parkingDate": {
@@ -668,7 +668,7 @@ subdata33=\
                                                                 "value": "0.7"
                                                 },
                                                 "providedBy": {
-                                                                "type": "relationship",
+                                                                "type": "Relationship",
                                                                 "object": "urn:ngsi-ld:camera:c1"
                                                 }
                                 }
@@ -688,7 +688,7 @@ subdata34=\
                                 "type": "Relationship",
                                 "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
                                 "providedBy": {
-                                                "type": "person",
+                                                "type": "Relationship",
                                                 "object": "urn:ngsi-ld:Person:Bob"
                                 },
                                 "parkingDate": {
@@ -703,7 +703,7 @@ subdata34=\
                                                                 "value": "0.7"
                                                 },
                                                 "providedBy": {
-                                                                "type": "relationship",
+                                                                "type": "Relationship",
                                                                 "object": "urn:ngsi-ld:camera:c1"
                                                 }
                                 }

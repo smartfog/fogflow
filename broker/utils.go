@@ -154,10 +154,11 @@ func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL strin
 	req.Header.Add("Require-Reliability", "true")
 	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 	// add link header
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := httpsCfg.GetHTTPClient()
 	resp, err := client.Do(req)
+	fmt.Println("rsp", resp)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
@@ -445,7 +446,7 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 		ExpandOnce.Do(
 			func() {
 				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 				fmt.Println("created object", ldE, err)
 			})
 	} else {
@@ -461,7 +462,7 @@ func Compact_once() *ld.RFC7324CachingDocumentLoader {
 		CompactOnce.Do(
 			func() {
 				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 				fmt.Println("created object", ldC, err)
 			})
 	} else {
@@ -496,26 +497,26 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 	ldCompactedElems := make([]map[string]interface{}, 0)
 	for k, _ := range ldCtxElems {
 		compact_lock.Lock()
-		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
+		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
 		compact_lock.Unlock()
 		if err != nil {
 			continue
 		}
 		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
 	}
-	INFO.Println("Compacted Element:",ldCompactedElems)
 	var notifyCtxReq interface{}
 	var notifyURL string
 	var newBody []byte
 	if integration != "IoTI" {
 		LdElementList := make([]interface{}, 0)
+		fmt.Println("ldCompactedElems", ldCompactedElems)
 		for _, ldEle := range ldCompactedElems {
 			element := make(map[string]interface{})
 			id, _ := FiwareId(ldEle["id"].(string))
 			element["id"] = id
 			element["type"] = ldEle["type"]
 			for k, _ := range ldEle {
-				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
+				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
 					attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
 					element[k] = attr
 				}
@@ -537,7 +538,6 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 		}
 		body, err := json.Marshal(notifyCtxReq)
 		if err != nil {
-			ERROR.Println("Not able to marshal to notifyData")
 			return err
 		}
 		newBody = body
@@ -566,6 +566,7 @@ func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId str
 				}
 			}
 		}
+		//commandResult := ldEle["command"]
 	}
 	return nil
 }
@@ -586,7 +587,7 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 	req.Header.Add("Accept", "application/json")
 	//	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
 		client = httpsCfg.GetHTTPClient()
@@ -596,7 +597,6 @@ func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePat
 		defer resp.Body.Close()
 	}
 	if err != nil {
-		 ERROR.Println("Error in notification response: ", err)
 		return err
 	}
 
@@ -620,7 +620,7 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 	req.Header.Add("Accept", "application/json")
 	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
 
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
 	if strings.HasPrefix(URL, "https") == true {
@@ -631,7 +631,6 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 		defer resp.Body.Close()
 	}
 	if err != nil {
-		ERROR.Println("Error in notification response: ", err)
 		return err
 	}
 
@@ -641,23 +640,30 @@ func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePa
 }
 
 func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
+	fmt.Println("selectedAttributes")
 	if len(selectedAttributes) == 0 {
 		return ldElem
 	} else {
 		preparedCopy := make(map[string]interface{})
 		for key, val := range ldElem {
-			if key == "id" {
-				preparedCopy["id"] = val
-			} else if key == "type" {
-				preparedCopy["type"] = val
-			} else if key == "createdAt" {
-				preparedCopy["createdAt"] = val
-			} else if key == "modifiedAt" {
-				//preparedCopy["modifiedAt"] = val
-			} else if key == "location" {
-				preparedCopy["location"] = val
-			} else if key == "@context" {
-				preparedCopy["@context"] = val
+			if key == NGSI_LD_ID {
+				preparedCopy[NGSI_LD_ID] = val
+			} else if key == NGSI_LD_TYPE {
+				preparedCopy[NGSI_LD_TYPE] = val
+			} else if key == NGSI_LD_CREATEDAT {
+				preparedCopy[NGSI_LD_CREATEDAT] = val
+			} else if key == NGSI_LD_MODIFIEDAT {
+				preparedCopy[NGSI_LD_MODIFIEDAT] = val
+			} else if key == NGSI_LD_OBSERVED_AT {
+				preparedCopy[NGSI_LD_OBSERVED_AT] = val
+			} else if key == NGSI_LD_DATASETID {
+				preparedCopy[NGSI_LD_DATASETID] = val
+			} else if key == NGSI_LD_INSTANCEID {
+				preparedCopy[NGSI_LD_INSTANCEID] = val
+			} else if key == NGSILD_UniCode {
+				preparedCopy[NGSILD_UniCode] = val
+			} else if key == NGSILD_CONTEXT {
+				preparedCopy[NGSILD_CONTEXT] = val
 			} else {
 				// add attribute only if present in selectedAttributes
 				for _, requiredAttrName := range selectedAttributes {
@@ -729,6 +735,7 @@ func contentTypeValidator(cType string) error {
 }
 
 func getActualEntity(resultEntity map[string]interface{}) string {
+	fmt.Println(resultEntity)
 	id := resultEntity["id"].(string)
 	idSplit := strings.Split(id, "@")
 	actualId := idSplit[0]
