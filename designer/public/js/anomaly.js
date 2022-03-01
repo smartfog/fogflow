@@ -28,8 +28,7 @@ $(function() {
 
     //connect to the broker
     var client = new NGSI10Client(config.brokerURL);
-    // connect to internal server
-    var clientDes = new NGSI10Client('./internal');
+        
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -91,51 +90,30 @@ $(function() {
     }
 
     function checkTopology() {
-        var queryReq = {}
-        //queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
-        var name = "anomaly-detection"
-        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(resultList) {
-            
-            if (resultList.data && resultList.data.length > 0) {
-                console.log("check topology ",isDataExists(name,resultList.data));
-                var cTopolody = isDataExists(name,resultList.data);
-                if (cTopolody.length != 0) {
-                    curTopology = cTopolody[0];
-                }
+        fetch('/topology/anomaly-detection').then(res => res.json()).then(topology => {
+            if (Object.keys(topology).length > 0) { //non-empty       
+                curTopology = topology;   
             }
-
-            showTopology();
+            showTopology();                   
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required topology');
+       });        
     }
+    
     function checkIntent() {
-        var queryReq = {};
-       // queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
-        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        scopeValue = 'anomaly-detection'
-        clientDes.getContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList.data && resultList.data.length > 0) {
-                var result = resultList.data.filter(x => x.topology === scopeValue);
-                if (result.length > 0) {
-                    console.log("service intent result ---- ",result);
-                    curIntent = result[0];
-                    //update the current geoscope as well
-                    geoscope = result[0].geoscope;
-                }
-                
-            }
+        fetch('/intent/topology/anomaly-detection').then(res => res.json()).then(intent => {
+            if (Object.keys(intent).length > 0) { //non-empty 
+                curIntent = intent; 
+                //update the current geoscope as well
+                geoscope = intent[0].geoscope;                 
+            }              
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required intent');
+       });    
     }
    
-
 
     function showTopology() {
         $('#info').html('IoT service topology');

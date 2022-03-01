@@ -60,8 +60,8 @@ $(function() {
     }
 
     function initTopologyExamples() {
-        fetch('/service').then(res => res.json()).then(ontologies => {
-            if (Object.keys(ontologies).length === 0) {
+        fetch('/service').then(res => res.json()).then(tologies => {
+            if (Object.keys(tologies).length === 0) {
                 fetch("/service", {
                     method: "POST",
                     headers: {
@@ -153,7 +153,7 @@ $(function() {
             method: "DELETE"
         })
         .then(response => {
-            console.log("delete a service ontology: ", response.status)
+            console.log("delete a service tology: ", response.status)
             showTopologies();
         })
         .catch(err => console.log(err));           

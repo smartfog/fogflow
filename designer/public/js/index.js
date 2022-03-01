@@ -16,21 +16,18 @@ $(function () {
 
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
-    
 
     addMenuItem('Architecture', showArch);
     addMenuItem('Discovery', showDiscovery);
     addMenuItem('Broker', showBrokers);
     addMenuItem('Master', showMaster);
     addMenuItem('Worker', showWorkers);
-    addMenuItem('Edge', showEdge);    
+    //addMenuItem('Edge', showEdge);    
     addMenuItem('Device', showDevices);
     addMenuItem('uService', showEndPointService);
     addMenuItem('Stream', showStreams);
 
-
     showArch();
-
 
     $(window).on('hashchange', function () {
         var hash = window.location.hash;
@@ -77,27 +74,8 @@ $(function () {
     function showBrokers() {
         $('#info').html('list of all IoT Brokers');
 
-        var discoverReq = {}
-        discoverReq.entities = [{ type: 'IoTBroker', isPattern: true }];
-
-        var ngsi9client = new NGSI9Client(config.discoveryURL)
-        console.log('discorvery url is ',config.discoveryURL);
-        ngsi9client.discoverContextAvailability(discoverReq).then(function (response) {
-            var brokers = [];
-            if (response.errorCode.code == 200 && response.hasOwnProperty('contextRegistrationResponses')) {
-                for (var i in response.contextRegistrationResponses) {
-                    var contextRegistrationResponse = response.contextRegistrationResponses[i];
-                    var brokerID = contextRegistrationResponse.contextRegistration.entities[0].id;
-                    var providerURL = contextRegistrationResponse.contextRegistration.providingApplication;
-                    if (providerURL != '') {
-                        brokers.push({ id: brokerID, brokerURL: providerURL });
-                    }
-                }
-            }
+        fetch('/info/broker').then(res => res.json()).then(brokers => {
             displayBrokerList(brokers);
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query context');
         });
     }
 
@@ -117,7 +95,7 @@ $(function () {
 
         for (var i = 0; i < brokers.length; i++) {
             var broker = brokers[i];
-            html += '<tr><td>' + broker.id + '</td><td>' + broker.brokerURL + '</td></tr>';
+            html += '<tr><td>' + broker.id + '</td><td>' + broker.myURL + '</td></tr>';
         }
 
         html += '</table>';
@@ -128,13 +106,13 @@ $(function () {
     function showMaster() {
         $('#info').html('list of all topology masters');
 
-        fetch('/info/master').then(res => res.json()).then(masters => {            
-            displayMasterList(masters)                      
-        }); 
+        fetch('/info/master').then(res => res.json()).then(masters => {
+            displayMasterList(masters)
+        });
     }
 
     function displayMasterList(masters) {
-        
+
         if (masters == null || masters.length == 0) {
             $('#content').html('there is no topology master running');
             return
@@ -145,7 +123,7 @@ $(function () {
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Location</th>';
-        html += '<th>Agent</th>';      
+        html += '<th>Agent</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < masters.length; i++) {
@@ -207,9 +185,10 @@ $(function () {
 
         $('#content').html(html);
 
-        fetch('/info/worker').then(res => res.json()).then(workers => {            
-            displayWorkerList(workers)                      
-        }); 
+        fetch('/info/worker').then(res => res.json()).then(workers => {
+            displayWorkerList(workers)
+            displayWorkerOnMap(workers)
+        });
     }
 
     function displayWorkerList(workerList) {
@@ -219,14 +198,12 @@ $(function () {
         html += '<th>capacity</th>';
         html += '<th># of tasks</th>';
         html += '</tr></thead>';
-        
+
         for (var i = 0; i < workerList.length; i++) {
             var worker = workerList[i];
-        
-            console.log(worker);
-        
+
             var wid = worker.id;
-        
+
             html += '<tr>';
             html += '<td>' + wid + '</td>';
             html += '<td>' + JSON.stringify(worker.location) + '</td>';
@@ -235,59 +212,9 @@ $(function () {
             html += '</tr>';
         }
 
-        $('#workerList').html(html);        
+        $('#workerList').html(html);
     }
-    
-    function displayWorkerList2(workerList) {
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Task', isPattern: true }];
 
-        client.queryContext(queryReq).then(function (tasks) {
-            var counter = {};
-            for (var i = 0; i < tasks.length; i++) {
-                var task = tasks[i];
-                var workerID = task.metadata.worker.value;
-
-                if (workerID in counter) {
-                    counter[workerID]++;
-                } else {
-                    counter[workerID] = 1;
-                }
-            }
-
-            var html = '<thead><tr>';
-            html += '<th>ID</th>';
-            html += '<th>location</th>';
-            html += '<th>capacity</th>';
-            html += '<th># of tasks</th>';
-            html += '</tr></thead>';
-
-            for (var i = 0; i < workerList.length; i++) {
-                var worker = workerList[i];
-
-                var wid = worker.entityId.id;
-                var num_task_instances = 0;
-                if (wid in counter) {
-                    num_task_instances = counter[wid];
-                }
-
-                html += '<tr>';
-                html += '<td>' + wid + '</td>';
-                html += '<td>' + JSON.stringify(worker.attributes.location.value) + '</td>';
-                html += '<td>' + JSON.stringify(worker.attributes.capacity.value) + '</td>';
-                html += '<td>' + num_task_instances + '</td>';
-                html += '</tr>';
-            }
-
-            $('#workerList').html(html);
-
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query task');
-        });
-
-
-    }
 
     function displayWorkerOnMap(workerList) {
         var curMap = showMap();
@@ -299,10 +226,11 @@ $(function () {
 
         for (var i = 0; i < workerList.length; i++) {
             var worker = workerList[i];
+            console.log(worker)
 
-            var latitude = worker.attributes.location.value.latitude;
-            var longitude = worker.attributes.location.value.longitude;
-            var edgeNodeId = worker.entityId.id;
+            var latitude = worker.location.latitude;
+            var longitude = worker.location.longitude;
+            var edgeNodeId = worker.id;
 
             var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
             marker.nodeID = edgeNodeId;
@@ -310,7 +238,6 @@ $(function () {
             marker.on('click', showRunningTasks);
         }
     }
-
 
     function showRunningTasks() {
         var clickMarker = this;
@@ -340,408 +267,19 @@ $(function () {
     }
 
 
-
-    function displayWorker(workers) {
-        if (workers == null || workers.length == 0) {
-            $('#content').html('there is no worker running');
-            return
-        }
-
-        var html = '<table class="table table-striped table-bordered table-condensed">';
-        html += '<thead><tr>';
-        html += '<th>ID</th>';
-        html += '<th>Attributes</th>';
-        html += '<th>DomainMetadata</th>';
-        html += '</tr></thead>';
-
-        for (var i = 0; i < workers.length; i++) {
-            var worker = workers[i];
-            html += '<tr>';
-            html += '<td>' + worker.entityId.id + '</td>';
-            html += '<td>' + JSON.stringify(worker.attributes) + '</td>';
-            html += '<td>' + JSON.stringify(worker.metadata) + '</td>';
-            html += '</tr>';
-        }
-        html += '</table>';
-        $('#content').html(html);
-    }
-
-
-    // visualization : start
-    var map = undefined;
-
-    var curMap = undefined;
-        
-    var LDTestData = [
-        {
-            "@context": "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
-            "brandName": {
-                "type": "Property",
-                "value": "Mercedes"
-            },
-            "createdAt": "2022-01-06 10:35:18.506423711 +0530 IST m=+41.091378705",
-            "id": "urn:ngsi-ld:Vehicle:A100",
-            "isParked": {
-                "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
-                "observedAt": "2017-07-29T12:00:04",
-                "providedBy": {
-                    "type": "Relationship",
-                    "object": "urn:ngsi-ld:Person:Bob"
-                },
-                "type": "Relationship"
-            },
-            "location": {
-                "type": "GeoProperty",
-                "value": {
-                    "type": "Point",
-                    "coordinates": [
-                        -8.5,
-                        41.2
-                    ],
-                    "geometries": null
-                }
-            },
-            "modifiedAt": "2022-01-06 10:35:18.506415761 +0530 IST m=+41.091370789",
-            "speed": {
-                "type": "Property",
-                "value": 80
-            },
-            "type": "Vehicle"
-        }
-    ]
-
-    var edgeNodesList = undefined;
-    var brokers = [];
-
-    function getBrokerList() {
-        brokers =[]
-        var discoverReq = {}
-        
-        discoverReq.entities = [{ type: 'IoTBroker', isPattern: true }];
-        // v1 API for get broker list
-        var ngsi9client = new NGSI9Client(config.discoveryURL)
-        console.log('discorvery url is ',config.discoveryURL);
-        displayEdgeNode();
-        // v1 API for get broker list      
-        ngsi9client.discoverContextAvailability(discoverReq).then(function (response) {
-            console.log("broker response: ",response);
-            
-            if (response.errorCode.code == 200 && response.hasOwnProperty('contextRegistrationResponses')) {
-                for (var i in response.contextRegistrationResponses) {
-                    var tmpIn = parseInt(i)+1;
-                    var contextRegistrationResponse = response.contextRegistrationResponses[i];
-                    console.log("broker details is *** ",contextRegistrationResponse);
-                    var brokerID = contextRegistrationResponse.contextRegistration.entities[0].id;
-                    var providerURL = contextRegistrationResponse.contextRegistration.providingApplication;
-                    if (providerURL != '') {
-                        brokers.push({ id: brokerID, brokerURL: providerURL });
-                        console.log("inside broker ",brokers);
-                        if (i==0) {
-                            var option = document.createElement("option");
-                            option.text ='All'; 
-                            var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
-                            allEdgeBrokerList.add(option);
-                        }
-                        var option = document.createElement("option");
-                        var edgeName = brokerID.replace('Broker','Edge');
-                        if (edgeName.includes(".001")) edgeName = edgeName.replace('Edge','Cloud');
-                        option.text = edgeName
-                        console.log("get broker ID: " + brokerID);
-                        var allEdgeBrokerList = document.getElementById("allEdgeBrokerList");
-                        console.log("all edge obje ",allEdgeBrokerList);
-                        allEdgeBrokerList.add(option);
-
-                        if (tmpIn === response.contextRegistrationResponses.length){
-                            getWorkerList(displayEdgeOnMap,brokers)
-                        }
-                    }
-                }
-                
-            }
-
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
-       // return brokers;
-    }
-    var ldDeviceObj = []
-
-    function resetEdges(){
-        try{
-        curMap = showMap();
-        }catch(err){console.log(err);}
-        ldDeviceObj=[]
-        $('#deviceList').html('');
-    }
-    
-    // for LD payload
-    function getEntityProperties(ldDataList){
-        for(var i=0;i<ldDataList.length;i++){
-            var objKeyList = Object.keys(ldDataList[i])
-            var objValue ={} 
-            var finalLDEntityDetails = {}
-            objKeyList.forEach(ldKey => {
-                if (ldDataList[i][ldKey].hasOwnProperty("type") && ldDataList[i][ldKey]["type"] == "Property"){
-                    objValue[ldKey] = ldDataList[i][ldKey]["value"]
-                    console.log(objValue)
-                }
-            });
-            if(ldDataList[i].hasOwnProperty("location") && ldDataList[i].location.hasOwnProperty("value")){
-                if(ldDataList[i].location.value.type == "Point")
-                {
-                    finalLDEntityDetails['isLocation']= true;
-                }else finalLDEntityDetails['isLocation']= false;
-            }
-            finalLDEntityDetails['id']=ldDataList[i].id;
-            finalLDEntityDetails['type']=ldDataList[i].type;
-            finalLDEntityDetails['attribute']=JSON.stringify(objValue);
-            ldDeviceObj.push(finalLDEntityDetails)
-
-        }
-    }
-
-    // API call for LD devices
-    function ldEntities(ldBrokerURL){
-        var sourcePath=ldBrokerURL.replace("ngsi10","ngsi-ld");
-        var ldclient = new NGSILDclient(sourcePath);
-        ldclient.GetEntitiesContext('All').then(function (edgeNodeList) {
-        getEntityProperties(edgeNodeList)
-        for (var i = 0; i < edgeNodeList.length; i++) {
-            var edgeEntity = edgeNodeList[i];
-            if(i+1 == edgeNodeList.length)
-            {
-                $('#deviceList').html(displayLDDeviceList4Edge(ldDeviceObj));
-            }
-            try{
-                var latitude = edgeEntity.location.value.coordinates[0];
-                var longitude = edgeEntity.location.value.coordinates[1];
-                var edgeNodeId = edgeEntity.id;
-                var edgeIcon = edgeDeviceIcon(edgeEntity.type,true);
-                var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
-                marker.nodeID = edgeNodeId;
-                marker.addTo(curMap).bindPopup(edgeNodeId);
-            }catch (e) {
-                console.log(e);
-            }
-        }
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query the list of ld device');
-        });
-        
-    }
-
-    var workerWithDeviceList = {};
-    function getWorkerList(callback,brokerObj) {
-        var edgeBrokerEntityList = [];
-        workerWithDeviceList = {};
-        for (var i = 0; i < brokerObj.length; i++){
-            var tmpI = i;
-            var tmpClient = new NGSI10Client(brokerObj[i].brokerURL);
-            var queryReq = {}
-            /**
-             * get only worker list from the broker
-             */
-            queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
-            console.log("get broker id is --- ",brokerObj[i].brokerURL);
-            ldEntities(brokerObj[i].brokerURL)
-            // call v1 API for get worker list and v1 devices
-            tmpClient.queryContext(queryReq).then(function (edgeNodeList) {
-                console.log("inside in worker list ",edgeNodeList);
-                if (edgeNodeList){
-                    edgeBrokerEntityList = edgeBrokerEntityList.concat(edgeNodeList);
-                    let workerObj = edgeNodeList.find(o => o.entityId.type === 'Worker');
-                    if (workerObj){
-                    var workerId = workerObj.entityId.id;
-                    workerWithDeviceList[workerId] = edgeNodeList;
-                    }
-                }
-                if (tmpI+1==brokerObj.length){
-                    callback(edgeBrokerEntityList)
-                }
-            }).catch(function (error) {
-                console.log(error);
-                console.log('failed to query the list of workers');
-            });
-        }
-    }
-
-    function showEdge(){
-        resetEdges();
-        $('#info').html('list of all IoT Edge');
-        var html = '<div id="dockerRegistration" class="form-horizontal"><fieldset>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">Edge(*)</label>';
-        html += '<div class="controls"><select id="allEdgeBrokerList" ></select>';
-        html += '</div></div>';
-        html += '</fieldset></div>';
-
-        html += '<div id="deviceList"></div>';
-
-        html += '<div id="map"  style="width: 900px; height: 500px"></div>';
-        $('#content').html(html);
-        curMap = showMap();
-        getBrokerList();
-    }
-
-    function displayEdgeNode() {
-        $('#allEdgeBrokerList').change(function() {
-            var selectedEdgeBroker = $('#allEdgeBrokerList option:selected').val();
-            console.log('selected edge broker is ',selectedEdgeBroker)
-            if (selectedEdgeBroker === 'All'){
-                resetEdges();
-                getWorkerList(displayEdgeOnMap,brokers)
-            }
-            else
-            {
-                selectedEdgeBroker = selectedEdgeBroker.replace(/Edge|Cloud/gi,'Broker')
-                let obj = brokers.find(o => o.id === selectedEdgeBroker);
-                console.log('selected edge broker is obj ',obj)
-                resetEdges()
-                getWorkerList(displayEdgeOnMap,[obj])
-            }
-          });
-    }
-    
-    function edgeDeviceIcon(type_,isLDDevice){
-        var edgeIcon = undefined;
-        if (type_ === 'Worker'){
-             edgeIcon = L.icon({
-                iconUrl: '/img/edge7.png',
-                iconSize: [48, 48]
-            });
-        }else {
-             var iconURL = '/img/device.png';
-             if (isLDDevice) iconURL = '/img/lddevice.png'
-             edgeIcon = L.icon({
-                iconUrl: iconURL,
-                iconSize: [40, 40]
-            });
-        }
-        return edgeIcon;
-    }
-    
-    // selected broker validate with worker 
-    function selectedWorkerValidate(workerID) {
-     var selectedEdge =  $('#allEdgeBrokerList option:selected').val();
-     if (selectedEdge === 'All') return true;
-     if (workerID.includes(".") && selectedEdge !== undefined) {
-        let wId = workerID.substr(workerID.indexOf('.'));
-        let selectedId = selectedEdge.substr(selectedEdge.indexOf('.'));
-        if (wId === selectedId) {
-            return true;
-        }
-     }
-     return false;
-    }
-    
-    //for  v1 devices and worker edge 
-    function displayEdgeOnMap(workerList) {
-        $('#ld-device-table tr:last').after(displayDeviceList4Edge(workerList,false));
-        for (var i = 0; i < workerList.length; i++) {
-            var edgeEntity = workerList[i];
-            try{
-                var latitude = edgeEntity.metadata.location.value.latitude;
-                var longitude = edgeEntity.metadata.location.value.longitude;
-                var edgeNodeId = edgeEntity.entityId.id;
-                var edgeIcon = edgeDeviceIcon(edgeEntity.entityId.type,false);
-                var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
-                marker.nodeID = edgeNodeId;
-                  
-                if (edgeEntity.entityId.type === 'Worker' && selectedWorkerValidate(edgeNodeId)){
-                    console.log("selected edge -- ",$('#allEdgeBrokerList option:selected').val());
-                    var id = edgeEntity.entityId.id;
-                    console.log("get all worker data ",workerWithDeviceList[id]);
-                    var container = $('<div />');
-                    container.html(displayDeviceList4Edge(workerWithDeviceList[id],true));
-                    marker.addTo(curMap).bindPopup(id);
-                }
-                else {
-                    //marker.addTo(curMap).bindPopup(edgeNodeId);
-                }
-            }catch (e) {
-                console.log(e);
-            }
-        }
-    }
-
-    // for ld devices list
-    function displayLDDeviceList4Edge(devices,isFromDevice=false){
-        if (devices == null || devices.length == 0) {
-            $('#deviceList').html('');
-            return
-        }
-        var html = '<table id="ld-device-table" class="table table-striped table-bordered table-condensed">';
-        if (isFromDevice)   html += '<br><div><b>NGSI-LD Table</b></div><br>';
-        html += '<thead><tr>';
-        html += '<th>ID</th>';
-        html += '<th>Type</th>';
-        html += '<th>Attributes</th>';
-        if (isFromDevice)   html += '<th>Action</th>';
-        html += '</tr></thead>';
-
-        for (var i = 0; i < devices.length; i++) {
-            var device = devices[i];
-            if (!(device.isLocation)) html += '<tr style="color:red">';
-            else html += '<tr>';
-            
-            html += '<td>' + device.id + '<br>';
-            html += '</td>';
-            html += '<td>' + device.type + '</td>';
-            html += '<td>' + (device.attribute) + '</td>';
-            if (isFromDevice) html += '<td><button id="DELETE-' + device.id + '" type="button" class="btn btn-primary">Delete</button></td>';
-
-            html += '</tr>';
-        }
-        html += '</table>';
-        return html;
-    }
-
-    // for v1 device list table
-    function displayDeviceList4Edge(devices,isFromMap) {
-        if (devices == null || devices.length == 0) {
-            $('#deviceList').html('');
-            return
-        }
-        
-        var html ='';
-        for (var i = 0; i < devices.length; i++) {
-            var device = devices[i];
-            if(device.entityId.type === 'Worker') continue;
-
-            if (!(device.metadata.hasOwnProperty('location'))) html = '<tr style="color:red">';
-            else html = '<tr>';
-            
-            html += '<td>' + device.entityId.id + '<br>';
-            html += '</td>';
-            html += '<td>' + device.entityId.type + '</td>';
-            if (!isFromMap){
-            html += '<td>' + JSON.stringify(device.attributes) + '</td>';
-            }
-            html += '</tr>';
-        }
-        html += '</table>';
-        return html;
-    }
-
-    // visualization:end
-
     function showDevices() {
         $('#info').html('list of all IoT devices');
 
         var html = '<div style="margin-bottom: 10px;"><button id="addNewDevice" type="button" class="btn btn-primary">add</button></div>';
-       
 
         html += '<div id="deviceList"></div>';
 
-        
         html += '<div id="lddeviceList"></div>';
 
         $('#content').html(html);
-        $('#lddeviceList').html('');
-        ldDeviceObj = []
+
         updateDeviceList();
+
         ldEntities4DeviceTab();
 
         $("#addNewDevice").click(function () {
@@ -749,49 +287,46 @@ $(function () {
         });
     }
 
-    function ldEntities4DeviceTab(){
-        
+    function ldEntities4DeviceTab() {
         var ldclient = new NGSILDclient(config.LdbrokerURL);
-        ldclient.GetEntitiesContext('All').then(function (edgeNodeList) {
-
-        getEntityProperties(edgeNodeList)
-        $('#lddeviceList').html(displayLDDeviceList4Edge(ldDeviceObj,true));
-        // associate a click handler to generate device profile on request
-        for (var i = 0; i < edgeNodeList.length; i++) {
-            var device = edgeNodeList[i];
-            console.log(device.id);
-            var deleteButton = document.getElementById('DELETE-' + device.id);
-            deleteButton.onclick = function (d) {
-                var myProfile = d;
-                return function () {
-                    console.log("delete obj ",myProfile)
-                    if (confirm('Do you want to delete the entity '+d.id)) {
-                        removeLDDevice(d.id);
-                      }
-                };
-            }(device);
-        }
-
+        ldclient.GetEntitiesContext('All').then(function (deviceList) {
+            getEntityProperties(deviceList)
+            $('#lddeviceList').html(displayLDDeviceList4Edge(deviceList, true));
+            // associate a click handler to generate device profile on request
+            for (var i = 0; i < edgeNodeList.length; i++) {
+                var device = edgeNodeList[i];
+                console.log(device.id);
+                var deleteButton = document.getElementById('DELETE-' + device.id);
+                deleteButton.onclick = function (d) {
+                    var myProfile = d;
+                    return function () {
+                        console.log("delete obj ", myProfile)
+                        if (confirm('Do you want to delete the entity ' + d.id)) {
+                            removeLDDevice(d.id);
+                        }
+                    };
+                }(device);
+            }
         }).catch(function (error) {
             console.log(error);
             console.log('failed to query the list of ld device');
         });
-        
     }
 
-    function removeLDDevice(entityID){
+    function removeLDDevice(entityID) {
         var ldclient = new NGSILDclient(config.LdbrokerURL);
-        
-        ldclient.deleteContext(entityID,true).then(function (res) {
-            if (res.status == 204){
+
+        ldclient.deleteContext(entityID, true).then(function (res) {
+            if (res.status == 204) {
                 showDevices();
             }
-            console.log("ld re aaa ",res);
-            }).catch(function (error) {
-                console.log(error);
-                console.log('failed to upsert API of ld device');
-            });
+            console.log("ld re aaa ", res);
+        }).catch(function (error) {
+            console.log(error);
+            console.log('failed to upsert API of ld device');
+        });
     }
+
     function showWorkerList() {
         var queryReq = {}
         queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
@@ -823,7 +358,7 @@ $(function () {
             return
         }
         var html = '<table class="table table-striped table-bordered table-condensed">';
-        html += '<div><b>NGSI-V1 Table</b></div><br>';
+        html += '<div><b>Devices based on NGSI-v1</b></div><br>';
         html += '<thead><tr>';
         html += '<th>ID</th>';
         html += '<th>Type</th>';
@@ -849,8 +384,6 @@ $(function () {
 
         html += '</table>';
         $('#deviceList').html(html);
-
-       
 
         //associate a click handler to generate device profile on request
         for (var i = 0; i < devices.length; i++) {
@@ -907,39 +440,46 @@ $(function () {
             console.log('failed to cancel a requirement');
         });
     }
-  
+
     function deviceRegistration() {
         $('#info').html('to register a new IoT device');
-        var html = '<p>'
-        html += '<input type="radio" checked="checked" name="r1" id="e1" value="NGSIV1"/> NGSI-V1&emsp;&emsp;'   
-        html += '<input type="radio"  name="r1" id="e2" value="NGSILD"/> NGSI-LD'
-        html += '</p>'
-        
+
+        var html = ''
+
         html += '<div class="form-horizontal"><fieldset>';
-        html += '<div id="ngsildDeviceRegistration" style="display: none">';
+        //        html += '<div id="ngsildDeviceRegistration" style="display: none">';
 
-        html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
-        html += '<div class="controls"><select id="ldDeviceType"><option>Temperature</option><option>PowerPanel</option></select></div>'
-        html += '</div>';
+        //        html += '<div class="control-group"><label class="control-label" for="input01">Protocol Type(*)</label>'
+        //        html += '<input type="radio" checked="checked" name="r1" id="e1" value="NGSIV1"/> NGSI-V1&emsp;&emsp;'   
+        //        html += '<input type="radio"  name="r1" id="e2" value="NGSILD"/> NGSI-LD'
+        //        html += '</div>'
 
-  
-        html += '<div class="control-group"><label class="control-label" for="input01">LD Device ID(*)</label>';
-        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceID">';
-        html += '<span>  </span><button id="ldAutoIDGenerator" type="button" class="btn btn-primary">Autogen</button>';
-        html += '</div></div>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">Device Name</label>';
-        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceName">';
-        html += '</div></div>';
+        //        html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
+        //        html += '<div class="controls"><select id="ldDeviceType"><option>Temperature</option><option>PowerPanel</option></select></div>'
+        //        html += '</div>';
 
 
-        html += '<div class="control-group"><label class="control-label" for="input01">Device Value</label>';
-        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceValue" placeholder="only number value">';
-        html += '</div></div>';
-    
-        html += '</div>';
-       
+        //        html += '<div class="control-group"><label class="control-label" for="input01">LD Device ID(*)</label>';
+        //        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceID">';
+        //        html += '<span>  </span><button id="ldAutoIDGenerator" type="button" class="btn btn-primary">Autogen</button>';
+        //        html += '</div></div>';
+
+        //        html += '<div class="control-group"><label class="control-label" for="input01">Device Name</label>';
+        //        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceName">';
+        //        html += '</div></div>';
+
+
+        //        html += '<div class="control-group"><label class="control-label" for="input01">Device Value</label>';
+        //        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceValue" placeholder="only number value">';
+        //        html += '</div></div>';
+
+        //        html += '</div>';
+
         html += '<div id="deviceRegistration">';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Protocol Type(*)</label>';
+        html += '<div class="controls"><select id="protocolType"><option>NGSIv1</option><option>NGSI-LD</option></select></div>'
+        html += '</div>';
 
         html += '<div class="control-group"><label class="control-label" for="input01">Device ID(*)</label>';
         html += '<div class="controls"><input type="text" class="input-xlarge" id="deviceID">';
@@ -958,7 +498,7 @@ $(function () {
         html += '<div class="controls"><input class="input-file" id="imageContent" type="file" accept="image/png"></div>'
         html += '</div>';
 
-        html += '</div>'; // for v1 tag
+        html += '</div>';
 
         html += '<div class="control-group"><label class="control-label" for="input01">Location(*)</label>';
         html += '<div class="controls"><div id="map"  style="width: 500px; height: 400px"></div></div>'
@@ -970,26 +510,33 @@ $(function () {
 
         html += '</fieldset></div>';
 
-       
+
         $('#content').html(html);
 
         var type = $('#ldDeviceType option:selected').val();
-        $('#ldDeviceName').val(type.toLowerCase());
+
+        //$('#ldDeviceName').val(type.toLowerCase());
+
         // associate functions to clickable buttons
         $('#submitRegistration').click(function () {
-            console.log("aaaaaaaa")
-            var radioVal = $('input[name="r1"]:checked').val();
-            console.log("radio val 000000 ",radioVal);
-            if( radioVal === 'NGSILD'){
+            var protoType = $('#protocolType option:selected').val();
+            console.log(protoType);
+            if (protoType == 'NGSI-LD') {
                 registerLDNewDevice()
-            }else  registerNewDevice()
+            } else {
+                registerNewDevice()
+            }
+        });
 
-            });
-
-        $('#autoIDGenerator').click(autoIDGenerator);
-
-        $('#ldAutoIDGenerator').click(ldAutoIDGenerator);
-
+        $('#autoIDGenerator').click(function () {
+            var protoType = $('#protocolType option:selected').val();
+            console.log(protoType);
+            if (protoType === 'NGSI-LD') {
+                ldAutoIDGenerator()
+            } else {
+                autoIDGenerator()
+            }
+        });
 
         $('#iconImage').change(function () {
             readIconImage(this);
@@ -998,72 +545,48 @@ $(function () {
             readContentImage(this);
         });
 
-       showWorkerList();
-       // confirm("Press a button!");
-        $('#e1').change(function () {
-            var a = $('input[name="r1"]:checked').val();
-            console.log('radio button val ',a)
-            document.getElementById('ngsildDeviceRegistration').style.display = 'none';
-            document.getElementById('deviceRegistration').style.display = 'block';
-            showWorkerList();
-        });
-        $('#e2').change(function () {
-            var a = $('input[name="r1"]:checked').val();
-            console.log('radio button val ',a)
-            document.getElementById('ngsildDeviceRegistration').style.display = 'block';
-            document.getElementById('deviceRegistration').style.display = 'none';
-            showWorkerList();
-        });
-
-        $('#ldDeviceType').change(function () {
-            console.log("value of ldDeviceType ",$('#ldDeviceType option:selected').val());
-            $('#ldDeviceID').val('');
-            var type = $('#ldDeviceType option:selected').val();
-            $('#ldDeviceName').val(type.toLowerCase());
-        });
-
+        // display workers on the map
+        showWorkerList();
     }
 
-    function ldAutoIDGenerator(){
-        
-
+    function ldAutoIDGenerator() {
         var type = $('#ldDeviceType option:selected').val();
         console.log(type);
 
-        if(type == '') return;
+        if (type == '') return;
         var date = new Date();
-        var epochForId = Math.floor(date.getTime()/1000)
-        var uid = "urn:ngsi-ld:"+type.toLowerCase()+":"+epochForId.toString();
+        var epochForId = Math.floor(date.getTime() / 1000)
+        var uid = "urn:ngsi-ld:" + type.toLowerCase() + ":" + epochForId.toString();
         //var uid = "urn:ngsi-ld:"+"device"+":"+epochForId.toString();
-        console.log("ngsi ld auto ID",uid);
+        console.log("ngsi ld auto ID", uid);
         $('#ldDeviceID').val(uid);
-        
     }
 
 
-    function registerLDNewDevice(){
+    function registerLDNewDevice() {
         // take the inputs    
         var id = $('#ldDeviceID').val();
         console.log(id);
 
         var type = $('#ldDeviceType option:selected').val();
         console.log(type);
-        
 
         var deviceName = $('#ldDeviceName').val();
         console.log(deviceName);
-        
+
         var deviceValue = $('#ldDeviceValue').val();
         console.log(deviceValue);
 
         console.log(locationOfNewDevice);
-        
 
         if (id == '' || type == '' || locationOfNewDevice == '' || locationOfNewDevice == null) {
             alert('please provide the required inputs');
             return;
         }
-        if (type === 'Temperature') type = 'Device'
+        
+        if (type === 'Temperature') 
+            type = 'Device'
+        
         //createdAt
         var ldPayload = {}
         ldPayload.id = id;
@@ -1077,32 +600,32 @@ $(function () {
             "type": "GeoProperty",
             "value": {
                 "type": "Point",
-                "coordinates": [locationOfNewDevice.lat,locationOfNewDevice.lng]
+                "coordinates": [locationOfNewDevice.lat, locationOfNewDevice.lng]
             }
         }
         var cTime = new Date().toISOString()
         var createdAt = cTime.split(".")[0]
         ldPayload.createdAt = createdAt;
-        console.log("payload ---- ",ldPayload);
+        console.log("payload ---- ", ldPayload);
 
         var ldclient = new NGSILDclient(config.LdbrokerURL);
-        
+
         ldclient.ldupdateContext(ldPayload).then(function (res) {
-            console.log("ld re aaa ",res);
+            console.log("ld re aaa ", res);
             if (confirm('Do you want to add more attributes?')) {
                 $('#ldDeviceName').val('');
                 $('#ldDeviceValue').val('');
                 // Save it!
                 console.log('Thing was saved to the database.');
-              } else {
+            } else {
                 showDevices();
                 // Do nothing!
                 console.log('Thing was not saved to the database.');
-              }
-            }).catch(function (error) {
-                console.log(error);
-                console.log('failed to upsert API of ld device');
-            });
+            }
+        }).catch(function (error) {
+            console.log(error);
+            console.log('failed to upsert API of ld device');
+        });
     }
 
     function readIconImage(input) {
@@ -1187,61 +710,49 @@ $(function () {
             isPattern: false
         };
 
-        var tmpAttr = {}
-        newDeviceObject.attributes = [];
-        tmpAttr = { name:'DeviceID', type: 'string', value: id };
-        newDeviceObject.attributes.push(tmpAttr);
+        newDeviceObject.attributes = {};
+        newDeviceObject.attributes.DeviceID = { type: 'string', value: id };
+
         var url = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/' + contentImageFileName;
-        tmpAttr = { name:'url', type: 'string', value: url };
-        newDeviceObject.attributes.push(tmpAttr);
-        tmpAttr = { name:'iconURL', type: 'string', value: '/photo/' + iconImageFileName };
-        newDeviceObject.attributes.push(tmpAttr);
+        newDeviceObject.attributes.url = { type: 'string', value: url };
+        newDeviceObject.attributes.iconURL = { type: 'string', value: '/photo/' + iconImageFileName };
 
         if (type == "PowerPanel") {
-            tmpAttr = {
-                name:'usage',
+            newDeviceObject.attributes.usage = {
                 type: 'integer',
                 value: 20
             };
-            newDeviceObject.attributes.push(tmpAttr);
-            tmpAttr = {
-                name:'shop',
+            newDeviceObject.attributes.shop = {
                 type: 'string',
                 value: id
             };
-            newDeviceObject.attributes.push(tmpAttr);
         }
 
-        newDeviceObject.domainMetadata = [];
-        var metadata = {};
-        metadata = {
-            name:'location',
+        newDeviceObject.metadata = {};
+        newDeviceObject.metadata.location = {
             type: 'point',
             value: { 'latitude': locationOfNewDevice.lat, 'longitude': locationOfNewDevice.lng }
         };
-        newDeviceObject.domainMetadata.push(metadata);
-        if (type == "PowerPanel") {
-            metadata = {
-                type: 'string',
-                value: id
-            };
-            newDeviceObject.domainMetadata.push(metadata);
-        } else if (type == "Camera") {
-            metadata = {
-                type: 'string',
-                value: id
-            };
-            newDeviceObject.domainMetadata.push(metadata);
-        }
-        var finalDeviceObject = {"contextElements":[newDeviceObject],"updateAction": "UPDATE"}
-        client.updateContext(finalDeviceObject).then(function (data) {
 
+        if (type == "PowerPanel") {
+            newDeviceObject.metadata.shop = {
+                type: 'string',
+                value: id
+            };
+        } else if (type == "Camera") {
+            newDeviceObject.metadata.cameraID = {
+                type: 'string',
+                value: id
+            };
+        }
+
+        client.updateContext(newDeviceObject).then(function (data) {
+            console.log(data);
             // show the updated device list
             showDevices();
         }).catch(function (error) {
             console.log('failed to register the new device object');
         });
-
     }
 
 
@@ -1267,12 +778,12 @@ $(function () {
     function showMap() {
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             osm = L.tileLayer(osmUrl, { maxZoom: 18, zoom: 7 });
-            try{
-                map.remove();
-            }catch(err){
-             
-            }
-        map = new L.Map('map', { layers: [osm], center: new L.LatLng(35.692221, 139.709059), zoom: 7 });
+        try {
+            map.remove();
+        } catch (err) {
+
+        }
+        var map = new L.Map('map', { layers: [osm], center: new L.LatLng(35.692221, 139.709059), zoom: 7 });
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
