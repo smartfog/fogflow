@@ -436,6 +436,20 @@ func (master *Master) unsubscribeContextAvailability(sid string) {
 //
 func (master *Master) Process(msg *RecvMessage) error {
 	switch msg.Type {
+	case "WORKER_JOIN":
+		profile := WorkerProfile{}
+		err := json.Unmarshal(msg.PayLoad, &profile)
+		if err == nil {
+			master.onWorkerJoin(msg.From, &profile)
+		}
+
+	case "WORKER_LEAVE":
+		profile := WorkerProfile{}
+		err := json.Unmarshal(msg.PayLoad, &profile)
+		if err == nil {
+			master.onWorkerLeave(msg.From, &profile)
+		}
+
 	case "WORKER_HEARTBEAT":
 		profile := WorkerProfile{}
 		err := json.Unmarshal(msg.PayLoad, &profile)
@@ -443,15 +457,12 @@ func (master *Master) Process(msg *RecvMessage) error {
 			master.onHeartbeat(msg.From, &profile)
 		}
 
-	case "task_update":
+	case "TASK_UPDATE":
 		update := TaskUpdate{}
 		err := json.Unmarshal(msg.PayLoad, &update)
 		if err == nil {
 			master.onTaskUpdate(msg.From, &update)
 		}
-
-	// case "FogFunction":
-	// 	master.handleFogFunctionUpdate(msg.PayLoad)
 
 	case "ServiceIntent":
 		serviceIntent := ServiceIntent{}
@@ -475,6 +486,33 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 		profile.Workload = 0
 		profile.Last_Heartbeat_Update = time.Now()
 		master.workers[workerID] = profile
+	}
+
+	master.workerList_lock.Unlock()
+}
+
+func (master *Master) onWorkerJoin(from string, profile *WorkerProfile) {
+	master.workerList_lock.Lock()
+
+	workerID := profile.WID
+	if worker, exist := master.workers[workerID]; exist {
+		worker.Capacity = profile.Capacity
+		worker.Last_Heartbeat_Update = time.Now()
+	} else {
+		profile.Workload = 0
+		profile.Last_Heartbeat_Update = time.Now()
+		master.workers[workerID] = profile
+	}
+
+	master.workerList_lock.Unlock()
+}
+
+func (master *Master) onWorkerLeave(from string, profile *WorkerProfile) {
+	master.workerList_lock.Lock()
+
+	workerID := profile.WID
+	if _, exist := master.workers[workerID]; exist {
+		delete(master.workers, workerID)
 	}
 
 	master.workerList_lock.Unlock()

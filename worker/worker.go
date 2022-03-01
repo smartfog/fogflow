@@ -156,8 +156,8 @@ func (w *Worker) unpublishMyself() {
 }
 
 func (w *Worker) heartbeat() {
-	taskUpdateMsg := SendMessage{Type: "WORKER_HEARTBEAT", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
-	w.communicator.Publish(&taskUpdateMsg)
+	msg := SendMessage{Type: "WORKER_HEARTBEAT", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	w.communicator.Publish(&msg)
 }
 
 func (w *Worker) onAddInput(from string, flow *FlowInfo) {
@@ -174,7 +174,7 @@ func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state 
 	tp.TaskName = task.TaskName
 	tp.TaskID = task.ID
 	tp.Status = state
-	taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + masterID + ".", From: w.id, PayLoad: tp}
+	taskUpdateMsg := SendMessage{Type: "TASK_UPDATE", RoutingKey: "master." + masterID + ".", From: w.id, PayLoad: tp}
 
 	go w.communicator.Publish(&taskUpdateMsg)
 }
