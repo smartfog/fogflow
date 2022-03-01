@@ -43,8 +43,8 @@ const (
 )
 
 type BrokerProfile struct {
-	BID   string
-	MyURL string
+	BID   string `json:"id"`
+	MyURL string `json:"myURL"`
 }
 
 type NearBy struct {
