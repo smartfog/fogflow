@@ -2221,3 +2221,1729 @@ subdata94=\
                             }
              }
      }
+
+
+#Payload to test heart health predictor use case
+
+subdata95=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor22",
+        "type": "HeartSensor",
+        "age": {
+            "type": "Property",
+            "value": 59.5
+        },
+        "sex": {
+            "type": "Property",
+            "value": 1
+        },
+        "cp": {
+            "type": "Property",
+            "value": 3
+        },
+        "trestbps": {
+            "type": "Property",
+            "value": 145
+        },
+        "chol": {
+            "type": "Property",
+            "value": 233
+        },
+        "fbs": {
+            "type": "Property",
+            "value": 1
+        },
+        "restecg": {
+            "type": "Property",
+            "value": 0
+        },
+        "thalach": {
+            "type": "Property",
+            "value": 150
+        },
+        "exang": {
+            "type": "Property",
+            "value": 0
+        },
+        "oldpeak": {
+            "type": "Property",
+            "value": 2.3
+        },
+        "slope": {
+            "type": "Property",
+            "value": 0
+        },
+        "ca": {
+            "type": "Property",
+            "value": 0
+        },
+        "thal": {
+            "type": "Property",
+            "value": 1
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to check Heart Health use case with missing attributes
+
+subdata96=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor23",
+        "type": "HeartSensor",
+        "trestbps": {
+            "type": "Property",
+            "value": 145
+        },
+        "chol": {
+            "type": "Property",
+            "value": 233
+        },
+        "ca": {
+            "type": "Property",
+            "value": 0
+        },
+        "thal": {
+            "type": "Property",
+            "value": 1
+            },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to update Heart Health use case attribute with wrong payload
+subdata97=\
+[
+    {
+        "chol": {
+            "type": "Property",
+            "value": 233
+       },
+    }
+]
+
+
+#Payload to check Heart Health use case with empty values of the attributes
+
+subdata98=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor24",
+        "type": "HeartSensor",
+        "age": {
+            "type": " ",
+            "value": 59.5
+        },
+    }
+]
+
+#Payload to check NGSI-LD Heart Health use case with different type in attribute
+
+subdata99=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor25",
+        "type": "HeartSensor",
+        "age": {
+            "type": 123,
+            "value": 59.5
+        },
+    }
+]
+
+#Payload to check NGSI-LD Heart Health use case with type empty
+
+subdata100=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor26",
+        "type":" " ,
+        "age": {
+            "type": "Property",
+            "value": 59.5
+        },
+        "sex": {
+            "type": "Property",
+            "value": 1
+        },
+        "cp": {
+            "type": "Property",
+            "value": 3
+        },
+        "trestbps": {
+            "type": "Property",
+            "value": 145
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+#Payload to check NGSI-LD Heart Health use case with id empty
+
+subdata101=\
+[
+    {
+        "id": " ",
+        "type": "HeartSensor",
+        "age": {
+            "type": "Property",
+            "value": 59.5
+        },
+        "sex": {
+            "type": "Property",
+            "value": 1
+        },
+        "cp": {
+            "type": "Property",
+            "value": 3
+        },
+        "thal": {
+            "type": "Property",
+            "value": 1
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to check NGSI-LD Heart Health use case with multiple values in type of any attribute
+
+subdata102=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor27",
+        "type": "HeartSensor",
+        "age": {
+            "type": "Property,Property1",
+            "value": 59.5
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to check Heart Health use case with nested values in value attribute
+
+subdata103=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor28",
+        "type": "HeartSensor",
+        "age": {
+            "type": "Property",
+            "value": {
+                "value": 54.0
+            }
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to check Heart Health use case with multiple values in array format
+
+subdata104=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor29",
+        "type": "HeartSensor",
+        "age": {
+            "type": "Property",
+            "value": [55.0,45.0]
+        },
+        "sex": {
+            "type": "Property",
+            "value": 1
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Heart Health Prediction use case with empty attribute
+
+subdata105=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor30",
+        "type": "HeartSensor",
+        "age": {}
+    }
+]
+
+#Payload to test NGSI-LD Heart Health Prediction use case if wrong information given in type
+
+subdata106=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.HeartSensor31",
+        "type": "Example",
+        "age": {
+            "type": 123 ,
+            "value": 59.5
+        },
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case
+
+subdata107=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor40",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": "Property",
+            "value": 45
+        },
+        "airTemp": {
+            "type": "Property",
+            "value": 20
+        },
+        "soilmoisture": {
+            "type": "Property",
+            "value": 23
+        },
+        "soilpH": {
+            "type": "Property",
+            "value": 9
+        },
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                 "type": "Point",
+                 "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with missing attributes
+subdata108=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor41",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": "Property",
+            "value": 45
+        },
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                          35.7,
+                          138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to update NGSI-LD Crop Prediction use case with with wrong payload
+subdata109=\
+[
+    {
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with mismatch of type of values
+subdata110=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor42",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": 560,
+            "value": 45
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with type attribute is empty
+subdata111=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor43",
+        "type": " ",
+        "airmoisture": {
+            "type": "Property",
+            "value": 45
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with id attribute is empty
+subdata112=\
+[
+    {
+        "id": " ",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": "Property",
+            "value": 45
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with multiple values in type of any attribute
+subdata113=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor44",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": "Property,Property1",
+            "value": 45
+        },
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with nested values in value attribute
+subdata114=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor45",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": "Property,Property1",
+            "value": {
+                "value": 54.0
+                }
+        },
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with value taking attribute has empty input
+
+subdata115=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor46",
+        "type": "SoilSensor",
+        "airmoisture": {},
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+
+#Payload to test NGSI-LD Crop Prediction use case with value taking multiple values in array format
+subdata116=\
+[
+    {
+        "id": "urn:ngsi-ld:Device.SoilSensor47",
+        "type": "SoilSensor",
+        "airmoisture": {
+            "type": "Property,Property1",
+            "value": [55.0,45.0]
+        },
+        "rainfall": {
+            "type": "Property",
+            "value": 70
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7,
+                    138
+                ]
+            }
+        }
+    }
+]
+#Payload to test LD visualisation feature
+subdata117=\
+[
+        {
+            "@context": "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
+            "brandName": {
+                "type": "Property",
+                "value": "Mercedes"
+            },
+            "createdAt": "2022-01-06 10:35:18.506423711 +0530 IST m=+41.091378705",
+            "id": "urn:ngsi-ld:Vehicle:A100",
+            "isParked": {
+                "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                "observedAt": "2017-07-29T12:00:04",
+                "providedBy": {
+                    "type": "Relationship",
+                    "object": "urn:ngsi-ld:Person:Bob"
+                },
+                "type": "Relationship"
+            },
+            "location": {
+                "type": "GeoProperty",
+                "value": {
+                    "type": "Point",
+                    "coordinates": [
+                        -8.5,
+                        41.2
+                    ],
+                    "geometries": "null"
+                }
+            },
+            "modifiedAt": "2022-01-06 10:35:18.506415761 +0530 IST m=+41.091370789",
+            "speed": {
+                "type": "Property",
+                "value": 80
+            },
+            "type": "Vehicle"
+        }
+]
+
+#Payload to delete an entity : LD visualisation feature
+subdata118=\
+[
+        {
+            "@context": "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
+            "brandName": {
+                "type": "Property",
+                "value": "Mercedes"
+            },
+            "id": "urn:ngsi-ld:Vehicle:A848",
+            "isParked": {
+                "object": "urn:ngsi-ld:OffStreetParking:Downtown1",
+                "observedAt": "2017-07-29T12:00:04",
+                "providedBy": {
+                    "type": "Relationship",
+                    "object": "urn:ngsi-ld:Person:Bob"
+                },
+                "type": "Relationship"
+            },
+            "location": {
+                "type": "GeoProperty",
+                "value": {
+                    "type": "Point",
+                    "coordinates": [
+                        -8.5,
+                        41.2
+                    ],
+                    "geometries": "null"
+                }
+            },
+            "modifiedAt": "2022-01-06 10:35:18.506415761 +0530 IST m=+41.091370789",
+            "speed": {
+                "type": "Property",
+                "value": 80
+            },
+            "type": "Vehicle"
+        }
+]
+
+
+
+#Payload(Basic GeoLocation Payload)
+
+subdata119=\
+{
+               "id": "urn:ngsi-ld:Subscription:200",
+               "type": "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1.02, 28.003 ],
+                                "georel": "near;maxDistance==2000",
+                                "geoproperty": "loc"
+                }
+}
+
+#(Payload with minDistance and maxDistance)
+
+subdata120=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4581",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1.02, 28.003 ],
+                                "georel": "near;minDistance==0.12;maxDistance==2000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload with different values
+
+subdata121=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4582",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1.00, 28.000 ],
+                                "georel": "near;minDistance==0.12;maxDistance==2000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload with large float values
+
+subdata122=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4583",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1.00000000000, 28.00000000000 ],
+                                "georel": "near;minDistance=0;maxDistance==2000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+
+#Payload with integral values
+
+subdata123=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4584",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1200, 1999 ],
+                                "georel": "near;minDistance=0;maxDistance==2000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+
+#Payload with large integral values
+
+subdata124=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4585",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1000000000, 280000000 ],
+                                "georel": "near;minDistance=0;maxDistance==20000000000000",
+                                "geoproperty": "loc"
+                }
+}
+
+#Payload without near in georel attribute
+
+subdata125=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4586",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1000000000, 280000000 ],
+                                "georel": "minDistance=0;maxDistance==20000000000000",
+                                "geoproperty": "loc"
+                }
+
+}
+
+
+#Payload with float in coordiantes and integral values in minDistance and maxDistance
+
+subdata126=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4587",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1000000000.000000000, 280000000.00000000 ],
+                                "georel": "near;minDistance=0;maxDistance==20000000000000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload with integral coordiantes and float values in minDistance and maxDistance
+
+subdata127=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4588",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1000000000, 280000000 ],
+                                "georel": "near;minDistance=0.000000000;maxDistance==20000000000000.0000000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload with x and y with different type
+
+subdata128=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4589",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 100.223, 100 ],
+                                "georel": "near;minDistance=0;maxDistance==2000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+
+#Payload to check for a polygon
+
+subdata129=\
+{
+               "id": "urn:ngsi-ld:Subscription:A4590",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "near;minDistance=0;maxDistance==20000",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if geoproperty is left empty
+
+subdata130=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4591",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Point",
+                                "coordinates": [ 1000000000.0000000, 280000000.00000000 ],
+                                "georel": "near",
+                                "geoproperty": " "
+                }
+}
+
+
+
+#Payload to check if georel is within
+
+subdata131=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4592",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "within",
+                                "geoproperty": "loc"
+                }
+}
+
+
+
+#Payload to check if georel is contains
+
+subdata132=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4593",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "contains",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if georel is overlaps
+
+subdata133=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4594",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "overlaps",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if georel is intersects
+
+subdata134=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4595",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "intersects",
+                                "geoproperty": "loc"
+                }
+}
+
+
+
+#Payload to check if georel is disjoint
+
+subdata135=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4596",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "disjoint",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if georel is equals
+
+subdata136=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4597",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "equals",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if georel is empty
+
+subdata137=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4598",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": " ",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if geometry is empty
+
+subdata138=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4600",
+               "type" : "Subscription",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": " ",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "within",
+                                "geoproperty": "loc"
+                }
+}
+
+
+#Payload to check if type empty
+
+subdata139=\
+{
+               "id": "urn:ngsi-ld:Vehicle:A4601",
+               "type" : " ",
+               "entities": [
+                               {
+                                               "type": "Vehicle"
+
+                                }
+               ] ,
+               "geoQ": {
+                                "geometry": "Polygon",
+                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]],
+                                "georel": "equals",
+                                "geoproperty": "loc"
+                }
+}
+
+#Payload to test Geolocation Feature
+
+subdata140=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "deep shikhar"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [1.01, 4.003]
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to test Geolocation Feature with type null
+
+
+subdata141=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": " ",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "deep shikhar"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [1.01, 4.003]
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to test Geolocation Feature if in type property value is large float value
+
+
+subdata142=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": 121.000000000000009
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [1.01, 4.003]
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to test Geolocation Feature if in type property value is integer
+
+subdata143=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": 121
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [1.01, 4.003]
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to test Geolocation Feature if in type geoproperty the coordinates are string
+
+subdata144=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": 121
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [1.01, 4.003]
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to test Geolocation Feature to check if datapart is empty
+
+subdata145=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle"
+}]
+
+
+
+
+
+
+#Payload to test Geolocation Feature to check if coordinates are left empty
+
+
+subdata146=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "deep shikhar"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": []
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to check if id is empty in id
+
+
+subdata147=\
+[{
+                                "id": "urn:ngsi-ld:value:",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "deep shikhar"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": []
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+
+#Paylaod to check if Report:id is removed in id
+
+
+subdata148=\
+[{
+                                "id": "urn:ngsi-ld:",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "deep shikhar"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": []
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+
+#Payload to test Geolocation Feature to check if id is empty
+
+
+subdata149=\
+[{
+                                "id": " ",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "deep shikhar"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": []
+                                                }
+                                },
+                                                                "hotel": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": ["Deep", "Shikhar"]
+                                                }
+                                }
+                }]
+
+
+#Payload to test Geolocation Feature if value is null imside type property
+
+subdata150=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": []
+                                                }
+                                }
+                }]
+
+
+
+#Payload to test Geolocation Feature if coordinates are given string value
+
+
+subdata151=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": "hello"
+                                                }
+                                }
+                }]
+
+
+
+#Payload to test Geolocation Feature if coordinates are given string as empty string value
+
+
+subdata152=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": " "
+                                                }
+                                }
+                }]
+
+
+
+#Payload to test Geolocation Feature if entity is given empty value
+
+subdata153=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "121"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": "null"
+                }]
+
+
+
+#Payload to test Geolocation Feature if entity type is given null
+
+subdata154=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": " "
+                                                }
+                                }
+                }]
+
+
+
+#Payload to test Geolocation Feature if type Polygon has 1-D coordinates
+
+subdata155=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [1.3,2.4]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": " "
+                                                }
+                                }
+                }]
+
+
+
+
+#Payload to test Geolocation Feature if type Point has 2-D coordinates
+
+
+subdata156=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [1.3,2.4]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                }
+                }]
+
+
+
+#Payload to check if type given any arbitrary value
+
+subdata157=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "XYZ",
+                                                "value": "null"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [1.3,2.4]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                }
+                }]
+
+
+
+
+
+#Payload to check if value is given boolean
+
+subdata158=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "False"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [1.3,2.4]
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                }
+                }]
+
+
+
+#Payload to check for nested values
+
+subdata159=\
+[{
+                                "id": "urn:ngsi-ld:Vehicle:id2",
+                                "type": "Vehicle",
+                                "BrandName": {
+                                                "type": "Property",
+                                                "value": "False"
+                                },
+                                "location": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                                                             "type": "GeoProperty",
+                                                             "value": {
+                                                                "type": "Polygon",
+                                                                "coordinates": [1.3,2.4]
+                                                }
+                                                }
+                                },
+                                "room": {
+                                                "type": "GeoProperty",
+                                                "value": {
+                                                                "type": "Point",
+                                                                "coordinates": [[[100.0,0.0],[101.0,0.0],[101.0,1.0],[100.0,1.0],[100.0,0.0]]]
+                                                }
+                                }
+                }]
+
+
