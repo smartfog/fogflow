@@ -331,6 +331,9 @@ func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubs
 			typeflag = true
 			if v != nil {
 				subscription.Type, err = getSubscriptionType(v.(interface{}))
+				if err != nil {
+					break forloop
+				}
 			}
 		case NGSILD_ENTITIES:
 			if v != nil {
@@ -384,7 +387,6 @@ func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubs
 	}
 	subscription.ModifiedAt = time.Now().String()
 	subscription.IsActive = true
-	fmt.Println("subscription",subscription)
 	return subscription, err
 }
 

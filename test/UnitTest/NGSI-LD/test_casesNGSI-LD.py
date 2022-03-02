@@ -1064,7 +1064,7 @@ def test_case54():
         r=requests.post(url,data=json.dumps(ld_data.subdata45),headers=headers)
         print(r.content)
         print(r.status_code)
-        assert r.status_code == 400 
+        assert r.status_code == 500 
 
 
 #testCase 55
