@@ -6,8 +6,6 @@ import (
 	. "fogflow/common/constants"
 	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
-
-	"fmt"
 	"strings"
 	"time"
 )
@@ -20,7 +18,6 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 	geoResult := make(map[string]interface{})
 	var err error
 	geoValue := false
-	fmt.Println("test file")
 	for key, val := range geoMap {
 		switch key {
 		case NGSI_LD_TYPE:
@@ -389,15 +386,6 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	return attr
 }
 
-// <<<<<<< HEAD
-// func (sz Serializer) getId(id interface{}) string {
-// 	fmt.Println(id)
-// =======
-// /*func (sz Serializer) getId(id interface{}) string {
-// >>>>>>> development
-// 	Id := id.(string)
-// 	return Id
-// }*/
 
 func (sz Serializer) getType(typ []interface{}) string {
 	var Type, Type1 string
@@ -728,7 +716,6 @@ func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]st
 		return attributesList, err
 	}
 	for _, attr := range attributes {
-		//fmt.Println("attr",attr)
 		valueMap := attr.(map[string]interface{})
 		ldobject := getLDobject(valueMap["@value"], context)
 		ExpandedAttr, _ := ExpandEntity(ldobject)
