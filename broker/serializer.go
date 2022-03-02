@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	. "fogflow/common/constants"
 	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
@@ -321,7 +320,6 @@ func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubs
 	typeflag := false
 	forloop:
 	for k, v := range expanded {
-		fmt.Println("k",k)
 		switch k {
 		case NGSI_LD_ID:
 			if v != nil {
@@ -813,7 +811,6 @@ func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]st
 	}
 	for _, attr := range attributes {
 		valueMap := attr.(map[string]interface{})
-		fmt.Println("valueMap[@value]",valueMap["@value"])
 		ldobject := getLDobject(valueMap["@value"], context)
 		ExpandedAttr, _ := ExpandEntity(ldobject)
 		attrUri := getAttribute(ExpandedAttr)
@@ -838,7 +835,6 @@ func (sz Serializer) getEntityType(typ interface{}) string {
 }
 
 func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
-	fmt.Println("entityobj",entityobj)
 	entity := EntityId{}
 	entitymap := entityobj.(map[string]interface{})
 	if val, ok := entitymap["@id"]; ok == true {
