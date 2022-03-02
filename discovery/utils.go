@@ -45,7 +45,6 @@ func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, 
 
 	// (3) check metadata set
 	if metaFilter.RestrictionType == "ld" {
-		fmt.Println("Comming in this part")
 		if matchLdMetadatas(registration.MetadataList, metaFilter) == false {
 			return false
 		}
@@ -69,6 +68,12 @@ func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 
 		if subscribedEntity.Type != "" {
 			matched, _ := regexp.MatchString(subscribedEntity.Type, entity.Type)
+			if matched == false {
+				return false
+			}
+		}
+		if subscribedEntity.IdPattern  != "" {
+			matched, _ := regexp.MatchString(subscribedEntity.IdPattern, entity.ID)
 			if matched == false {
 				return false
 			}
@@ -103,6 +108,7 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 //matchLdMetadatas
 
 func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
+	fmt.Println("Matching metaDatas")
 	sp := restriction.Geometry
 	var typ string
 	var coordinate interface{}
@@ -117,7 +123,6 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 		return false
 	}
 	var res bool
-	fmt.Println("++++++sp+++++",sp)
 	switch strings.ToLower(sp) {
 	case "point":
 		if restriction.Georel != "" {
