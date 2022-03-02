@@ -2635,7 +2635,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			sz := Serializer{}
 			deSerializedSubscription, err := sz.DeSerializeSubscription(resolved)
-			fmt.Println("deSerializedSubscription",deSerializedSubscription)
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -2698,7 +2697,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 				}
 
 				// save subscription
-				fmt.Println("deSerializedSubscription.Entities",deSerializedSubscription.Entities)
 				for key, entity := range deSerializedSubscription.Entities {
 					if entity.ID != "" && strings.Contains(entity.ID, "@") == false {
 						entity.ID = entity.ID + "@" + fiwareService
@@ -2706,7 +2704,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					if entity.IdPattern == "" && entity.ID == "" {
 						entity.IsPattern = true
 					}
-					fmt.Println("entity",entity)
 					deSerializedSubscription.Entities[key] = entity
 				}
 				tb.createSubscription(&deSerializedSubscription)
@@ -2739,7 +2736,6 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 	ctxAvailabilityRequest.Reference = tb.MyURL + "/notifyLDContextAvailability"
 	ctxAvailabilityRequest.Duration = subReq.Expires
 	ctxAvailabilityRequest.Restriction = subReq.Restriction
-	fmt.Println("ctxAvailability", ctxAvailabilityRequest)
 	// Subscribe to discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	AvailabilitySubID, err := client.SubscribeContextAvailability(&ctxAvailabilityRequest)
