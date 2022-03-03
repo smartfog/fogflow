@@ -368,7 +368,7 @@ $(function() {
             showDockerImage();            
         })
         .catch(err => {
-            console.log('failed to register the new device object');
+            console.log('failed to register the new docker image');
             console.log(err)
         });      
     }

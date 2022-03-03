@@ -23,7 +23,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 var jsonParser = bodyParser.json();
 
-const adapter = new JSONFile('public/data/meta/db.json');
+
+var metadata_folder = './public/data/meta';
+fs.mkdir(metadata_folder, { recursive: true })
+
+var photo_folder = './public/data/photo';
+fs.mkdir(photo_folder, { recursive: true })
+
+
+const adapter = new JSONFile(metadata_folder + '/db.json');
 const db = new Low(adapter);
 
 await db.read()
@@ -131,6 +139,8 @@ var subscriptions = {};
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+    
     next();
 });
 
