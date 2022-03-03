@@ -2635,7 +2635,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 		} else {
 			sz := Serializer{}
 			deSerializedSubscription, err := sz.DeSerializeSubscription(resolved)
-
 			if err != nil {
 				rest.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -2651,10 +2650,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 					}
 					sid := u1.String()
 					deSerializedSubscription.Id = sid
-				}
-				if !strings.HasSuffix(deSerializedSubscription.Type, "Subscription") && !strings.HasSuffix(deSerializedSubscription.Type, "subscription") {
-					rest.Error(w, "Type not allowed!", http.StatusBadRequest)
-					return
 				}
 				if len(deSerializedSubscription.Entities) == 0 {
 					rest.Error(w, "Missing entites and its parameter!", http.StatusBadRequest)
@@ -2734,12 +2729,6 @@ func (tb *ThinBroker) LDCreateSubscription(w rest.ResponseWriter, r *rest.Reques
 // Subscribe to Discovery for context availabiltiy
 func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionRequest, fiwareService string) error {
 	ctxAvailabilityRequest := SubscribeContextAvailabilityRequest{}
-	for key, entity := range subReq.Entities {
-		if entity.IdPattern != "" {
-			entity.IsPattern = true
-		}
-		subReq.Entities[key] = entity
-	}
 	ctxAvailabilityRequest.FiwareService = fiwareService
 	ctxAvailabilityRequest.Entities = subReq.Entities
 	ctxAvailabilityRequest.Attributes = subReq.WatchedAttributes
@@ -2778,7 +2767,7 @@ func (tb *ThinBroker) SubscribeLDContextAvailability(subReq *LDSubscriptionReque
 func (tb *ThinBroker) createSubscription(subscription *LDSubscriptionRequest) {
 	subscription.Subscriber.LDNotifyCache = make([]map[string]interface{}, 0)
 	tb.ldSubscriptions_lock.Lock()
-	subscription.SetLdIdPattern()
+	//subscription.SetLdIdPattern()
 	tb.ldSubscriptions[subscription.Id] = subscription
 	tb.ldSubscriptions_lock.Unlock()
 }

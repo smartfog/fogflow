@@ -953,6 +953,10 @@ subdata45=\
 {
              "id": "urn:ngsi-ld:Subscription:80",
              "type": "SubscriptionXY",
+	     "entities": [{
+                             "id": "urn:ngsi-ld:Vehicle:A3000",
+                             "type": "Vehicle"
+             }],
              "watchedAttributes": ["brandName"],
              "notification": {
                              "attributes": ["brandName"],
