@@ -511,6 +511,7 @@ func (element *Subject) SetIDpattern() {
 	}
 }
 
+/*
 func (element *LDSubscriptionRequest) SetLdIdPattern() {
 
 	for index, entities := range element.Entities {
@@ -519,7 +520,7 @@ func (element *LDSubscriptionRequest) SetLdIdPattern() {
 			element.Entities[index] = entities
 		}
 	}
-}
+}*/
 
 type StatusCode struct {
 	Code         int    `json:"code"`
@@ -1204,7 +1205,7 @@ type ProvidedBy struct {
 
 type LDSubscriptionRequest struct {
 	Id                string             `json:"id",omitempty`   //URI, if missing, will be assigned during subscription phase and returned to client
-	Type              string             `json:"type",omitemtpy` //should be equal to "Subscription"
+	Type              interface{}        `json:"type",omitemtpy` //should be equal to "Subscription"
 	Name              string             `json:"name",omitempty`
 	Description       string             `json:"description",omitempty`
 	Entities          []EntityId         `json:"entities",omitempty`
@@ -1220,8 +1221,8 @@ type LDSubscriptionRequest struct {
 	TemporalQ         TemporalQuery      `json:"temporalQ",omitempty`
 	Status            string             `json:"status",omitempty`
 	Subscriber        Subscriber         `json:"subscriber,omitempty`
-	CreatedAt         string             `json:"createdAt",omitemtpy`
-	ModifiedAt        string             `json:"modifiedAt",omitemtpy`
+	CreatedAt         interface{}             `json:"createdAt",omitemtpy`
+	ModifiedAt        interface{}             `json:"modifiedAt",omitemtpy`
 	Restriction       Restriction        `json:"restriction,omitempty"`
 }
 

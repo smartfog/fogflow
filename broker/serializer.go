@@ -6,8 +6,6 @@ import (
 	. "fogflow/common/constants"
 	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
-
-	"fmt"
 	"strings"
 	"time"
 )
@@ -20,7 +18,6 @@ func (sz Serializer) geoHandler(geoMap map[string]interface{}) (map[string]inter
 	geoResult := make(map[string]interface{})
 	var err error
 	geoValue := false
-	fmt.Println("test file")
 	for key, val := range geoMap {
 		switch key {
 		case NGSI_LD_TYPE:
@@ -318,12 +315,103 @@ func (sz Serializer) DeSerializeEntity(expEntities []interface{}) (map[string]in
 	return result, err
 }
 
+func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubscriptionRequest, error) {
+	subscription := LDSubscriptionRequest{}
+	var err error
+	typeflag := false
+	forloop:
+	for k, v := range expanded {
+		switch k {
+		case NGSI_LD_ID:
+			if v != nil {
+				subscription.Id = getSubscriptionID(v.(interface{}))
+			}
+		case NGSI_LD_TYPE:
+			typeflag = true
+			if v != nil {
+				subscription.Type, err = getSubscriptionType(v.(interface{}))
+				if err != nil {
+					break forloop
+				}
+			}
+		case NGSILD_ENTITIES:
+			if v != nil {
+				subscription.Entities, err = sz.getQueryEntities(v.([]interface{}), "")
+				 if err != nil {
+					break forloop
+				}
+			}
+		case NGSI_LD_CREATEDAT:
+			if v != nil {
+				subscription.CreatedAt = getCreatedTime(v.([]interface{}))
+			}
+		case NGSI_LD_MODIFIEDAT:
+			if v != nil {
+				subscription.ModifiedAt = getModifiedTime(v.([]interface{}))
+			}
+		case NGSILD_WATCHED_ATTRIBUTES:
+			if v != nil {
+                                subscription.WatchedAttributes, err = getWatchedAttribute(v.([]interface{}))
+				if err != nil {
+					break forloop
+				}
+                         }
+		case NGSILD_NOTIFICATION:
+			if v != nil {
+                                        subscription.Notification, err = sz.getNotification(v.([]interface{}))
+                                        if err != nil {
+                                                break forloop
+                                        }
+                                }
+		case NGSI_LD_GEO_QUERY:
+			if v != nil {
+				switch v.(type) {
+				case []interface{}:
+					data := v.([]interface{})
+					dataMap := data[0].(map[string]interface{})
+					dataMap["@context"] = DEFAULT_CONTEXT
+					resolved, _ := compactData(dataMap, DEFAULT_CONTEXT)
+					subscription.Restriction, _ = sz.assignRestriction(resolved.(map[string]interface{}))
+				default:
+					err = errors.New("Unknown Type!")
+					break forloop
+				}
+
+			}
+		default:
+		}
+	}
+	if typeflag == false {
+		err = errors.New("Type can not be nil")
+	}
+	subscription.ModifiedAt = time.Now().String()
+	subscription.IsActive = true
+	return subscription, err
+}
+
 func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
+	expSubscription := expanded[0]
+	subscription, err := sz.handleSubscription(expSubscription.(map[string]interface{}))
+	return subscription, err
+}
+
+/*func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscriptionRequest, error) {
 	subscription := LDSubscriptionRequest{}
 	for _, val := range expanded {
 		stringsMap := val.(map[string]interface{})
 		for k, v := range stringsMap {
 			if strings.Contains(k, "@id") {
+				if v != nil {
+					subscription.Id = sz.getId(v.(interface{}))
+				}
+			} else if strings.Contains(k, "@type") {
+				if v != nil {
+					subscription.Type = sz.getType(v.([]interface{}))
+				}
+			} else if strings.Contains(k, "description") {
+				if v != nil {
+					subscription.Description = sz.getValue(v.([]interface{})).(string)
+				}
 				if v != nil {
 					subscription.Id = sz.getId(v.(interface{}))
 				}
@@ -377,7 +465,7 @@ func (sz Serializer) DeSerializeSubscription(expanded []interface{}) (LDSubscrip
 	subscription.ModifiedAt = time.Now().String()
 	subscription.IsActive = true
 	return subscription, nil
-}
+}*/
 
 func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	var attr string
@@ -389,15 +477,6 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	return attr
 }
 
-// <<<<<<< HEAD
-// func (sz Serializer) getId(id interface{}) string {
-// 	fmt.Println(id)
-// =======
-// /*func (sz Serializer) getId(id interface{}) string {
-// >>>>>>> development
-// 	Id := id.(string)
-// 	return Id
-// }*/
 
 func (sz Serializer) getType(typ []interface{}) string {
 	var Type, Type1 string
@@ -656,14 +735,14 @@ func (sz Serializer) getNotification(notificationArray []interface{}) (Notificat
 		for k, v := range notificationFields {
 			if strings.Contains(k, "attributes") {
 				notification.Attributes = sz.getArrayOfIds(v.([]interface{}))
-			} else if strings.Contains(k, "endpoint") {
+			} else if k ==  NGSILD_ENDPOINT{
 				endpoint, err := sz.getEndpoint(v.([]interface{}))
 				if err != nil {
 					return notification, err
 				} else {
 					notification.Endpoint = endpoint
 				}
-			} else if strings.Contains(k, "format") {
+			} else if k == NGSILD_FORMAT {
 				notification.Format = sz.getStringValue(v.([]interface{}))
 			}
 		}
@@ -676,11 +755,11 @@ func (sz Serializer) getEndpoint(endpointArray []interface{}) (Endpoint, error) 
 	for _, val := range endpointArray {
 		endpointFields := val.(map[string]interface{})
 		for k, v := range endpointFields {
-			if strings.Contains(k, "accept") {
+			if k == NGSILD_ACCEPT {
 				if v != nil {
 					endpoint.Accept = sz.getStringValue(v.([]interface{}))
 				}
-			} else if strings.Contains(k, "uri") {
+			} else if k == NGSILD_URI {
 				if v != nil {
 					endpoint.URI = sz.getStringValue(v.([]interface{}))
 				} else {
@@ -723,12 +802,11 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, err
 // get NGSILD attributes
 func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]string, error) {
 	attributesList := make([]string, 0)
-	if len(attributes) <= 0 {
+	if len(attributes) <=  0 {
 		err := errors.New("Zero length attribute list is not allowed")
 		return attributesList, err
 	}
 	for _, attr := range attributes {
-		//fmt.Println("attr",attr)
 		valueMap := attr.(map[string]interface{})
 		ldobject := getLDobject(valueMap["@value"], context)
 		ExpandedAttr, _ := ExpandEntity(ldobject)
@@ -737,8 +815,14 @@ func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]st
 	}
 	return attributesList, nil
 }
+
 func (sz Serializer) getEntityId(id interface{}, fs string) string {
-	ID := id.(string) + "@" + fs
+	var ID string
+	if fs != "" {
+		ID = id.(string) + "@" + fs
+	} else {
+		ID = id.(string)
+	}
 	return ID
 }
 
@@ -761,6 +845,10 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 		entity.Type = sz.getEntityType(val)
 	} else if val, ok := entitymap["type"]; ok == true {
 		entity.Type = sz.getEntityType(val)
+	}
+	if val , ok := entitymap[NGSILD_IDPATTERN]; ok == true {
+		entity.IdPattern = getStringValue(val.([]interface{}))
+		entity.IsPattern = true
 	}
 	return entity
 }
