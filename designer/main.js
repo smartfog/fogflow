@@ -1,8 +1,7 @@
 import express from 'express'
 import multer from 'multer'
-//import http from 'http'
+import httpProxy from 'http-proxy';
 import fetch from 'node-fetch';
-//import axios from 'axios'
 import bodyParser from 'body-parser'
 import {promises as fs} from 'node:fs'
 import { Low, JSONFile } from 'lowdb'
@@ -38,6 +37,8 @@ db.data ||= {   operators: {},
 
 var app = express();
 
+var ngsiProxy = httpProxy.createProxyServer();
+
 var config = globalConfigFile.designer;
 
 var masterList = [];
@@ -47,7 +48,7 @@ var masterList = [];
 if ( !('host_ip' in globalConfigFile.broker)) {
     globalConfigFile.broker.host_ip = globalConfigFile.my_hostip    
 }
-var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
+var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port
 
 if (config.host_ip) {
     config.agentIP = config.host_ip;        
@@ -156,6 +157,23 @@ app.post('/photo', function(req, res) {
     });
 });
 
+//============= FogFlow API =================================
+
+app.all("/ngsi10/*", function(req, res) {
+    console.log('redirecting to ngsi-v1 broker');
+    ngsiProxy.web(req, res, {target: cloudBrokerURL});
+});
+
+app.all("/ngsi-ld/*", function(req, res) {
+    console.log('redirecting to ngsi-ld broker');
+    ngsiProxy.web(req, res, {target: cloudBrokerURL});
+});
+
+app.all("/ngsi9/*", function(req, res) {
+    console.log('redirecting to ngsi-v1 discovery');
+    ngsiProxy.web(req, res, {target: discoveryURL});
+});
+
 
 //============= FogFlow API =================================
 
@@ -170,6 +188,20 @@ app.get('/info/master', async function(req, res) {
         res.json([]);
     };
 });
+
+app.get('/info/broker', async function(req, res) {   
+    try {
+        var url = discoveryURL + "/ngsi9/broker";        
+        const response = await fetch(url);
+        const workers = await response.json(); 
+        var workerList = Array.from(Object.values(workers));          
+        res.json(workerList);
+    } catch(error) {
+        console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
+        res.json([]);
+    };
+});
+
 
 
 app.get('/info/worker', async function(req, res) {   
@@ -274,7 +306,12 @@ app.get('/topology', async function(req, res) {
     res.json(topologies);    
 });
 app.get('/topology/:name', async function(req, res) {    
-    var name = req.params.name;
+    var name = req.params.name;    
+    if (db.data.topologies.hasOwnProperty(name) == false) {
+        res.json({});    
+        return    
+    }
+    
     var topology = db.data.topologies[name];
     
     topology.dockerimages = [];
@@ -340,6 +377,19 @@ app.get('/intent/:id', async function(req, res) {
     var id = req.params.id;
     var serviceintent = db.data.serviceintents[id];
     res.json(serviceintent);
+});
+app.get('/intent/topology/:topology', async function(req, res) {    
+    var topology = req.params.topology;
+    
+    var intents = [];    
+    for(var i=0; i<db.data.serviceintents.length; i++){    
+        var intent = db.data.serviceintents[i];        
+        if (intent.topology == topology) {
+            intents.push(intent)
+        }
+    }    
+    
+    res.json(intents);
 });
 app.post('/intent', jsonParser, async function (req, res) {
     var serviceintent = req.body;    
@@ -490,17 +540,17 @@ var io = socketio.listen(webServer);
 io.on('connection', function(client) {
     console.log('a client is connecting');
     client.on('subscriptions', function(subList) {
-	console.log(subList);
+	    console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
-            sid = subList[i];
+            var sid = subList[i];
             subscriptions[sid] = client;
         }
     });
+    
     client.on('disconnect', function() {
         console.log('disconnected');
-
         //remove the subscriptions associated with this socket
-        for (sid in subscriptions) {
+        for (var sid in subscriptions) {
             if (subscriptions[sid] == client) {
                 delete subscriptions[sid];
             }
