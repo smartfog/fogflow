@@ -879,7 +879,7 @@ func (sz Serializer) getQueryEntities(entities []interface{}, fs string) ([]Enti
 	}
 	for _, val := range entities {
 		entity := sz.resolveEntity(val, fs)
-		if entity.ID == "" && entity.Type == "" {
+		if entity.ID == "" && entity.Type == "" && entity.IdPattern == "" {
 			continue
 		} else {
 			entitiesList = append(entitiesList, entity)

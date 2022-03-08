@@ -1605,3 +1605,974 @@ def test_case94():
         print(r.content)
         print(r.status_code)
         assert r.status_code == 201
+
+#testCase 95
+'''
+To test Health health predictor use case
+'''
+def test_case95():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata95),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testcase 96
+'''
+To test Health health predictor use case with missing attribute in the payload
+'''
+def test_case96():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata96),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 97
+'''
+To test to update Health health predictor use case with wrong payload
+'''
+def test_case97():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata97),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 98
+'''
+To test Health health predictor use case with empty values of the attributes
+'''
+def test_case98():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata98),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+
+#testcase 99
+'''
+To test NGSI-LD Heart Health use case with different type in attribute
+'''
+def test_case99():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata99),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 100
+
+'''
+To test NGSI-LD Heart Health use case with type empty
+'''
+def test_case100():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata100),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 101
+'''
+To test NGSI-LD Heart Health use case with id empty
+'''
+def test_case101():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata101),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 102
+
+'''
+To test NGSI-LD Heart Health use case with multiple values in type of any attribute
+'''
+def test_case102():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata102),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+
+#testcase 103
+'''
+To test Heart Health use case with nested values in value attribute
+'''
+
+def test_case103():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata103),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 104
+'''
+To test Heart Health use case with multiple values in array format
+'''
+def test_case104():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata104),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 105
+'''
+To test NGSI-LD Heart Health Prediction use case with empty attribute
+'''
+def test_case105():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata105),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 106
+
+'''
+To test NGSI-LD Heart Health Prediction use case if wrong information given in type
+'''
+def test_case106():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/Upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata106),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 107
+'''
+To test NGSI-LD Crop Prediction use case
+'''
+def test_case107():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata107),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testcase 108
+'''
+To test NGSI-LD Crop Prediction use case with missing attributes
+'''
+def test_case108():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata108),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testcase 109
+'''
+To test NGSI-LD Crop Prediction use case with with wrong payload
+'''
+def test_case109():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata109),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 110
+'''
+To test NGSI-LD Crop Prediction use case with mismatch of type of values
+'''
+def test_case110():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata110),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 111
+'''
+To test NGSI-LD Crop Prediction use case with type attribute is empty
+'''
+def test_case111():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata111),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testcase 112
+'''
+To test NGSI-LD Crop Prediction use case with id attribute is empty
+'''
+def test_case112():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata112),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 113
+'''
+To test NGSI-LD Crop Prediction use case with multiple values in type of any attribute
+'''
+def test_case113():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata113),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 114
+'''
+To test NGSI-LD Crop Prediction use case with nested values in value attribute
+'''
+def test_case114():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata114),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 115
+'''
+To test NGSI-LD Crop Prediction use case with value taking attribute has empty input
+'''
+def test_case115():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata115),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 116
+'''
+To test NGSI-LD Crop Prediction use case with value taking multiple values in array format
+'''
+def test_case116():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata116),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+
+#testcase 117
+'''
+To test NGSI-LD visualisation feature
+'''
+def test_case117():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata117),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 118
+'''
+To check if the entity of deleted : LD visualisation feature
+'''
+def test_case118():
+        #create NGSI-LD  entity
+#       time.sleep(3)
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata118),headers=headers)
+        print(r.content)
+        print(r.status_code)
+
+        #to delete corresponding entity
+#       time.sleep(3)
+        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A848"
+        headers={'Content-Type':'application/json','Accept':'application/ld+json'}
+        r=requests.delete(url,headers=headers)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testCase 119
+'''
+  To test to retrieve a entity which is deleted
+'''
+def test_case119():
+        #time.sleep(3)
+        url=brokerIp+"/ngsi-ld/v1/entities/urn:ngsi-ld:Vehicle:A848"
+        headers={'Content-Type' : 'application/ld+json','Accept':'application/ld+json'}
+        r=requests.get(url,headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+
+#testCase120
+
+'''
+To test basic payload of geoproperty
+'''
+
+def test_case120():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata119),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+#testCase121
+
+'''
+Payload with minDistance and maxDistance
+'''
+
+def test_case121():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata120),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+#testCase122
+
+'''
+Payload with different values
+'''
+
+def test_case122():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata121),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase123
+
+'''
+Payload with large float values
+'''
+
+def test_case123():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata122),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase124
+
+'''
+Payload with integral values
+'''
+
+def test_case124():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata123),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase125
+
+'''
+Payload with large integral values
+'''
+
+def test_case125():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata124),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+
+#testCase126
+
+'''
+Payload without near in georel attribute
+'''
+
+def test_case126():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata125),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+#testCase127
+
+'''
+Payload with float in coordiantes and integral values in minDistance and maxDistance
+'''
+
+def test_case127():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata126),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+#testCase128
+
+'''
+Payload with integral coordiantes and float values in minDistance and maxDistance
+'''
+
+def test_case128():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata127),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+#testCase129
+
+'''
+Payload with x and y with different type
+'''
+
+def test_case129():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata128),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase130
+
+'''
+Payload to check for a polygon
+'''
+
+def test_case130():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata129),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+
+#testCase131
+
+'''
+Payload to check if geoproperty is left empty
+'''
+
+def test_case131():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata130),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+
+#testCase132
+
+'''
+Payload to check if georel is within
+
+'''
+
+def test_case132():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata131),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase133
+
+'''
+Payload to check if georel is contains
+
+'''
+
+def test_case133():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata132),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase134
+
+'''
+Payload to check if georel is overlaps
+
+'''
+
+def test_case134():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata133),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase135
+
+'''
+Payload to check if georel is intersects
+
+'''
+
+def test_case135():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata134),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase136
+
+'''
+Payload to check if georel is disjoint
+
+'''
+
+def test_case132():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata135),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase137
+
+'''
+Payload to check if georel is equals
+
+'''
+
+def test_case132():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata136),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase138
+
+'''
+Payload to check if georel is empty
+
+'''
+
+def test_case138():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata137),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase139
+
+'''
+To check if geometry is empty
+
+'''
+
+def test_case139():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata138),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase140
+
+'''
+To check if type empty
+
+
+'''
+
+def test_case140():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata139),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 400
+		
+
+
+#testCase139
+
+'''
+To check if geometry is empty
+
+'''
+
+def test_case139():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata138),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 201
+
+
+#testCase140
+
+'''
+To check if type empty
+
+
+'''
+
+def test_case140():
+        url=brokerIp+"/ngsi-ld/v1/subscriptions/"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata139),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 500
+
+#testcase 141
+
+'''
+To test Geolocation Feature 
+'''
+
+def test_case141():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata140),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 142
+'''
+To test Geolocation Feature with type null
+
+'''
+
+def test_case142():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata141),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 143
+'''
+To test Geolocation Feature with type property value is large float value
+'''
+
+def test_case143():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata142),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+#testcase 144
+'''
+To test Geolocation Feature if in type property value is integer
+'''
+
+def test_case144():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata143),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+#testcase 145
+'''
+To test Geolocation Feature if in type geoproperty the coordinates are string
+'''
+
+def test_case145():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata144),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 146
+'''
+To test Geolocation Feature if datapart is empty
+'''
+
+def test_case146():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata145),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 147
+'''
+To test Geolocation Feature if coordinates are left empty
+'''
+
+def test_case147():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata146),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 148
+'''
+to check if id is empty in id
+
+
+'''
+
+def test_case148():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata147),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testcase 149
+'''
+To test Geolocation Feature if Vehicle:id is removed in id
+'''
+
+def test_case149():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata148),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+#testcase 150
+'''
+To test Geolocation Feature if id is empty
+
+'''
+
+def test_case150():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata149),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+#testcase 151
+'''
+To test Geolocation Feature if value is null imside type property
+'''
+
+def test_case151():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata150),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+#testcase 152
+'''
+To test Geolocation Feature with coordinates are given string value
+'''
+
+def test_case152():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata151),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+
+#testcase 153
+'''
+To test Geolocation Feature if coordinates are given string as empty string value
+'''
+
+def test_case153():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata152),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+#testcase 154
+'''
+To test Geolocation Feature if entity is given empty value
+'''
+
+def test_case154():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata153),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+
+#testcase 155
+'''
+to check if entity type is given null
+'''
+
+def test_case155():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata154),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 156
+'''
+to check if type Polygon has 1-D coordinates
+'''
+
+def test_case156():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata155),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+#testcase 157
+'''
+to check if type Point has 2-D coordinates
+
+
+'''
+
+def test_case157():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata156),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+#testcase 158
+'''
+To test Geolocation Feature if type given any arbitrary value
+'''
+
+def test_case158():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata157),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 404
+
+
+#testcase 159
+'''
+To test Geolocation Feature if value is given boolean
+'''
+
+def test_case159():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata158),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
+
+
+#testcase 160
+'''
+To test Geolocation Feature for nested values
+'''
+
+def test_case160():
+        url=brokerIp+"/ngsi-ld/v1/entityOperations/upsert"
+        headers={'Content-Type' : 'application/json','Accept':'application/ld+json','Link':'<{{link}}>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
+        r=requests.post(url,data=json.dumps(ld_data.subdata159),headers=headers)
+        print(r.content)
+        print(r.status_code)
+        assert r.status_code == 204
+
