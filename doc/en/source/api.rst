@@ -918,7 +918,7 @@ Operator
 
 .. code-block:: console
 
-   curl -X GET 'http://localhost:8080/operator \
+   curl -X GET 'http://localhost:8080/operator' \
   -H 'Content-Type: application/json'
 
 
@@ -937,7 +937,7 @@ name             Name of existing operator
 
 .. code-block:: console
 
-   curl -X GET  'http://localhost:8080/operator/nodejs \
+   curl -X GET  'http://localhost:8080/operator/nodejs' \
   -H 'Content-Type: application/json' 
    
 
@@ -1200,7 +1200,7 @@ Service
                 ]
             }
         }
-    ] 
+    ]' 
 
 
 
@@ -1232,7 +1232,7 @@ name             Name of existing service
 
 .. code-block:: console
 
-   curl -X GET  'http://localhost:8080/service/Detector \
+   curl -X GET  'http://localhost:8080/service/Detector' \
    -H 'Content-Type: application/json'  
 
    
@@ -1241,7 +1241,7 @@ name             Name of existing service
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-**DELETE /service**
+**DELETE /service/<service name>**
 
 ==============   ============================
 Param		 Description
@@ -1254,7 +1254,7 @@ name              Name of existing service
 
 .. code-block:: console
 
-   curl -X DELETE  'http://localhost:8080/service?name=Detector \
+   curl -X DELETE  'http://localhost:8080/service/Detector' \
    -H 'Content-Type: application/json'
 
 
@@ -1378,7 +1378,7 @@ Fogfunction
 
 .. code-block:: console
 
-   curl -X GET 'http://localhost:8080/fogfunction \
+   curl -X GET 'http://localhost:8080/fogfunction' \
   -H 'Content-Type: application/json'
 
 
@@ -1404,7 +1404,7 @@ name             Name of existing fogfunction
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-**DELETE /fogfunction**
+**DELETE /fogfunction/<fogfunction name>**
 
 ==============   ============================
 Param		 Description
@@ -1417,7 +1417,7 @@ name              Name of existing fogfunction
 
 .. code-block:: console
 
-   curl -X Delete  'http://localhost:8080/fogfunction'?name=test_fogfunction' \
+   curl -X Delete  'http://localhost:8080/fogfunction/test_fogfunction' \
    -H 'Content-Type: application/json'
 
 
@@ -1489,10 +1489,10 @@ id             ID of existing intent
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-**DELETE /intent**
+**DELETE /intent/<intent id>**
 
 ==============   ============================
-Body		 Description
+Param		 Description
 ==============   ============================
 id              ID of the existing intent
 ==============   ============================
@@ -1502,10 +1502,9 @@ id              ID of the existing intent
 
 .. code-block:: console
 
-   curl -X DELETE http://localhost:8080/intent' \
-    -H 'Content-Type: application/json' \
-    -d '{"id": "ServiceIntent.d60e2565-62de-4c46-bf8f-d38fd6a7d947"}'
-
+   curl -X DELETE 'http://localhost:8080/intent/ServiceIntent.d60e2565-62de-4c46-bf8f-d38fd6a7d947' \
+    -H 'Content-Type: application/json' 
+   
 
 Topology
 -------------------
