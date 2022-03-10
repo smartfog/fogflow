@@ -878,6 +878,668 @@ sid              the subscription ID created when the subscription is issued
 curl -iX DELETE http://localhost:80/ngsi10/subscription/#sid
 
 
+FogFlow Designer API
+===================================
+
+Operator
+-------------------
+
+
+**a. To create a new Operator**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /operator**
+
+
+
+**Example**   
+ 
+.. code-block:: console
+
+   curl -X POST \
+	  http://localhost:8080/operator \
+	  -H 'Content-Type: application/json' \
+	  -d '[
+	    {
+		"name": "test_operator",
+		"description": "test operator",
+		"parameters": []
+	    }
+	]'
+
+
+
+**b. To retrieve all the operators**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /operator**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET 'http://localhost:8080/operator \
+  -H 'Content-Type: application/json'
+
+
+**c. To retrieve a specific operator based on operator name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /operator/<name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing operator
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/operator/nodejs \
+  -H 'Content-Type: application/json' 
+   
+
+DockerImage
+-------------------
+
+
+**a. To create a new DockerImage**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /dockerimage**
+
+
+
+**Example**   
+ 
+.. code-block:: console
+
+   curl -X POST \
+    http://localhost:8080/dockerimage \
+    -H 'Content-Type: application/json' \
+    -d '[
+        {
+            "name": "test99/connectld",
+            "hwType": "X86",
+            "osType": "Linux",
+            "operatorName": "nodejs",
+            "prefetched": false,
+            "tag": "latest"
+        }
+    ]' 
+
+
+
+**b. To retrieve all the DockerImage**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /dockerimage**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET http://localhost:8080/dockerimage \
+   -H 'Content-Type: application/json'
+
+
+**c. To retrieve a specific DockerImage based on operator name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /dockerimage/<operator name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing operator
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/dockerimage/nodejs' \
+  -H 'Content-Type: application/json' 
+
+
+Service
+-------------------
+
+
+**a. To create a new Service**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /service**
+
+
+**Example**   
+ 
+.. code-block:: console
+
+   curl -X POST \
+    http://localhost:8080/service \
+    -H 'Content-Type: application/json' \
+    -d '[
+        {
+            "topology": {
+                "name": "anomaly-detection-test",
+                "description": "test detect anomaly events in shops",
+                "tasks": [
+                    {
+                        "name": "Counting",
+                        "operator": "counter",
+                        "input_streams": [
+                            {
+                                "selected_type": "Anomaly",
+                                "selected_attributes": [],
+                                "groupby": "ALL",
+                                "scoped": true
+                            }
+                        ],
+                        "output_streams": [
+                            {
+                                "entity_type": "Stat"
+                            }
+                        ]
+                    },
+                    {
+                        "name": "Detector",
+                        "operator": "anomaly",
+                        "input_streams": [
+                            {
+                                "selected_type": "PowerPanel",
+                                "selected_attributes": [],
+                                "groupby": "EntityID",
+                                "scoped": true
+                            },
+                            {
+                                "selected_type": "Rule",
+                                "selected_attributes": [],
+                                "groupby": "ALL",
+                                "scoped": false
+                            }
+                        ],
+                        "output_streams": [
+                            {
+                                "entity_type": "Anomaly"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "designboard": {
+                "edges": [
+                    {
+                        "id": 2,
+                        "block1": 3,
+                        "connector1": [
+                            "stream",
+                            "output"
+                        ],
+                        "block2": 1,
+                        "connector2": [
+                            "streams",
+                            "input"
+                        ]
+                    },
+                    {
+                        "id": 3,
+                        "block1": 2,
+                        "connector1": [
+                            "outputs",
+                            "output",
+                            0
+                        ],
+                        "block2": 3,
+                        "connector2": [
+                            "in",
+                            "input"
+                        ]
+                    },
+                    {
+                        "id": 4,
+                        "block1": 4,
+                        "connector1": [
+                            "stream",
+                            "output"
+                        ],
+                        "block2": 2,
+                        "connector2": [
+                            "streams",
+                            "input"
+                        ]
+                    },
+                    {
+                        "id": 5,
+                        "block1": 5,
+                        "connector1": [
+                            "stream",
+                            "output"
+                        ],
+                        "block2": 2,
+                        "connector2": [
+                            "streams",
+                            "input"
+                        ]
+                    }
+                ],
+                "blocks": [
+                    {
+                        "id": 1,
+                        "x": 202,
+                        "y": -146,
+                        "type": "Task",
+                        "module": null,
+                        "values": {
+                            "name": "Counting",
+                            "operator": "counter",
+                            "outputs": [
+                                "Stat"
+                            ]
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "x": -194,
+                        "y": -134,
+                        "type": "Task",
+                        "module": null,
+                        "values": {
+                            "name": "Detector",
+                            "operator": "anomaly",
+                            "outputs": [
+                                "Anomaly"
+                            ]
+                        }
+                    },
+                    {
+                        "id": 3,
+                        "x": 4,
+                        "y": -18,
+                        "type": "Shuffle",
+                        "module": null,
+                        "values": {
+                            "selectedattributes": [
+                                "all"
+                            ],
+                            "groupby": "ALL"
+                        }
+                    },
+                    {
+                        "id": 4,
+                        "x": -447,
+                        "y": -179,
+                        "type": "EntityStream",
+                        "module": null,
+                        "values": {
+                            "selectedtype": "PowerPanel",
+                            "selectedattributes": [
+                                "all"
+                            ],
+                            "groupby": "EntityID",
+                            "scoped": true
+                        }
+                    },
+                    {
+                        "id": 5,
+                        "x": -438,
+                        "y": -5,
+                        "type": "EntityStream",
+                        "module": null,
+                        "values": {
+                            "selectedtype": "Rule",
+                            "selectedattributes": [
+                                "all"
+                            ],
+                            "groupby": "ALL",
+                            "scoped": false
+                        }
+                    }
+                ]
+            }
+        }
+    ] 
+
+
+
+**b. To retrieve all the Service**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /service**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET http://localhost:8080/service \
+   -H 'Content-Type: application/json'
+
+
+**c. To retrieve a specific service based on service name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /service/<service name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing service
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/service/Detector \
+   -H 'Content-Type: application/json'  
+
+   
+
+**d. To delete a specific service based on service name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /service**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name              Name of existing service
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X DELETE  'http://localhost:8080/service?name=Detector \
+   -H 'Content-Type: application/json'
+
+
+Fogfunction
+-------------------
+
+
+**a. To create a new Fogfunction**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /fogfunction**
+
+
+
+**Example**   
+ 
+.. code-block:: console
+
+   curl -X POST \
+    http://localhost:8080/fogfunction \
+    -H 'Content-Type: application/json' \
+    -d '[
+        {
+            "name": "test_fogfunction",
+            "topology": {
+                "name": "Convert123",
+                "description": "test",
+                "tasks": [
+                    {
+                        "name": "Main",
+                        "operator": "converter",
+                        "input_streams": [
+                            {
+                                "selected_type": "RainSensor",
+                                "selected_attributes": [],
+                                "groupby": "ALL",
+                                "scoped": false
+                            }
+                        ],
+                        "output_streams": [
+                            {
+                                "entity_type": "RainObservation"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "intent": {
+                "id": "ServiceIntent.e7332645-6cd9-449e-9d68-18cb8b076723",
+                "topology": "Convert123",
+                "priority": {
+                    "exclusive": false,
+                    "level": 0
+                },
+                "qos": "default",
+                "geoscope": {
+                    "scopeType": "global",
+                    "scopeValue": "global"
+                }
+            },
+            "designboard": {
+                "edges": [
+                    {
+                        "id": 1,
+                        "block1": 2,
+                        "connector1": [
+                            "stream",
+                            "output"
+                        ],
+                        "block2": 1,
+                        "connector2": [
+                            "streams",
+                            "input"
+                        ]
+                    }
+                ],
+                "blocks": [
+                    {
+                        "id": 1,
+                        "x": 123,
+                        "y": -99,
+                        "type": "Task",
+                        "module": null,
+                        "values": {
+                            "name": "Main",
+                            "operator": "converter",
+                            "outputs": [
+                                "RainObservation"
+                            ]
+                        }
+                    },
+                    {
+                        "id": 2,
+                        "x": -194,
+                        "y": -97,
+                        "type": "EntityStream",
+                        "module": null,
+                        "values": {
+                            "selectedtype": "RainSensor",
+                            "selectedattributes": [
+                                "all"
+                            ],
+                            "groupby": "ALL",
+                            "scoped": false
+                        }
+                    }
+                ]
+            },
+            "status": "enabled"
+        }
+    ]'
+
+
+
+**b. To retrieve all the Fogfunction**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /fogfunction**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET 'http://localhost:8080/fogfunction \
+  -H 'Content-Type: application/json'
+
+
+**c. To retrieve a specific Fogfunction based on fogfunction name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /fogfunction/<name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing fogfunction
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/fogfunction/test_fogfunction' \
+   -H 'Content-Type: application/json'
+
+**d. To delete a specific fogfunction based on fogfunction name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /fogfunction**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name              Name of existing fogfunction
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X Delete  'http://localhost:8080/fogfunction'?name=test_fogfunction' \
+   -H 'Content-Type: application/json'
+
+
+Intent
+-------------------
+
+
+**a. To create a new Intent**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /intent**
+
+**Example**   
+ 
+.. code-block:: console
+
+   curl -X POST \
+    http://localhost:8080/intent \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "topology": "anomaly-detection-from-api",
+        "stype": "SYN",
+        "priority": {
+            "exclusive": false,
+            "level": 0
+        },
+        "qos": "NONE",
+        "geoscope": {
+            "scopeType": "global",
+            "scopeValue": "global"
+        },
+        "id": "ServiceIntent.d60e2565-62de-4c46-bf8f-d38fd6a7d4553"
+    }'
+
+
+
+**b. To retrieve all the Intent**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /intent**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET 'http://localhost:8080/intent' \
+  -H 'Content-Type: application/json'
+
+
+**c. To retrieve a specific Intent based on Intent ID**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /intent/<intent id>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+id             ID of existing intent
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/intent/ServiceIntent.d60e2565-62de-4c46-bf8f-d38fd6a7d4553' \
+   -H 'Content-Type: application/json' 
+
+**d. To delete a specific Intent based on intent id**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /intent**
+
+==============   ============================
+Body		 Description
+==============   ============================
+id              ID of the existing intent
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X DELETE http://localhost:8080/intent' \
+    -H 'Content-Type: application/json' \
+    -d '{"id": "ServiceIntent.d60e2565-62de-4c46-bf8f-d38fd6a7d947"}'
+
+
+Topology
+-------------------
+
+**a. To retrieve all the Topology**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /topology**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET 'http://localhost:8080/topology' \
+  -H 'Content-Type: application/json'
+
+
+**b. To retrieve a specific Topology based on topology name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /topology/<topology name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+Name             name of the existing Topology
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/topology/anomaly-detection' \
+   -H 'Content-Type: application/json' 
 
 
 FogFlow Service Orchestrator API
