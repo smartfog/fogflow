@@ -17,6 +17,11 @@ $(function () {
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
 
+    // idPattern for ngsi-ld device
+    const ID_PATTERN = "urn:ngsi-ld:device:.*";
+
+    var ldDeviceObj = []
+
     addMenuItem('Architecture', showArch);
     addMenuItem('Discovery', showDiscovery);
     addMenuItem('Broker', showBrokers);
@@ -268,6 +273,8 @@ $(function () {
 
 
     function showDevices() {
+        ldDeviceObj = []; // reset ngsi-ld device list
+
         $('#info').html('list of all IoT devices');
 
         var html = '<div style="margin-bottom: 10px;"><button id="addNewDevice" type="button" class="btn btn-primary">add</button></div>';
@@ -289,19 +296,27 @@ $(function () {
 
     function ldEntities4DeviceTab() {
         var ldclient = new NGSILDclient(config.LdbrokerURL);
-        ldclient.GetEntitiesContext('All').then(function (deviceList) {
-            getEntityProperties(deviceList)
-            $('#lddeviceList').html(displayLDDeviceList4Edge(deviceList, true));
-            // associate a click handler to generate device profile on request
-            for (var i = 0; i < edgeNodeList.length; i++) {
-                var device = edgeNodeList[i];
-                console.log(device.id);
+        var queryPayload = {
+            "type": "Query",
+            "entities": [{
+                "idPattern": ID_PATTERN
+            }]
+        }
+        ldclient.queryContext(queryPayload).then(function (resDeviceList) {
+            console.log("get device based on ngsi-ld ",resDeviceList);
+            var deviceList = resDeviceList[0]
+            // filter all properties of the NGSI-LD device and store in `ldDeviceObj` variable 
+            getLDDeviceProperties(deviceList)
+            $('#lddeviceList').html(displayLDDeviceList(ldDeviceObj, true));
+
+            // associate a click handler to generate device delete on request
+            for (var i = 0; i < deviceList.length; i++) {
+                var device = deviceList[i];
                 var deleteButton = document.getElementById('DELETE-' + device.id);
+
                 deleteButton.onclick = function (d) {
-                    var myProfile = d;
                     return function () {
-                        console.log("delete obj ", myProfile)
-                        if (confirm('Do you want to delete the entity ' + d.id)) {
+                        if (confirm('Do you want to delete the device ' + d.id)) {
                             removeLDDevice(d.id);
                         }
                     };
@@ -443,43 +458,36 @@ $(function () {
 
     function deviceRegistration() {
         $('#info').html('to register a new IoT device');
-
-        var html = ''
+        var html = '<p>'
+        html += '<input type="radio" checked="checked" name="r1" id="tabV1" value="NGSIV1"/> NGSI-V1&emsp;&emsp;'
+        html += '<input type="radio"  name="r1" id="tabLD" value="NGSILD"/> NGSI-LD'
+        html += '</p>'
 
         html += '<div class="form-horizontal"><fieldset>';
-        //        html += '<div id="ngsildDeviceRegistration" style="display: none">';
+        html += '<div id="ngsildDeviceRegistration" style="display: none">';
 
-        //        html += '<div class="control-group"><label class="control-label" for="input01">Protocol Type(*)</label>'
-        //        html += '<input type="radio" checked="checked" name="r1" id="e1" value="NGSIV1"/> NGSI-V1&emsp;&emsp;'   
-        //        html += '<input type="radio"  name="r1" id="e2" value="NGSILD"/> NGSI-LD'
-        //        html += '</div>'
-
-        //        html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
-        //        html += '<div class="controls"><select id="ldDeviceType"><option>Temperature</option><option>PowerPanel</option></select></div>'
-        //        html += '</div>';
+        html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
+        html += '<div class="controls"><select id="ldDeviceType"><option>Temperature</option><option>PowerPanel</option></select></div>'
+        html += '</div>';
 
 
-        //        html += '<div class="control-group"><label class="control-label" for="input01">LD Device ID(*)</label>';
-        //        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceID">';
-        //        html += '<span>  </span><button id="ldAutoIDGenerator" type="button" class="btn btn-primary">Autogen</button>';
-        //        html += '</div></div>';
+        html += '<div class="control-group"><label class="control-label" for="input01">LD Device ID(*)</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceID">';
+        html += '<span>  </span><button id="ldAutoIDGenerator" type="button" class="btn btn-primary">Autogen</button>';
+        html += '</div></div>';
 
-        //        html += '<div class="control-group"><label class="control-label" for="input01">Device Name</label>';
-        //        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceName">';
-        //        html += '</div></div>';
+        html += '<div class="control-group"><label class="control-label" for="input01">Property Name</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceName">';
+        html += '</div></div>';
 
 
-        //        html += '<div class="control-group"><label class="control-label" for="input01">Device Value</label>';
-        //        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceValue" placeholder="only number value">';
-        //        html += '</div></div>';
+        html += '<div class="control-group"><label class="control-label" for="input01">Property Value</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="ldDeviceValue">';
+        html += '</div></div>';
 
-        //        html += '</div>';
+        html += '</div>';
 
         html += '<div id="deviceRegistration">';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">Protocol Type(*)</label>';
-        html += '<div class="controls"><select id="protocolType"><option>NGSIv1</option><option>NGSI-LD</option></select></div>'
-        html += '</div>';
 
         html += '<div class="control-group"><label class="control-label" for="input01">Device ID(*)</label>';
         html += '<div class="controls"><input type="text" class="input-xlarge" id="deviceID">';
@@ -498,7 +506,7 @@ $(function () {
         html += '<div class="controls"><input class="input-file" id="imageContent" type="file" accept="image/png"></div>'
         html += '</div>';
 
-        html += '</div>';
+        html += '</div>'; // for v1 tag
 
         html += '<div class="control-group"><label class="control-label" for="input01">Location(*)</label>';
         html += '<div class="controls"><div id="map"  style="width: 500px; height: 400px"></div></div>'
@@ -514,29 +522,20 @@ $(function () {
         $('#content').html(html);
 
         var type = $('#ldDeviceType option:selected').val();
-
-        //$('#ldDeviceName').val(type.toLowerCase());
-
+        $('#ldDeviceName').val(type.toLowerCase());
         // associate functions to clickable buttons
         $('#submitRegistration').click(function () {
-            var protoType = $('#protocolType option:selected').val();
-            console.log(protoType);
-            if (protoType == 'NGSI-LD') {
+            var radioVal = $('input[name="r1"]:checked').val();
+            if (radioVal === 'NGSILD') {
                 registerLDNewDevice()
-            } else {
-                registerNewDevice()
-            }
+            } else registerNewDevice()
+
         });
 
-        $('#autoIDGenerator').click(function () {
-            var protoType = $('#protocolType option:selected').val();
-            console.log(protoType);
-            if (protoType === 'NGSI-LD') {
-                ldAutoIDGenerator()
-            } else {
-                autoIDGenerator()
-            }
-        });
+        $('#autoIDGenerator').click(autoIDGenerator);
+
+        $('#ldAutoIDGenerator').click(ldAutoIDGenerator);
+
 
         $('#iconImage').change(function () {
             readIconImage(this);
@@ -545,20 +544,29 @@ $(function () {
             readContentImage(this);
         });
 
-        // display workers on the map
         showWorkerList();
+
+        $('#tabV1').change(function () {
+            document.getElementById('ngsildDeviceRegistration').style.display = 'none';
+            document.getElementById('deviceRegistration').style.display = 'block';
+        });
+
+        $('#tabLD').change(function () {
+            document.getElementById('ngsildDeviceRegistration').style.display = 'block';
+            document.getElementById('deviceRegistration').style.display = 'none';
+        });
+
+        $('#ldDeviceType').change(function () {
+            $('#ldDeviceID').val('');
+            var type = $('#ldDeviceType option:selected').val();
+            $('#ldDeviceName').val(type.toLowerCase());
+        });
     }
 
     function ldAutoIDGenerator() {
-        var type = $('#ldDeviceType option:selected').val();
-        console.log(type);
-
-        if (type == '') return;
         var date = new Date();
         var epochForId = Math.floor(date.getTime() / 1000)
-        var uid = "urn:ngsi-ld:" + type.toLowerCase() + ":" + epochForId.toString();
-        //var uid = "urn:ngsi-ld:"+"device"+":"+epochForId.toString();
-        console.log("ngsi ld auto ID", uid);
+        var uid = "urn:ngsi-ld:" + "device" + ":" + epochForId.toString();
         $('#ldDeviceID').val(uid);
     }
 
@@ -566,27 +574,16 @@ $(function () {
     function registerLDNewDevice() {
         // take the inputs    
         var id = $('#ldDeviceID').val();
-        console.log(id);
-
         var type = $('#ldDeviceType option:selected').val();
-        console.log(type);
-
         var deviceName = $('#ldDeviceName').val();
-        console.log(deviceName);
-
         var deviceValue = $('#ldDeviceValue').val();
-        console.log(deviceValue);
 
-        console.log(locationOfNewDevice);
 
         if (id == '' || type == '' || locationOfNewDevice == '' || locationOfNewDevice == null) {
             alert('please provide the required inputs');
             return;
         }
-        
-        if (type === 'Temperature') 
-            type = 'Device'
-        
+
         //createdAt
         var ldPayload = {}
         ldPayload.id = id;
@@ -610,17 +607,12 @@ $(function () {
 
         var ldclient = new NGSILDclient(config.LdbrokerURL);
 
-        ldclient.ldupdateContext(ldPayload).then(function (res) {
-            console.log("ld re aaa ", res);
+        ldclient.updateContext(ldPayload).then(function (res) {
             if (confirm('Do you want to add more attributes?')) {
                 $('#ldDeviceName').val('');
                 $('#ldDeviceValue').val('');
-                // Save it!
-                console.log('Thing was saved to the database.');
             } else {
                 showDevices();
-                // Do nothing!
-                console.log('Thing was not saved to the database.');
             }
         }).catch(function (error) {
             console.log(error);
@@ -869,6 +861,55 @@ $(function () {
         $('#content').html(html);
     }
 
+    
+    function displayLDDeviceList(devices) {
+        if (devices == null || devices.length == 0) {
+            $('#deviceList').html('');
+            return
+        }
+        var html = '<table id="ld-device-table" class="table table-striped table-bordered table-condensed">';
+        html += '<br><div><b>Device based on NGSI-LD</b></div><br>';
+        html += '<thead><tr>';
+        html += '<th>ID</th>';
+        html += '<th>Type</th>';
+        html += '<th>Property</th>';
+        html += '<th>Action</th>';
+        html += '</tr></thead>';
+
+        for (var i = 0; i < devices.length; i++) {
+            var device = devices[i];
+            html += '<tr>';
+            html += '<td>' + device.id + '<br>';
+            html += '</td>';
+            html += '<td>' + device.type + '</td>';
+            html += '<td>' + (device.attribute) + '</td>';
+            html += '<td><button id="DELETE-' + device.id + '" type="button" class="btn btn-primary">Delete</button></td>';
+            html += '</tr>';
+        }
+        html += '</table>';
+        return html;
+    }
+
+    // for ngsi-ld device properties
+    function getLDDeviceProperties(ldDeviceList) {
+        console.log("aaaa bbb ", ldDeviceList);
+        for (var i = 0; i < ldDeviceList.length; i++) {
+            var objKeyList = Object.keys(ldDeviceList[i])
+            var objValue = {}
+            var finalLDEntityDetails = {}
+
+            objKeyList.forEach(ldKey => {
+                if (ldDeviceList[i][ldKey].hasOwnProperty("type") && ldDeviceList[i][ldKey]["type"] == "Property") {
+                    objValue[ldKey] = ldDeviceList[i][ldKey]["value"]
+                }
+            });
+
+            finalLDEntityDetails['id'] = ldDeviceList[i].id;
+            finalLDEntityDetails['type'] = ldDeviceList[i].type;
+            finalLDEntityDetails['attribute'] = JSON.stringify(objValue);
+            ldDeviceObj.push(finalLDEntityDetails)
+        }
+    }
 });
 
 
