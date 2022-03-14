@@ -415,14 +415,18 @@ app.post('/intent', jsonParser, async function (req, res) {
 app.delete('/intent/:id', async function (req, res) {
     var id = req.params.id;
     
-    var serviceintent = db.data.serviceintents[id];
-    serviceintent.action = 'DELETE';
-    publishMetadata("ServiceIntent", serviceintent);       
-    
-    delete db.data.serviceintents[id];    
-    await db.write();    
-    
-    res.sendStatus(200)        
+    try {
+        var serviceintent = db.data.serviceintents[id];
+        serviceintent.action = 'DELETE';
+        publishMetadata("ServiceIntent", serviceintent);
+
+        delete db.data.serviceintents[id];
+        await db.write();
+        res.sendStatus(200)
+    } catch (error) {
+        console.log("Delete Intent API failed for [ID] ", id, ', [ERROR]', error.message);
+        res.sendStatus(404)
+    }        
 });
 
 
@@ -460,19 +464,24 @@ app.post('/fogfunction', jsonParser, async function (req, res) {
     res.sendStatus(200)  
 });
 app.delete('/fogfunction/:name', async function (req, res) {
-    var name = req.params.name;
+    try {
+        var name = req.params.name;
 
-    var fogfunction = db.data.fogfunctions[name]
-    
-    var serviceintent = fogfunction.intent
-    serviceintent.action = 'DELETE';    
-    publishMetadata("ServiceIntent", serviceintent);                                
-    
-    delete db.data.topologies[name];        
-    delete db.data.fogfunctions[name];    
-    await db.write();        
-    
-    res.sendStatus(200)        
+        var fogfunction = db.data.fogfunctions[name]
+
+        var serviceintent = fogfunction.intent
+        serviceintent.action = 'DELETE';
+        publishMetadata("ServiceIntent", serviceintent);
+
+        delete db.data.topologies[name];
+        delete db.data.fogfunctions[name];
+        await db.write();
+
+        res.sendStatus(200)
+    } catch (error) {
+        console.log("Delete Fogfunction API failed for [Name] ", name, ', [ERROR]', error.message);
+        res.sendStatus(404)
+    }        
 });
 
 app.get('/config.js', function(req, res) {
