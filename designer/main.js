@@ -417,6 +417,10 @@ app.delete('/intent/:id', async function (req, res) {
     
     try {
         var serviceintent = db.data.serviceintents[id];
+        if (serviceintent === undefined) {
+            res.sendStatus(404)
+            return;
+        }
         serviceintent.action = 'DELETE';
         publishMetadata("ServiceIntent", serviceintent);
 
@@ -468,7 +472,10 @@ app.delete('/fogfunction/:name', async function (req, res) {
         var name = req.params.name;
 
         var fogfunction = db.data.fogfunctions[name]
-
+        if (fogfunction === undefined) {
+            res.sendStatus(404);
+            return;
+        }
         var serviceintent = fogfunction.intent
         serviceintent.action = 'DELETE';
         publishMetadata("ServiceIntent", serviceintent);
