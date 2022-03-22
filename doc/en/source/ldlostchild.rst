@@ -67,7 +67,16 @@ Please refer to the examples provided in our code repository.
 
 .. _`LDFace_Finder_Operator`: https://github.com/smartfog/fogflow/tree/Catalogue_Tutorial/application/operator/NGSI-LD-operator/LDface-finder
 
+How to run Heart Health Prediction use case
+------------------------------------------
 
+#. Step. 1: Go to Management tab, press on start button. This will send the service intent. 
+
+#. Step. 2: Navigate to Surveillance Device to match lost child image to that of camera(as shown below).
+
+#. Step. 3: Check Task Tab, to see a new task is launched.
+
+#. Step. 4: Check Result tab to find the results.
 
 Using Surveillance Device to trigger the use case
 -------------------------------------

@@ -40,13 +40,11 @@ Download the docker-compose file and the configuration files as below.
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/deployment/docker/cloud-node/docker-compose.yml
 
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/development/deployment/docker/cloud-node/config.json
 
-	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/nginx.conf
 	
 
 Change the IP configuration accordingly
@@ -97,14 +95,12 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 	docker ps -a
 	
 	CONTAINER ID      IMAGE                       COMMAND                  CREATED             STATUS              PORTS                                                                                          NAMES
-	90868b310608      nginx:latest            "nginx -g 'daemon of…"   5 seconds ago       Up 3 seconds        0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
 	d4fd1aee2655      fogflow/worker          "/worker"                6 seconds ago       Up 2 seconds                                                                                                         fogflow_cloud_worker_1
 	428e69bf5998      fogflow/master          "/master"                6 seconds ago       Up 4 seconds        0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
 	9da1124a43b4      fogflow/designer        "node main.js"           7 seconds ago       Up 5 seconds        0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
 	bb8e25e5a75d      fogflow/broker          "/broker"                9 seconds ago       Up 7 seconds        0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
 	7f3ce330c204      rabbitmq:3              "docker-entrypoint.s…"   10 seconds ago      Up 6 seconds        4369/tcp, 5671/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                                            fogflow_rabbitmq_1
 	9e95c55a1eb7      fogflow/discovery       "/discovery"             10 seconds ago      Up 8 seconds        0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
-	51eff4975621      dgraph/standalone       "/run.sh"                15 seconds ago      Up 9 seconds        0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
 
 .. important:: 
 
@@ -266,16 +262,4 @@ Stop Edge node components
 
 	#stop both components in the same script
 	./edge_stop.sh 
-
-
-     
-
-
-
-
-
-
-
-
-
 

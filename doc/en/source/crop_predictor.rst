@@ -56,11 +56,7 @@ Please refer to the examples provided in our code repository.
 
 * `Crop_predictor_operator`_ 
 
-* `Crop_Predictor`_ 
-
-
 .. _`Crop_predictor_operator`: https://github.com/smartfog/fogflow/tree/Catalogue_Tutorial/application/operator/NGSI-LD-operator/CropPredictor
-.. _`Crop_Prediction`: https://github.com/smartfog/fogflow/blob/Catalogue_Tutorial/designer/public/js/CropPrediction.js
 
 
 Specify a service topology
@@ -113,57 +109,70 @@ As seen in the picture, the following important information must be provided.
     Shuffling element serves as a connector between two tasks such that output of a task is the input for the shuffle element and same is forwarded by Shuffle to another task (or tasks) as input.
 
 
-using NGSI Update to create it
+How to run Heart Health Prediction use case
+------------------------------------------
+
+#. Step. 1: Go to Management tab, press on start button. This will send the service intent. 
+
+#. Step. 2: Send Payload to create a new predictor task (Payload is provided below)
+
+#. Step. 3: Check Task Tab, to see a new task is launched.
+
+#. Step. 4: Check Prediction tab to find the results.
+
+
+Using NGSI Update to create it
 -------------------------------------
 
 
 Another way is to register a service topology by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
 
-.. note:: The Curl case assumes that the cloud IoT Broker is running on localhost on port 8070.
+.. note:: The Curl case assumes that the cloud IoT Broker is running on 192.168.21.232 on port 8070.
 
    .. group-tab:: curl
 
         .. code-block:: console 
 
-		curl -iX --location --request POST '192.168.21.232:8070/ngsi-ld/v1/entityOperations/upsert' \
-				--header 'Content-Type: application/json' \
-				--header 'Accept: application/ld+json' \
-				--header 'Link: <{{link}}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \
-				--data-raw '[
-				{
-				"id": "urn:ngsi-ld:Device.SoilSensor21",
-				"type": "SoilSensor",
-				"atemp": {
-					  "type": "Property",
-					  "value": 22.7
-					  },
-				"shum": {
-					  "type": "Property",
-					  "value": 82.63
-					  },
-				"pH": {
-					  "type": "Property",
-					  "value": 5.7
-					   },
-				"rain": {
-					  "type": "Property",
-					  "value": 271.32
-					   },
-				"ah": {
-					  "type": "Property",
-					  "value": 52.5
-					   },
-					  "location": {
-						"type": "GeoProperty",
-						"value": {
-						  "type": "Point",
-						  "coordinates": [
-							35.7,
-							138
-						  ]
-						}
-					 }
-				   }
-				]'
-								
+		curl -iX --location --request POST 'http://172.30.48.24:8070/ngsi-ld/v1/entityOperations/upsert' \
+            --header 'Content-Type: application/json' \
+            --header 'Accept: application/ld+json' \
+            --header 'Link: <{{link}}>; rel="http://www.w3.org/ns/json-ld#context"; type="application/ld+json"' \
+            --data-raw '[
+                {
+                    "id": "urn:ngsi-ld:Device.SoilSensor54",
+                    "type": "SoilSensor",
+                    "airmoisture": {
+                        "type": "Property",
+                        "value": 15
+                    },
+                    "airTemp": {
+                        "type": "Property",
+                        "value": 50
+                    },
+                    "soilmoisture": {
+                        "type": "Property",
+                        "value": 23
+                    },
+                    "soilpH": {
+                        "type": "Property",
+                        "value": 3
+                    },
+                    "rainfall": {
+                        "type": "Property",
+                        "value": 32
+                    },
+                    "location": {
+                        "type": "GeoProperty",
+                        "value": {
+                            "type": "Point",
+                            "coordinates": [
+                                35.7,
+                                138
+                            ]
+                        }
+                    }
+                }
+            ]'
+
+                .. note:: you can change the value in the above payload to test the prediction operator.				
               

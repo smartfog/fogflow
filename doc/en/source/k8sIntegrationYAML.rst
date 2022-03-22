@@ -51,57 +51,99 @@ Inorder to setup the components, please refer the steps below:
         apiVersion: v1
         data:
         config.json: |
-        {
-            "my_hostip": "172.30.48.24", 
-            "physical_location":{
-                "longitude": 139.709059,
-                "latitude": 35.692221
-             },
-             "site_id": "001",
-             "logging":{
-                 "info":"stdout",
-                 "error":"stdout",
-                 "protocol": "stdout",
-                 "debug": "stdout"
-             },
-             "discovery": {
-                 "http_port": 8090
-             },
-             "broker": {
-                 "http_port": 8070
-             },
-             "master": {
-                 "ngsi_agent_port": 1060
-             },
-             "worker": {
-                 "container_autoremove": false,
-                 "start_actual_task": true,
-                 "capacity": 8
-             },
-             "designer": {
-                 "webSrvPort": 8080,
-                 "agentPort": 1030
-             },
-             "rabbitmq": {
-                 "port": 5672,
-                 "username": "admin",
-                 "password":"mypass"
-             },
-             "https": {
-                 "enabled" : false
-             },
-             "persistent_storage": {
-                 "port": 9080
-             }
-        }
+                {
+                    "my_hostip": "10.0.0.10",
+                    "physical_location":{
+                        "longitude": 139.709059,
+                        "latitude": 35.692221
+                    },
+                    "site_id": "001",
+                    "logging":{
+                        "info":"stdout",
+                        "error":"stdout",
+                        "protocol": "stdout",
+                        "debug": "stdout"
+                    },
+                    "discovery": {
+                        "host_ip":"discovery",
+                        "http_port": 8090
+                    },
+                    "broker": {     
+                        "host_ip":"cloudbroker",                     
+                        "http_port": 8070
+                    },     
+                    "master": {       
+                        "host_ip":"master",                                                  
+                        "ngsi_agent_port": 1060,
+                        "rest_api_port": 8010                                                
+                    },
+                    "worker": {
+                        "container_management": "kubernetes", 
+                        "container_autoremove": false,
+                        "start_actual_task": true,
+                        "capacity": 8
+                    },
+                    "designer": {   
+                        "host_ip":"designer",                                                     
+                        "webSrvPort": 8080,
+                        "agentPort": 1030,
+                        "ldAgentPort":1090                               
+                    },    
+                    "rabbitmq": {     
+                        "port": 5672,
+                        "username": "admin",
+                        "password":"mypass"
+                    },
+                    "https": {
+                        "enabled" : false
+                    } 
+                }
+
+        nginx.conf: |
+                events {
+                worker_connections  4096;  
+                }
+                
+                http {
+                    server { 
+                        listen              80;
+                        server_name         master-node;
+                
+                        location / {
+                            proxy_http_version 1.1;                  
+                            proxy_pass   http://designer:8080/;
+                        }
+                
+                        location /ngsi9/ {
+                            proxy_http_version 1.1;                  
+                            proxy_pass   http://discovery:8090/ngsi9/;
+                        }
+                
+                        location /ngsi10/ {
+                            proxy_http_version 1.1;                  
+                            proxy_pass   http://cloudbroker:8070/ngsi10/;
+                        }
+                    
+                        location /ngsi-ld/ {
+                            proxy_http_version 1.1;                  
+                            proxy_pass   http://cloudbroker:8070/ngsi-ld/;
+                        }
+                    }
+                }
+
+        kind: ConfigMap
+        metadata:
+        name: fogflow-configmap
+        resourceVersion: "v3.2.2"
 
 **Step 4** : Use below command to deploy the cloud-node components.
 
 .. code-block:: console
 
-    ./install.sh [my_hostip] 
+    ./setup.sh [my_hostip] 
+    ./start.sh
 
-    E.g. ./install.sh 172.30.48.24
+    E.g. ./setup.sh 172.30.48.24
     The IP address is the one which will be configured in previous step as my_hostip
 
 Now verify the deployments using, 
@@ -112,21 +154,23 @@ Now verify the deployments using,
 
 .. code-block:: console
 
-    NAME                          READY   STATUS    RESTARTS   AGE
-    cloudbroker-cd68f4977-tnrbx   1/1     Running   0          52s
-    cloudworker-c68c8574c-77rsw   1/1     Running   0          51s
-    designer-57dfb754f4-zmc7l     1/1     Running   0          50s
-    dgraph-76b8c965c-54zhm        1/1     Running   0          52s
-    discovery-5c9cbb4798-kqd2t    1/1     Running   0          52s
-    master-866bcddb6b-ghd64       1/1     Running   0          51s
-    nginx-54bb77f5c-kz8mq         1/1     Running   0          50s
-    rabbitmq-6cdd877677-jn68r     1/1     Running   0          51s
+    NAME                           READY   STATUS    RESTARTS   AGE
+    cloudbroker-798db44b7c-b29wx   1/1     Running   0          16s
+    cloudworker-db4d856d4-j6g6s    1/1     Running   0          15s
+    designer-f4bbb8b7f-xbmbl       1/1     Running   0          14s
+    discovery-78bc69db-nfxcm       1/1     Running   0          16s
+    master-768ccbb9f7-dlb8g        1/1     Running   0          15s
+    nginx-689849868c-gv6l5         1/1     Running   0          17s
+    rabbitmq-786b76db69-4tm2c      1/1     Running   0          17s
+
 
 In order to stop the deployments of Fogflow system, follow below command:
 
 .. code-block:: console
 
-    ./uninstall.sh
+    ./stop.sh
+    ./cleanup.sh
+
     This is the script present in cloud-node folder
 
 Trigger a Task Inside a kubernetes Pod 
@@ -204,16 +248,15 @@ In order to launch a task instance associated with a fog function, follow below 
     $kubectl get pods -n fogflow 
 
 
-    NAME                                        READY   STATUS    RESTARTS   AGE
-    cloudbroker-cd68f4977-tnrbx                 1/1     Running   0          5m
-    cloudworker-c68c8574c-77rsw                 1/1     Running   0          4m59s
-    designer-57dfb754f4-zmc7l                   1/1     Running   0          4m58s
-    dgraph-76b8c965c-54zhm                      1/1     Running   0          5m
-    discovery-5c9cbb4798-kqd2t                  1/1     Running   0          5m
+    NAME                           READY   STATUS    RESTARTS   AGE
+    cloudbroker-798db44b7c-b29wx   1/1     Running   0          16s
+    cloudworker-db4d856d4-j6g6s    1/1     Running   0          15s
+    designer-f4bbb8b7f-xbmbl       1/1     Running   0          14s
+    discovery-78bc69db-nfxcm       1/1     Running   0          16s
+    master-768ccbb9f7-dlb8g        1/1     Running   0          15s
+    nginx-689849868c-gv6l5         1/1     Running   0          17s
+    rabbitmq-786b76db69-4tm2c      1/1     Running   0          17s
     fogflow-deployment-35431-5676c798d5-5cdfs   1/1     Running   0          68s    // Launched task instance inside Pod
-    master-866bcddb6b-ghd64                     1/1     Running   0          4m59s
-    nginx-54bb77f5c-kz8mq                       1/1     Running   0          4m58s
-    rabbitmq-6cdd877677-jn68r                   1/1     Running   0          4m59s
 
 
 Deploy FogFlow Edge Components on Microk8s Environment Using YAML Files
@@ -305,57 +348,61 @@ Deploy Edge Node
         apiVersion: v1
         data:
         config.json: |
-        {
-            "coreservice_ip": "172.30.48.24",
-            "my_hostip": "172.30.48.46",
-            "physical_location":{
-                "longitude": 140,
-                "latitude": 32
-             },
-             "site_id": "002",
-             "logging":{
-                 "info":"stdout",
-                 "error":"stdout",
-                 "protocol": "stdout",
-                 "debug": "stdout"
-             },
-             "discovery": {
-                 "http_port": 8090
-             },
-             "broker": {
-                 "http_port": 8060
-             },
-             "master": {
-                 "ngsi_agent_port": 1060
-             },
-             "worker": {
-                 "container_autoremove": false,
-                 "start_actual_task": true,
-                 "capacity": 8
-             },
-             "designer": {
-                 "webSrvPort": 8080,
-                 "agentPort": 1030
-             },
-             "rabbitmq": {
-                 "port": 5672,
-                 "username": "admin",
-                 "password":"mypass"
-             },
-             "https": {
-                 "enabled" : false
-             },
-             "persistent_storage": {
-                 "port": 9080
-             }
-        }
+                {
+                "coreservice_ip": "10.0.0.10",
+                "my_hostip": "10.0.0.10",
+                "physical_location":{
+                        "longitude": 35,
+                        "latitude": 142
+                },
+                "site_id": "002",
+                "logging":{
+                        "info":"stdout",
+                        "error":"stdout",
+                        "protocol": "stdout",
+                        "debug": "stdout"
+                },
+                "discovery": {
+                        "http_port": 80
+                },
+                "broker": {
+                        "http_port": 8060
+                },
+                "master": {
+                        "ngsi_agent_port": 1060
+                },
+                "worker": {
+                        "container_management": "kubernetes", 
+                        "container_autoremove": false,
+                        "start_actual_task": true,
+                        "capacity": 4
+                },
+                "designer": {
+                        "webSrvPort": 8080,
+                        "agentPort": 1030
+                },
+                "rabbitmq": {
+                        "port": 5672,
+                        "username": "admin",
+                        "password":"mypass"
+                },
+                "https": {
+                        "enabled" : false
+                }
+                }
+
+
+        kind: ConfigMap
+        metadata:
+        name: edge-configmap
+        resourceVersion: "v3.2.2"
 
 
 **Step 3** : Use below command to deploy the edge-node components.
 
 .. code-block:: console
 
-    ./install.sh [my_hostip]
+    ./start.sh [my_hostip]
 
     E.g. ./install.sh 172.30.48.46
     The IP address is the one, which will be configured in previous step as my_hostip i.e. where the edge node will be running.
@@ -376,7 +423,7 @@ In order to stop the deployments of Fogflow edge node, follow below command:
 
 .. code-block:: console
 
-    ./uninstall.sh
+    ./stop.sh
      This script is present inside edge node folder
 
 
