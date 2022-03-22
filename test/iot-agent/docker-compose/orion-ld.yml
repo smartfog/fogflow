@@ -65,7 +65,7 @@ services:
       - IOTA_DEFAULT_RESOURCE=/iot/d
 
       - IOTA_CB_NGSI_VERSION=ld # use NGSI-LD when sending updates for active attributes
-      - IOTA_JSON_LD_CONTEXT=https://fiware.github.io/data-models/context.jsonld
+      - IOTA_JSON_LD_CONTEXT=https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld
       - IOTA_FALLBACK_TENANT=openiot
     healthcheck:
       interval: 5s
