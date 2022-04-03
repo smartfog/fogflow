@@ -310,7 +310,9 @@ func (e *Executor) subscribeLdInputStream(refURL string, inputStream *InputStrea
 	LdSubscription.Entities = make([]EntityId, 0)
 	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
 	LdSubscription.Type = "Subscription"
-	LdSubscription.WatchedAttributes = inputStream.AttributeList
+	if len(inputStream.AttributeList) > 0 {
+		LdSubscription.WatchedAttributes = inputStream.AttributeList
+	}
 
 	LdSubscription.Notification.Endpoint.URI = refURL + "/notifyContext"
 

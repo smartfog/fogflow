@@ -936,7 +936,7 @@ func (nc *NGSI10Client) SubscribeLdContext(sub *LDSubscriptionRequest, requireRe
         }
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/ld+json")
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 	if requireReliability == true {
 		req.Header.Add("Require-Reliability", "true")
 	}

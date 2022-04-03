@@ -93,12 +93,14 @@ The response will look similar to the following:
 .. code-block:: console
 
 	{
-		"libVersion": "2.15.0",
+		"libVersion": "2.20.0",
 		"port": "4041",
 		"baseRoot": "/",
-		"version": "1.16.0"	
+		"version": "1.20.1"	
 	}
-    
+
+**Note:** version of IoT Agent should be greater or equal to  1.20.*.
+
 check if the IoT Device (Sensor, Actuator)is running properly
 	
 	Check the status from the Device dashboard
@@ -227,7 +229,7 @@ communications protocol to be used.
 	curl -L -X GET 'http://<orion-ld-brokerIP>:1026/ngsi-ld/v1/entities/urn:ngsi-ld:Device:water001' \
    	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
-   	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
+   	-H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-contet.jsonld"; type="application/ld+json"' \
         -H 'Content-Type: application/json' 
 
 Response
@@ -236,24 +238,9 @@ Response
 .. code-block:: console 
 
 	{
-		"@context": "https://fiware.github.io/data-models/context.jsonld",
+		"@context": "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld",
 		"id": "urn:ngsi-ld:Device:water001",
 		"type": "Device",
-		"heartRate": {
-			"type": "Property",
-			"value": {
-				"@type": "Intangible",
-				"@value": null
-			},
-			"unitCode": "5K"
-		},
-		"status": {
-			"type": "Property",
-			"value": {
-				"@type": "Intangible",
-				"@value": null
-			}
-		},
 		"location": {
 			"type": "GeoProperty",
 			"value": {
@@ -262,54 +249,68 @@ Response
 			}
 		},
 		"controlledAsset": {
+			"object": "urn:ngsi-ld:Building:barn001",
 			"type": "Relationship",
-			"object": "urn:ngsi-ld:Building:barn001"
+			"observedAt": "2022-03-22T18:01:54.890Z"
 		},
 		"category": {
+			"value": "sensor",
 			"type": "Property",
-			"value": "sensor"
+			"observedAt": "2022-03-22T18:01:54.890Z"
 		},
 		"supportedProtocol": {
+			"value": "ul20",
 			"type": "Property",
-			"value": "ul20"
+			"observedAt": "2022-03-22T18:01:54.890Z"
 		},
 		"on_status": {
-			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
-				"@value": "UNKNOWN"
-			}
+				"@value": "OK"
+			},
+			"type": "Property",
+			"observedAt": "2022-03-22T18:00:54.828Z"
 		},
 		"on_info": {
-			"type": "Property",
 			"value": {
 				"@type": "commandResult",
-				"@value": " "
-			}
+				"@value": " on OK"
+			},
+			"type": "Property",
+			"observedAt": "2022-03-22T18:00:54.828Z"
 		},
 		"off_status": {
-			"type": "Property",
 			"value": {
 				"@type": "commandStatus",
-				"@value": "UNKNOWN"
-			}
+				"@value": "OK"
+			},
+			"type": "Property",
+			"observedAt": "2022-03-22T18:01:54.890Z"
 		},
 		"off_info": {
-			"type": "Property",
 			"value": {
 				"@type": "commandResult",
-				"@value": " "
-			}
+				"@value": " off OK"
+			},
+			"type": "Property",
+			"observedAt": "2022-03-22T18:01:54.890Z"
 		},
 		"on": {
-			"type": "command",
-			"value": ""
+			"type": "Property",
+			"value": {
+				"@type": "command",
+				"@value": ""
+			}
 		},
 		"off": {
-			"type": "command",
-			"value": ""
+			"type": "Property",
+			"value": {
+				"@type": "command",
+				"@value": ""
+			}
 		}
 	}
+
 	
 
 **Step 4** To observe the state of the water sprinkler change through device monitor URL:**<IoT-DeviceIP>:3000/device/monitor** send the below PATCH request directly to the IoT Agent's North Port
@@ -351,7 +352,7 @@ How to Fetch data from Orion-LD to FogFlow
 		  -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 		  -d ' {
                  	"type": "Subscription",
                 	"entities": [{
@@ -376,7 +377,7 @@ How to Fetch data from Orion-LD to FogFlow
 	-H 'fiware-service: openiot' \
 	-H 'fiware-servicepath: /' \
 	-H 'Accept: application/ld+json' \
-	-H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+	-H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
 	-H 'Content-Type: application/json' \
 	--data-raw '{
 
@@ -399,7 +400,7 @@ Use the CURL command to query entities of type "Device" from  FogFlow thinBroker
 		  -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
-		  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
+		  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' 
 
 Note: Replace localhost with the IP where fogflow thinbroker is running.
 Note: Replace the localhost with IP where Orion-LD broker is running and <fogflow_broker_IP> with the IP where the fogflow broker is running.
@@ -457,7 +458,7 @@ How to Push the Generated Result back to the IoT Agent
                   -H 'Accept: application/ld+json' \
 		  -H 'fiware-service: openiot' \
 		  -H 'fiware-servicepath: /' \
-                  -H 'Link: <https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
+                  -H 'Link: <https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"' \
                   -d ' {
                         "type": "Subscription",
                         "entities": [{

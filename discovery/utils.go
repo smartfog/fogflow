@@ -5,7 +5,6 @@ import (
 	. "fogflow/common/ngsi"
 	"math"
 	"regexp"
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -108,7 +107,9 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 //matchLdMetadatas
 
 func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
-	fmt.Println("Matching metaDatas")
+	if restriction.Georel == "" {
+                return true
+        }
 	sp := restriction.Geometry
 	var typ string
 	var coordinate interface{}
@@ -149,13 +150,11 @@ func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restrict
 			}
 		}
 	case "polygon":
-		fmt.Println("restriction.Georel",restriction.Georel)
 		if restriction.Georel != "" {
 			res = FindDistForPolygon(typ, coordinate, restriction)
 		}
 	default:
 	}
-	fmt.Println("res",res)
 	return res
 }
 
