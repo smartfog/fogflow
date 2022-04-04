@@ -4,7 +4,7 @@ $(function() {
     var handlers = {}
 
     var childphotoURL = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/lostchild.png';
-    var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo';
+    var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/data/photo';
 
     var cameraMarkers = {};
 

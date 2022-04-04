@@ -1,7 +1,6 @@
 kubectl -n fogflow create -f configmap.yaml
 
 kubectl -n fogflow create -f rabbitmq.yaml
-kubectl -n fogflow create -f nginx.yaml
 
 kubectl -n fogflow create -f discovery.yaml
 kubectl -n fogflow create -f broker.yaml

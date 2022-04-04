@@ -158,7 +158,7 @@ var storage = multer.diskStorage({
     }
 });
 var upload = multer({ storage: storage }).any();
-app.post('/photo', function(req, res) {
+app.post('/data/photo', function(req, res) {
     upload(req, res, function(err) {
         if (err) {
             return res.end("Error uploading file.");
@@ -170,17 +170,17 @@ app.post('/photo', function(req, res) {
 //============= FogFlow API =================================
 
 app.all("/ngsi10/*", function(req, res) {
-    console.log('redirecting to ngsi-v1 broker');
+    //console.log('redirecting to ngsi-v1 broker');
     ngsiProxy.web(req, res, {target: cloudBrokerURL});
 });
 
 app.all("/ngsi-ld/*", function(req, res) {
-    console.log('redirecting to ngsi-ld broker');
+    //console.log('redirecting to ngsi-ld broker');
     ngsiProxy.web(req, res, {target: cloudBrokerURL});
 });
 
 app.all("/ngsi9/*", function(req, res) {
-    console.log('redirecting to ngsi-v1 discovery');
+    //console.log('redirecting to ngsi-v1 discovery');
     ngsiProxy.web(req, res, {target: discoveryURL});
 });
 

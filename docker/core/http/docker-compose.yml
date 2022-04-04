@@ -71,12 +71,12 @@ services:
             - RABBITMQ_DEFAULT_PASS=mypass   
         restart: always
         
-    nginx: 
-        image: nginx:latest
-        volumes:
-            - ./nginx.conf:/etc/nginx/nginx.conf
-        ports:
-            - 80:80
+    # nginx: 
+    #     image: nginx:latest
+    #     volumes:
+    #         - ./nginx.conf:/etc/nginx/nginx.conf
+    #     ports:
+    #         - 80:80
         # depends_on: 
         #     - discovery    
         #     - cloud_broker

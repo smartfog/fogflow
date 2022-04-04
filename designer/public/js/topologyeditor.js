@@ -74,7 +74,7 @@ blocks.register({
         {
             name: "SelectedType",
             type: "string",
-            choices: dtypes,                            
+//            choices: dtypes,                            
             attrs: "editable"
         },
         {

@@ -62,5 +62,7 @@ spec:
       targetPort: 1090             
   selector:
     run: designer
+  externalIPs: [10.0.0.10]
+    
 
     

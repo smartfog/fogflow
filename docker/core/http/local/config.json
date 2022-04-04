@@ -1,5 +1,5 @@
 {
-    "my_hostip": "10.0.0.10",
+    "my_hostip": "host.docker.internal",
     "physical_location": {
         "longitude": 139,
         "latitude": 35
@@ -22,8 +22,7 @@
         "rest_api_port": 8010                    
     },
     "worker": {
-        "container_management": "mec",
-        "edge_controller_port": 31125,
+        "container_management": "docker",
         "container_autoremove": false,
         "start_actual_task": true,
         "capacity": 8

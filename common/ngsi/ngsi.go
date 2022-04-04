@@ -605,7 +605,7 @@ func (scope *OperationScope) UnmarshalJSON(b []byte) error {
 }
 
 type Restriction struct {
-	AttributeExpression string           `json:"attributeExpression, omitempty"`
+	AttributeExpression string           `json:"attributeExpression,omitempty"`
 	Scopes              []OperationScope `json:"scopes,omitempty"`
 	Cordinates          interface{}      `json:"cordinates,omitempty"`
 	Geometry            string           `json:"geometry,omitempty"`
@@ -1185,15 +1185,15 @@ type Property struct {
 }
 
 type Relationship struct {
-	Name          string     `json:"name",omitemtpy`
-	Type          string     `json:"type",omitemtpy`
-	Object        string     `json:object,omitemtpy` //<<URI>>, Mandatory
-	ObservedAt    string     `json:"observedAt",omitempty`
-	ProvidedBy    ProvidedBy `json:"providedBy",omitempty`
-	DatasetId     string     `json:"DatasetId",omitempty`  //<<URI>>, Optional.
-	InstanceId    string     `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
-	CreatedAt     string     `json:"createdAt",omitemtpy`
-	ModifiedAt    string     `json:"modifiedAt",omitemtpy`
+	Name          string     `json:"name,omitemtpy"`
+	Type          string     `json:"type,omitemtpy"`
+	Object        string     `json:"object,omitemtpy"` //<<URI>>, Mandatory
+	ObservedAt    string     `json:"observedAt,omitempty"`
+	ProvidedBy    ProvidedBy `json:"providedBy,omitempty"`
+	DatasetId     string     `json:"DatasetId,omitempty"`  //<<URI>>, Optional.
+	InstanceId    string     `json:"InstanceId,omitempty"` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+	CreatedAt     string     `json:"createdAt,omitemtpy"`
+	ModifiedAt    string     `json:"modifiedAt,omitemtpy"`
 	Properties    []Property
 	Relationships []Relationship
 }
@@ -1204,33 +1204,33 @@ type ProvidedBy struct {
 }
 
 type LDSubscriptionRequest struct {
-	Id                string             `json:"id",omitempty`   //URI, if missing, will be assigned during subscription phase and returned to client
-	Type              interface{}        `json:"type",omitemtpy` //should be equal to "Subscription"
-	Name              string             `json:"name",omitempty`
-	Description       string             `json:"description",omitempty`
-	Entities          []EntityId         `json:"entities",omitempty`
-	WatchedAttributes []string           `json:"watchedAttributes",omitempty`
-	TimeInterval      uint               `json:"timeInterval",omitempty`
-	Q                 string             `json:"q",omitempty`
-	GeoQ              GeoQuery           `json:"geoQ",omitempty`
-	Csf               string             `json:"csf",omitempty`
-	IsActive          bool               `json:"isActive",omitempty`
+	Id                string             `json:"id,omitempty"`   //URI, if missing, will be assigned during subscription phase and returned to client
+	Type              interface{}        `json:"type,omitemtpy"` //should be equal to "Subscription"
+	Name              string             `json:"name,omitempty"`
+	Description       string             `json:"description,omitempty"`
+	Entities          []EntityId         `json:"entities,omitempty"`
+	WatchedAttributes []string           `json:"watchedAttributes,omitempty"`
+	TimeInterval      uint               `json:"timeInterval,omitempty"`
+	Q                 string             `json:"q,omitempty"`
+	GeoQ              GeoQuery           `json:"geoQ,omitempty"`
+	Csf               string             `json:"csf,omitempty"`
+	IsActive          bool               `json:"isActive,omitempty"`
 	Notification      NotificationParams `json:"notification"`
-	Expires           string             `json:"expires",omitempty`
-	Throttling        uint               `json:"throttling",omitempty`
-	TemporalQ         TemporalQuery      `json:"temporalQ",omitempty`
-	Status            string             `json:"status",omitempty`
-	Subscriber        Subscriber         `json:"subscriber,omitempty`
-	CreatedAt         interface{}             `json:"createdAt",omitemtpy`
-	ModifiedAt        interface{}             `json:"modifiedAt",omitemtpy`
+	Expires           string             `json:"expires,omitempty"`
+	Throttling        uint               `json:"throttling,omitempty"`
+	TemporalQ         TemporalQuery      `json:"temporalQ,omitempty"`
+	Status            string             `json:"status,omitempty"`
+	Subscriber        Subscriber         `json:"subscriber,omitempty"`
+	CreatedAt         interface{}        `json:"createdAt,omitemtpy"`
+	ModifiedAt        interface{}        `json:"modifiedAt,omitemtpy"`
 	Restriction       Restriction        `json:"restriction,omitempty"`
 }
 
 type GeoQuery struct {
-	Geometry    string `json:"geometry",omitemtpy`
-	Coordinates string `json:"coordinates",omitemtpy` // string or JSON Array
-	GeoRel      string `json:"georel",omitemtpy`
-	GeoProperty string `json:"geoproperty",omitempty`
+	Geometry    string `json:"geometry,omitemtpy"`
+	Coordinates string `json:"coordinates,omitemtpy"` // string or JSON Array
+	GeoRel      string `json:"georel,omitemtpy"`
+	GeoProperty string `json:"geoproperty,omitempty"`
 }
 
 type NotificationParams struct {

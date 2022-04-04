@@ -34,6 +34,7 @@ $(function() {
     addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
     
     initTopologyExamples();
+    
     queryOperatorList();
     queryEntityTypeList();
 

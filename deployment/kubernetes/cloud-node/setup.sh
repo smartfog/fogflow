@@ -8,7 +8,7 @@ if (( $# == 1 )); then
     echo "The external IP address is "$command
     echo "********************************************"
     
-    sed -i "s/externalIPs:\ \[.*/externalIPs:\ \[${command}]/" nginx.yaml
+    sed -i "s/externalIPs:\ \[.*/externalIPs:\ \[${command}]/" designer.yaml
     sed -i "s/externalIPs:\ \[.*/externalIPs:\ \[${command}]/" rabbitmq.yaml
     sed -i "s/my_hostip\": \".*\"/my_hostip\": \"${command}\"/" configmap.yaml
 fi
