@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	. "fogflow/common/constants"
-	. "fogflow/common/ldContext"
 	. "fogflow/common/ngsi"
 	"strings"
 	"time"
@@ -319,7 +318,7 @@ func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubs
 	subscription := LDSubscriptionRequest{}
 	var err error
 	typeflag := false
-	forloop:
+forloop:
 	for k, v := range expanded {
 		switch k {
 		case NGSI_LD_ID:
@@ -337,7 +336,7 @@ func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubs
 		case NGSILD_ENTITIES:
 			if v != nil {
 				subscription.Entities, err = sz.getQueryEntities(v.([]interface{}), "")
-				 if err != nil {
+				if err != nil {
 					break forloop
 				}
 			}
@@ -351,18 +350,18 @@ func (sz Serializer) handleSubscription(expanded map[string]interface{}) (LDSubs
 			}
 		case NGSILD_WATCHED_ATTRIBUTES:
 			if v != nil {
-                                subscription.WatchedAttributes, err = getWatchedAttribute(v.([]interface{}))
+				subscription.WatchedAttributes, err = getWatchedAttribute(v.([]interface{}))
 				if err != nil {
 					break forloop
 				}
-                         }
+			}
 		case NGSILD_NOTIFICATION:
 			if v != nil {
-                                        subscription.Notification, err = sz.getNotification(v.([]interface{}))
-                                        if err != nil {
-                                                break forloop
-                                        }
-                                }
+				subscription.Notification, err = sz.getNotification(v.([]interface{}))
+				if err != nil {
+					break forloop
+				}
+			}
 		case NGSI_LD_GEO_QUERY:
 			if v != nil {
 				switch v.(type) {
@@ -476,7 +475,6 @@ func (sz Serializer) DeSerializeType(attrPayload []interface{}) string {
 	}
 	return attr
 }
-
 
 func (sz Serializer) getType(typ []interface{}) string {
 	var Type, Type1 string
@@ -735,7 +733,7 @@ func (sz Serializer) getNotification(notificationArray []interface{}) (Notificat
 		for k, v := range notificationFields {
 			if strings.Contains(k, "attributes") {
 				notification.Attributes = sz.getArrayOfIds(v.([]interface{}))
-			} else if k ==  NGSILD_ENDPOINT{
+			} else if k == NGSILD_ENDPOINT {
 				endpoint, err := sz.getEndpoint(v.([]interface{}))
 				if err != nil {
 					return notification, err
@@ -802,7 +800,7 @@ func (sz Serializer) getQueryType(QueryData map[string]interface{}) (string, err
 // get NGSILD attributes
 func (sz Serializer) getQueryAttributes(attributes, context []interface{}) ([]string, error) {
 	attributesList := make([]string, 0)
-	if len(attributes) <=  0 {
+	if len(attributes) <= 0 {
 		err := errors.New("Zero length attribute list is not allowed")
 		return attributesList, err
 	}
@@ -846,7 +844,7 @@ func (sz Serializer) resolveEntity(entityobj interface{}, fs string) EntityId {
 	} else if val, ok := entitymap["type"]; ok == true {
 		entity.Type = sz.getEntityType(val)
 	}
-	if val , ok := entitymap[NGSILD_IDPATTERN]; ok == true {
+	if val, ok := entitymap[NGSILD_IDPATTERN]; ok == true {
 		entity.IdPattern = getStringValue(val.([]interface{}))
 		entity.IsPattern = true
 	}

@@ -12,7 +12,7 @@ const subscribed_keys = ['designer.*'];
 
 const TIME_INTERVAL_RECONNECT = 5000;
 
-function Init(rabbitmqURL, fnConsumer) 
+function Init(rabbitmqURL, fnConsumer, afterConnected) 
 {
     console.log("[RabbitMQ] connecting to ", rabbitmqURL);    
     amqp_url = rabbitmqURL;
@@ -22,7 +22,7 @@ function Init(rabbitmqURL, fnConsumer)
         console.log("[RabbitMQ] connected");
         amqpConn = conn;
         
-        whenConnected();
+        whenConnected(afterConnected);
     }).catch( function(err) {
         console.error("[RabbitMQ]", err.message);
         return setTimeout(reConnect, TIME_INTERVAL_RECONNECT);
@@ -43,7 +43,7 @@ function reConnect() {
     });
 }
 
-async function whenConnected() {
+async function whenConnected(callAfterConnected) {
     amqpChannel = await amqpConn.createChannel()
 
     //create the exchange 
@@ -58,7 +58,9 @@ async function whenConnected() {
         await amqpChannel.bindQueue(queue_name, exchange_name, key);           
     }
     
-    await amqpChannel.consume(queue_name, processMsg, { noAck: true });               
+    await amqpChannel.consume(queue_name, processMsg, { noAck: true });        
+	
+	callAfterConnected()       
 }
 
 function processMsg(msg) {

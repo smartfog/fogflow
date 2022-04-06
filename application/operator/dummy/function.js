@@ -1,7 +1,7 @@
 var entityID = "";
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
-	console.log("enter into the user-defined fog function");
+    console.log("enter into the user-defined fog function");
     
     entityID = contextEntity.entityId.id
     

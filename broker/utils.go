@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	//	. "fogflow/common/constants"
 	. "fogflow/common/constants"
 	. "fogflow/common/ngsi"
@@ -433,6 +434,7 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 var ExpandOnce sync.Once
 var CompactOnce sync.Once
+
 var ldE *ld.RFC7324CachingDocumentLoader
 var ldC *ld.RFC7324CachingDocumentLoader
 var expand_lock sync.RWMutex
@@ -456,6 +458,32 @@ func Expand_once() *ld.RFC7324CachingDocumentLoader {
 }
 
 //creating compact  singleton object for document loader
+
+//creating expand singleton object for document loader
+func Expand_object() *ld.RFC7324CachingDocumentLoader {
+	if ldE == nil {
+		ExpandOnce.Do(
+			func() {
+				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
+				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld")
+				fmt.Println("created object", ldE, err)
+			})
+	} else {
+		fmt.Println("The loader object is already created")
+	}
+	return ldE
+}
+
+//Expand
+func ExpandEntity(v interface{}) ([]interface{}, error) {
+	dl := Expand_object()
+	proc := ld.NewJsonLdProcessor()
+	opts := ld.NewJsonLdOptions("")
+	opts.ProcessingMode = ld.JsonLd_1_1
+	opts.DocumentLoader = dl
+	expanded, err := proc.Expand(v, opts)
+	return expanded, err
+}
 
 func Compact_once() *ld.RFC7324CachingDocumentLoader {
 	if ldC == nil {

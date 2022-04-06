@@ -1,6 +1,6 @@
 {
-    "coreservice_ip": "10.0.0.10",   
-    "my_hostip": "10.0.0.10",  
+    "coreservice_ip": "host.docker.internal",   
+    "my_hostip": "host.docker.internal",  
     "physical_location":{
         "longitude": 138.709059,
         "latitude": 36.692221

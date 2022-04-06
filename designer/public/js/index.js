@@ -300,15 +300,19 @@ $(function () {
     }
 
     function showWorkerList() {
-        var queryReq = {}
-        queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
-        client.queryContext(queryReq).then(function (edgeNodeList) {
-            // show edge nodes on the map
-            displayWorkerOnMap(edgeNodeList);
-        }).catch(function (error) {
-            console.log(error);
-            console.log('failed to query the list of workers');
-        });
+        fetch('/info/worker').then(res => res.json()).then(workers => {
+            displayWorkerOnMap(workers)
+        });        
+        
+//        var queryReq = {}
+//        queryReq.entities = [{ "type": 'Worker', "isPattern": true }];
+//        client.queryContext(queryReq).then(function (edgeNodeList) {
+//            // show edge nodes on the map
+//            displayWorkerOnMap(edgeNodeList);
+//        }).catch(function (error) {
+//            console.log(error);
+//            console.log('failed to query the list of workers');
+//        });
     }
 
 

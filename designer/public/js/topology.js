@@ -540,7 +540,7 @@ $(function() {
         $('#content').html(html);
 
         // add all service topologies into the selection list
-        listAllTopologies();
+        listAllServiceTopologies();
 
         // set the value accordingly
         if (intentEntity == undefined) {            
@@ -616,14 +616,13 @@ $(function() {
         .catch(err => console.log(err));    
     }
 
-    function listAllTopologies() {
-        fetch('/topology').then(res => res.json()).then(topologies => {
-            for(var i=0; i<topologies.length; i++){
-                var topology = topologies[i];
-                var name = topology.name;
+    function listAllServiceTopologies() {
+        fetch('/service').then(res => res.json()).then(servicetopologies => {
+            Object.values(servicetopologies).forEach(servicetopology => {
+                var name = servicetopology.topology.name;
                 var topologySelect = document.getElementById('topologyItems');                    
-                topologySelect.options[topologySelect.options.length] = new Option(name, name);
-            }
+                topologySelect.options[topologySelect.options.length] = new Option(name, name);                
+            })            
         }); 
     }
 

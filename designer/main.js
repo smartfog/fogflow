@@ -43,6 +43,8 @@ db.data ||= {   operators: {},
                 serviceintents: {}, 
                 fogfunctions: {} } 
 
+var send_loaded_intents = false
+
 var app = express();
 
 var ngsiProxy = httpProxy.createProxyServer();
@@ -102,7 +104,7 @@ const rabbitmq_url = 'amqp://' + rabbitmq_user + ':' + rabbitmq_password + '@'
 console.log(config);
 
 console.log(rabbitmq_url);
-rabbitmq.Init(rabbitmq_url, handleInternalMessage);
+rabbitmq.Init(rabbitmq_url, handleInternalMessage, issueLoadedIntents);
 
 function handleInternalMessage(jsonMsg) {
     console.log(jsonMsg);
@@ -116,6 +118,39 @@ function handleInternalMessage(jsonMsg) {
         
             break;        
     }        
+}
+
+// this is only triggered when starting the task designer
+function issueLoadedIntents() {
+    console.log("[RabbitMQ] is already connected")
+    
+    if (send_loaded_intents == false) {
+        console.log("issue the loaded intents to Master");
+                
+        // existing service intents
+        Object.keys(db.data.serviceintents).forEach(function(key){ 
+            var intent = db.data.serviceintents[key];        
+            intent.action = 'ADD';    
+            publishMetadata("ServiceIntent", intent);   
+            console.log(intent);             
+        });
+        
+        // existing fog functions
+        Object.keys(db.data.fogfunctions).forEach(function(key){ 
+            var fogfunction = db.data.fogfunctions[key];
+            
+            fogfunction.status = 'enabled';        
+            
+            console.log(fogfunction);      
+            
+            var intent = fogfunction.intent;
+            intent.action = 'ADD';
+            publishMetadata("ServiceIntent", intent);    
+            console.log(intent);                                                      
+        });     
+        
+        send_loaded_intents = true;
+    }
 }
 
 function uuid() {
@@ -443,11 +478,40 @@ app.get('/fogfunction/:name', async function(req, res) {
     var fogfunction = db.data.fogfunctions[name];
     res.json(fogfunction);
 });
+
+app.get('/fogfunction/:name/enable', async function(req, res) {    
+    var name = req.params.name;
+    var fogfunction = db.data.fogfunctions[name];
+    fogfunction.status = 'enabled';
+        
+    var serviceintent = fogfunction.intent;
+    serviceintent.action = 'ADD';
+    publishMetadata("ServiceIntent", serviceintent);            
+        
+    res.json(fogfunction);
+});
+
+app.get('/fogfunction/:name/disable', async function(req, res) {    
+    var name = req.params.name;
+    var fogfunction = db.data.fogfunctions[name];
+    fogfunction.status = 'disabled';
+        
+    var serviceintent = fogfunction.intent;
+    serviceintent.action = 'DELETE';
+    publishMetadata("ServiceIntent", serviceintent);           
+        
+    res.json(fogfunction);
+});
+
+
 app.post('/fogfunction', jsonParser, async function (req, res) {
     var fogfunctions = req.body;    
     
     for(var i=0; i<fogfunctions.length; i++){
         var fogfunction = fogfunctions[i];
+        
+        fogfunction.status = 'enabled';        
+        
         console.log(fogfunction);      
         db.data.fogfunctions[fogfunction.name] = fogfunction;
         db.data.topologies[fogfunction.name] = fogfunction.topology;
@@ -532,6 +596,7 @@ function publishMetadata(dType, dObject)
                 };
         
     rabbitmq.Publish(jsonMsg);    
+    console.log("Published: ", JSON.stringify(jsonMsg));
 }
 
 

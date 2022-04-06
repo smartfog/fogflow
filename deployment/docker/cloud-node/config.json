@@ -37,6 +37,7 @@
         "ldAgentPort":1090
     },    
     "rabbitmq": {
+        "host_ip":"rabbitmq",                                                                     
         "port": 5672,
         "username": "admin",
         "password":"mypass"

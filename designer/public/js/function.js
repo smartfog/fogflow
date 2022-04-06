@@ -382,9 +382,16 @@ $(function() {
 
             html += '<td>' + fogfunction.name + '</td>';
 
-            html += '<td class="singlecolumn">';
+            html += '<td>';
             html += '<button id="editor-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">view</button>';
             html += '<button id="delete-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">delete</button>';
+            
+            if (fogfunction.status == 'enabled') {
+                html += '<button id="status-' + fogfunction.name + '" type="button" class="btn btn-secondary btn-separator">disable</button>';                
+            } else {
+                html += '<button id="status-' + fogfunction.name + '" type="button" class="btn btn-success btn-separator">enable</button>';                
+            }
+            
             html += '</td>';
 
             html += '<td>' + JSON.stringify(fogfunction.topology.name) + '</td>';
@@ -420,6 +427,17 @@ $(function() {
                     deleteFogFunction(myFogFunction);
                 };
             }(fogfunction);
+            
+            var statusButton = document.getElementById('status-' + fogfunction.name);
+            statusButton.onclick = function(myFogFunction) {
+                return function() {
+                    if (statusButton.innerHTML == "enable") {
+                        enableFogFunction(myFogFunction);                        
+                    } else {
+                        disableFogFunction(myFogFunction);                                                
+                    }
+                };
+            }(fogfunction);            
         }
     }
 
@@ -433,6 +451,24 @@ $(function() {
         })
         .catch(err => console.log(err));   
     }
+    
+    function enableFogFunction(fogfunction) {                
+        fetch("/fogfunction/" + fogfunction.name + "/enable")
+        .then(response => {
+            console.log("enable a fog function: ", response.status)
+            showFogFunctions();
+        })
+        .catch(err => console.log(err));   
+    }    
+    
+    function disableFogFunction(fogfunction) {                
+        fetch("/fogfunction/" + fogfunction.name + "/disable")
+        .then(response => {
+            console.log("disable a fog function: ", response.status)
+            showFogFunctions();
+        })
+        .catch(err => console.log(err));   
+    }      
 
     function uuid() {
         var uuid = "",
