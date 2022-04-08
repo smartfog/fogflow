@@ -1044,6 +1044,14 @@ func Distance(p1 *Point, p2 *Point) uint64 {
 	return uint64(2 * r * math.Asin(math.Sqrt(h)))
 }
 
+type ConfigCommand struct {
+	CommandType     string `json:"command"`
+	BrokerURL       string `json:"brokerURL"`
+	InputEntityType string `json:"type"`
+	InputEntityId   string `json:"id"`
+	ReferenceURL    string `json:"url"`
+}
+
 //To handle RegisterContextRequest coming from IoT Agent
 type RegisterContextRequest1 struct {
 	ContextRegistrations []ContextRegistration1 `json:"contextRegistrations,omitempty"`
