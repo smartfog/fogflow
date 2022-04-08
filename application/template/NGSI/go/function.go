@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 )
 
 type publishContextFunc func(ctxObj *ContextObject)

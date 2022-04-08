@@ -11,6 +11,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/piprate/json-gold v0.4.0
 	github.com/sethgrid/pester v1.1.0
+	github.com/smartfog/fogflow v3.2.2+incompatible // indirect
 	github.com/streadway/amqp v1.0.0
 	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0

@@ -12,12 +12,14 @@ import (
 
 type NotifyContextFunc func(notifyCtxReq *NotifyContextRequest)
 type NotifyContextAvailabilityFunc func(notifyCtxAvailReq *NotifyContextAvailabilityRequest)
+type AdminCommandFunc func(configCommands []ConfigCommand)
 
 type NGSIAgent struct {
 	Port                        int
 	SecurityCfg                 HTTPS
 	CtxNotifyHandler            NotifyContextFunc
 	CtxAvailbilityNotifyHandler NotifyContextAvailabilityFunc
+	AdminCommandHandler         AdminCommandFunc
 }
 
 func (agent *NGSIAgent) Start() {
@@ -112,4 +114,8 @@ func (agent *NGSIAgent) SetContextNotifyHandler(cb NotifyContextFunc) {
 
 func (agent *NGSIAgent) SetContextAvailabilityNotifyHandler(cb NotifyContextAvailabilityFunc) {
 	agent.CtxAvailbilityNotifyHandler = cb
+}
+
+func (agent *NGSIAgent) SetAdminHandler(cb AdminCommandFunc) {
+	agent.AdminCommandHandler = cb
 }
