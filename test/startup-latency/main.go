@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	. "github.com/smartfog/fogflow/common/ngsi"
+	. "fogflow/common/ngsi"
 )
 
 var StartTime = time.Now()
