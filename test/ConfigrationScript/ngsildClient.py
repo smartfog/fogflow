@@ -30,4 +30,3 @@ def updateRequest(updateCtxEle, FogFlowBrokerURL):
         return response.status_code
     else:
         return ''
-

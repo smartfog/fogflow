@@ -1,4 +1,5 @@
-import sys, os
+import sys
+import os
 testdir = os.path.dirname(__file__)
 srcdir = '/opt/ngsildAdapter/module'
 sys.path.insert(0, os.path.abspath(os.path.join(testdir, srcdir)))

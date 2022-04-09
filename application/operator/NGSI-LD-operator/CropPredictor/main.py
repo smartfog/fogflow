@@ -42,9 +42,9 @@ def admin():
 
 @app.route('/notifyContext', methods=['POST'])
 def notifyContext():
-    print ('=============notify=============')
+    print('=============notify=============')
     sys.stdout.flush()
-    print (request.json)
+    print(request.json)
     sys.stdout.flush()
     if not request.json:
         abort(400)
@@ -74,9 +74,9 @@ def object2Element(ctxObj):
 
     for key in ctxObj:
         if key != 'id' and key != 'type' and key != 'modifiedAt' \
-            and key != 'createdAt' and key != 'observationSpace' \
-            and key != 'operationSpace' and key != 'location' and key \
-            != '@context':
+                and key != 'createdAt' and key != 'observationSpace' \
+                and key != 'operationSpace' and key != 'location' and key \
+                != '@context':
             if ctxObj[key].has_key('createdAt'):
                 ctxObj[key].pop('createdAt')
             if ctxObj[key].has_key('modifiedAt'):
@@ -89,7 +89,7 @@ def object2Element(ctxObj):
 def readContextElements(data):
 
     ctxObjects = []
-    print (data['type'])
+    print(data['type'])
     if data['type'] == 'Notification':
         for attr in data['data']:
             ctxObj = element2Object(attr)
@@ -100,6 +100,7 @@ def readContextElements(data):
 def handleNotify(contextObjs):
     for ctx in contextObjs:
         fogflow.handleEntity(ctx, publishResult)
+
 
 def handleConfig(configurations):
     global brokerURL
@@ -114,8 +115,8 @@ def handleConfig(configurations):
 
 def setInput(cmd):
     global input
-    print ('cmd')
-    print (cmd)
+    print('cmd')
+    print(cmd)
     if 'id' in cmd:
         input['id'] = cmd['id']
 
@@ -145,11 +146,10 @@ def publishResult(ctxObj):
                              data=json.dumps(ctxObj),
                              headers=headers)
     if response.status_code != 201:
-        print ('failed to update context')
+        print('failed to update context')
         sys.stdout.flush()
-        print (response.text)
+        print(response.text)
         sys.stdout.flush()
-
 
 
 '''def publishResultOnDesigner(ctxObj):
@@ -191,7 +191,7 @@ def fetchInputByQuery():
                             + input['id'], headers=headers)
 
     if response.status_code != 200:
-        print ('failed to query the input data')
+        print('failed to query the input data')
         return {}
     else:
         jsonResult = response.json()
@@ -209,10 +209,10 @@ def requestInputBySubscription():
 
     if id in input:
         ctxSubReq['entities'].append({'id': input['id'],
-                'isPattern': False})
+                                      'isPattern': False})
     else:
         ctxSubReq['entities'].append({'type': input['type'],
-                'isPattern': True})
+                                      'isPattern': True})
 
     subrequestUri['uri'] = 'http://host.docker.internal:' \
         + os.getenv('myport')
@@ -233,28 +233,28 @@ def requestInputBySubscription():
                              headers=headers)
 
     if response.status_code != 200:
-        print ('failed to query the input data')
+        print('failed to query the input data')
     else:
-        print ('subscribed to the input data')
+        print('subscribed to the input data')
 
 
 # continuous execution to handle received notifications
 
 def notify2execution():
     myport = int(os.getenv('myport'))
-    print ('listening on port ' + os.getenv('myport'))
+    print('listening on port ' + os.getenv('myport'))
 
     app.run(host='0.0.0.0', port=myport)
 
 
 def runInOperationMode():
-    print ('===== OPERATION MODEL========')
+    print('===== OPERATION MODEL========')
 
     # apply the configuration received from the environmental varible
 
     myCfg = os.getenv('adminCfg')
 
-    print (myCfg)
+    print(myCfg)
 
     adminCfg = json.loads(myCfg)
     handleConfig(adminCfg)
@@ -274,13 +274,13 @@ def query2execution():
 
 
 def runInTestMode():
-    print ('===== TEST NGSILD MODEL========')
+    print('===== TEST NGSILD MODEL========')
 
     # load the configuration
 
     with open('config.json') as json_file:
         config = json.load(json_file)
-        print (config)
+        print(config)
 
         handleConfig(config)
 
@@ -296,4 +296,3 @@ if __name__ == '__main__':
         runInOperationMode()
     else:
         runInTestMode()
-

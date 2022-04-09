@@ -1,8 +1,10 @@
+from consts import constant
 import logging
 import datetime
-import sys,os
+import sys
+import os
 sys.path.append('/opt/ngsildAdapter/module')
-from consts import constant
+
 
 class Handler:
     def __init__(self):
@@ -11,12 +13,12 @@ class Handler:
 # creating logger
 
     def get_logger(self):
-        log_path=self.get_file_name()
-        logger_format='[ %(asctime)s ]  %(levelname)s   %(filename)s        %(message)s'
+        log_path = self.get_file_name()
+        logger_format = '[ %(asctime)s ]  %(levelname)s   %(filename)s        %(message)s'
         logging.basicConfig(filename=log_path,
-                    format=logger_format,
-                    filemode='a+')
-        logger=logging.getLogger()
+                            format=logger_format,
+                            filemode='a+')
+        logger = logging.getLogger()
         logger.setLevel(constant.logging_level)
         return logger
 
@@ -24,7 +26,9 @@ class Handler:
 
     def get_file_name(self):
         file_name = datetime.date.today()
-        file_location=constant.log_path+'log_file_'+str(file_name)
+        file_location = constant.log_path+'log_file_'+str(file_name)
         return file_location
-logger_obj=Handler()
-logger=logger_obj.get_logger()
+
+
+logger_obj = Handler()
+logger = logger_obj.get_logger()

@@ -15,13 +15,14 @@ type = ''
 
 
 def handleConfig(config):
-    global myIp ,NGSILDBrokerURL , FogFlowBrokerURL, myIp , id ,  type
+    global myIp, NGSILDBrokerURL, FogFlowBrokerURL, myIp, id,  type
     global myIp
     NGSILDBrokerURL = config['subscribe_broker_url']
     myIp = config['my_ip']
     FogFlowBrokerURL = config['update_broker_url']
     id = config['id']
     type = config['type']
+
 
 def setConfig():
     with open('config.json') as json_file:
@@ -30,23 +31,24 @@ def setConfig():
 
 
 def updateRequest():
-    global myIp ,NGSILDBrokerURL , FogFlowBrokerURL, myIp, id, type
+    global myIp, NGSILDBrokerURL, FogFlowBrokerURL, myIp, id, type
     updateCtxRequest = {}
     updateCtxRequest['id'] = id
     updateCtxRequest['type'] = type
     brand = {}
     brand['type'] = 'property'
     brand['value'] = 'BMW'
-    
-    updateCtxRequest['brand'] = brand 
 
-    responseStartus = fogflow.updateRequest(updateCtxRequest,FogFlowBrokerURL)
+    updateCtxRequest['brand'] = brand
+
+    responseStartus = fogflow.updateRequest(updateCtxRequest, FogFlowBrokerURL)
     print(responseStartus)
 
+
 def subscribe():
-    global myIp ,NGSILDBrokerURL , FogFlowBrokerURL, myIp , id , type
+    global myIp, NGSILDBrokerURL, FogFlowBrokerURL, myIp, id, type
     subscriptionRequest = {}
-    subscriptionRequest['type']  = 'Subscription'
+    subscriptionRequest['type'] = 'Subscription'
 
     entities = []
 
@@ -67,17 +69,15 @@ def subscribe():
 
     subscriptionRequest['notification'] = notification
     print(subscriptionRequest)
-    statusCode = fogflow.subscribeContext(subscriptionRequest,NGSILDBrokerURL)
+    statusCode = fogflow.subscribeContext(subscriptionRequest, NGSILDBrokerURL)
     if statusCode == '':
         print('check BrokerURL in config.json')
-    else :
+    else:
         print(statusCode)
-    
+
+
 if __name__ == '__main__':
-     #run app
+    # run app
     setConfig()
     subscribe()
     updateRequest()
-    
-     
-

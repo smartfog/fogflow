@@ -10,6 +10,7 @@ require (
 	github.com/lib/pq v1.10.1
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/piprate/json-gold v0.4.0
+	github.com/securego/gosec v0.0.0-20200401082031-e946c8c39989 // indirect
 	github.com/sethgrid/pester v1.1.0
 	github.com/smartfog/fogflow v3.2.2+incompatible // indirect
 	github.com/streadway/amqp v1.0.0

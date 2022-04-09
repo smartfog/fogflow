@@ -11,6 +11,7 @@ entityIdDict = []
 # Getting notification for Quantumleap and sending response 200 to the
 # test module
 
+
 @app.route('/ngsi-ld/v1/entityOperations/upsert', methods=['POST'])
 def upsertNotification():
     print(dir(request))
@@ -29,6 +30,7 @@ def upsertNotificationNew():
     print(entities)
     return "Done"
 
+
 @app.route('/validateupsert', methods=['POST'])
 def upsertNotificationvalidator():
     data = request.get_json(force=True)
@@ -37,10 +39,12 @@ def upsertNotificationvalidator():
     print(pload1)
     print(entityIdDict)
     if pload1 in entityIdDict:
-         statusCode = "200"
-    else :	
-	 statusCode = "404"
+        statusCode = "200"
+    else:
+        statusCode = "404"
+
     return statusCode
+
 
 @app.route('/accumulate', methods=['POST'])
 def getUpdateNotification():
@@ -96,20 +100,20 @@ def getValidationNotification():
         print("Not validated")
         return "Not validated"
 
-@app.route('/ngsi10/updateContext',methods=['POST'])
+
+@app.route('/ngsi10/updateContext', methods=['POST'])
 def getNotified_southbound():
     data = request.get_json()
     print(data)
-    if data["contextElements"][0]["attributes"][0]["type"]=="command" and data["contextElements"][0]["attributes"][0]["name"]=="on":
-    	print("validated the method")
+    if data["contextElements"][0]["attributes"][0]["type"] == "command" and data["contextElements"][0]["attributes"][0]["name"] == "on":
+        print("validated the method")
     else:
-	print("Not validated")
+        print("Not validated")
     #pload = data["subscriptionId"]
-    #subId.append(data["subscriptionId"])
-    #print(pload)
-    #print(subId)
+    # subId.append(data["subscriptionId"])
+    # print(pload)
+    # print(subId)
     return "Notification of command recieved"
-
 
 
 # main file for starting application

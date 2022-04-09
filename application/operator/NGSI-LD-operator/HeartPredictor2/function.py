@@ -6,56 +6,57 @@ from datetime import datetime
 
 loaded_rf = joblib.load("./predictor.joblib")
 
+
 def handleEntity(ctxObj, publish, publishResultOnDesigner):
     print('===============Implement logic====================')
-    
+
     print(ctxObj)
     sys.stdout.flush()
     print(ctxObj["type"])
-    sys.stdout.flush()   
+    sys.stdout.flush()
     print(ctxObj["age"]["value"])
-    sys.stdout.flush() 
+    sys.stdout.flush()
 
     my_data = {
-    'age': [ctxObj["age"]["value"]],
-    'sex': [ctxObj["sex"]["value"]],
-    'cp': [ctxObj["cp"]["value"]],
-    'trestbps': [ctxObj["trestbps"]["value"]],
-    'chol': [ctxObj["chol"]["value"]],
-    'fbs': [ctxObj["fbs"]["value"]],
-    'restecg': [ctxObj["restecg"]["value"]],
-    'thalach': [ctxObj["thalach"]["value"]],
-    'exang': [ctxObj["exang"]["value"]],
-    'oldpeak': [ctxObj["oldpeak"]["value"]],
-    'slope': [ctxObj["slope"]["value"]],
-    'ca': [ctxObj["ca"]["value"]],
-    'thal': [ctxObj["thal"]["value"]]
+        'age': [ctxObj["age"]["value"]],
+        'sex': [ctxObj["sex"]["value"]],
+        'cp': [ctxObj["cp"]["value"]],
+        'trestbps': [ctxObj["trestbps"]["value"]],
+        'chol': [ctxObj["chol"]["value"]],
+        'fbs': [ctxObj["fbs"]["value"]],
+        'restecg': [ctxObj["restecg"]["value"]],
+        'thalach': [ctxObj["thalach"]["value"]],
+        'exang': [ctxObj["exang"]["value"]],
+        'oldpeak': [ctxObj["oldpeak"]["value"]],
+        'slope': [ctxObj["slope"]["value"]],
+        'ca': [ctxObj["ca"]["value"]],
+        'thal': [ctxObj["thal"]["value"]]
     }
 
     myvar = pd.DataFrame(my_data)
 
     prediction = loaded_rf.predict(myvar)
-    print("The prediction is ",prediction)
-    sys.stdout.flush()
- 
-    if prediction[0] == 0:
-      result = "You are not at risk"
-      print(result)
-    else:
-      result = "You are at Risk"
-      print(result)
-      
+    print("The prediction is ", prediction)
     sys.stdout.flush()
 
-    #generate result to publish 
+    if prediction[0] == 0:
+        result = "You are not at risk"
+        print(result)
+    else:
+        result = "You are at Risk"
+        print(result)
+
+    sys.stdout.flush()
+
+    # generate result to publish
     updateEntity = \
-    {   
-        'id' : ctxObj["id"]+".prediction",
-        'type' : 'prediction',
-        'Analysis' : { 'type' : 'Property', 'value' : result},
-        'alert' : { 'type' : 'Property', 'value' : str(prediction[0])},
-        'Time' : { 'type' : 'Property' , 'value' : str(datetime.now())} 
-    }
+        {
+            'id': ctxObj["id"]+".prediction",
+            'type': 'prediction',
+            'Analysis': {'type': 'Property', 'value': result},
+            'alert': {'type': 'Property', 'value': str(prediction[0])},
+            'Time': {'type': 'Property', 'value': str(datetime.now())}
+        }
     print("Update Entity : ")
     print(json.dumps(updateEntity))
     sys.stdout.flush()
@@ -63,9 +64,8 @@ def handleEntity(ctxObj, publish, publishResultOnDesigner):
     publishResultOnDesigner(updateEntity)
 
     if result == "You are at Risk":
-      publish(updateEntity)
+        publish(updateEntity)
     sys.stdout.flush()
-
 
     '''ctxObjKeys = ctxObj.keys()
     
@@ -81,5 +81,3 @@ def handleEntity(ctxObj, publish, publishResultOnDesigner):
                 else:
                     print(ctxEle,ctxObjValue['type'],ctxObjValue['value'])
     publish(ctxObj)'''
-
-    

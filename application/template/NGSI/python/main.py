@@ -18,7 +18,6 @@ outputs = []
 input = {}
 
 
-
 @app.errorhandler(400)
 def not_found(error):
     return make_response(jsonify({'error': 'Bad request'}), 400)
@@ -123,9 +122,10 @@ def handleConfig(configurations):
         elif config['command'] == 'SET_INPUTS':
             setInput(config)
 
+
 def setInput(cmd):
     global input
-    
+
     if 'id' in cmd:
         input['id'] = cmd['id']
 
@@ -140,7 +140,7 @@ def publishResult(ctxObj):
     ctxElement = object2Element(ctxObj)
 
     updateCtxReq = {}
-    
+
     updateCtxReq['updateAction'] = 'UPDATE'
     updateCtxReq['contextElements'] = []
     updateCtxReq['contextElements'].append(ctxElement)
@@ -148,58 +148,63 @@ def publishResult(ctxObj):
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     response = requests.post(brokerURL + '/updateContext',
-                             data=json.dumps(updateCtxReq), 
+                             data=json.dumps(updateCtxReq),
                              headers=headers)
     if response.status_code != 200:
         print('failed to update context')
         print(response.text)
 
-def fetchInputByQuery():            
+
+def fetchInputByQuery():
     ctxQueryReq = {}
 
     ctxQueryReq['entities'] = []
-    
+
     if id in input:
         ctxQueryReq['entities'].append({'id': input['id'], 'isPattern': False})
-    else:                
-        ctxQueryReq['entities'].append({'type': input['type'], 'isPattern': True})        
-            
+    else:
+        ctxQueryReq['entities'].append(
+            {'type': input['type'], 'isPattern': True})
+
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     response = requests.post(brokerURL + '/queryContext',
-                             data=json.dumps(ctxQueryReq), 
+                             data=json.dumps(ctxQueryReq),
                              headers=headers)
 
     if response.status_code != 200:
         print('failed to query the input data')
         return []
     else:
-        jsonResult = response.json()  
-        
+        jsonResult = response.json()
+
         entities = []
-        
+
         for ctxElement in jsonResult['contextResponses']:
             ctxObj = element2Object(ctxElement['contextElement'])
             entities.append(ctxObj)
-                    
+
         return entities
+
 
 def requestInputBySubscription():
     ctxSubReq = {}
 
     ctxSubReq['entities'] = []
-    
+
     if id in input:
         ctxSubReq['entities'].append({'id': input['id'], 'isPattern': False})
-    else:                
-        ctxSubReq['entities'].append({'type': input['type'], 'isPattern': True})        
+    else:
+        ctxSubReq['entities'].append(
+            {'type': input['type'], 'isPattern': True})
 
-    ctxSubReq['reference'] = "http://host.docker.internal:" + os.getenv('myport')
+    ctxSubReq['reference'] = "http://host.docker.internal:" + \
+        os.getenv('myport')
 
     headers = {'Accept': 'application/json',
                'Content-Type': 'application/json'}
     response = requests.post(brokerURL + '/subscribeContext',
-                             data=json.dumps(ctxSubReq), 
+                             data=json.dumps(ctxSubReq),
                              headers=headers)
 
     if response.status_code != 200:
@@ -209,7 +214,7 @@ def requestInputBySubscription():
 
 
 # continuous execution to handle received notifications
-def notify2execution(): 
+def notify2execution():
     myport = int(os.getenv('myport'))
     print("listening on port " + os.getenv('myport'))
 
@@ -234,6 +239,7 @@ def notify2execution():
         notify2execution()
 '''
 
+
 def runInOperationMode():
     print("===== OPERATION MODEL========")
     global brokerURL
@@ -241,7 +247,7 @@ def runInOperationMode():
     myCfg = os.getenv('adminCfg')
 
     print(myCfg)
-    if myCfg != None :
+    if myCfg != None:
 
         adminCfg = json.loads(myCfg)
         handleConfig(adminCfg)
@@ -255,7 +261,7 @@ def runInOperationMode():
 
 
 # one time execution triggered by query
-def query2execution():      
+def query2execution():
     ctxObjects = fetchInputByQuery()
     handleNotify(ctxObjects)
 
@@ -263,21 +269,21 @@ def query2execution():
 def runInTestMode():
     print("===== TEST MODEL========")
 
-	#load the configuration
+    # load the configuration
     with open('config.json') as json_file:
-        config = json.load(json_file) 
+        config = json.load(json_file)
         print(config)
-        
-        handleConfig(config)                
+
+        handleConfig(config)
 
         # trigger the data processing
         query2execution()
 
+
 if __name__ == '__main__':
     parameters = sys.argv
-    
+
     if len(parameters) == 2 and parameters[1] == "-o":
         runInOperationMode()
     else:
         runInTestMode()
-    

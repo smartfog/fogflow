@@ -15,8 +15,9 @@ scorpioBrokerURL = ''
 outputs = []
 
 input = {}
-scorpioIp = '' 
+scorpioIp = ''
 brokerURL = ''
+
 
 @app.errorhandler(400)
 def not_found(error):
@@ -38,9 +39,11 @@ def admin():
 
     return jsonify({'responseCode': 200})
 
+
 '''
 	handle notification recieved by FogFlow Broker
 '''
+
 
 @app.route('/notifyContext', methods=['POST'])
 def notifyContext():
@@ -72,9 +75,9 @@ def object2Element(ctxObj):
 
     for key in ctxObj:
         if key != 'id' and key != 'type' and key != 'modifiedAt' \
-            and key != 'createdAt' and key != 'observationSpace' \
-            and key != 'operationSpace' and key != 'location' and key \
-            != '@context':
+                and key != 'createdAt' and key != 'observationSpace' \
+                and key != 'operationSpace' and key != 'location' and key \
+                != '@context':
             if ctxObj[key].has_key('createdAt'):
                 ctxObj[key].pop('createdAt')
             if ctxObj[key].has_key('modifiedAt'):
@@ -84,6 +87,8 @@ def object2Element(ctxObj):
     return ctxElement
 
 # read notify context Element
+
+
 def readContextElements(data):
 
     ctxObjects = []
@@ -95,11 +100,13 @@ def readContextElements(data):
 
 # notify handler
 
+
 def handleNotify(contextObjs):
     for ctx in contextObjs:
-        fogflow.handleEntity(ctx, createRequest, updateRequest, appendRequest)   
+        fogflow.handleEntity(ctx, createRequest, updateRequest, appendRequest)
 
-# set configration 
+# set configration
+
 
 def handleConfig(configurations):
     global brokerURL
@@ -110,17 +117,18 @@ def handleConfig(configurations):
             outputs.append({'id': config['id'], 'type': config['type']})
         elif config['command'] == 'SET_INPUTS':
             setInput(config)
-	elif config['command'] == 'scorpio':
-	    setScorpioIp(config)
+        elif config['command'] == 'scorpio':
+            setScorpioIp(config)
+
 
 '''
 	set scorpio broker ip from config.json
 '''
 
+
 def setScorpioIp(ipCmd):
     global scorpioBrokerURL
     scorpioBrokerURL = ipCmd['scorpioIp']
-
 
 
 def setInput(cmd):
@@ -134,6 +142,7 @@ def setInput(cmd):
 '''
 	create request for scorpio broker
 '''
+
 
 def createRequest(ctxObj):
     global scorpioBrokerURL
@@ -150,13 +159,13 @@ def createRequest(ctxObj):
                              data=json.dumps(ctxElement),
                              headers=headers)
 
-
     if response.status_code == 201:
-        print  "======= Successfully created =========="
+        print "======= Successfully created =========="
     elif response.status_code == 409:
-        fogflow.handleAlreadyCreatedEntity(eid, createRequest, updateRequest, appendRequest)
-    else : 
-	print "=======Failed to publish data on scorpio Broker =========="
+        fogflow.handleAlreadyCreatedEntity(
+            eid, createRequest, updateRequest, appendRequest)
+    else:
+        print "=======Failed to publish data on scorpio Broker =========="
         print response.text
 
 
@@ -183,13 +192,13 @@ def updateRequest(ctxObj):
                'Content-Type': 'application/json',
                'Link': '<https://fiware.github.io/data-models/context.jsonld>; rel="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"; type="application/ld+json"'}
     response = requests.patch(scorpioBrokerURL + '/ngsi-ld/v1/entities/' + eid + '/attrs',
-                             data=json.dumps(ctxElement),
-                             headers=headers)
+                              data=json.dumps(ctxElement),
+                              headers=headers)
     if response.status_code != 204:
         print 'failed to update context'
         print response.text
-    else :
-	print "=======Successfully updated=========="
+    else:
+        print "=======Successfully updated=========="
 
 
 '''
@@ -220,13 +229,14 @@ def appendRequest(ctxObj):
     if response.status_code != 204:
         print 'failed to append context'
         print response.text
-    else :
-	print "=======Successfully append=========="
+    else:
+        print "=======Successfully append=========="
 
 
 '''
 	Query for FogFlow broker
 '''
+
 
 def fetchInputByQuery():
     ctxQueryReq = {}
@@ -247,9 +257,11 @@ def fetchInputByQuery():
 
         return ctxObj
 
+
 '''
      customised Query for FogFlow broker
 '''
+
 
 def requestInputBySubscription():
     ctxSubReq = {}
@@ -258,10 +270,10 @@ def requestInputBySubscription():
 
     if id in input:
         ctxSubReq['entities'].append({'id': input['id'],
-                'isPattern': False})
+                                      'isPattern': False})
     else:
         ctxSubReq['entities'].append({'type': input['type'],
-                'isPattern': True})
+                                      'isPattern': True})
 
     subrequestUri['uri'] = 'http://host.docker.internal:' \
         + os.getenv('myport')
@@ -302,7 +314,7 @@ def runInOperationMode():
 
     # apply the configuration received from the environmental varible
 
-    #setConfig()
+    # setConfig()
 
     myCfg = os.getenv('adminCfg')
 
@@ -324,20 +336,23 @@ def query2execution():
     ctxObjects = fetchInputByQuery()
     handleNotify(ctxObjects)
 
+
 '''
     read configration file
 '''
+
 
 def setConfig():
 
     # load the configuration
     with open('config.json') as json_file:
-	config = json.load(json_file)
-	print config
+        config = json.load(json_file)
+        print config
 
-    	handleConfig(config)
-    
-#run code in test mode
+        handleConfig(config)
+
+# run code in test mode
+
 
 def runInTestMode():
     print '===== TEST NGSILD MODEL========'
@@ -345,11 +360,12 @@ def runInTestMode():
     # load the configuration
 
     setConfig()
-        # trigger the data processing
+    # trigger the data processing
 
     query2execution()
 
 # main handler that run code in test mode and operation mode
+
 
 if __name__ == '__main__':
     parameters = sys.argv
@@ -358,4 +374,3 @@ if __name__ == '__main__':
         runInOperationMode()
     else:
         runInTestMode()
-
