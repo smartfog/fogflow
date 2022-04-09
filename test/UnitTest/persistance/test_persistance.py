@@ -249,40 +249,40 @@ def test_persistintent():
     assert r.status_code == 200
 
 
-'''
-testcase 19: To test registration for service intent with empty payload
-'''
+# '''
+# testcase 19: To test registration for service intent with empty payload
+# '''
 
 
-def test_persistintent1():
-    designerUrl = designerIp + "/intent"
-    headers = {'Content-Type': 'application/json'}
-    r = requests.post(designerUrl, data=json.dumps(
-        data.test400), headers=headers)
-    assert r.status_code == 200
+# def test_persistintent1():
+#     designerUrl = designerIp + "/intent"
+#     headers = {'Content-Type': 'application/json'}
+#     r = requests.post(designerUrl, data=json.dumps(
+#         data.test400), headers=headers)
+#     assert r.status_code == 200
 
 
-'''
-testcase 20: To test registration for service intent with attributes: id and topology.
-'''
+# '''
+# testcase 20: To test registration for service intent with attributes: id and topology.
+# '''
 
 
-def test_persistintent2():
-    designerUrl = designerIp + "/intent"
-    headers = {'Content-Type': 'application/json'}
-    r = requests.post(designerUrl, data=json.dumps(
-        data.test401), headers=headers)
-    assert r.status_code == 200
+# def test_persistintent2():
+#     designerUrl = designerIp + "/intent"
+#     headers = {'Content-Type': 'application/json'}
+#     r = requests.post(designerUrl, data=json.dumps(
+#         data.test401), headers=headers)
+#     assert r.status_code == 200
 
 
-'''
-testcase 21: To test registration for service intent with attributes: geoscope and topology.
-'''
+# '''
+# testcase 21: To test registration for service intent with attributes: geoscope and topology.
+# '''
 
 
-def test_persistintent3():
-    designerUrl = designerIp + "/intent"
-    headers = {'Content-Type': 'application/json'}
-    r = requests.post(designerUrl, data=json.dumps(
-        data.test402), headers=headers)
-    assert r.status_code == 200
+# def test_persistintent3():
+#     designerUrl = designerIp + "/intent"
+#     headers = {'Content-Type': 'application/json'}
+#     r = requests.post(designerUrl, data=json.dumps(
+#         data.test402), headers=headers)
+#     assert r.status_code == 200

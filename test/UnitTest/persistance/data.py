@@ -183,23 +183,24 @@ test3 =\
 
 
 # payload to persist service intent
-test400 =\
-    {
-    }
-test401 =\
-    {
-        "topology": "anomaly-detection",
-        "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2"
-    }
-test402 =\
-    {
-        "topology": "anomaly-detection",
-        "geoscope": {"scopeType": "global", "scopeValue": "global"},
-    }
+# test400 =\
+#     {
+#     }
+# test401 =\
+#     {
+#         "topology": "anomaly-detection",
+#         "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2",
+#     }
+# test402 =\
+#     {
+#         "topology": "anomaly-detection",
+#         "geoscope": {"scopeType": "global", "scopeValue": "global"},
+#     }
 
 test4 =\
     {
         "topology": "anomaly-detection",
+        "stype": "Asynchronous",
         "priority": {"exclusive": False, "level": 50},
         "qos": 'NONE',
         "geoscope": {"scopeType": "global", "scopeValue": "global"},

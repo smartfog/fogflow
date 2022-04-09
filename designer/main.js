@@ -120,6 +120,15 @@ function handleInternalMessage(jsonMsg) {
     }        
 }
 
+function isEmpty(obj) {
+    for(var prop in obj) {
+        if(obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+}
+
 // this is only triggered when starting the task designer
 function issueLoadedIntents() {
     console.log("[RabbitMQ] is already connected")
@@ -438,6 +447,12 @@ app.get('/intent/topology/:topology', async function(req, res) {
 });
 app.post('/intent', jsonParser, async function (req, res) {
     var serviceintent = req.body;    
+    
+    if (isEmpty(serviceintent) == true) {
+        res.sendStatus(200)       
+        return        
+    }
+
     console.log(serviceintent)
     db.data.serviceintents[serviceintent.id] = serviceintent;    
     await db.write();    
