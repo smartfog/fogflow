@@ -121,11 +121,11 @@ follows:
 
 ## Talks
 
-- [FogFlow introduction at FIWARE Summit](https://www.slideshare.net/FI-WARE/fiware-global-summit-fogflow-a-new-ge-for-iot-edge-computing-97031456){:target="_blank"}
+- [FogFlow introduction at FIWARE Summit](https://www.slideshare.net/FI-WARE/fiware-global-summit-fogflow-a-new-ge-for-iot-edge-computing-97031456)
 
-- [FogFlow introduction at SIG runtime meetup](https://www.youtube.com/watch?v=4QQingkZr1w&t=328s){:target="_blank"}
+- [FogFlow introduction at SIG runtime meetup](https://www.youtube.com/watch?v=4QQingkZr1w&t=328s)
 
-- [FogFlow Webinar and demo](https://www.youtube.com/watch?v=D06W3t5uv94){:target="_blank"}
+- [FogFlow Webinar and demo](https://www.youtube.com/watch?v=D06W3t5uv94)
 
 
 © 2022 NEC
