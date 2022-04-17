@@ -23,6 +23,10 @@ type taskContext struct {
 	EntityID2SubID     map[string]string
 	OutputStreams      []EntityId
 	ContainerID        string
+
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
 }
 
 type Executor struct {
@@ -31,11 +35,15 @@ type Executor struct {
 	workerCfg *Config
 	brokerURL string
 
+	worker *Worker
+
 	taskInstances map[string]*taskContext
 	taskMap_lock  sync.RWMutex
 }
 
-func (e *Executor) Init(cfg *Config, selectedBrokerURL string) bool {
+func (e *Executor) Init(cfg *Config, selectedBrokerURL string, pWorker *Worker) bool {
+	e.worker = pWorker
+
 	e.workerCfg = cfg
 	e.brokerURL = selectedBrokerURL
 	e.taskInstances = make(map[string]*taskContext)
@@ -69,25 +77,12 @@ func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
 }
 
 func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
-	if e.workerCfg.Worker.StartActualTask == false {
-		// just for the performance evaluation of Topology Master
-		taskCtx := taskContext{}
-
-		e.taskMap_lock.Lock()
-		e.taskInstances[task.ID] = &taskCtx
-		e.taskMap_lock.Unlock()
-
-		INFO.Printf("register this task")
-
-		// register this new task entity to IoT Broker
-		e.registerTask(task, "000", "000")
-
-		return true
-	}
-
 	taskCtx := taskContext{}
 	taskCtx.EntityID2SubID = make(map[string]string)
 	taskCtx.EndPointServiceIDs = make([]EntityId, 0)
+	taskCtx.TopologyName = task.TopologyName
+	taskCtx.TaskName = task.TaskName
+	taskCtx.ServiceIntentID = task.ServiceIntentID
 
 	// set output stream
 	for _, outStream := range task.Outputs {
@@ -164,8 +159,9 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	INFO.Printf("register this task")
 
-	// register this new task entity to IoT Broker
-	e.registerTask(task, refURL, containerId)
+	//e.registerTask(task, refURL, containerId)
+	info := "refURL=" + refURL + "; containerID=" + containerId
+	e.worker.TaskInfo(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, info)
 
 	return true
 }
@@ -259,35 +255,35 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 	}
 }
 
-func (e *Executor) updateTask(taskID string, status string) {
-	ctxObj := ContextObject{}
+// func (e *Executor) updateTask(taskID string, status string) {
+// 	ctxObj := ContextObject{}
 
-	ctxObj.Entity.ID = taskID
-	ctxObj.Entity.Type = "Task"
-	ctxObj.Entity.IsPattern = false
+// 	ctxObj.Entity.ID = taskID
+// 	ctxObj.Entity.Type = "Task"
+// 	ctxObj.Entity.IsPattern = false
 
-	ctxObj.Attributes = make(map[string]ValueObject)
-	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: status}
+// 	ctxObj.Attributes = make(map[string]ValueObject)
+// 	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: status}
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	err := client.UpdateContextObject(&ctxObj)
-	if err != nil {
-		ERROR.Println(err)
-	}
-}
+// 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+// 	err := client.UpdateContextObject(&ctxObj)
+// 	if err != nil {
+// 		ERROR.Println(err)
+// 	}
+// }
 
-func (e *Executor) deregisterTask(taskID string) {
-	entity := EntityId{}
-	entity.ID = taskID
-	entity.Type = "Task"
-	entity.IsPattern = false
+// func (e *Executor) deregisterTask(taskID string) {
+// 	entity := EntityId{}
+// 	entity.ID = taskID
+// 	entity.Type = "Task"
+// 	entity.IsPattern = false
 
-	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	err := client.DeleteContext(&entity)
-	if err != nil {
-		ERROR.Println(err)
-	}
-}
+// 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
+// 	err := client.DeleteContext(&entity)
+// 	if err != nil {
+// 		ERROR.Println(err)
+// 	}
+// }
 
 // Subscribe for NGSILD input stream
 func (e *Executor) subscribeLdInputStream(refURL string, inputStream *InputStream) (string, error) {
@@ -407,22 +403,6 @@ func (e *Executor) deleteOuputStream(eid *EntityId) error {
 func (e *Executor) TerminateTask(taskID string, paused bool) {
 	INFO.Println("================== terminate task ID ============ ", taskID)
 
-	if e.workerCfg.Worker.StartActualTask == false {
-		// just for the performance evaluation of Topology Master
-		e.taskMap_lock.Lock()
-
-		if _, ok := e.taskInstances[taskID]; ok == true {
-			delete(e.taskInstances, taskID)
-		}
-
-		e.taskMap_lock.Unlock()
-
-		INFO.Printf("deregister this task")
-		go e.deregisterTask(taskID)
-
-		return
-	}
-
 	e.taskMap_lock.Lock()
 	if _, ok := e.taskInstances[taskID]; ok == false {
 		e.taskMap_lock.Unlock()
@@ -430,6 +410,10 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 	}
 
 	containerID := e.taskInstances[taskID].ContainerID
+	topologyName := e.taskInstances[taskID].TopologyName
+	taskName := e.taskInstances[taskID].TaskName
+	serviceIntentID := e.taskInstances[taskID].ServiceIntentID
+
 	e.taskMap_lock.Unlock()
 
 	//stop the container first
@@ -464,10 +448,10 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 
 	if paused == true {
 		// only update its status
-		go e.updateTask(taskID, "paused")
+		e.worker.TaskUpdate(topologyName, taskName, taskID, serviceIntentID, "paused")
 	} else {
 		// deregister this task entity
-		go e.deregisterTask(taskID)
+		e.worker.TaskUpdate(topologyName, taskName, taskID, serviceIntentID, "removed")
 	}
 }
 

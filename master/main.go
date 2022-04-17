@@ -35,7 +35,6 @@ func main() {
 	// start REST API server
 	router, err := rest.MakeRouter(
 		rest.Get("/workers", master.GetWorkerList),
-		rest.Get("/tasks", master.GetTaskList),
 		rest.Get("/status", master.GetStatus),
 	)
 	if err != nil {

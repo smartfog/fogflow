@@ -32,10 +32,6 @@ func (sMgr *ServiceMgr) Init() {
 	sMgr.service2TaskMap = make(map[string][]*TaskIntentRecord)
 }
 
-func (sMgr *ServiceMgr) GetTasks() {
-
-}
-
 func (sMgr *ServiceMgr) handleServiceIntentUpdate(sIntent *ServiceIntent) {
 	if sIntent.Action == "DELETE" {
 		sMgr.removeServiceIntent(sIntent.ID)
@@ -166,6 +162,7 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 		taskIntent.QoS = serviceIntent.QoS
 		taskIntent.TopologyName = serviceIntent.TopologyName
 		taskIntent.TaskObject = task
+		taskIntent.ServiceIntentID = serviceIntent.ID
 
 		INFO.Printf("%+v\n", taskIntent)
 
@@ -311,4 +308,5 @@ func (sMgr *ServiceMgr) removeServiceIntent(id string) {
 
 	// remove this service intent
 	delete(sMgr.service2TaskMap, id)
+	delete(sMgr.serviceIntentMap, id)
 }

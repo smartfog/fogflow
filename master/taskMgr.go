@@ -154,7 +154,6 @@ func (flow *FogFlow) Init() {
 //
 func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction string, registredEntity *EntityRegistration) []*DeploymentAction {
 	if _, exist := flow.Subscriptions[subID]; exist == false {
-
 		fmt.Println(" ************** Inside false************")
 		return nil
 	}
@@ -317,6 +316,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 			taskInstance.TopologyName = flow.Intent.TopologyName
 			taskInstance.OperatorName = task.Operator
 			taskInstance.TaskName = task.Name
+			taskInstance.ServiceIntentID = flow.Intent.ServiceIntentID
 
 			taskInstance.IsExclusive = flow.Intent.Priority.IsExclusive
 			taskInstance.PriorityLevel = flow.Intent.Priority.Level
@@ -649,6 +649,10 @@ func (tMgr *TaskMgr) Init() {
 	tMgr.taskIntentList = make(map[string]*TaskIntent)
 	tMgr.fogFlows = make(map[string]*FogFlow)
 	tMgr.subID2FogFunc = make(map[string]string)
+}
+
+func (tMgr *TaskMgr) queryTaskIntent(taskIntent *TaskIntent) {
+
 }
 
 //

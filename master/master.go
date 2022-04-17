@@ -47,18 +47,6 @@ type Master struct {
 	operatorList      map[string]Operator
 	operatorList_lock sync.RWMutex
 
-	//list of all docker images
-	// dockerImageList      map[string][]DockerImage
-	// dockerImageList_lock sync.RWMutex
-
-	// //list of all submitted topologies
-	// topologyList      map[string]*Topology
-	// topologyList_lock sync.RWMutex
-
-	// //list of all submitted topologies
-	// fogfunctionList      map[string]*FogFunction
-	// fogfunctionList_lock sync.RWMutex
-
 	//to manage the orchestration of service topology
 	serviceMgr *ServiceMgr
 
@@ -85,9 +73,6 @@ func (master *Master) Start(configuration *Config) {
 	master.workers = make(map[string]*WorkerProfile)
 
 	master.operatorList = make(map[string]Operator)
-	// master.dockerImageList = make(map[string][]DockerImage)
-	// master.topologyList = make(map[string]*Topology)
-	// master.fogfunctionList = make(map[string]*FogFunction)
 
 	master.subID2Type = make(map[string]string)
 
@@ -114,7 +99,7 @@ func (master *Master) Start(configuration *Config) {
 	cfg.Exchange = "fogflow"
 	cfg.ExchangeType = "topic"
 	cfg.DefaultQueue = master.id
-	cfg.BindingKeys = []string{master.id + ".", "heartbeat.*", "orchestration.*"}
+	cfg.BindingKeys = []string{master.id + ".", "heartbeat.*", "task.", "orchestration.*"}
 
 	// create the communicator with the broker info and topics
 	master.communicator = NewCommunicator(&cfg)
@@ -600,10 +585,6 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 }
 
 func (master *Master) GetWorkerList(w rest.ResponseWriter, r *rest.Request) {
-	w.WriteJson(master.workers)
-}
-
-func (master *Master) GetTaskList(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteJson(master.workers)
 }
 

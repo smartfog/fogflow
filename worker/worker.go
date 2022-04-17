@@ -50,7 +50,7 @@ func (w *Worker) Start(config *Config) bool {
 
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	if w.executor.Init(w.cfg, w.selectedBrokerURL) == false {
+	if w.executor.Init(w.cfg, w.selectedBrokerURL, w) == false {
 		ERROR.Println("Failed to initialize the underlying container engine: ", config.Worker.ContainerManagement)
 		return false
 	}
@@ -168,13 +168,29 @@ func (w *Worker) onRemoveInput(from string, flow *FlowInfo) {
 	w.executor.onRemoveInput(flow)
 }
 
-func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state string) {
+func (w *Worker) TaskUpdate(topologyName string, taskName string, taskID string, serviceIntentID string, state string) {
 	tp := TaskUpdate{}
-	tp.TopologyName = task.TopologyName
-	tp.TaskName = task.TaskName
-	tp.TaskID = task.ID
+	tp.TopologyName = topologyName
+	tp.TaskName = taskName
+	tp.TaskID = taskID
+	tp.ServiceIntentID = serviceIntentID
+
 	tp.Status = state
-	taskUpdateMsg := SendMessage{Type: "TASK_UPDATE", RoutingKey: "master." + masterID + ".", From: w.id, PayLoad: tp}
+
+	taskUpdateMsg := SendMessage{Type: "TASK_UPDATE", RoutingKey: "task.", From: w.id, PayLoad: tp}
+
+	go w.communicator.Publish(&taskUpdateMsg)
+}
+
+func (w *Worker) TaskInfo(topologyName string, taskName string, taskID string, serviceIntentID string, info string) {
+	tInfo := TaskInfo{}
+	tInfo.TopologyName = topologyName
+	tInfo.TaskName = taskName
+	tInfo.TaskID = taskID
+
+	tInfo.Info = info
+
+	taskUpdateMsg := SendMessage{Type: "TASK_INFO", RoutingKey: "task.", From: w.id, PayLoad: tInfo}
 
 	go w.communicator.Publish(&taskUpdateMsg)
 }
@@ -210,7 +226,7 @@ func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 			go w.executor.TerminateTask(existTask.ID, true)
 			existTask.Status = "paused"
 
-			w.TaskUpdate(from, existTask, "paused")
+			w.TaskUpdate(existTask.TopologyName, existTask.TaskName, existTask.ID, existTask.ServiceIntentID, "paused")
 		}
 	}
 
@@ -225,14 +241,14 @@ func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 		w.allTasks[task.ID] = task
 
 		// send ACK back to the master
-		w.TaskUpdate(from, task, "running")
+		w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "running")
 	} else {
 		// add the new task into the local task list
 		task.Status = "paused"
 		w.allTasks[task.ID] = task
 
 		// send ACK back to the master
-		w.TaskUpdate(from, task, "paused")
+		w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "paused")
 	}
 }
 
@@ -289,7 +305,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 				go w.executor.LaunchTask(task)
 				task.Status = "running"
 
-				w.TaskUpdate(from, task, "running")
+				w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "running")
 			}
 		}
 	} else {
@@ -300,7 +316,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 				go w.executor.LaunchTask(task)
 				task.Status = "running"
 
-				w.TaskUpdate(from, task, "running")
+				w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "running")
 			}
 		}
 	}

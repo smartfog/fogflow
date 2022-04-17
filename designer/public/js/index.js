@@ -27,6 +27,7 @@ $(function () {
     addMenuItem('Worker', showWorkers);
     addMenuItem('Device', showDevices);
     addMenuItem('uService', showEndPointService);
+    addMenuItem('Task', showTasks);    
     addMenuItem('Stream', showStreams);
 
     showArch();
@@ -814,6 +815,62 @@ $(function () {
         });
 
         return map;
+    }
+
+
+    function showTasks() {
+        $('#info').html('list of running data processing tasks');
+
+        fetch('/info/task').then(res => res.json()).then(tasks => {
+            console.log("the list of tasks ");
+            console.log(tasks);
+            var taskList = Object.values(tasks);
+            displayTaskList(taskList);            
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to fetch the list of create tasks');
+        });  
+    }     
+
+    function displayTaskList(tasks) {
+        if (tasks == null || tasks.length == 0) {
+            $('#content').html('');
+            return
+        }
+
+        var html = '<table class="table table-striped table-bordered table-condensed">';
+
+        html += '<thead><tr>';
+        html += '<th>ID</th>';
+        html += '<th>Service</th>';
+        html += '<th>Task</th>';
+        html += '<th>Worker</th>';
+        html += '<th>Status</th>';
+        html += '</tr></thead>';
+
+        for (var i = 0; i < tasks.length; i++) {
+            var task = tasks[i];
+
+            console.log(task);
+
+            html += '<tr>';
+            html += '<td>' + task.TaskID + '</td>';
+            html += '<td>' + task.TopologyName + '</td>';
+            html += '<td>' + task.TaskName + '</td>';
+            html += '<td>' + task.Worker + '</td>';            
+
+            if (task.Status == "paused") {
+                html += '<td><font color="red">' + task.Status + '</font></td>';
+            } else {
+                html += '<td><font color="green">' + task.Status + '</font></td>';
+            }
+
+            html += '</tr>';
+        }
+
+        html += '</table>';
+
+        $('#content').html(html);
     }
 
     function showStreams() {

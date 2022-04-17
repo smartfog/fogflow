@@ -3,7 +3,7 @@ import multer from 'multer'
 import httpProxy from 'http-proxy';
 import fetch from 'node-fetch';
 import bodyParser from 'body-parser'
-import {promises as fs} from 'node:fs'
+import { promises as fs } from 'node:fs'
 import { Low, JSONFile } from 'lowdb'
 
 import socketio from 'socket.io'
@@ -13,9 +13,9 @@ import NGSILDAgent from './public/lib/ngsi/LDngsiagent.cjs'
 
 const globalConfigFile = JSON.parse(await fs.readFile('config.json'))
 
-import rabbitmq  from './rabbitmq.cjs';
+import rabbitmq from './rabbitmq.cjs';
 
-import {fileURLToPath} from 'node:url';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -36,12 +36,14 @@ const db = new Low(adapter);
 
 await db.read()
 
-db.data ||= {   operators: {}, 
-                dockerimages: {}, 
-                topologies: {},
-                services: {},  
-                serviceintents: {}, 
-                fogfunctions: {} } 
+db.data ||= {
+    operators: {},
+    dockerimages: {},
+    topologies: {},
+    services: {},
+    serviceintents: {},
+    fogfunctions: {}
+}
 
 var send_loaded_intents = false
 
@@ -51,19 +53,19 @@ var ngsiProxy = httpProxy.createProxyServer();
 
 var config = globalConfigFile.designer;
 
-var masterList = [];
+var taskMap = {};
 
 // get the URL of the cloud broker
 
-if ( !('host_ip' in globalConfigFile.broker)) {
-    globalConfigFile.broker.host_ip = globalConfigFile.my_hostip    
+if (!('host_ip' in globalConfigFile.broker)) {
+    globalConfigFile.broker.host_ip = globalConfigFile.my_hostip
 }
 var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port
 
 if (config.host_ip) {
-    config.agentIP = config.host_ip;        
+    config.agentIP = config.host_ip;
 } else {
-    config.agentIP = globalConfigFile.my_hostip;    
+    config.agentIP = globalConfigFile.my_hostip;
 }
 
 config.agentPort = globalConfigFile.designer.agentPort;
@@ -77,29 +79,29 @@ config.LdbrokerURL = './ngsi-ld';
 config.webSrvPort = globalConfigFile.designer.webSrvPort;
 
 
-if ( !('host_ip' in globalConfigFile.master)) {
-    globalConfigFile.master.host_ip = globalConfigFile.my_hostip    
+if (!('host_ip' in globalConfigFile.master)) {
+    globalConfigFile.master.host_ip = globalConfigFile.my_hostip
 }
 const masterURL = "http://" + globalConfigFile.master.host_ip + ":" + globalConfigFile.master.rest_api_port;
 
 
-if ( !('host_ip' in globalConfigFile.discovery)) {
-    globalConfigFile.discovery.host_ip = globalConfigFile.my_hostip    
+if (!('host_ip' in globalConfigFile.discovery)) {
+    globalConfigFile.discovery.host_ip = globalConfigFile.my_hostip
 }
 const discoveryURL = "http://" + globalConfigFile.discovery.host_ip + ":" + globalConfigFile.discovery.http_port;
 
 
-if ( !('host_ip' in globalConfigFile.rabbitmq)) {
-    globalConfigFile.rabbitmq.host_ip = globalConfigFile.my_hostip    
+if (!('host_ip' in globalConfigFile.rabbitmq)) {
+    globalConfigFile.rabbitmq.host_ip = globalConfigFile.my_hostip
 }
-const rabbitmq_ip = globalConfigFile.rabbitmq.host_ip; 
+const rabbitmq_ip = globalConfigFile.rabbitmq.host_ip;
 
 const rabbitmq_port = globalConfigFile.rabbitmq.port || 5672;
-const rabbitmq_user =  globalConfigFile.rabbitmq.username || 'admin';
+const rabbitmq_user = globalConfigFile.rabbitmq.username || 'admin';
 const rabbitmq_password = globalConfigFile.rabbitmq.password || 'mypass';
 
-const rabbitmq_url = 'amqp://' + rabbitmq_user + ':' + rabbitmq_password + '@' 
-                + rabbitmq_ip + ':' + rabbitmq_port.toString();
+const rabbitmq_url = 'amqp://' + rabbitmq_user + ':' + rabbitmq_password + '@'
+    + rabbitmq_ip + ':' + rabbitmq_port.toString();
 
 console.log(config);
 
@@ -107,22 +109,58 @@ console.log(rabbitmq_url);
 rabbitmq.Init(rabbitmq_url, handleInternalMessage, issueLoadedIntents);
 
 function handleInternalMessage(jsonMsg) {
-    console.log(jsonMsg);
-    
+    console.log(jsonMsg.Type);
+
     var msgType = jsonMsg.Type;
-    switch(msgType) {
+    switch (msgType) {
         case 'MASTER_JOIN':
-        
+
             break;
         case 'MASTER_LEAVE':
-        
-            break;        
-    }        
+
+            break;
+        case 'TASK_UPDATE':
+            onTaskUpdate(jsonMsg)
+            break;
+    }
 }
 
+function onTaskUpdate(msg) {
+    var payload = msg.PayLoad;
+    var workerID = msg.From;
+    if (payload.Status == 'removed') {
+        removeTask(payload.TaskID)
+    } else {
+        updateTaskList(payload, workerID);
+    }    
+}
+
+function updateTaskList(updateMsg, fromWorker) {
+    var taskID = updateMsg.TaskID;
+
+    if (taskID in taskMap) {        
+        if ("Status" in updateMsg) {
+            taskMap[taskID].Status = updateMsg.Status
+        }
+        if ("Info" in updateMsg) {
+            taskMap[taskID].Info = updateMsg.Info
+        }
+    } else {
+        taskMap[taskID] = updateMsg;
+        taskMap[taskID]['Worker'] = fromWorker;
+    }
+}
+
+function removeTask(taskID) {
+    if (taskID in taskMap) {
+        delete taskMap[taskID];        
+    }
+}
+
+
 function isEmpty(obj) {
-    for(var prop in obj) {
-        if(obj.hasOwnProperty(prop))
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop))
             return false;
     }
 
@@ -132,32 +170,28 @@ function isEmpty(obj) {
 // this is only triggered when starting the task designer
 function issueLoadedIntents() {
     console.log("[RabbitMQ] is already connected")
-    
+
     if (send_loaded_intents == false) {
         console.log("issue the loaded intents to Master");
-                
+
         // existing service intents
-        Object.keys(db.data.serviceintents).forEach(function(key){ 
-            var intent = db.data.serviceintents[key];        
-            intent.action = 'ADD';    
-            publishMetadata("ServiceIntent", intent);   
-            console.log(intent);             
+        Object.keys(db.data.serviceintents).forEach(function (key) {
+            var intent = db.data.serviceintents[key];
+            intent.action = 'ADD';
+            publishMetadata("ServiceIntent", intent);
         });
-        
+
         // existing fog functions
-        Object.keys(db.data.fogfunctions).forEach(function(key){ 
+        Object.keys(db.data.fogfunctions).forEach(function (key) {
             var fogfunction = db.data.fogfunctions[key];
-            
-            fogfunction.status = 'enabled';        
-            
-            console.log(fogfunction);      
-            
+
+            fogfunction.status = 'enabled';
+
             var intent = fogfunction.intent;
             intent.action = 'ADD';
-            publishMetadata("ServiceIntent", intent);    
-            console.log(intent);                                                      
-        });     
-        
+            publishMetadata("ServiceIntent", intent);
+        });
+
         send_loaded_intents = true;
     }
 }
@@ -180,11 +214,11 @@ function uuid() {
 var subscriptions = {};
 
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-    
+
     next();
 });
 
@@ -193,17 +227,17 @@ app.use(express.static(__dirname + '/public', { cache: false }));
 
 // to receive and save uploaded image content
 var storage = multer.diskStorage({
-    destination: function(req, file, callback) {
+    destination: function (req, file, callback) {
         callback(null, './public/data/photo');
     },
-    filename: function(req, file, callback) {
+    filename: function (req, file, callback) {
         console.log(file.fieldname);
         callback(null, file.fieldname);
     }
 });
 var upload = multer({ storage: storage }).any();
-app.post('/data/photo', function(req, res) {
-    upload(req, res, function(err) {
+app.post('/data/photo', function (req, res) {
+    upload(req, res, function (err) {
         if (err) {
             return res.end("Error uploading file.");
         }
@@ -213,44 +247,44 @@ app.post('/data/photo', function(req, res) {
 
 //============= FogFlow API =================================
 
-app.all("/ngsi10/*", function(req, res) {
+app.all("/ngsi10/*", function (req, res) {
     //console.log('redirecting to ngsi-v1 broker');
-    ngsiProxy.web(req, res, {target: cloudBrokerURL});
+    ngsiProxy.web(req, res, { target: cloudBrokerURL });
 });
 
-app.all("/ngsi-ld/*", function(req, res) {
+app.all("/ngsi-ld/*", function (req, res) {
     //console.log('redirecting to ngsi-ld broker');
-    ngsiProxy.web(req, res, {target: cloudBrokerURL});
+    ngsiProxy.web(req, res, { target: cloudBrokerURL });
 });
 
-app.all("/ngsi9/*", function(req, res) {
+app.all("/ngsi9/*", function (req, res) {
     //console.log('redirecting to ngsi-v1 discovery');
-    ngsiProxy.web(req, res, {target: discoveryURL});
+    ngsiProxy.web(req, res, { target: discoveryURL });
 });
 
 
 //============= FogFlow API =================================
 
-app.get('/info/master', async function(req, res) {    
+app.get('/info/master', async function (req, res) {
     try {
-        var url = masterURL + "/status";        
+        var url = masterURL + "/status";
         const response = await fetch(url);
-        const master = await response.json();   
-        res.json([master]);    
-    } catch(error) {
+        const master = await response.json();
+        res.json([master]);
+    } catch (error) {
         console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
         res.json([]);
     };
 });
 
-app.get('/info/broker', async function(req, res) {   
+app.get('/info/broker', async function (req, res) {
     try {
-        var url = discoveryURL + "/ngsi9/broker";        
+        var url = discoveryURL + "/ngsi9/broker";
         const response = await fetch(url);
-        const workers = await response.json(); 
-        var workerList = Array.from(Object.values(workers));          
+        const workers = await response.json();
+        var workerList = Array.from(Object.values(workers));
         res.json(workerList);
-    } catch(error) {
+    } catch (error) {
         console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
         res.json([]);
     };
@@ -258,213 +292,230 @@ app.get('/info/broker', async function(req, res) {
 
 
 
-app.get('/info/worker', async function(req, res) {   
+app.get('/info/worker', async function (req, res) {
     try {
-        var url = masterURL + "/workers";        
+        var url = masterURL + "/workers";
         const response = await fetch(url);
-        const workers = await response.json(); 
-        var workerList = Array.from(Object.values(workers));          
+        const workers = await response.json();
+        var workerList = Array.from(Object.values(workers));
         res.json(workerList);
-    } catch(error) {
+    } catch (error) {
         console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
         res.json([]);
     };
 });
 
-app.get('/info/task', async function(req, res) {    
-    try {
-        var url = masterURL + "/tasks";        
-        const response = await fetch(url);
-        const taskList = await response.json();   
-        res.json(taskList);
-    } catch(error) {
-        console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
-        res.json([]);
-    };
+app.get('/info/task', async function (req, res) {
+    var taskList = [];
+    console.log(taskMap)
+    for (const taskID of Object.keys(taskMap)) {
+        var task = taskMap[taskID];
+        task['ID'] = taskID;        
+        taskList.push(task);
+    }
+
+    res.json(taskList);
 });
 
-app.get('/info/type', async function(req, res) {   
+app.get('/info/task/:intent', async function (req, res) {
+    var intentID = req.params.intent;
+
+    var taskList = [];
+
+    for (const taskID of Object.keys(taskMap)) {
+        var task = taskMap[taskID];
+        
+        if (task['ServiceIntentID'] == intentID) {
+            task['ID'] = taskID;        
+            taskList.push(task);            
+        }
+    }
+
+    res.json(taskList);
+});
+
+app.get('/info/type', async function (req, res) {
     try {
-        var url = discoveryURL + "/etype";        
+        var url = discoveryURL + "/etype";
         const response = await fetch(url);
-        const typeList = await response.json();   
+        const typeList = await response.json();
         res.json(typeList);
-    } catch(error) {
+    } catch (error) {
         console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
         res.json([]);
     };
 });
 
 
-app.get('/operator', async function(req, res) {    
-    var operators = db.data.operators;         
-    res.json(operators);           
+app.get('/operator', async function (req, res) {
+    var operators = db.data.operators;
+    res.json(operators);
 });
-app.get('/operator/:name', async function(req, res) {    
+app.get('/operator/:name', async function (req, res) {
     var name = req.params.name;
     var operator = db.data.operators[name];
     res.json(operator);
 });
 
 app.post('/operator', jsonParser, async function (req, res) {
-    var operators = req.body;    
-    for(var i=0; i<operators.length; i++){
+    var operators = req.body;
+    for (var i = 0; i < operators.length; i++) {
         var operator = operators[i];
         db.data.operators[operator.name] = operator
     }
-    
-    await db.write();    
-    
-    res.sendStatus(200)    
+
+    await db.write();
+
+    res.sendStatus(200)
 });
 
-app.get('/dockerimage', async function(req, res) {    
-    var dockerimages = db.data.dockerimages;    
-    res.json(dockerimages);             
+app.get('/dockerimage', async function (req, res) {
+    var dockerimages = db.data.dockerimages;
+    res.json(dockerimages);
 });
-app.get('/dockerimage/:operator', async function(req, res) {    
+app.get('/dockerimage/:operator', async function (req, res) {
     var operator = req.params.operator;
     var imageList = [];
- 
-    var dockerimages = db.data.dockerimages;   
+
+    var dockerimages = db.data.dockerimages;
     Object.values(dockerimages).forEach(dockerimage => {
         if (dockerimage.operatorName == operator) {
-            imageList.push(dockerimage)    
-        }        
+            imageList.push(dockerimage)
+        }
     })
-        
+
     res.json(imageList);
 });
 
 app.post('/dockerimage', jsonParser, async function (req, res) {
-    var dockerimages = req.body;    
+    var dockerimages = req.body;
     console.log(dockerimages);
-    
-    for(var i=0; i<dockerimages.length; i++){
+
+    for (var i = 0; i < dockerimages.length; i++) {
         var dockerimage = dockerimages[i];
         console.log(dockerimage);
-        db.data.dockerimages[dockerimage.name] = dockerimage;     
+        db.data.dockerimages[dockerimage.name] = dockerimage;
     }
-    
+
     await db.write();
-    
-    res.sendStatus(200)    
+
+    res.sendStatus(200)
 });
 
-app.get('/topology', async function(req, res) {    
-    var topologies = [];    
+app.get('/topology', async function (req, res) {
+    var topologies = [];
     Object.values(db.data.topologies).forEach(topology => {
         topologies.push(topology)
     })
-    
-    res.json(topologies);    
+
+    res.json(topologies);
 });
-app.get('/topology/:name', async function(req, res) {    
-    var name = req.params.name;    
+app.get('/topology/:name', async function (req, res) {
+    var name = req.params.name;
     if (db.data.topologies.hasOwnProperty(name) == false) {
-        res.json({});    
-        return    
+        res.json({});
+        return
     }
-    
+
     var topology = db.data.topologies[name];
-    
+
     topology.dockerimages = [];
     topology.operators = [];
-        
+
     // include the related docker images for the operators used by this topology
-    for(var i=0; i<topology.tasks.length; i++){        
+    for (var i = 0; i < topology.tasks.length; i++) {
         var task = topology.tasks[i];
         var name = task.operator;
-        
-        var dockerimages = getDockerImages(name);        
-        var operator = getOperator(name);                
+
+        var dockerimages = getDockerImages(name);
+        var operator = getOperator(name);
         if (operator != null) {
-            operator.dockerimages = dockerimages;            
-            topology.operators.push(operator);            
+            operator.dockerimages = dockerimages;
+            topology.operators.push(operator);
         }
-    }    
-    
+    }
+
     res.json(topology);
 });
 
 
-app.get('/service', async function(req, res) {    
-    var services = db.data.services;    
-    res.json(services);    
+app.get('/service', async function (req, res) {
+    var services = db.data.services;
+    res.json(services);
 });
-app.get('/service/:name', async function(req, res) {    
+app.get('/service/:name', async function (req, res) {
     var name = req.params.name;
     var service = db.data.services[name];
     res.json(service);
 });
 app.post('/service', jsonParser, async function (req, res) {
-    var services = req.body;    
-    
-    for(var i=0; i<services.length; i++){
+    var services = req.body;
+
+    for (var i = 0; i < services.length; i++) {
         var service = services[i];
-        console.log(service);   
-        var name = service.topology.name     
+        console.log(service);
+        var name = service.topology.name
         db.data.services[name] = service;
         db.data.topologies[name] = service.topology;
     }
-    
-    await db.write();    
-    
-    res.sendStatus(200)     
+
+    await db.write();
+
+    res.sendStatus(200)
 });
 app.delete('/service/:name', async function (req, res) {
     var name = req.params.name;
 
     delete db.data.services[name];
-    delete db.data.topologies[name];    
-    await db.write();  
-        
-    res.sendStatus(200)      
+    delete db.data.topologies[name];
+    await db.write();
+
+    res.sendStatus(200)
 });
 
 
-app.get('/intent', async function(req, res) {    
-    var serviceintents = db.data.serviceintents;    
-    res.json(serviceintents);  
+app.get('/intent', async function (req, res) {
+    var serviceintents = db.data.serviceintents;
+    res.json(serviceintents);
 });
-app.get('/intent/:id', async function(req, res) {    
+app.get('/intent/:id', async function (req, res) {
     var id = req.params.id;
     var serviceintent = db.data.serviceintents[id];
     res.json(serviceintent);
 });
-app.get('/intent/topology/:topology', async function(req, res) {    
+app.get('/intent/topology/:topology', async function (req, res) {
     var topology = req.params.topology;
-    
-    var intents = [];    
-    for(var i=0; i<db.data.serviceintents.length; i++){    
-        var intent = db.data.serviceintents[i];        
+
+    var intents = [];
+    for (var i = 0; i < db.data.serviceintents.length; i++) {
+        var intent = db.data.serviceintents[i];
         if (intent.topology == topology) {
             intents.push(intent)
         }
-    }    
-    
+    }
+
     res.json(intents);
 });
 app.post('/intent', jsonParser, async function (req, res) {
-    var serviceintent = req.body;    
-    
+    var serviceintent = req.body;
+
     if (isEmpty(serviceintent) == true) {
-        res.sendStatus(200)       
-        return        
+        res.sendStatus(200)
+        return
     }
 
     console.log(serviceintent)
-    db.data.serviceintents[serviceintent.id] = serviceintent;    
-    await db.write();    
-    
-    serviceintent.action = 'ADD';    
-    publishMetadata("ServiceIntent", serviceintent);                            
-    
-    res.sendStatus(200)       
+    db.data.serviceintents[serviceintent.id] = serviceintent;
+    await db.write();
+
+    serviceintent.action = 'ADD';
+    publishMetadata("ServiceIntent", serviceintent);
+
+    res.sendStatus(200)
 });
 app.delete('/intent/:id', async function (req, res) {
     var id = req.params.id;
-    
+
     try {
         var serviceintent = db.data.serviceintents[id];
         if (serviceintent === undefined) {
@@ -480,71 +531,71 @@ app.delete('/intent/:id', async function (req, res) {
     } catch (error) {
         console.log("Delete Intent API failed for [ID] ", id, ', [ERROR]', error.message);
         res.sendStatus(404)
-    }        
+    }
 });
 
 
-app.get('/fogfunction', async function(req, res) {    
-    var fogfunctions = db.data.fogfunctions;    
-    res.json(fogfunctions);  
+app.get('/fogfunction', async function (req, res) {
+    var fogfunctions = db.data.fogfunctions;
+    res.json(fogfunctions);
 });
-app.get('/fogfunction/:name', async function(req, res) {    
+app.get('/fogfunction/:name', async function (req, res) {
     var name = req.params.name;
     var fogfunction = db.data.fogfunctions[name];
     res.json(fogfunction);
 });
 
-app.get('/fogfunction/:name/enable', async function(req, res) {    
+app.get('/fogfunction/:name/enable', async function (req, res) {
     var name = req.params.name;
     var fogfunction = db.data.fogfunctions[name];
     fogfunction.status = 'enabled';
-        
+
     var serviceintent = fogfunction.intent;
     serviceintent.action = 'ADD';
-    publishMetadata("ServiceIntent", serviceintent);            
-        
+    publishMetadata("ServiceIntent", serviceintent);
+
     res.json(fogfunction);
 });
 
-app.get('/fogfunction/:name/disable', async function(req, res) {    
+app.get('/fogfunction/:name/disable', async function (req, res) {
     var name = req.params.name;
     var fogfunction = db.data.fogfunctions[name];
     fogfunction.status = 'disabled';
-        
+
     var serviceintent = fogfunction.intent;
     serviceintent.action = 'DELETE';
-    publishMetadata("ServiceIntent", serviceintent);           
-        
+    publishMetadata("ServiceIntent", serviceintent);
+
     res.json(fogfunction);
 });
 
 
 app.post('/fogfunction', jsonParser, async function (req, res) {
-    var fogfunctions = req.body;    
-    
-    for(var i=0; i<fogfunctions.length; i++){
+    var fogfunctions = req.body;
+
+    for (var i = 0; i < fogfunctions.length; i++) {
         var fogfunction = fogfunctions[i];
-        
-        fogfunction.status = 'enabled';        
-        
-        console.log(fogfunction);      
+
+        fogfunction.status = 'enabled';
+
+        console.log(fogfunction);
         db.data.fogfunctions[fogfunction.name] = fogfunction;
         db.data.topologies[fogfunction.name] = fogfunction.topology;
-        
+
         if (fogfunction.intent.hasOwnProperty('id') == false) {
             var uid = uuid();
-            var sid = 'ServiceIntent.' + uid;            
+            var sid = 'ServiceIntent.' + uid;
             fogfunction.intent.id = sid;
         }
-        
+
         var serviceintent = fogfunction.intent;
         serviceintent.action = 'ADD';
-        publishMetadata("ServiceIntent", serviceintent);                             
+        publishMetadata("ServiceIntent", serviceintent);
     }
-    
-    await db.write();    
-    
-    res.sendStatus(200)  
+
+    await db.write();
+
+    res.sendStatus(200)
 });
 app.delete('/fogfunction/:name', async function (req, res) {
     try {
@@ -567,10 +618,26 @@ app.delete('/fogfunction/:name', async function (req, res) {
     } catch (error) {
         console.log("Delete Fogfunction API failed for [Name] ", name, ', [ERROR]', error.message);
         res.sendStatus(404)
-    }        
+    }
 });
 
-app.get('/config.js', function(req, res) {
+app.get('/task', async function (req, res) {
+    var tasks = db.data.tasks;
+    res.json(tasks);
+});
+app.get('/task/:intentID', async function (req, res) {
+    var intentID = req.params.intentID;
+
+    var tasks = [];
+    //    for(var i=0; i<db.data.tasks.length; i++) {
+    //        if db.data.tasks[i]
+    //    }
+
+    res.json(tasks);
+});
+
+
+app.get('/config.js', function (req, res) {
     res.setHeader('Content-Type', 'application/json');
     var data = 'var config = ' + JSON.stringify(config) + '; '
     res.end(data);
@@ -578,40 +645,38 @@ app.get('/config.js', function(req, res) {
 
 
 // return the docker images for a given operator name
-function getDockerImages(name)
-{
+function getDockerImages(name) {
     var dockerimages = [];
     Object.values(db.data.dockerimages).forEach(dockerimage => {
         if (dockerimage.operatorName == name) {
-            dockerimages.push(dockerimage);    
-        }        
+            dockerimages.push(dockerimage);
+        }
     });
-    
+
     return dockerimages;
 }
 
 
 // return the operator for a given operator name
-function getOperator(name)
-{
+function getOperator(name) {
     if (name in db.data.operators) {
-        return db.data.operators[name];    
+        return db.data.operators[name];
     } else {
         return null
     };
 }
 
 // publish the created metadata related to service orchestration
-function publishMetadata(dType, dObject)
-{
-    var jsonMsg = { Type: dType, 
-                    RoutingKey: "orchestration.", 
-                    From: "designer", 
-                    PayLoad: dObject 
-                };
-        
-    rabbitmq.Publish(jsonMsg);    
-    console.log("Published: ", JSON.stringify(jsonMsg));
+function publishMetadata(dType, dObject) {
+    var jsonMsg = {
+        Type: dType,
+        RoutingKey: "orchestration.",
+        From: "designer",
+        PayLoad: dObject
+    };
+
+    rabbitmq.Publish(jsonMsg);
+    //console.log("Published: ", JSON.stringify(jsonMsg));
 }
 
 
@@ -637,23 +702,23 @@ NGSILDAgent.setNotifyHandler(handleNotify);
 NGSILDAgent.start(config.ldAgentPort);
 
 var webServer;
-webServer = app.listen(config.webSrvPort, function() {
+webServer = app.listen(config.webSrvPort, function () {
     console.log("HTTP-based web server is listening on port ", config.webSrvPort);
 });
 
 var io = socketio.listen(webServer);
 
-io.on('connection', function(client) {
+io.on('connection', function (client) {
     console.log('a client is connecting');
-    client.on('subscriptions', function(subList) {
-	    console.log(subList);
+    client.on('subscriptions', function (subList) {
+        console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
             var sid = subList[i];
             subscriptions[sid] = client;
         }
     });
-    
-    client.on('disconnect', function() {
+
+    client.on('disconnect', function () {
         console.log('disconnected');
         //remove the subscriptions associated with this socket
         for (var sid in subscriptions) {

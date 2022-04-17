@@ -30,7 +30,7 @@ $(function() {
 
 
     addMenuItem('FogFunction', 'Fog Function', showFogFunctions);
-    addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
+    //addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
    
     initFogFunctionExamples();
     
@@ -383,6 +383,9 @@ $(function() {
             html += '<td>' + fogfunction.name + '</td>';
 
             html += '<td>';
+            
+            html += '<button id="task-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">tasks</button>';
+            
             html += '<button id="editor-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">view</button>';
             html += '<button id="delete-' + fogfunction.name + '" type="button" class="btn btn-primary btn-separator">delete</button>';
             
@@ -437,7 +440,16 @@ $(function() {
                         disableFogFunction(myFogFunction);                                                
                     }
                 };
-            }(fogfunction);            
+            }(fogfunction);
+            
+            var taskButton = document.getElementById('task-' + fogfunction.name);
+            taskButton.onclick = function(myFogFunction) {
+                return function() {
+                    console.log("taskButton buttion ",myFogFunction);
+                    selectedFogFunction = myFogFunction;
+                    getTaskByFogFunction(myFogFunction);
+                };
+            }(fogfunction);                        
         }
     }
 
@@ -470,6 +482,14 @@ $(function() {
         .catch(err => console.log(err));   
     }      
 
+    function getTaskByFogFunction(fogfunction) {              
+        console.log(fogfunction);  
+        fetch("/info/task/" + fogfunction.intent.id).then(res => res.json()).then(tasks => {
+            displayTaskList(tasks);
+        })
+        .catch(err => console.log(err));   
+    } 
+
     function uuid() {
         var uuid = "",
             i, random;
@@ -484,20 +504,6 @@ $(function() {
         return uuid;
     }
 
-    function showTaskInstances() {
-        $('#info').html('list of running data processing tasks');
-
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Task', isPattern: true }];
-
-        client.queryContext(queryReq).then(function(taskList) {
-            displayTaskList(taskList);
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
-    }
-
     function displayTaskList(tasks) {
         if (tasks == null || tasks.length == 0) {
             $('#content').html('');
@@ -510,28 +516,25 @@ $(function() {
         html += '<th>ID</th>';
         html += '<th>Service</th>';
         html += '<th>Task</th>';
-        html += '<th>Type</th>';
         html += '<th>Worker</th>';
-        html += '<th>port</th>';
-        html += '<th>status</th>';
+        html += '<th>Status</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
 
+            console.log(task);
+
             html += '<tr>';
-            html += '<td>' + task.entityId.id + '</td>';
-            html += '<td>' + task.entityId.type + '</td>';
-            html += '<td>' + task.attributes.service.value + '</td>';
-            html += '<td>' + task.attributes.task.value + '</td>';
-            html += '<td>' + task.metadata.worker.value + '</td>';
+            html += '<td>' + task.TaskID + '</td>';
+            html += '<td>' + task.TopologyName + '</td>';
+            html += '<td>' + task.TaskName + '</td>';
+            html += '<td>' + task.Worker + '</td>';            
 
-            html += '<td>' + task.attributes.port.value + '</td>';
-
-            if (task.attributes.status.value == "paused") {
-                html += '<td><font color="red">' + task.attributes.status.value + '</font></td>';
+            if (task.Status == "paused") {
+                html += '<td><font color="red">' + task.Status + '</font></td>';
             } else {
-                html += '<td><font color="green">' + task.attributes.status.value + '</font></td>';
+                html += '<td><font color="green">' + task.Status + '</font></td>';
             }
 
             html += '</tr>';

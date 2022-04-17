@@ -8,7 +8,7 @@ var msgHandler = null;
 const exchange_name = 'fogflow';
 const exchange_type = 'topic';
 const queue_name = 'fogflow-designer';
-const subscribed_keys = ['designer.*'];
+const subscribed_keys = ['designer.*', 'task.'];
 
 const TIME_INTERVAL_RECONNECT = 5000;
 
@@ -71,7 +71,6 @@ function processMsg(msg) {
 async function Publish(msg){
     var msgContent = JSON.stringify(msg);
     await amqpChannel.publish(exchange_name, msg.RoutingKey, Buffer.from(msgContent));
-    console.log("[RabbitMQ] published ", msg);
 }
 
 module.exports = { Init, Publish }

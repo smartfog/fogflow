@@ -23,10 +23,23 @@ type RecvMessage struct {
 }
 
 type TaskUpdate struct {
-	TopologyName string
-	TaskName     string
-	TaskID       string
-	Status       string
+	TaskID string
+
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
+
+	Status string
+}
+
+type TaskInfo struct {
+	TaskID string
+
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
+
+	Info string
 }
 
 // =========== messages used as the interfaces between different components ====================
@@ -83,7 +96,7 @@ type TaskIntent struct {
 	Priority        Priority       `json:"priority"`
 	TopologyName    string         `json:"topology"`
 	TaskObject      Task           `json:"task"`
-	ServiceIntentID string
+	ServiceIntentID string         `json:"serviceIntentID"`
 }
 
 type InputStreamConfig struct {
@@ -236,9 +249,10 @@ type FlowInfo struct {
 }
 
 type ScheduledTaskInstance struct {
-	ID           string
-	TopologyName string
-	TaskName     string
+	ID              string
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
 
 	OperatorName string
 

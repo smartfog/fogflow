@@ -31,7 +31,6 @@ $(function() {
 
     addMenuItem('Topology', 'Service Topology', showTopologies);
     addMenuItem('Intent', 'Service Intent', showIntents);
-    addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
     
     initTopologyExamples();
     
@@ -453,8 +452,11 @@ $(function() {
             html += '<td>' + intent.id;
             html += '</td>';
             html += '<td class="singlecolumn">';
+
+            html += '<button id="TASKS-' + intent.id + '" type="button" class="btn btn-primary">Tasks</button>  ';            
             html += '<button id="UPDATE-' + intent.id + '" type="button" class="btn btn-primary">Update</button>  ';
             html += '<button id="DELETE-' + intent.id + '" type="button" class="btn btn-primary">Delete</button>';
+
             html += '</td>';
             html += '<td>' + intent.topology + '</td>';
             html += '<td>' + intent.stype + '</td>';
@@ -472,20 +474,27 @@ $(function() {
         // associate a click handler to generate device profile on request
         for (var i = 0; i < intents.length; i++) {
             var intent = intents[i];
-            var deleteButton = document.getElementById('DELETE-' + intent.id);
-            deleteButton.onclick = function(intentID) {
+            
+            var taskButton = document.getElementById('TASKS-' + intent.id);
+            taskButton.onclick = function(intent) {
                 return function() {
-                    removeIntent(intentID);
+                    queryTasks(intent);
+                };
+            }(intent);            
+            
+            var deleteButton = document.getElementById('DELETE-' + intent.id);
+            deleteButton.onclick = function(intent) {
+                return function() {
+                    removeIntent(intent);
                 };
             }(intent);
 
             var updateButton = document.getElementById('UPDATE-' + intent.id);
-            updateButton.onclick = function(intentID) {
+            updateButton.onclick = function(intent) {
                 return function() {
-                    console.log("***********update intent uid ",intentID.uid);
-                    $('#intentDgraphUID').val(intentID.uid);
-                    selectedServiceIntent = intentID;
-                    showIntent(intentID);
+                    $('#intentDgraphUID').val(intent.uid);
+                    selectedServiceIntent = intent;
+                    showIntent(intent);
                 };
             }(intent);
         }
@@ -841,6 +850,18 @@ $(function() {
             console.log('failed to query context');
         });
     }
+    
+    function queryTasks(intent) {
+        fetch('/info/task/' + intent.id).then(res => res.json()).then(tasks => {
+            console.log("the list of tasks ");
+            console.log(tasks);
+            var taskList = Object.values(tasks);
+            displayTaskList(taskList);            
+        }).catch(function(error) {
+            console.log(error);
+            console.log('failed to fetch the list of create tasks');
+        });        
+    }        
 
     function displayTaskList(tasks) {
         if (tasks == null || tasks.length == 0) {
@@ -854,28 +875,25 @@ $(function() {
         html += '<th>ID</th>';
         html += '<th>Service</th>';
         html += '<th>Task</th>';
-        html += '<th>Type</th>';
         html += '<th>Worker</th>';
-        html += '<th>port</th>';
-        html += '<th>status</th>';
+        html += '<th>Status</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
 
+            console.log(task);
+
             html += '<tr>';
-            html += '<td>' + task.entityId.id + '</td>';
-            html += '<td>' + task.entityId.type + '</td>';
-            html += '<td>' + task.attributes.service.value + '</td>';
-            html += '<td>' + task.attributes.task.value + '</td>';
-            html += '<td>' + task.metadata.worker.value + '</td>';
+            html += '<td>' + task.TaskID + '</td>';
+            html += '<td>' + task.TopologyName + '</td>';
+            html += '<td>' + task.TaskName + '</td>';
+            html += '<td>' + task.Worker + '</td>';            
 
-            html += '<td>' + task.attributes.port.value + '</td>';
-
-            if (task.attributes.status.value == "paused") {
-                html += '<td><font color="red">' + task.attributes.status.value + '</font></td>';
+            if (task.Status == "paused") {
+                html += '<td><font color="red">' + task.Status + '</font></td>';
             } else {
-                html += '<td><font color="green">' + task.attributes.status.value + '</font></td>';
+                html += '<td><font color="green">' + task.Status + '</font></td>';
             }
 
             html += '</tr>';
