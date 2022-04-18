@@ -32,7 +32,8 @@ type FastDiscovery struct {
 	SecurityCfg *HTTPS
 
 	//list of active brokers within the same site
-	BrokerList map[string]*BrokerProfile
+	BrokerList       map[string]*BrokerProfile
+	broker_list_lock sync.RWMutex
 
 	//mapping from subscriptionID to subscription
 	subscriptions      map[string]*SubscribeContextAvailabilityRequest
@@ -471,6 +472,9 @@ func (fd *FastDiscovery) getStatus(w rest.ResponseWriter, r *rest.Request) {
 }
 
 func (fd *FastDiscovery) getBrokerList(w rest.ResponseWriter, r *rest.Request) {
+	fd.broker_list_lock.RLock()
+	defer fd.broker_list_lock.RUnlock()
+
 	w.WriteHeader(200)
 	w.WriteJson(fd.BrokerList)
 }
@@ -486,21 +490,14 @@ func (fd *FastDiscovery) onBrokerHeartbeat(w rest.ResponseWriter, r *rest.Reques
 
 	// send out the response
 	updateCtxResp := UpdateContextResponse{}
-	// updateCtxResp.ErrorCode.Code = 200
-	// updateCtxResp.ErrorCode.ReasonPhrase = "OK"
 	w.WriteJson(&updateCtxResp)
+
+	fd.broker_list_lock.Lock()
+	defer fd.broker_list_lock.Unlock()
 
 	if broker, exist := fd.BrokerList[brokerProfile.BID]; exist {
 		broker.MyURL = brokerProfile.MyURL
 	} else {
 		fd.BrokerList[brokerProfile.BID] = &brokerProfile
 	}
-}
-
-func (fd *FastDiscovery) selectBroker() *BrokerProfile {
-	for _, broker := range fd.BrokerList {
-		return broker
-	}
-
-	return nil
 }

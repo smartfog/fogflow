@@ -15,6 +15,7 @@ spec:
       containers:
       - name: edgebroker
         image: fogflow/broker:k8s
+        imagePullPolicy: Always        
         ports:
         - containerPort: 8060
         volumeMounts:

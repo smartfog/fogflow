@@ -5,8 +5,8 @@ data:
            "coreservice_ip": "10.11.11.166",
            "my_hostip": "10.7.3.166",
            "physical_location":{
-                "longitude": 35,
-                "latitude": 142
+                "longitude": 36.4,
+                "latitude": 138.5
            },
            "site_id": "002",
            "logging":{
