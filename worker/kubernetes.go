@@ -27,11 +27,15 @@ import (
 )
 
 type Kubernetes struct {
-	workerCfg *Config
-	clientset *kubernetes.Clientset
+	workerCfg            *Config
+	clientset            *kubernetes.Clientset
+	applicationNameSpace string
 }
 
 func (k8s *Kubernetes) Init(cfg *Config) bool {
+	k8s.workerCfg = cfg
+	k8s.applicationNameSpace = cfg.Worker.AppNameSpace
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		ERROR.Println(err.Error())
@@ -135,28 +139,30 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 		panic(err.Error())
 	}
 
-	deploymentsClient := k8s.clientset.AppsV1().Deployments("fogflow")
+	INFO.Println("[namespace for applications]", k8s.applicationNameSpace)
+
+	deploymentsClient := k8s.clientset.AppsV1().Deployments(k8s.applicationNameSpace)
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "fogflow-deployment-" + freePort,
+			Name: "fogflow-task-" + freePort,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": "demo",
+					"app": task.TaskName,
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": "demo",
+						"app": task.TaskName,
 					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:  "web",
+							Name:  task.TaskName,
 							Image: dockerImage,
 							Ports: []apiv1.ContainerPort{
 								{
@@ -193,12 +199,12 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 
 	serviceSpec := &coreV1.Service{
 		ObjectMeta: metaV1.ObjectMeta{
-			Namespace: "fogflow",
-			Name:      "fogflow-deployment-" + freePort,
+			Namespace: k8s.applicationNameSpace,
+			Name:      "fogflow-task-" + freePort,
 		},
 		Spec: coreV1.ServiceSpec{
 			Selector: map[string]string{
-				"app": "demo",
+				"app": task.TaskName,
 			},
 			Ports: []coreV1.ServicePort{
 				{
@@ -208,7 +214,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 		},
 	}
 
-	service, err := coreV1Client.Services("fogflow").Create(context.TODO(), serviceSpec, metaV1.CreateOptions{})
+	service, err := coreV1Client.Services(k8s.applicationNameSpace).Create(context.TODO(), serviceSpec, metaV1.CreateOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -219,7 +225,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 }
 
 func (k8s *Kubernetes) StopTask(podId string) {
-	deploymentsClient := k8s.clientset.AppsV1().Deployments("fogflow")
+	deploymentsClient := k8s.clientset.AppsV1().Deployments(k8s.applicationNameSpace)
 
 	fmt.Println("Deleting Deployment ", podId)
 	deletePolicy := metav1.DeletePropagationForeground
@@ -231,7 +237,7 @@ func (k8s *Kubernetes) StopTask(podId string) {
 	fmt.Println("Deployment Deleted : ", podId)
 
 	coreV1Client := k8s.clientset.CoreV1()
-	err2 := coreV1Client.Services("fogflow").Delete(context.TODO(), podId, metaV1.DeleteOptions{})
+	err2 := coreV1Client.Services(k8s.applicationNameSpace).Delete(context.TODO(), podId, metaV1.DeleteOptions{})
 	if err2 != nil {
 		panic(err2)
 	}

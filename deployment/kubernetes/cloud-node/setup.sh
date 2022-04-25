@@ -21,12 +21,12 @@ if [ ! -d "$DIR" ]; then
 fi
 
 
-kubectl create namespace fogflow
+kubectl create namespace fogflow-cloud
 
 
 kubectl apply -f designer-pv.yaml
 
-kubectl -n fogflow create -f designer-pvc.yaml
+kubectl -n fogflow-cloud create -f designer-pvc.yaml
 
 
 

@@ -28,6 +28,7 @@ type EdgeController struct {
 func (mec *EdgeController) Init(cfg *Config) bool {
 	// retrieve the accessible URL of the edge controller
 	mec.edgeControllerURL = cfg.GetEdgeControllerURL()
+	mec.workerCfg = cfg
 
 	return true
 }
@@ -97,7 +98,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 			Kind:       "Deployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "fogflow",
+			Namespace: mec.workerCfg.Worker.AppNameSpace,
 			Name:      taskId,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -156,7 +157,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 			Kind:       "Service",
 		},
 		ObjectMeta: metaV1.ObjectMeta{
-			Namespace: "fogflow",
+			Namespace: mec.workerCfg.Worker.AppNameSpace,
 			Name:      taskId,
 		},
 		Spec: coreV1.ServiceSpec{

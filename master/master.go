@@ -506,7 +506,6 @@ func (master *Master) onWorkerLeave(from string, profile *WorkerProfile) {
 func (master *Master) onTaskUpdate(from string, update *TaskUpdate) {
 	INFO.Println("==task update=========")
 	INFO.Println(update)
-
 }
 
 func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {

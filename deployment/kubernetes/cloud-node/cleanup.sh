@@ -1,6 +1,6 @@
-kubectl  -n fogflow delete pvc designer-pvc
+kubectl  -n fogflow-cloud delete pvc designer-pvc
 kubectl  delete pv  designer-pv
 
-kubectl delete namespace fogflow
+kubectl delete namespace fogflow-cloud
 
 

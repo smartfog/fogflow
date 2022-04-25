@@ -29,6 +29,7 @@ data:
             },
             "worker": {
                 "container_management": "kubernetes", 
+                "app_namespace": "fogflow-cloud",
                 "container_autoremove": false,
                 "start_actual_task": true,
                 "capacity": 8

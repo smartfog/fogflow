@@ -73,6 +73,7 @@ type Config struct {
 	} `json:"designer"`
 	Worker struct {
 		ContainerManagement string                `json:"container_management"`
+		AppNameSpace        string                `json:"app_namespace"`
 		EdgeControllerPort  int                   `json:"edge_controller_port"`
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
