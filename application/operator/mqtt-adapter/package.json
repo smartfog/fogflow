@@ -1,0 +1,17 @@
+{
+    "name": "fogfunction",
+    "version": "1.0.0",
+    "description": "template to create your own fog function",
+    "author": "Bin Cheng<bin.cheng@neclab.eu>",
+    "main": "main.js",
+    "scripts": {
+        "start": "node main.js"
+    },
+    "dependencies": {
+        "axios": "^0.21.0",
+        "body-parser": "*",
+        "express": "^4.17.1",
+        "logops": "^2.1.1",
+        "mqtt": "^4.3.7"
+    }
+}

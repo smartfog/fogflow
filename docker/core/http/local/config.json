@@ -1,5 +1,5 @@
 {
-    "my_hostip": "127.0.0.1",
+    "my_hostip": "host.docker.internal",
     "physical_location":{
         "longitude": 139.709059,
         "latitude": 35.692221

@@ -104,7 +104,7 @@ type ContextMetadata struct {
 	Name       string      `json:"name"`
 	Type       string      `json:"type,omitempty"`
 	Value      interface{} `json:"value"`
-	Cordinates interface{} `json:"coordinates"`
+	Cordinates interface{} `json:"coordinates,omitempty"`
 }
 
 /*

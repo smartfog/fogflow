@@ -8,6 +8,7 @@ import (
 	"net"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -103,6 +104,7 @@ func (k8s *Kubernetes) findFreePortNumber() int {
 
 func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) (string, string, error) {
 	dockerImage := task.DockerImage
+	taskName := strings.ToLower(task.OperatorName)
 
 	// find a free listening port number available on the host machine
 	freePort := strconv.Itoa(k8s.findFreePortNumber())
@@ -150,19 +152,19 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": task.TaskName,
+					"app": taskName,
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
-						"app": task.TaskName,
+						"app": taskName,
 					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:  task.TaskName,
+							Name:  taskName,
 							Image: dockerImage,
 							Ports: []apiv1.ContainerPort{
 								{
@@ -204,7 +206,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 		},
 		Spec: coreV1.ServiceSpec{
 			Selector: map[string]string{
-				"app": task.TaskName,
+				"app": taskName,
 			},
 			Ports: []coreV1.ServicePort{
 				{

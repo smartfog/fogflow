@@ -28,7 +28,7 @@ $(function () {
     addMenuItem('Device', showDevices);
     addMenuItem('uService', showEndPointService);
     addMenuItem('Task', showTasks);    
-    addMenuItem('Stream', showStreams);
+    addMenuItem('Entity', showStreams);
 
     showArch();
 
@@ -501,11 +501,11 @@ $(function () {
         html += '<div class="form-horizontal"><fieldset>';
 
         html += '<div class="control-group"><label class="control-label" for="input01">Device Protocol(*)</label>';
-        html += '<div class="controls"><select id="deviceProtocol"><option>NGSI-v1</option><option>NGSI-LD</option></select></div>'
+        html += '<div class="controls"><select id="deviceProtocol"><option>NGSI-v1</option><option>NGSI-LD</option><option>MQTT</option></select></div>'
         html += '</div>';  
 
         html += '<div class="control-group"><label class="control-label" for="input01">Device Type(*)</label>';
-        html += '<div class="controls"><select id="deviceType"><option>Temperature</option><option>PowerPanel</option><option>Camera</option><option>Alarm</option></select></div>'
+        html += '<div class="controls"><select id="deviceType"><option>Temperature</option><option>PowerPanel</option><option>Camera</option><option>Alarm</option><option>HOPU</option></select></div>'
         html += '</div>';
 
 

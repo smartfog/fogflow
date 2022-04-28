@@ -24,7 +24,8 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	elementRespList := make([]ContextElementResponse, 0)
 
 	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL, subscriptionId)
+		return postNGSILDUpsert(ctxElems, URL, subscriptionId)
+		//return postOrionV2NotifyContext(ctxElems, URL, subscriptionId)
 	}
 
 	for _, elem := range ctxElems {
@@ -64,6 +65,54 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	}
 
 	ioutil.ReadAll(resp.Body)
+
+	return nil
+}
+
+// send the notification as the upsert to NGSI-LD broker
+func postNGSILDUpsert(ctxElems []ContextElement, URL string, subscriptionId string) error {
+	elementList := make([]map[string]interface{}, 0)
+	for _, elem := range ctxElems {
+		// convert it to NGSI-LD
+		element := make(map[string]interface{})
+
+		element["id"] = "urn:" + elem.Entity.ID
+		element["type"] = elem.Entity.Type
+
+		for _, attr := range elem.Attributes {
+			propertyValue := make(map[string]interface{})
+
+			propertyValue["type"] = "Property"
+			propertyValue["value"] = attr.Value
+
+			element[attr.Name] = propertyValue
+		}
+
+		elementList = append(elementList, element)
+	}
+
+	body, err := json.Marshal(elementList)
+	if err != nil {
+		return err
+	}
+
+	INFO.Println(string(body))
+
+	brokerURL := URL + "/ngsi-ld/v1/entityOperations/upsert"
+
+	req, err := http.NewRequest("POST", brokerURL, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
