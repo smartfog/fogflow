@@ -776,7 +776,7 @@ $(function () {
         } catch (err) {
 
         }
-        var map = new L.Map('map', { layers: [osm], center: new L.LatLng(35.692221, 139.709059), zoom: 7 });
+        var map = new L.Map('map', { layers: [osm], center: new L.LatLng(38.018837048090326, -1.1715629779027177), zoom: 15});
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
