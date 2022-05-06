@@ -50,38 +50,6 @@ data:
             } 
         }
 
-  nginx.conf: |
-        events {
-          worker_connections  4096;  
-        }
-        
-        http {
-            server { 
-                listen              80;
-                server_name         master-node;
-        
-                location / {
-                    proxy_http_version 1.1;                  
-                    proxy_pass   http://designer:8080/;
-                }
-        
-                location /ngsi9/ {
-                    proxy_http_version 1.1;                  
-                    proxy_pass   http://discovery:8090/ngsi9/;
-                }
-        
-                location /ngsi10/ {
-                    proxy_http_version 1.1;                  
-                    proxy_pass   http://cloudbroker:8070/ngsi10/;
-                }
-            
-                location /ngsi-ld/ {
-                    proxy_http_version 1.1;                  
-                    proxy_pass   http://cloudbroker:8070/ngsi-ld/;
-                }
-            }
-        }
-
 kind: ConfigMap
 metadata:
   name: fogflow-configmap
