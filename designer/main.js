@@ -550,6 +550,8 @@ app.get('/fogfunction/:name/enable', async function (req, res) {
     var fogfunction = db.data.fogfunctions[name];
     fogfunction.status = 'enabled';
 
+    console.log("ENABLE fog function", name);
+
     var serviceintent = fogfunction.intent;
     serviceintent.action = 'ADD';
     publishMetadata("ServiceIntent", serviceintent);
@@ -561,6 +563,8 @@ app.get('/fogfunction/:name/disable', async function (req, res) {
     var name = req.params.name;
     var fogfunction = db.data.fogfunctions[name];
     fogfunction.status = 'disabled';
+    
+    console.log("DISABLE fog function", name);    
 
     var serviceintent = fogfunction.intent;
     serviceintent.action = 'DELETE';

@@ -722,8 +722,8 @@ $(function() {
         $('#mapDiv').html(htmlContent);
 
         var osmUrl = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            osm = L.tileLayer(osmUrl, { maxZoom: 7, zoom: 7 }),
-            map = new L.Map('map', { zoomControl: false, layers: [osm], center: new L.LatLng(35.692221, 138.709059), zoom: 7 });
+            osm = L.tileLayer(osmUrl, { maxZoom: 15, zoom: 15 }),
+            map = new L.Map('map', { zoomControl: false, layers: [osm], center: new L.LatLng(38.018837048090326, -1.1715629779027177), zoom: 15});
 
         //disable zoom in/out
         map.dragging.disable();

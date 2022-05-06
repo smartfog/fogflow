@@ -475,53 +475,6 @@ func (element *ContextElement) MarshalJSON() ([]byte, error) {
 	}
 }
 
-//
-// the part to deal with NGSI v1 update supported by Orion Context Broker
-//
-func (element *ContextElement) SetEntityID() {
-	if element.ID != "" {
-		element.Entity.ID = element.ID
-		element.ID = ""
-	}
-
-	if element.Type != "" {
-		element.Entity.Type = element.Type
-		element.Type = ""
-	}
-
-	if element.IsPattern != "" {
-		if element.IsPattern == "true" {
-			element.Entity.IsPattern = true
-		} else {
-			element.Entity.IsPattern = false
-		}
-		element.IsPattern = ""
-	}
-}
-
-// Integration with wirecloud
-func (element *Subject) SetIDpattern() {
-
-	for index, entities := range element.Entities {
-
-		if entities.IdPattern != "" {
-			entities.ID = entities.IdPattern
-			element.Entities[index] = entities
-		}
-	}
-}
-
-/*
-func (element *LDSubscriptionRequest) SetLdIdPattern() {
-
-	for index, entities := range element.Entities {
-		if entities.IdPattern != "" {
-			entities.ID = entities.IdPattern
-			element.Entities[index] = entities
-		}
-	}
-}*/
-
 type StatusCode struct {
 	Code         int    `json:"code"`
 	ReasonPhrase string `json:"reasonPhrase,omitempty"`
@@ -1080,6 +1033,25 @@ type FiwareData struct {
 
 // NGSI-LD starts here.
 
+type LDContextElement struct {
+	Id               string         `json:"id, omitemtpy"`
+	Type             string         `json:"type, omitemtpy"`
+	Properties       []Property     `json:"properties, omitempty"`
+	Relationships    []Relationship `json:"relationships, omitempty"`
+	CreatedAt        string         `json:"createdAt",omitemtpy`
+	Location         LDLocation     `json:"location",omitempty`
+	ObservationSpace GeoProperty    `json:"observationSpace",omitempty`
+	OperationSpace   GeoProperty    `json:"operationSpace",omitempty`
+	ModifiedAt       string         `json:"modifiedAt"`
+}
+
+type GeoProperty struct {
+	Type       string      `json:"type",omitemtpy`
+	Value      interface{} `json:"value"omitemtpy`
+	ObservedAt string      `json:"observedAt", omitemtpy`
+	DatasetId  string      `json:"datasetId", omitempty`
+}
+
 type LDContextElementResponse struct {
 	LDContextElement interface{} `json:"contextElement"`
 	StatusCode       StatusCode  `json:"statusCode"`
@@ -1099,26 +1071,52 @@ type LDNotifyContextRequest struct {
 	NotifyAt       string        `json:"notifiedAt,omitempty"`
 }
 
-type LDContextElement struct {
-	Id               string         `json:"id",omitemtpy`
-	Type             string         `json:"type",omitemtpy`
-	Properties       []Property     `json:"properties",omitempty`
-	Relationships    []Relationship `json:"relationships",omitempty`
-	CreatedAt        string         `json:"createdAt",omitemtpy`
-	Location         LDLocation     `json:"location",omitempty`
-	ObservationSpace GeoProperty    `json:"observationSpace",omitempty`
-	OperationSpace   GeoProperty    `json:"operationSpace",omitempty`
-	ModifiedAt       string         `json:"modifiedAt"`
+//
+// the part to deal with NGSI v1 update supported by Orion Context Broker
+//
+func (element *ContextElement) SetEntityID() {
+	if element.ID != "" {
+		element.Entity.ID = element.ID
+		element.ID = ""
+	}
+
+	if element.Type != "" {
+		element.Entity.Type = element.Type
+		element.Type = ""
+	}
+
+	if element.IsPattern != "" {
+		if element.IsPattern == "true" {
+			element.Entity.IsPattern = true
+		} else {
+			element.Entity.IsPattern = false
+		}
+		element.IsPattern = ""
+	}
 }
 
-type GeoProperty struct {
-	Type       string      `json:"type",omitemtpy`
-	Value      interface{} `json:"value"omitemtpy`
-	ObservedAt string      `json:"observedAt", omitemtpy`
-	DatasetId  string      `json:"datasetId", omitempty` //URI
-	//<PropertyName>
-	//<RelationshipName>
+// Integration with wirecloud
+func (element *Subject) SetIDpattern() {
+
+	for index, entities := range element.Entities {
+
+		if entities.IdPattern != "" {
+			entities.ID = entities.IdPattern
+			element.Entities[index] = entities
+		}
+	}
 }
+
+/*
+func (element *LDSubscriptionRequest) SetLdIdPattern() {
+
+	for index, entities := range element.Entities {
+		if entities.IdPattern != "" {
+			entities.ID = entities.IdPattern
+			element.Entities[index] = entities
+		}
+	}
+}*/
 
 /*
 func (ldce *LDContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *LDContextElement {
