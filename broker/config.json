@@ -36,7 +36,10 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : false
+        "enabled" : false,
+        "my_certificate": "cloud_node.pem",
+        "my_key": "cloud_node.key",
+        "my_ca": "root_ca.pem"        
     },
     "persistent_storage": {
         "port": 9082

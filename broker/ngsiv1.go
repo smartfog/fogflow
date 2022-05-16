@@ -125,12 +125,11 @@ func (tb *ThinBroker) NGSIV1_SubscribeContext(w rest.ResponseWriter, r *rest.Req
 	subResp.SubscribeError.SubscriptionId = subID
 	w.WriteJson(&subResp)
 
+	INFO.Println(r.Header)
+
 	// check the request header
-	if r.Header.Get("Destination") == "orion-broker" {
-		subReq.Subscriber.IsOrion = true
-	} else {
-		subReq.Subscriber.IsOrion = false
-	}
+	subReq.Subscriber.DestinationType = r.Header.Get("Destination")
+	subReq.Subscriber.Tenant = r.Header.Get("Ngsild-Tenant")
 
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		subReq.Subscriber.IsInternal = true
@@ -199,9 +198,6 @@ func (tb *ThinBroker) NGSIV1_UnsubscribeContext(w rest.ResponseWriter, r *rest.R
 				if _, found := tb.subscriptions[otherSubID]; found {
 					unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
 				}
-				// if _, found := tb.ldSubscriptions[otherSubID]; found {
-				// 	unsubscribeContextProvider(otherSubID, tb.ldSubscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
-				// }
 			}
 		}
 	}
@@ -209,11 +205,7 @@ func (tb *ThinBroker) NGSIV1_UnsubscribeContext(w rest.ResponseWriter, r *rest.R
 	// remove the ngsiv1 subscription from the map
 	if _, found := tb.subscriptions[subID]; found {
 		delete(tb.subscriptions, subID)
-	} /*else if _, found := tb.ldSubscriptions[subID]; found {
-		// remove the ngsild subscription from map
-		delete(tb.ldSubscriptions, subID)
-	}*/
-
+	}
 }
 
 func (tb *ThinBroker) NGSIV1_NotifyContextAvailability(w rest.ResponseWriter, r *rest.Request) {
