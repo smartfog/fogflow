@@ -726,16 +726,13 @@ type QueryContextResponse struct {
 }
 
 type Subscriber struct {
-	IsOrion            bool
 	IsInternal         bool
 	RequireReliability bool
 	BrokerURL          string
-	//Integration        bool
-	NotifyCache       []*ContextElement
-	LDNotifyCache     []map[string]interface{}
-	Integration       string
-	FiwareService     string
-	FiwareServicePath string
+	NotifyCache        []*ContextElement
+	LDNotifyCache      []map[string]interface{}
+	DestinationType    string
+	Tenant             string
 }
 
 type SubscribeContextRequest struct {
