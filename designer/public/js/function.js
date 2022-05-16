@@ -28,7 +28,6 @@ $(function() {
 
     var selectedFogFunction = null;
 
-
     addMenuItem('FogFunction', 'Fog Function', showFogFunctions);
     //addMenuItem('TaskInstance', 'Task Instance', showTaskInstances);
    
@@ -40,7 +39,6 @@ $(function() {
 
     $(window).on('hashchange', function() {
         var hash = window.location.hash;
-
         selectMenuItem(location.hash.substring(1));
     });
 
@@ -54,7 +52,7 @@ $(function() {
         var element = $('#' + name);
         element.addClass('active');
 
-        var handler = handlers[name];
+        var handler = handlers[name];        
         if (handler != undefined) {
             handler();
         }
@@ -370,7 +368,7 @@ $(function() {
 
         html += '<thead><tr>';
         html += '<th>Name</th>';
-        html += '<th>Action</th>';
+        html += '<th class="singlecolumn">Action</th>';
         html += '<th>Topology</th>';
         html += '<th>Intent</th>';
         html += '</tr></thead>';
@@ -434,7 +432,8 @@ $(function() {
             var statusButton = document.getElementById('status-' + fogfunction.name);
             statusButton.onclick = function(myFogFunction) {
                 return function() {
-                    if (statusButton.innerHTML == "enable") {
+                    console.log(statusButton.innerHTML);
+                    if (this.innerHTML == "enable") {
                         enableFogFunction(myFogFunction);                        
                     } else {
                         disableFogFunction(myFogFunction);                                                

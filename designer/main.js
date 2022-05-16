@@ -8,6 +8,7 @@ import { Low, JSONFile } from 'lowdb'
 
 import socketio from 'socket.io'
 
+import NGSIClient from './public/lib/ngsi/ngsiclient.cjs'
 import NGSIAgent from './public/lib/ngsi/ngsiagent.cjs'
 import NGSILDAgent from './public/lib/ngsi/LDngsiagent.cjs'
 
@@ -31,12 +32,15 @@ var photo_folder = './public/data/photo';
 fs.mkdir(photo_folder, { recursive: true })
 
 
+
 const adapter = new JSONFile(metadata_folder + '/db.json');
 const db = new Low(adapter);
 
 await db.read()
 
 db.data ||= {
+    devices: {},
+    subscriptions: {},
     operators: {},
     dockerimages: {},
     topologies: {},
@@ -61,6 +65,7 @@ if (!('host_ip' in globalConfigFile.broker)) {
     globalConfigFile.broker.host_ip = globalConfigFile.my_hostip
 }
 var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port
+var ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL + "/ngsi10");
 
 if (config.host_ip) {
     config.agentIP = config.host_ip;
@@ -132,13 +137,13 @@ function onTaskUpdate(msg) {
         removeTask(payload.TaskID)
     } else {
         updateTaskList(payload, workerID);
-    }    
+    }
 }
 
 function updateTaskList(updateMsg, fromWorker) {
     var taskID = updateMsg.TaskID;
 
-    if (taskID in taskMap) {        
+    if (taskID in taskMap) {
         if ("Status" in updateMsg) {
             taskMap[taskID].Status = updateMsg.Status
         }
@@ -153,7 +158,7 @@ function updateTaskList(updateMsg, fromWorker) {
 
 function removeTask(taskID) {
     if (taskID in taskMap) {
-        delete taskMap[taskID];        
+        delete taskMap[taskID];
     }
 }
 
@@ -248,7 +253,7 @@ app.post('/data/photo', function (req, res) {
 //============= FogFlow API =================================
 
 app.all("/ngsi10/*", function (req, res) {
-    //console.log('redirecting to ngsi-v1 broker');
+    console.log('redirecting to ngsi-v1 broker', cloudBrokerURL);
     ngsiProxy.web(req, res, { target: cloudBrokerURL });
 });
 
@@ -290,8 +295,6 @@ app.get('/info/broker', async function (req, res) {
     };
 });
 
-
-
 app.get('/info/worker', async function (req, res) {
     try {
         var url = masterURL + "/workers";
@@ -310,7 +313,7 @@ app.get('/info/task', async function (req, res) {
     console.log(taskMap)
     for (const taskID of Object.keys(taskMap)) {
         var task = taskMap[taskID];
-        task['ID'] = taskID;        
+        task['ID'] = taskID;
         taskList.push(task);
     }
 
@@ -324,10 +327,10 @@ app.get('/info/task/:intent', async function (req, res) {
 
     for (const taskID of Object.keys(taskMap)) {
         var task = taskMap[taskID];
-        
+
         if (task['ServiceIntentID'] == intentID) {
-            task['ID'] = taskID;        
-            taskList.push(task);            
+            task['ID'] = taskID;
+            taskList.push(task);
         }
     }
 
@@ -563,8 +566,8 @@ app.get('/fogfunction/:name/disable', async function (req, res) {
     var name = req.params.name;
     var fogfunction = db.data.fogfunctions[name];
     fogfunction.status = 'disabled';
-    
-    console.log("DISABLE fog function", name);    
+
+    console.log("DISABLE fog function", name);
 
     var serviceintent = fogfunction.intent;
     serviceintent.action = 'DELETE';
@@ -639,6 +642,130 @@ app.get('/task/:intentID', async function (req, res) {
 
     res.json(tasks);
 });
+
+
+app.get('/subscription', async function (req, res) {
+    var subscriptions = db.data.subscriptions;
+    res.json(subscriptions);
+});
+app.post('/subscription', jsonParser, async function (req, res) {
+    var subscription = req.body;
+
+    if (isEmpty(subscription) == true) {
+        res.sendStatus(200)
+        return
+    }
+
+    console.log(subscription)
+
+    var headers = {};
+
+    if (subscription.destination_broker == 'NGSI-LD') {
+        headers["Content-Type"] = "application/json";
+        headers["Destination"] = "NGSI-LD";
+        headers["NGSILD-Tenant"] = subscription.tenant;
+    } else if (subscription.destination_broker == 'NGSIv2') {
+        headers["Content-Type"] = "application/json";
+        headers["Destination"] = "NGSIv2";        
+    }
+
+     // issue the subscription to FogFlow Cloud Broker
+    var subscribeCtxReq = {};
+    subscribeCtxReq.entities = [{ type: subscription['entity_type'], isPattern: true }];
+    subscribeCtxReq.reference = subscription['reference_url'];
+    ngsi10client.subscribeContextWithHeaders(subscribeCtxReq, headers).then(function (subscriptionId) {
+        console.log("subscription id = " + subscriptionId);
+        db.data.subscriptions[subscriptionId] = subscription;
+        db.write();
+
+        res.sendStatus(200)
+    }).catch(function (error) {
+        console.log('failed to subscribe context, ', error);
+        res.sendStatus(500)
+    });
+});
+app.delete('/subscription/:id', async function (req, res) {
+    var sid = req.params.id;
+    
+    if (db.data.subscriptions.hasOwnProperty(sid) == false) {
+        res.sendStatus(404)
+        return;
+    }    
+
+    // unsubscribe 
+    ngsi10client.unsubscribeContext(sid).then(function (subscriptionId) {
+        console.log("remove the subscription sid = " + subscriptionId);
+        delete db.data.subscriptions[sid];
+        db.write();
+        res.sendStatus(200)
+    }).catch(function (error) {
+        console.log('failed to unsubscribe the specified subscription');
+        res.sendStatus(500)
+    });
+});
+ 
+
+app.get('/device', async function (req, res) {
+    var devices = db.data.devices;
+    res.json(devices);
+});
+app.post('/device', jsonParser, async function (req, res) {
+    var deviceObj = req.body;
+    
+    if (deviceObj.hasOwnProperty('id')) {
+        var did = deviceObj.id;        
+    } else {
+        var did = deviceObj.type + uuid();        
+    }
+        
+    if (isEmpty(deviceObj) == true) {
+        res.sendStatus(200)
+        return
+    }
+
+    console.log(deviceObj)
+
+    deviceObj.entityId = {
+           id: deviceObj.id,
+           type: deviceObj.type,
+           isPattern: false		
+	};
+
+    // create the device entity in FogFlow Cloud Broker
+    ngsi10client.updateContext(deviceObj).then(function (data) {
+        console.log(data);
+        db.data.devices[did] = deviceObj;
+        db.write();
+        res.sendStatus(200)        
+    }).catch(function (error) {
+        console.log('failed to register the new device object');
+        res.sendStatus(500)        
+    });    
+});
+app.delete('/device/:id', async function (req, res) {
+    var did = req.params.id;
+    if (db.data.devices.hasOwnProperty(did) == false) {
+        res.sendStatus(404)
+        return;
+    }
+
+    // delete the associated ngsi entity for this device
+    var entityid = {
+        id: did,
+        isPattern: false
+    };
+     
+    ngsi10client.deleteContext(entityid).then(function (subscriptionId) {
+        console.log('remove the device ', did);
+        delete db.data.devices[did];
+        db.write();
+        res.sendStatus(200)
+    }).catch(function (error) {
+        console.log('failed to delete the corresponding entity');
+        res.sendStatus(500)
+    });
+});
+
 
 
 app.get('/config.js', function (req, res) {

@@ -31,6 +31,7 @@ blocks.register({
         {
             name: "Name",
             type: "string",
+            choices: ["service_port", "virtual_network_interface"],            
             attrs: "editable"
         },{
             name: "Values",

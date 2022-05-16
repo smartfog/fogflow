@@ -284,54 +284,49 @@ $(function() {
     function showTasks() {
         $('#info').html('list of all triggerred function tasks');
 
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Task', isPattern: true }];
-
-        client.queryContext(queryReq).then(function(taskList) {
-            console.log(taskList);
-            displayTaskList(taskList);
+        fetch('/info/task').then(res => res.json()).then(tasks => {
+            console.log("the list of tasks ");
+            console.log(tasks);
+            var taskList = Object.values(tasks);
+            displayTaskList(taskList);            
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query task');
-        });
+            console.log('failed to fetch the list of create tasks');
+        }); 
     }
 
 
     function displayTaskList(tasks) {
-        $('#info').html('list of all function tasks that have been triggerred');
-
-        if (tasks.length == 0) {
+        if (tasks == null || tasks.length == 0) {
             $('#content').html('');
-            return;
+            return
         }
 
         var html = '<table class="table table-striped table-bordered table-condensed">';
 
         html += '<thead><tr>';
         html += '<th>ID</th>';
-        html += '<th>Type</th>';
         html += '<th>Service</th>';
         html += '<th>Task</th>';
         html += '<th>Worker</th>';
-        html += '<th>port</th>';
-        html += '<th>status</th>';
+        html += '<th>Status</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
+
+            console.log(task);
+
             html += '<tr>';
-            html += '<td>' + task.entityId.id + '</td>';
-            html += '<td>' + task.entityId.type + '</td>';
-            html += '<td>' + task.attributes.service.value + '</td>';
-            html += '<td>' + task.attributes.task.value + '</td>';
-            html += '<td>' + task.metadata.worker.value + '</td>';
+            html += '<td>' + task.TaskID + '</td>';
+            html += '<td>' + task.TopologyName + '</td>';
+            html += '<td>' + task.TaskName + '</td>';
+            html += '<td>' + task.Worker + '</td>';            
 
-            html += '<td>' + task.attributes.port.value + '</td>';
-
-            if (task.attributes.status.value == "paused") {
-                html += '<td><font color="red">' + task.attributes.status.value + '</font></td>';
+            if (task.Status == "paused") {
+                html += '<td><font color="red">' + task.Status + '</font></td>';
             } else {
-                html += '<td><font color="green">' + task.attributes.status.value + '</font></td>';
+                html += '<td><font color="green">' + task.Status + '</font></td>';
             }
 
             html += '</tr>';
