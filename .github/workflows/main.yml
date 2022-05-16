@@ -120,9 +120,9 @@ jobs:
         cd ../test/UnitTest/
         screen -d -m python accumulator.py
         
-        echo "NGSI-v1 Testing !!!"
-        cd ../UnitTest/v1/
-        pytest -s -v test_casesNGSIv1.py        
+        # echo "NGSI-v1 Testing !!!"
+        # cd ../UnitTest/v1/
+        # pytest -s -v test_casesNGSIv1.py        
         
         # echo "NGSI-v2 Testing !!!"
         # cd ../v2/
