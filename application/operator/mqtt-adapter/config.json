@@ -5,7 +5,7 @@
 },
 {
 	"command":"SET_INPUTS",
-	"type": "HOPUDevice"
+	"type": "HOPU"
 }
 ]
 
