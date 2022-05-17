@@ -132,8 +132,8 @@ jobs:
         # cd ../NGSI-LD/
         # pytest -s -v test_casesNGSI-LD.py
 
-        echo "Persistance Testing !!!"  
-        cd ../persistance/
-        pytest -s -v test_persistance.py 
+        # echo "Persistance Testing !!!"  
+        # cd ../persistance/
+        # pytest -s -v test_persistance.py 
 
         echo "Testing Done !!!!!"
