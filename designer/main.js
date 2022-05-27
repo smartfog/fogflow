@@ -49,7 +49,10 @@ db.data ||= {
     fogfunctions: {}
 }
 
-var send_loaded_intents = false
+var send_loaded_intents = false;
+var send_loaded_devices = false;
+var send_loaded_subscriptions = false;
+
 
 var app = express();
 
@@ -57,6 +60,7 @@ var ngsiProxy = httpProxy.createProxyServer();
 
 var config = globalConfigFile.designer;
 
+// list of active tasks launched by FogFlow workers
 var taskMap = {};
 
 // get the URL of the cloud broker
@@ -112,7 +116,6 @@ console.log(config);
 
 console.log(rabbitmq_url);
 rabbitmq.Init(rabbitmq_url, handleInternalMessage, issueLoadedIntents);
-
 function handleInternalMessage(jsonMsg) {
     console.log(jsonMsg.Type);
 
@@ -216,7 +219,7 @@ function uuid() {
 }
 
 // all subscriptions that expect data forwarding
-var subscriptions = {};
+var subscriptions_websocket = {};
 
 
 app.use(function (req, res, next) {
@@ -628,21 +631,6 @@ app.delete('/fogfunction/:name', async function (req, res) {
     }
 });
 
-app.get('/task', async function (req, res) {
-    var tasks = db.data.tasks;
-    res.json(tasks);
-});
-app.get('/task/:intentID', async function (req, res) {
-    var intentID = req.params.intentID;
-
-    var tasks = [];
-    //    for(var i=0; i<db.data.tasks.length; i++) {
-    //        if db.data.tasks[i]
-    //    }
-
-    res.json(tasks);
-});
-
 
 app.get('/subscription', async function (req, res) {
     var subscriptions = db.data.subscriptions;
@@ -816,10 +804,10 @@ function handleNotify(req, ctxObjects, res) {
     console.log('handle notify');
     var sid = req.body.subscriptionId;
     console.log(sid);
-    if (sid in subscriptions) {
+    if (sid in subscriptions_websocket) {
         for (var i = 0; i < ctxObjects.length; i++) {
             console.log(ctxObjects[i]);
-            var client = subscriptions[sid];
+            var client = subscriptions_websocket[sid];
             client.emit('notify', { 'subscriptionID': sid, 'entities': ctxObjects[i] });
         }
     }
@@ -845,16 +833,16 @@ io.on('connection', function (client) {
         console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
             var sid = subList[i];
-            subscriptions[sid] = client;
+            subscriptions_websocket[sid] = client;
         }
     });
 
     client.on('disconnect', function () {
         console.log('disconnected');
         //remove the subscriptions associated with this socket
-        for (var sid in subscriptions) {
-            if (subscriptions[sid] == client) {
-                delete subscriptions[sid];
+        for (var sid in subscriptions_websocket) {
+            if (subscriptions_websocket[sid] == client) {
+                delete subscriptions_websocket[sid];
             }
         }
     });

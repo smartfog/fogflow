@@ -234,13 +234,13 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 		for _, entity := range registration.EntityIdList {
 			// convert context registration to entity registration
 			fmt.Println("entity.MsgFormat", entity.MsgFormat)
-			if entity.MsgFormat == "NGSILD" {
-				entityRegistration := master.ldContextRegistration2EntityRegistration(&entity, &registration)
-				go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
-			} else {
-				entityRegistration := master.contextRegistration2EntityRegistration(&entity, &registration)
-				go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
-			}
+			// if entity.MsgFormat == "NGSILD" {
+			// 	entityRegistration := master.ldContextRegistration2EntityRegistration(&entity, &registration)
+			// 	go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
+			// } else {
+			entityRegistration := master.contextRegistration2EntityRegistration(&entity, &registration)
+			go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
+			// }
 			//go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
 		}
 	}
@@ -270,56 +270,56 @@ func (master *Master) RetrieveContextLdEntity(eid string, fsp string) interface{
 	}
 }
 
-func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
-	entityRegistration := EntityRegistration{}
+// func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
+// 	entityRegistration := EntityRegistration{}
 
-	ctxObj := master.RetrieveContextLdEntity(entityId.ID, entityId.FiwareServicePath)
-	if ctxObj == nil {
-		entityRegistration.ID = entityId.ID
-		entityRegistration.Type = entityId.Type
-		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
-		entityRegistration.MsgFormat = entityId.MsgFormat
-	} else {
-		ldCtcObj := ctxObj.(map[string]interface{})
-		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
-		entityRegistration.MetadataList = make(map[string]ContextMetadata)
-		entityRegistration.MsgFormat = entityId.MsgFormat
-		for key, attr := range ldCtcObj {
-			if key != "modifiedAt" && key != "createdAt" && key != "observationSpace" && key != "operationSpace" && key != "@context" && key != "fiwareServicePath" {
-				if key == "id" {
-					entityRegistration.ID = entityId.ID
-				} else if key == "type" {
-					entityRegistration.Type = ldCtcObj[key].(string)
-				} else if key == "FiwareServicePath" {
-					entityRegistration.FiwareServicePath = ldCtcObj[key].(string)
-				} else {
-					attrmap := attr.(map[string]interface{})
-					if attrmap["type"] != "GeoProperty" {
-						attributeRegistration := ContextRegistrationAttribute{}
-						attributeRegistration.Name = key
-						attributeRegistration.Type = attrmap["type"].(string)
-						entityRegistration.AttributesList[key] = attributeRegistration
-					} else {
-						metaData := attr.(map[string]interface{})
-						cm := ContextMetadata{}
-						cm.Name = key
-						matadataCordinate := metaData["value"].(map[string]interface{})
-						typ, points := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string), matadataCordinate["coordinates"])
-						cm.Type = typ
-						cm.Value = points
-						entityRegistration.MetadataList[key] = cm
-					}
-				}
-			}
-		}
-	}
+// 	ctxObj := master.RetrieveContextLdEntity(entityId.ID, entityId.FiwareServicePath)
+// 	if ctxObj == nil {
+// 		entityRegistration.ID = entityId.ID
+// 		entityRegistration.Type = entityId.Type
+// 		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+// 		entityRegistration.MsgFormat = entityId.MsgFormat
+// 	} else {
+// 		ldCtcObj := ctxObj.(map[string]interface{})
+// 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+// 		entityRegistration.MetadataList = make(map[string]ContextMetadata)
+// 		entityRegistration.MsgFormat = entityId.MsgFormat
+// 		for key, attr := range ldCtcObj {
+// 			if key != "modifiedAt" && key != "createdAt" && key != "observationSpace" && key != "operationSpace" && key != "@context" && key != "fiwareServicePath" {
+// 				if key == "id" {
+// 					entityRegistration.ID = entityId.ID
+// 				} else if key == "type" {
+// 					entityRegistration.Type = ldCtcObj[key].(string)
+// 				} else if key == "FiwareServicePath" {
+// 					entityRegistration.FiwareServicePath = ldCtcObj[key].(string)
+// 				} else {
+// 					attrmap := attr.(map[string]interface{})
+// 					if attrmap["type"] != "GeoProperty" {
+// 						attributeRegistration := ContextRegistrationAttribute{}
+// 						attributeRegistration.Name = key
+// 						attributeRegistration.Type = attrmap["type"].(string)
+// 						entityRegistration.AttributesList[key] = attributeRegistration
+// 					} else {
+// 						metaData := attr.(map[string]interface{})
+// 						cm := ContextMetadata{}
+// 						cm.Name = key
+// 						matadataCordinate := metaData["value"].(map[string]interface{})
+// 						typ, points := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string), matadataCordinate["coordinates"])
+// 						cm.Type = typ
+// 						cm.Value = points
+// 						entityRegistration.MetadataList[key] = cm
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
 
-	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
+// 	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
 
-	DEBUG.Printf("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
+// 	DEBUG.Printf("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
 
-	return &entityRegistration
-}
+// 	return &entityRegistration
+// }
 
 func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
 	entityRegistration := EntityRegistration{}
@@ -328,13 +328,13 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
-		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
-		entityRegistration.MsgFormat = entityId.MsgFormat
+		// entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		// entityRegistration.MsgFormat = entityId.MsgFormat
 	} else {
 		entityRegistration.ID = ctxObj.Entity.ID
 		entityRegistration.Type = ctxObj.Entity.Type
-		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
-		entityRegistration.MsgFormat = entityId.MsgFormat
+		// entityRegistration.FiwareServicePath = entityId.FiwareServicePath
+		// entityRegistration.MsgFormat = entityId.MsgFormat
 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
 		for attrName, attrValue := range ctxObj.Attributes {
 			attributeRegistration := ContextRegistrationAttribute{}
@@ -774,7 +774,7 @@ func (master *Master) subscribeContextEntity(entityType string) {
 	subscription.Reference = master.myURL
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	sid, err := client.SubscribeContext(&subscription, true)
+	sid, err := client.SubscribeContext(&subscription, "", true)
 	if err != nil {
 		ERROR.Println(err)
 	}

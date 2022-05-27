@@ -86,7 +86,6 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		}
 
 		for _, attributeOld := range existRegistration.AttributesList {
-			//fmt.Println("\n---inside attribute print---\n",attributeOld.Name)
 			found := false
 			for _, attributeNew := range attrilist {
 				if attributeNew.Name == attributeOld.Name {
@@ -108,18 +107,6 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		if len(registration.ProvidingApplication) > 0 {
 			existRegistration.ProvidingApplication = registration.ProvidingApplication
 		}
-
-		//update existing FiwareServicePath
-		if len(registration.FiwareServicePath) > 0 {
-			existRegistration.FiwareServicePath = registration.FiwareServicePath
-		}
-		if len(registration.MsgFormat) > 0 {
-			existRegistration.MsgFormat = registration.MsgFormat
-		}
-		if len(registration.FiwareService) > 0 {
-			existRegistration.FiwareService = registration.FiwareService
-		}
-
 	} else {
 		entityRegistry := EntityRegistration{}
 
@@ -143,61 +130,26 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 			entityRegistry.ProvidingApplication = registration.ProvidingApplication
 		}
 
-		// update FiwareServive path
-		if len(registration.FiwareServicePath) > 0 {
-			entityRegistry.FiwareServicePath = registration.FiwareServicePath
-		}
-
-		if len(registration.MsgFormat) > 0 {
-			entityRegistry.MsgFormat = registration.MsgFormat
-		}
-
-		if len(registration.FiwareService) > 0 {
-			entityRegistry.FiwareService = registration.FiwareService
-		}
-
 		er.ctxRegistrationList[eid] = &entityRegistry
 	}
 	return er.ctxRegistrationList[eid]
 }
 
-/*func(er *EntityRepository) updateDeletedAttribute(entity EntityId, registration *ContextRegistration) {
-	 er.ctxRegistrationList_lock.Lock()
-        defer er.ctxRegistrationList_lock.Unlock()
-
-        eid := entity.ID
-        fmt.Println("\n--------entity id--------\n",eid)
-
-        if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
-
-                // update existing attribute table
-                for _, attr := range registration.ContextRegistrationAttributes {
-                        fmt.Println("\n---Print attr---\n",attr)
-                        //existRegistration.AttributesList[attr.Name] = attr
-                        //fmt.Println("\n---pront---\n",existRegistration.AttributesList[attr.Name])
-                        existRegistration.AttributesList[attr.Name] = attr
-                }
-
-        return er.ctxRegistrationList[eid]
-}*/
-
-func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction, fiwareService string) map[string][]EntityId {
-	return er.queryEntitiesInMemory(entities, attributes, restriction, fiwareService)
+func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
+	return er.queryEntitiesInMemory(entities, attributes, restriction)
 }
 
-func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attributes []string, restriction Restriction, subfiwareService string) map[string][]EntityId {
+func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
 	er.ctxRegistrationList_lock.RLock()
 	defer er.ctxRegistrationList_lock.RUnlock()
 	nearby := restriction.GetNearbyFilter()
 	candidates := make([]Candidate, 0)
 	for _, registration := range er.ctxRegistrationList {
-		if matchingWithFilters(registration, entities, attributes, restriction, subfiwareService, registration.FiwareService) == true {
+		if matchingWithFilters(registration, entities, attributes, restriction) == true {
 			candidate := Candidate{}
 			candidate.ID = registration.ID
 			candidate.Type = registration.Type
 			candidate.ProviderURL = registration.ProvidingApplication
-			candidate.FiwareServicePath = registration.FiwareServicePath
-			candidate.MsgFormat = registration.MsgFormat
 
 			if nearby != nil {
 				landmark := Point{}

@@ -222,7 +222,7 @@ func (tb *ThinBroker) deleteEntity(eid string) error {
 	// inform the subscribers that this entity is deleted by sending a empty context element without any attribute, metadata
 	emptyElement := ContextElement{}
 	emptyElement.Entity.ID = eid
-	tb.notifySubscribers(&emptyElement, false)
+	tb.notifySubscribers(&emptyElement, "", false)
 
 	//unregister this entity from IoT Discovery
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
@@ -335,7 +335,7 @@ func (tb *ThinBroker) handleInternalUpdateContext(updateCtxReq *UpdateContextReq
 	switch updateCtxReq.UpdateAction {
 	case "UPDATE":
 		for _, ctxElem := range updateCtxReq.ContextElements {
-			tb.UpdateContext2LocalSite(&ctxElem)
+			tb.UpdateContext2LocalSite(&ctxElem, updateCtxReq.Correlator)
 		}
 	case "DELETE":
 		for _, ctxElem := range updateCtxReq.ContextElements {
@@ -353,7 +353,7 @@ func (tb *ThinBroker) handleExternalUpdateContext(w rest.ResponseWriter, updateC
 			brokerURL := tb.queryOwnerOfEntity(ctxElem.Entity.ID)
 
 			if brokerURL == tb.myProfile.MyURL {
-				tb.UpdateContext2LocalSite(&ctxElem, w)
+				tb.UpdateContext2LocalSite(&ctxElem, updateCtxReq.Correlator, w)
 			} else {
 				tb.UpdateContext2RemoteSite(&ctxElem, updateCtxReq.UpdateAction, brokerURL)
 			}
@@ -395,7 +395,7 @@ func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
 	}
 }
 
-func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, params ...rest.ResponseWriter) {
+func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, correlator string, params ...rest.ResponseWriter) {
 	tb.entities_lock.Lock()
 	eid := ctxElem.Entity.ID
 	hasUpdatedMetadata := hasUpdatedMetadata(ctxElem, tb.entities[eid])
@@ -405,7 +405,7 @@ func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, params ..
 	tb.updateContextElement(ctxElem)
 
 	// propogate this update to its subscribers
-	go tb.notifySubscribers(ctxElem, true)
+	go tb.notifySubscribers(ctxElem, correlator, true)
 
 	// register the entity if there is any changes on attribute list, domain metadata
 	if hasUpdatedMetadata == true {
@@ -426,7 +426,7 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 	}
 }
 
-func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAttributes bool) {
+func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator string, checkSelectedAttributes bool) {
 	eid := ctxElem.Entity.ID
 	tb.e2sub_lock.RLock()
 	defer tb.e2sub_lock.RUnlock()
@@ -435,17 +435,33 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 	for _, sid := range subscriberList {
 		elements := make([]ContextElement, 0)
 
+		beTheSame := false
+
+		// check if both the producer and subscriber of this update is the same originator
+		tb.subscriptions_lock.RLock()
+		if subscription, exist := tb.subscriptions[sid]; exist {
+			originator := subscription.Subscriber.Correlator
+			if correlator != "" && originator != "" && correlator == originator {
+				beTheSame = true
+				DEBUG.Println("session ID from producer ", correlator, ", subscriber ", originator)
+			}
+		}
+		tb.subscriptions_lock.RUnlock()
+
+		if beTheSame == true {
+			DEBUG.Println(" ======= producer and subscriber are the same ===========")
+			continue
+		}
+
 		if checkSelectedAttributes == true {
 			selectedAttributes := make([]string, 0)
 
 			tb.subscriptions_lock.RLock()
-
 			if subscription, exist := tb.subscriptions[sid]; exist {
 				if subscription.Attributes != nil {
 					selectedAttributes = append(selectedAttributes, tb.subscriptions[sid].Attributes...)
 				}
 			}
-
 			tb.subscriptions_lock.RUnlock()
 
 			tb.entities_lock.RLock()
@@ -456,6 +472,7 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, checkSelectedAt
 		} else {
 			elements = append(elements, *ctxElem)
 		}
+
 		go tb.sendReliableNotify(elements, sid)
 	}
 }

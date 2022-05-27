@@ -62,11 +62,32 @@ and then the configured task will be launched as a task instance, running in a d
 Currently, each task instance is deployed in a dedicated docker container, either in the cloud or at an edge node. 
 
 
-Service Template
+IoT Service
+-----------------------
+
+The three key elements to program an IoT service is illustrated via below figure.
+
+
+.. figure:: figures/key_elements.png
+
+
+In FogFlow several operators form a graph which is defined as a service topology. 
+Each operator in the service topology is annotated with its inputs and outputs, 
+which indicate their dependency to the other tasks in the same topology. 
+Service topology can easily compose different operators to form their service logic in just a few minutes. 
+After that, during the runtime data processing flows can be automatically triggerred based on the high level data usage intent defined by service users. 
+Service users can be either data producers or result consumers.
+
+
+.. figure:: figures/iot_service.png
+
+
+Service Topology
 -------------------------
 
-Each IoT service is described by a service template, which can be a service topology with a set of linked operators
-or a fog function with a single operator. For example, when a service topology is used to specify the service template, 
+Each IoT service is described by a service topology, which is a directed acyclic graph (DAG) to link multiple operators together 
+according to their data dependency. 
+For example, when a service topology is used to specify the service topology, 
 the following information will be included. 
 
 - topology name: the unique name of the topology
@@ -77,8 +98,28 @@ the following information will be included.
 Currently, FogFlow provides a graphical editor to allow developers to easily define and annotate their service topology or fog function during the design phrase.
 
 
-Dynamic data flow 
+
+Service Intent
 -----------------------
+
+A service intent defines how to trigger an existing service topology. 
+It basically consists of these properties as illustrated in below figure.
+
+- Serivce topology specifies the computation logic for which the intent object is triggered. 
+
+- Geoscope is defined a geographical location where input streams should be selected. Geoscope can be selected as global value as well as can be set custom geoscopes. 
+
+- Service Level Object (SLO) is the objective of maximum throughput, minimum latency and minimum cost can be set for task assignment at workers. However, this feature is not fully supported yet, so User can ignore this. It can be set as “None” for now. 
+
+- Resource Usage defines how a topology can use resources on edge nodes. It can either exlusive or inclusive. In an exclusive way means the topology will not share the resources with any task from other topologies. Whereas an inclusive topology will share the resources with any task from other topologies.
+
+
+.. figure:: figures/intent_model.png
+
+
+
+From Service Topology to Actual Execution
+--------------------------------------------
 
 On receiving a requirement, Topology Master creates a dataflow execution graph and then deploys them over the cloud and edges. 
 The main procedure is illustrated by the following figure, including two major steps. 
@@ -97,42 +138,18 @@ The main procedure is illustrated by the following figure, including two major s
 	without overloading any edge node. 
 
 
-FogFlow Storage
-======================
 
-Previously, FogFlow was using its internal data structure to store the FogFlow internal entities
-like operator, Fog-function, docker images and service-topology. FogFlow was not supporting any permanent 
-storage to store FogFlow internal NGSI entities. Hence, it loses all stored internal entities whenever FogFlow broker went down. 
-So, to resolve this problem FogFlow is using a Persistent Storage named DGraph. 
+Fog Function
+-----------------------
+Currently, FogFlow can support serverless fog computing by providing so-called Fog Function, 
+which is a common easy case of the intent-based programming model. 
+As illustrated in the figure below, 
+Fog Function represents a common special case of the generic intent-based programming model in FogFlow, 
+meaning that a fog function is associated with a simple service topology that includes only one task (a task is mapped to an operator in FogFlow) 
+and an default intent that takes "global" as its geoscope. 
+Therefore, when a fog function is submitted, 
+its service topology will be triggered immediately once its required input data is available. 
 
-Persistent storage is a data storage device that retains data after power to that device is shut off. 
-It is also sometimes referred to as non-volatile storage.
+.. figure:: figures/fog_function_model.png
 
-The Dgraph data model consists of data sets, records, and attributes. Where Records are the fundamental 
-units of data in the Dgraph and an attribute is the basic unit of a record schema. Assignments from attributes
-(also known as key-value pairs) describe records in the Dgraph. The flow diagram of data with persistent storage is as below:
-
-
-
-.. figure:: figures/persistent_data_flow.png
-
-
-
-1.	User of FogFlow can create the FogFlow internal entities using Web browser through designer.
-
-2.	User of FogFlow can create the FogFlow internal entities using client(curl) through designer.
-
-3.	Designer can store and get the created entities from the Dgraph database in case of requirement. 
-
-4.	Designer can get the old registered entities from the Dgraph database and can registered in the cloud broker.
-
-
-There are many databases available that support Graph Database for example: Neo4j, DGraph are among the top using databases. 
-FogFlow is using DGraph, reason behind selecting DGraph is as below:
-
-1. Dgraph is 160x faster than Neo4j for loading graph data.
-
-2. Dgraph consumes 5x lesser memory compared to Neo4j.
-
-3. Dgraph supports most of the functionality that one needs to get the job done.
 

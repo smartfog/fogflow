@@ -19,15 +19,21 @@ function prepare_entity_update(msg, attribute_mappings, device_id, device_locati
       };
       updateEntity.attributes = {};
     
-      updateEntity.attributes["device"] = { type: "string", value: device_id };
+      updateEntity.attributes["refDevice"] = { type: "relationship", value: device_id };
       var now = new Date();
       updateEntity.attributes["dateObserved"] = { type: "datetime", value: now.toISOString() };
 
-      switch(mapping.type) {
-        case "Number":
+      switch(mapping.type.toLowerCase()) {
+        case "number":
+          updateEntity.attributes[mapping.name] = { type: "float", value: parseFloat(msg[attr]) };
+          break;        
+        case "float":
           updateEntity.attributes[mapping.name] = { type: "float", value: parseFloat(msg[attr]) };
           break;
-        case "String":
+        case "integer":
+          updateEntity.attributes[mapping.name] = { type: "float", value: parseInt(msg[attr]) };
+          break;        
+        case "string":
           updateEntity.attributes[mapping.name] = { type: "string", value: msg[attr] };
           break;
         default:
@@ -84,7 +90,14 @@ exports.handler = function (contextEntity, publish, query, subscribe) {
   client.on('message', (topic, payload) => {
     // get the corresponding attribute_mappings for this topic
     var mappings = topicMap[topic];
-    var msg = JSON.parse(payload.toString());
+    
+    try {
+        var msg = JSON.parse(payload.toString());        
+    } catch (error) {
+        console.log('Error happened here!');
+        console.error(error);
+        return;        
+    }
 
     // create an entity update with the transformed attributes
     update_messages = prepare_entity_update(msg, mappings, deviceID, deviceLocation);

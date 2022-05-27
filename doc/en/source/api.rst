@@ -881,6 +881,15 @@ curl -iX DELETE http://localhost:80/ngsi10/subscription/#sid
 FogFlow Designer API
 ===================================
 
+FogFlow uses its own REST APIs to manage all internal objects, 
+including operator, docker image, service topology, service intent, and fog function. 
+In addition, FogFlow also provides the extra interface for device registration and 
+the management of subscriptions to exchange data with other FIWARE brokers, 
+such as Orion/Orion-LD and Scorpio, 
+which could be used both as the data sources to fetch the original data 
+or as the destination to publish the generated results. 
+
+
 Operator
 -------------------
 
@@ -890,23 +899,20 @@ Operator
 
 **POST /operator**
 
-
-
 **Example**   
  
 .. code-block:: console
 
-   curl -X POST \
-	  http://localhost:8080/operator \
+	curl -X POST \
+	  'http://127.0.0.1:8080/operator' \
 	  -H 'Content-Type: application/json' \
-	  -d '[
-	    {
-		"name": "test_operator",
-		"description": "test operator",
-		"parameters": []
-	    }
-	]'
-
+	  -d '
+	    [{
+	        "name": "dummy",
+	        "description": "test",
+	        "parameters": []
+	    }]
+	    '
 
 
 **b. To retrieve all the operators**
@@ -918,9 +924,8 @@ Operator
 
 .. code-block:: console
 
-   curl -X GET 'http://localhost:8080/operator' \
-  -H 'Content-Type: application/json'
-
+	curl -iX GET \
+	  'http://127.0.0.1:8080/operator'
 
 **c. To retrieve a specific operator based on operator name**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -937,9 +942,8 @@ name             Name of existing operator
 
 .. code-block:: console
 
-   curl -X GET  'http://localhost:8080/operator/nodejs' \
-  -H 'Content-Type: application/json' 
-   
+	curl -iX GET \
+	  'http://127.0.0.1:8080/operator/dummy'
 
 DockerImage
 -------------------
@@ -1473,9 +1477,9 @@ Intent
 **GET /intent/<intent id>**
 
 ==============   ============================
-Param		 Description
+Param		       Description
 ==============   ============================
-id             ID of existing intent
+id                ID of existing intent
 ==============   ============================	
 
 **Example:** 
@@ -1492,9 +1496,9 @@ id             ID of existing intent
 **DELETE /intent/<intent id>**
 
 ==============   ============================
-Param		 Description
+Param		      Description
 ==============   ============================
-id              ID of the existing intent
+id                ID of the existing intent
 ==============   ============================
 
 

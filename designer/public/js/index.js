@@ -376,6 +376,10 @@ $(function () {
         html += '<div class="controls"><select id="deviceType"><option>Temperature</option><option>PowerPanel</option><option>Camera</option><option>Alarm</option><option>HOPU</option></select></div>'
         html += '</div>';
 
+        html += '<div class="control-group" style="display:none;" id="topicInfo"><label class="control-label" for="input01">Topic</label>';
+        html += '<div class="controls"><textarea id="topic"></textarea></div>'        
+        html += '</div>';
+
         html += '<div class="control-group" style="display:none;" id="mappingInfo"><label class="control-label" for="input01">Attribute-Mappings</label>';
         html += '<div class="controls"><textarea id="mappingRules"></textarea></div>'        
         html += '</div>';
@@ -426,8 +430,10 @@ $(function () {
             var dType = $('#deviceType option:selected').val();
             if (dType == "HOPU") {                
                 $('#mappingInfo').show();
+                $('#topicInfo').show();                
             } else {
                 $('#mappingInfo').hide();
+                $('#topicInfo').hide();                
             }
         });        
 
@@ -528,12 +534,11 @@ $(function () {
         //register a new device
         var newDeviceObject = {};
         
-        newDeviceObject.id = 'Device.' + type + '.' + id;
+        newDeviceObject.id = id;
         newDeviceObject.type = type;
         
         newDeviceObject.attributes = {};
                 
-        newDeviceObject.attributes.DeviceID =  { type: 'string', value: id };  
         newDeviceObject.attributes.protocol = { type: 'string', value: protocol };         
         
         var mqttbrokerURL = $('#mqttbrokerURL').val();
@@ -542,7 +547,8 @@ $(function () {
         }
         
         if (protocol == 'MQTT' && type == 'HOPU') {
-            var topic = '/api/' + id + '/attrs';            
+            //var topic = '/api/' + id + '/attrs';            
+            var topic = $('#topic').val();                    
             newDeviceObject.attributes.topic = { type: 'string', value: topic };          
         }        
         
@@ -576,6 +582,8 @@ $(function () {
                 value: id
             };
         }
+        
+        console.log(newDeviceObject);
         
         fetch("/device", {
             method: "POST",

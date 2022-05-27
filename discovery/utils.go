@@ -9,22 +9,13 @@ import (
 	"strings"
 )
 
-func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction, subFiwareService string, regFiwareService string) bool {
-
-	if regFiwareService != "" && subFiwareService != "" && subFiwareService != regFiwareService {
-		return false
-	}
-
+func matchingWithFilters(registration *EntityRegistration, idFilter []EntityId, attrFilter []string, metaFilter Restriction) bool {
 	// (1) check entityId part
 	entity := EntityId{}
-	if strings.HasPrefix(registration.Type, "https://uri.etsi.org/ngsi-ld/default-context/") {
-		entity.Type = registration.Type
-	} else {
-		entity.Type = registration.Type
-	}
+	entity.Type = registration.Type
 	entity.ID = registration.ID
-	//entity.Type = registration.Type
 	entity.IsPattern = false
+
 	atLeastOneMatched := false
 	for _, tmp := range idFilter {
 		matched := matchEntityId(entity, tmp)
@@ -71,7 +62,7 @@ func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 				return false
 			}
 		}
-		if subscribedEntity.IdPattern  != "" {
+		if subscribedEntity.IdPattern != "" {
 			matched, _ := regexp.MatchString(subscribedEntity.IdPattern, entity.ID)
 			if matched == false {
 				return false
@@ -108,8 +99,8 @@ func matchAttributes(registeredAttributes map[string]ContextRegistrationAttribut
 
 func matchLdMetadatas(metadatas map[string]ContextMetadata, restriction Restriction) bool {
 	if restriction.Georel == "" {
-                return true
-        }
+		return true
+	}
 	sp := restriction.Geometry
 	var typ string
 	var coordinate interface{}

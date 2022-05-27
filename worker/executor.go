@@ -23,6 +23,7 @@ type taskContext struct {
 	EntityID2SubID     map[string]string
 	OutputStreams      []EntityId
 	ContainerID        string
+	TaskID             string
 
 	TopologyName    string
 	TaskName        string
@@ -104,6 +105,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 
 	taskCtx.refURL = refURL
 	taskCtx.ContainerID = containerId
+	taskCtx.TaskID = task.ID
 
 	// register the service ports of uservices
 	// check if it is required to set up the portmapping for its endpoint services
@@ -128,27 +130,13 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.Subscriptions = make([]string, 0)
 
 	for _, inputStream := range task.Inputs {
-		if inputStream.MsgFormat == "NGSIV1" {
-			DEBUG.Println("========Subscription for NGSIV1 task==========")
-			subID, err := e.subscribeInputStream(refURL, &inputStream)
-			if err == nil {
-				DEBUG.Println("===========subID = ", subID)
-				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-				taskCtx.EntityID2SubID[inputStream.ID] = subID
-			} else {
-				ERROR.Println(err)
-			}
-		} else if inputStream.MsgFormat == "NGSILD" {
-			subID, err := e.subscribeLdInputStream(refURL, &inputStream)
-			if err == nil {
-				DEBUG.Println("===========subID = ", subID)
-				taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-				taskCtx.EntityID2SubID[inputStream.ID] = subID
-			} else {
-				ERROR.Println(err)
-			}
+		subID, err := e.subscribeInputStream(refURL, task.ID, &inputStream)
+		if err == nil {
+			DEBUG.Println("===========subID = ", subID)
+			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+			taskCtx.EntityID2SubID[inputStream.ID] = subID
 		} else {
-			ERROR.Println("unsupported message protocol")
+			ERROR.Println(err)
 		}
 	}
 
@@ -327,7 +315,7 @@ func (e *Executor) subscribeLdInputStream(refURL string, inputStream *InputStrea
 }
 
 //Subscribe for NGSIV1 input stream
-func (e *Executor) subscribeInputStream(refURL string, inputStream *InputStream) (string, error) {
+func (e *Executor) subscribeInputStream(refURL string, corelatorID string, inputStream *InputStream) (string, error) {
 	fmt.Println("====================Subscription here ===================")
 	subscription := SubscribeContextRequest{}
 
@@ -352,7 +340,7 @@ func (e *Executor) subscribeInputStream(refURL string, inputStream *InputStream)
 	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	sid, err := client.SubscribeContext(&subscription, true)
+	sid, err := client.SubscribeContext(&subscription, corelatorID, true)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err
@@ -492,26 +480,13 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 		return
 	}
 
-	if flow.InputStream.MsgFormat == "NGSIV1" {
-		subID, err := e.subscribeInputStream(taskCtx.refURL, &flow.InputStream)
-		if err == nil {
-			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
-			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-			taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
-		} else {
-			ERROR.Println(err)
-		}
-	} else if flow.InputStream.MsgFormat == "NGSILD" {
-		subID, err := e.subscribeLdInputStream(taskCtx.refURL, &flow.InputStream)
-		if err == nil {
-			DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
-			taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
-			taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
-		} else {
-			ERROR.Println(err)
-		}
+	subID, err := e.subscribeInputStream(taskCtx.refURL, taskCtx.TaskID, &flow.InputStream)
+	if err == nil {
+		DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
+		taskCtx.Subscriptions = append(taskCtx.Subscriptions, subID)
+		taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
 	} else {
-		ERROR.Println("not supported")
+		ERROR.Println(err)
 	}
 }
 

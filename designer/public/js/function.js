@@ -135,8 +135,6 @@ $(function() {
     }
 
     function openFogFunctionEditor(fogfunction) {
-        console.log(fogfunction);
-
         if (fogfunction && fogfunction.designboard) {
             CurrentScene = fogfunction.designboard;
             showFogFunctionEditor();
@@ -212,6 +210,8 @@ $(function() {
     }
 
     function submitFogFunction(functionCtxObj) {
+        console.log([functionCtxObj]);
+        
         fetch("/fogfunction", {
             method: "POST",
             headers: {
@@ -321,7 +321,6 @@ $(function() {
                 for (var j = 0; j < scene.blocks.length; j++) {
                     var block = scene.blocks[j];
                     if (block.id == edge.block1) {
-                        console.log(block);
                         inputType = block.values.outputs[index];
                     }
                 }
@@ -376,8 +375,6 @@ $(function() {
         for (var i = 0; i < fogFunctions.length; i++) {
             var fogfunction = fogFunctions[i];
             
-            console.log(fogfunction)
-
             html += '<td>' + fogfunction.name + '</td>';
 
             html += '<td>';
@@ -408,9 +405,7 @@ $(function() {
 
         // associate a click handler to the editor button
         for (var i = 0; i < fogFunctions.length; i++) {
-            var fogfunction = fogFunctions[i];
-            console.log(fogfunction)
-            
+            var fogfunction = fogFunctions[i];            
             // association handlers to the buttons
             var editorButton = document.getElementById('editor-' + fogfunction.name);
             editorButton.onclick = function(myFogFunction) {
@@ -482,7 +477,6 @@ $(function() {
     }      
 
     function getTaskByFogFunction(fogfunction) {              
-        console.log(fogfunction);  
         fetch("/info/task/" + fogfunction.intent.id).then(res => res.json()).then(tasks => {
             displayTaskList(tasks);
         })
@@ -521,8 +515,6 @@ $(function() {
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
-
-            console.log(task);
 
             html += '<tr>';
             html += '<td>' + task.TaskID + '</td>';

@@ -204,16 +204,20 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 		for _, attr := range elem.Attributes {
 			propertyValue := make(map[string]interface{})
 
-			propertyValue["type"] = "Property"
+			switch strings.ToLower(attr.Type) {
+			case "relationship":
+				propertyValue["type"] = "Relationship"
+				propertyValue["object"] = attr.Value
 
-			switch attr.Type {
 			case "datetime":
 				datatimeValue := make(map[string]interface{})
 				datatimeValue["@type"] = "datetime"
 				datatimeValue["@value"] = attr.Value
 
+				propertyValue["type"] = "Property"
 				propertyValue["value"] = datatimeValue
 			default:
+				propertyValue["type"] = "Property"
 				propertyValue["value"] = attr.Value
 			}
 

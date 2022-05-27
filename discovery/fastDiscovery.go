@@ -102,7 +102,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
-		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction, subscription.FiwareService, registration.FiwareService) == true {
+		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction) == true {
 			subscriberURL := subscription.Reference
 			subID := subscription.SubscriptionId
 			entities := make([]EntityId, 0)
@@ -111,8 +111,6 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 			entity.ID = registration.ID
 			entity.Type = registration.Type
 			entity.IsPattern = false
-			entity.FiwareServicePath = registration.FiwareServicePath
-			entity.MsgFormat = registration.MsgFormat
 			entities = append(entities, entity)
 
 			entityMap := make(map[string][]EntityId)
@@ -175,7 +173,7 @@ func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *r
 }
 
 func (fd *FastDiscovery) handleQueryCtxAvailability(req *DiscoverContextAvailabilityRequest) []ContextRegistrationResponse {
-	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction, "")
+	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction)
 
 	// prepare the response
 	registrationList := make([]ContextRegistrationResponse, 0)
@@ -265,7 +263,7 @@ func (fd *FastDiscovery) UpdateLDContextAvailability(w rest.ResponseWriter, r *r
 
 // handle NGSI9 subscription based on the local database
 func (fd *FastDiscovery) handleSubscribeCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
-	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction, subReq.FiwareService)
+	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction)
 	if len(entityMap) > 0 {
 		fd.sendNotify(subReq.SubscriptionId, subReq.Reference, entityMap, "CREATE")
 	}

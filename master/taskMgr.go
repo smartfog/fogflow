@@ -859,8 +859,9 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 	// update the received context availability information
 	tMgr.fogFlows_lock.Lock()
 	defer tMgr.fogFlows_lock.Unlock()
-	fiwareServicePath := entityRegistration.FiwareServicePath
-	mgsFormat := entityRegistration.MsgFormat
+	// fiwareServicePath := entityRegistration.FiwareServicePath
+	// mgsFormat := entityRegistration.MsgFormat
+
 	fogflow := tMgr.fogFlows[funcName]
 	DEBUG.Printf("~~~~~~~ access the flow %+s, %+v ~~~~~~~~~~~~~~~~~\r\n", funcName, fogflow)
 
@@ -883,7 +884,9 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			INFO.Printf("add task %+v\r\n", deploymentAction.ActionInfo)
 
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
-			scheduledTaskInstance = SetFiwareServicePath(scheduledTaskInstance, fiwareServicePath, mgsFormat)
+
+			// scheduledTaskInstance = SetFiwareServicePath(scheduledTaskInstance, fiwareServicePath, mgsFormat)
+
 			// figure out where to deploy this task instance
 			itemList := strings.Split(scheduledTaskInstance.ID, ".")
 			hashID := itemList[len(itemList)-1]
@@ -933,7 +936,7 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			INFO.Printf("add input %+v\r\n", deploymentAction.ActionInfo)
 
 			flowInfo := deploymentAction.ActionInfo.(FlowInfo)
-			flowInfo = AddFiwareServicePath(flowInfo, fiwareServicePath, mgsFormat)
+			// flowInfo = AddFiwareServicePath(flowInfo, fiwareServicePath, mgsFormat)
 			tMgr.master.AddInputEntity(flowInfo)
 
 		case "REMOVE_INPUT":

@@ -40,8 +40,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
 
     core_concept.rst
     intent_based_program.rst
-    intent_model.rst
-    guideline.rst
+    api.rst
 
 
 .. toctree::
@@ -49,15 +48,8 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :caption: Operator Guide
     :numbered:
     
-    system_overview.rst
     setup.rst
-    integration.rst
-    fogflow_fiware_integration.rst
-    scorpioIntegration.rst
-    quantumleapIntegration.rst          
-    wirecloudIntegration.rst
-    k8sIntegration.rst
-    k8sIntegrationYAML.rst
+    system_integration.rst	
     system_monitoring.rst
     https.rst
    
@@ -66,12 +58,7 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :caption: Advance User Guide
     :numbered:    
 
-    system_design.rst
-    programming.rst	
-    context.rst
-    api.rst
     build.rst
-    k8s_security_rbac.rst
     test.rst
 
 .. toctree::

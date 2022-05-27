@@ -18,6 +18,9 @@ func (tb *ThinBroker) NGSIV1_UpdateContext(w rest.ResponseWriter, r *rest.Reques
 		return
 	}
 
+	// check and add the "Fiware-Correlator" header into the update message
+	updateCtxReq.Correlator = r.Header.Get("Fiware-Correlator")
+
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		tb.handleInternalUpdateContext(&updateCtxReq)
 	} else {
@@ -98,7 +101,7 @@ func (tb *ThinBroker) NGSIV1_NotifyContext(w rest.ResponseWriter, r *rest.Reques
 
 	// inform its subscribers
 	for _, ctxResp := range notifyCtxReq.ContextResponses {
-		go tb.notifySubscribers(&ctxResp.ContextElement, false)
+		go tb.notifySubscribers(&ctxResp.ContextElement, "", false)
 	}
 }
 
@@ -130,6 +133,9 @@ func (tb *ThinBroker) NGSIV1_SubscribeContext(w rest.ResponseWriter, r *rest.Req
 	// check the request header
 	subReq.Subscriber.DestinationType = r.Header.Get("Destination")
 	subReq.Subscriber.Tenant = r.Header.Get("Ngsild-Tenant")
+	subReq.Subscriber.Correlator = r.Header.Get("Fiware-Correlator")
+
+	DEBUG.Println(subReq.Subscriber)
 
 	if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
 		subReq.Subscriber.IsInternal = true

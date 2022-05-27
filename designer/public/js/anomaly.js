@@ -130,6 +130,8 @@ $(function() {
 
         var html = '';
         html += '<div class="input-prepend">';
+        
+        console.log(curIntent);
 
         if (curIntent == null) {
             html += '<button id="enableService" type="button" class="btn btn-default">Start</button>';
@@ -199,18 +201,18 @@ $(function() {
 
     function showTasks() {
         $('#info').html('list of running data processing tasks');
+        
+        console.log("current intent id: ", curIntent.id);
 
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Task', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=anomaly-detection' }] }
-
-        client.queryContext(queryReq).then(function(taskList) {
-            console.log(taskList);
-            displayTaskList(taskList);
+        fetch('/info/task/' + curIntent.id).then(res => res.json()).then(tasks => {
+            console.log("the list of tasks ");
+            console.log(tasks);
+            var taskList = Object.values(tasks);
+            displayTaskList(taskList);            
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query task');
-        });
+            console.log('failed to fetch the list of create tasks');
+        });  
     }
 
 
@@ -228,24 +230,25 @@ $(function() {
         html += '<th>ID</th>';
         html += '<th>Service</th>';
         html += '<th>Task</th>';
-        html += '<th>worker</th>';
-        html += '<th>port</th>';
-        html += '<th>status</th>';
+        html += '<th>Worker</th>';
+        html += '<th>Status</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
-            html += '<tr>';
-            html += '<td>' + task.attributes.id.value + '</td>';
-            html += '<td>' + task.attributes.service.value + '</td>';
-            html += '<td>' + task.attributes.task.value + '</td>';
-            html += '<td>' + task.attributes.worker.value + '</td>';
-            html += '<td>' + task.attributes.port.value + '</td>';
 
-            if (task.attributes.status.value == "paused") {
-                html += '<td><font color="red">' + task.attributes.status.value + '</font></td>';
+            console.log(task);
+
+            html += '<tr>';
+            html += '<td>' + task.TaskID + '</td>';
+            html += '<td>' + task.TopologyName + '</td>';
+            html += '<td>' + task.TaskName + '</td>';
+            html += '<td>' + task.Worker + '</td>';            
+
+            if (task.Status == "paused") {
+                html += '<td><font color="red">' + task.Status + '</font></td>';
             } else {
-                html += '<td><font color="green">' + task.attributes.status.value + '</font></td>';
+                html += '<td><font color="green">' + task.Status + '</font></td>';
             }
 
             html += '</tr>';

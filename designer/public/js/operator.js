@@ -154,6 +154,8 @@ $(function() {
     }
 
     function submitOperator(operator) {
+        console.log(operator);
+        
         fetch("/operator", {
             method: "POST",
             headers: {
@@ -251,21 +253,22 @@ $(function() {
         })          
     }
     
-    function addDockerImage(image) {
-        //register a new docker image        
-        fetch("/dockerimage", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify([image])
-        })
-        .then(response => {
-            console.log("add a new docker image: ", response.status)
-        })
-        .catch(err => console.log(err));        
-    }
+//    function addDockerImage(image) {
+        
+//        //register a new docker image        
+//        fetch("/dockerimage", {
+//            method: "POST",
+//            headers: {
+//                Accept: "application/json",
+//                "Content-Type": "application/json"
+//            },
+//            body: JSON.stringify([image])
+//        })
+//        .then(response => {
+//            console.log("add a new docker image: ", response.status)
+//        })
+//        .catch(err => console.log(err));        
+//    }
 
     function dockerImageRegistration() {
         $('#info').html('New docker image registration');
@@ -319,27 +322,17 @@ $(function() {
 
         // take the inputs    
         var image = $('#dockerImageName').val();
-        console.log(image);
 
         var tag = $('#imageTag').val();
         if (tag == '') {
             tag = 'latest';
         }
 
-        console.log(tag);
-
         var hwType = $('#hwType option:selected').val();
-        console.log(hwType);
-
         var osType = $('#osType option:selected').val();
-        console.log(osType);
-
         var operatorName = $('#OperatorList option:selected').val();
-        console.log(operatorName);
 
         var prefetched = document.getElementById('Prefetched').checked;
-        console.log(prefetched);
-
 
         if (image == '' || tag == '' || hwType == '' || osType == '' || operatorName == '') {
             alert('please provide the required inputs');
@@ -355,6 +348,8 @@ $(function() {
         newImageObject.prefetched = prefetched
         newImageObject.tag = tag
         
+        console.log([newImageObject]);        
+        
         fetch("/dockerimage", {
             method: "POST",
             headers: {
@@ -364,12 +359,10 @@ $(function() {
             body: JSON.stringify([newImageObject])
         })
         .then(data => {
-            console.log(data);
             showDockerImage();            
         })
         .catch(err => {
-            console.log('failed to register the new docker image');
-            console.log(err)
+            console.log('failed to register the new docker image, ', err);
         });      
     }
 
@@ -377,12 +370,10 @@ $(function() {
     function updateDockerImageList() {
         fetch('/dockerimage').then(res => res.json()).then(dockerimages => {
             var imageList = Object.values(dockerimages);
-            console.log("get docker image list ",imageList)
             displayDockerImageList(imageList);
         })
         .catch(err => {
-            console.log('failed to fetch the list of docker images');
-            console.log(err)
+            console.log('failed to fetch the list of docker images, ', err);
         });          
     }
 

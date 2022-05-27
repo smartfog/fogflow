@@ -624,9 +624,9 @@ type EntityRegistration struct {
 	AttributesList       map[string]ContextRegistrationAttribute
 	MetadataList         map[string]ContextMetadata
 	ProvidingApplication string
-	FiwareServicePath    string
-	MsgFormat            string
-	FiwareService        string
+	// FiwareServicePath    string
+	// MsgFormat            string
+	// FiwareService        string
 }
 
 func (registredEntity *EntityRegistration) GetLocation() Point {
@@ -733,6 +733,7 @@ type Subscriber struct {
 	LDNotifyCache      []map[string]interface{}
 	DestinationType    string
 	Tenant             string
+	Correlator         string
 }
 
 type SubscribeContextRequest struct {
@@ -802,6 +803,7 @@ type NotifyContextResponse struct {
 type UpdateContextRequest struct {
 	ContextElements []ContextElement `json:"contextElements"`
 	UpdateAction    string           `json:"updateAction"`
+	Correlator      string
 }
 
 type UpdateContextResponse struct {

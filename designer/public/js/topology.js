@@ -146,7 +146,6 @@ $(function() {
     }
 
     function deleteTopology(topologyEntity) {
-        console.log("DELETE");
         var msg = {name: topologyEntity.topology.name}
         
         fetch("/service/" + topologyEntity.topology.name, {
@@ -294,7 +293,6 @@ $(function() {
                 for (var j = 0; j < scene.blocks.length; j++) {
                     var block = scene.blocks[j];
                     if (block.id == edge.block1) {
-                        console.log(block);
                         inputType = block.values.outputs[index];
                     }
                 }
@@ -305,7 +303,7 @@ $(function() {
     }
 
     function submitTopology(topology) {
-        console.log(topology)
+        console.log([topology]);
         
         fetch("/service", {
             method: "POST",
@@ -365,8 +363,6 @@ $(function() {
 
         for (var i = 0; i < topologies.length; i++) {
             var topologyEntity = topologies[i];
-            
-            console.log(topologyEntity)
 
             html += '<td>' + topologyEntity.topology.name + '</td>';
 
@@ -562,9 +558,7 @@ $(function() {
             var sid = intentEntity.id;
             $("#SID").text(sid);
 
-            console.log(intentEntity);
-            var intent = intentEntity;//intentEntity.attributes["intent"].value;
-            console.log(intent);
+            var intent = intentEntity;
 
             $('#topologyItems').val(intent.topology);
             //$('#SType').val(intent.stype);
@@ -701,6 +695,8 @@ $(function() {
         var sid = $("#SID").text();
         intent.id = sid;
         
+        console.log(intent);
+        
         fetch("/intent", {
             method: "POST",
             headers: {
@@ -771,7 +767,6 @@ $(function() {
 
             if (type === 'rectangle') {
                 var geometry = layer.toGeoJSON()['geometry'];
-                console.log(geometry);
 
                 geoscope.type = 'polygon';
                 geoscope.value = {
@@ -782,12 +777,9 @@ $(function() {
                 for (var i in points) {
                     geoscope.value.vertices.push({ longitude: points[i][0], latitude: points[i][1] });
                 }
-
-                console.log(geoscope);
             }
             if (type === 'circle') {
                 var geometry = layer.toGeoJSON()['geometry'];
-                console.log(geometry);
                 var radius = layer.getRadius();
 
                 geoscope.type = 'circle';
@@ -796,12 +788,9 @@ $(function() {
                     centerLongitude: geometry.coordinates[0],
                     radius: radius
                 }
-
-                console.log(geoscope);
             }
             if (type === 'polygon') {
                 var geometry = layer.toGeoJSON()['geometry'];
-                console.log(geometry);
 
                 geoscope.type = 'polygon';
                 geoscope.value = {
@@ -812,8 +801,6 @@ $(function() {
                 for (var i in points) {
                     geoscope.value.vertices.push({ longitude: points[i][0], latitude: points[i][1] });
                 }
-
-                console.log(geoscope);
             }
 
             drawnItems.addLayer(layer);
@@ -836,25 +823,9 @@ $(function() {
         $('#mapDiv').html('');
     }
 
-
-    function showTaskInstances() {
-        $('#info').html('list of running data processing tasks');
-
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Task', isPattern: true }];
-
-        client.queryContext(queryReq).then(function(taskList) {
-            displayTaskList(taskList);
-        }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
-    }
-    
     function queryTasks(intent) {
         fetch('/info/task/' + intent.id).then(res => res.json()).then(tasks => {
             console.log("the list of tasks ");
-            console.log(tasks);
             var taskList = Object.values(tasks);
             displayTaskList(taskList);            
         }).catch(function(error) {
@@ -881,8 +852,6 @@ $(function() {
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
-
-            console.log(task);
 
             html += '<tr>';
             html += '<td>' + task.TaskID + '</td>';

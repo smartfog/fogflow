@@ -1,6 +1,7 @@
 ***************************************
-Intent-Based Programming
+Programming Model
 ***************************************
+
 Currently the following two programing models are provided by FogFlow to support different types of workload patterns.
 
   1. **Fog Function**
@@ -273,7 +274,7 @@ It is recommended to use fogflow dashboard to create an operator with parameters
 
 The x and y variables here are simply the coordinates of designer board. If they are not given by user, by default, all the element blocks will be placed at origin of the plane.
 
-.. code-block:: curl
+.. code-block:: console
 
 	curl -iX POST \
 		  'http://localhost:8070/ngsi10/updateContext' \
@@ -524,8 +525,8 @@ Currently FogFlow allows developers to specify their own function code inside a 
         publish(updateEntity);        
     };
 
- Above javascript code example can be taken as the implementation of fog function. 
-This example fog function simple writes a fixed entity by calling the "publish" callback function. 
+Above javascript code example can be taken as the implementation of fog function. 
+This example fog function simple writes a fixed entity by calling the "publish" callback function.
 
 The input parameters of a fog function are predefined and fixed, including: 
 
