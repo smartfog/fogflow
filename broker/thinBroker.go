@@ -1,8 +1,6 @@
 package main
 
 import (
-	// "net/http"
-
 	"strings"
 	"sync"
 
@@ -39,16 +37,9 @@ type ThinBroker struct {
 	entities      map[string]*ContextElement //latest view of context entities
 	entities_lock sync.RWMutex
 
-	//Southbound feature addition
-	fiwareData      map[string]*FiwareData
-	fiwareData_lock sync.RWMutex
 	//mapping from entityID to subscriptionID
-	entityId2Subcriptions  map[string][]string
-	e2sub_lock             sync.RWMutex
-	ev2sub_lock            sync.RWMutex
-	LDe2sub_lock           sync.RWMutex
-	entityIdv2Subcriptions map[string][]string
-	e2subv2_lock           sync.RWMutex
+	entityId2Subcriptions map[string][]string
+	e2sub_lock            sync.RWMutex
 
 	//counter of heartbeat
 	counter int64
@@ -79,9 +70,6 @@ func (tb *ThinBroker) Start(cfg *Config) {
 
 	// register itself to the IoT discovery
 	tb.registerMyself()
-
-	// send the first heartbeat message
-	tb.sendHeartBeat()
 }
 
 func (tb *ThinBroker) Stop() {
@@ -163,6 +151,9 @@ func (tb *ThinBroker) registerMyself() bool {
 		ERROR.Println("not able to register myself to IoT Discovery: ", tb.myEntityId, ", error information: ", err)
 		return false
 	}
+
+	// send the first heartbeat message
+	tb.sendHeartBeat()
 
 	INFO.Println("already registered myself to IoT Discovery: ", tb.myEntityId, " , ", tb.IoTDiscoveryURL)
 	return true
@@ -332,7 +323,7 @@ func (tb *ThinBroker) fetchEntities(ids []EntityId, providerURL string) []Contex
 // handle context updates from external applications/devices
 
 func (tb *ThinBroker) handleInternalUpdateContext(updateCtxReq *UpdateContextRequest) {
-	switch updateCtxReq.UpdateAction {
+	switch strings.ToUpper(updateCtxReq.UpdateAction) {
 	case "UPDATE":
 		for _, ctxElem := range updateCtxReq.ContextElements {
 			tb.UpdateContext2LocalSite(&ctxElem, updateCtxReq.Correlator)

@@ -128,6 +128,7 @@ func toNGSIv2Payload(ctxElems []ContextElement) []map[string]interface{} {
 		element["id"] = elem.Entity.ID
 		element["type"] = elem.Entity.Type
 
+		// include all attributes
 		for _, attr := range elem.Attributes {
 			attribute := OrionV2Attribute{}
 			attribute.Type = attr.Type
@@ -143,6 +144,15 @@ func toNGSIv2Payload(ctxElems []ContextElement) []map[string]interface{} {
 			}
 
 			element[attr.Name] = attribute
+		}
+
+		// include all domain metadata
+		for _, dmeta := range elem.Metadata {
+			attribute := OrionV2Attribute{}
+			attribute.Type = dmeta.Type
+			attribute.Value = dmeta.Value
+
+			element[dmeta.Name] = attribute
 		}
 
 		elementList = append(elementList, element)

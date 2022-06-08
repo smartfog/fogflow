@@ -25,15 +25,6 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 	// start REST API server
 	router, err := rest.MakeRouter(
-		//============= standard ngsi10 API ===========================
-
-		rest.Post("/ngsi10/updateContext", broker.NGSIV1_UpdateContext),
-		rest.Post("/ngsi10/queryContext", broker.NGSIV1_QueryContext),
-		rest.Post("/ngsi10/notifyContext", broker.NGSIV1_NotifyContext),
-		rest.Post("/ngsi10/subscribeContext", broker.NGSIV1_SubscribeContext),
-		rest.Post("/ngsi10/unsubscribeContext", broker.NGSIV1_UnsubscribeContext),
-		rest.Post("/ngsi10/notifyContextAvailability", broker.NGSIV1_NotifyContextAvailability),
-
 		// convenient ngsi10 API
 		rest.Get("/version", apisrv.getVersion),
 		rest.Get("/ngsi10/entity", apisrv.getEntities),
@@ -45,15 +36,31 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Get("/ngsi10/subscription/#sid", apisrv.getSubscription),
 		rest.Delete("/ngsi10/subscription/#sid", apisrv.deleteSubscription),
 
+		//============= standard ngsi10 API ===========================
+
+		rest.Post("/ngsi10/updateContext", broker.NGSIV1_UpdateContext),
+
+		rest.Post("/ngsi10/queryContext", broker.NGSIV1_QueryContext),
+
+		rest.Post("/ngsi10/notifyContext", broker.NGSIV1_NotifyContext),
+		rest.Post("/ngsi10/subscribeContext", broker.NGSIV1_SubscribeContext),
+		rest.Post("/ngsi10/unsubscribeContext", broker.NGSIV1_UnsubscribeContext),
+		rest.Post("/ngsi10/notifyContextAvailability", broker.NGSIV1_NotifyContextAvailability),
+
 		//============= NGSIV2 APIs ===========================
 
 		rest.Post("/v2/entities", broker.NGSIV2_createEntities),
-		rest.Get("/v2/entities", broker.NGSIV2_queryEntities),
+		rest.Get("/v2/entities", broker.NGSIV2_getEntities),
+		rest.Get("/v2/entities/", broker.NGSIV2_queryEntities),
+		rest.Get("/v2/entities/#eid", broker.NGSIV2_getEntity),
+		rest.Post("/v2/notify", broker.NGSIV2_notify),
 
 		//============= NGSI-LD APIs ===========================
 
 		// update
 		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.NGSILD_UpdateContext),
+		rest.Post("/ngsi-ld/v1/entities/", broker.NGSILD_CreateEntity),
+		rest.Post("/ngsi-ld/v1/entities", broker.NGSILD_CreateEntity),
 		rest.Delete("/ngsi-ld/v1/entities/#eid", broker.NGSILD_DeleteEntity),
 		rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.NGSILD_DeleteAttribute),
 
