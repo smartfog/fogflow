@@ -7,6 +7,7 @@ import (
 	"os"
 	"runtime"
 	"strconv"
+	"strings"
 
 	. "fogflow/common/config"
 	. "fogflow/common/datamodel"
@@ -130,7 +131,8 @@ func (dockerengine *DockerEngine) findFreePortNumber() int {
 //functionCode string, taskID string, adminCfg []interface{}, servicePorts []string)
 func (dockerengine *DockerEngine) StartTask(task *ScheduledTaskInstance, brokerURL string) (string, string, error) {
 	dockerImage := task.DockerImage
-	INFO.Println("to execute Task ", task.ID, " to perform Operation ", dockerImage)
+	INFO.Println("to execute Task [", task.ID, "] to perform Operation [",
+		dockerImage, "] with parameters [", task.Parameters, "]")
 
 	// function code
 	functionCode := task.FunctionCode
@@ -168,7 +170,7 @@ func (dockerengine *DockerEngine) StartTask(task *ScheduledTaskInstance, brokerU
 	for _, parameter := range task.Parameters {
 		// deal with the service port
 		if parameter.Name == "service_port" {
-			servicePorts = append(servicePorts, parameter.Values...)
+			servicePorts = strings.Split(parameter.Value, ";")
 		}
 	}
 

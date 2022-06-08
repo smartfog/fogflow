@@ -57,9 +57,10 @@ type Config struct {
 		HTTPSPort int    `json:"https_port"`
 	} `json:"discovery"`
 	Broker struct {
-		HostIP    string `json:"host_ip"`
-		HTTPPort  int    `json:"http_port"`
-		HTTPSPort int    `json:"https_port"`
+		HostIP            string `json:"host_ip"`
+		HTTPPort          int    `json:"http_port"`
+		HTTPSPort         int    `json:"https_port"`
+		HeartbeatInterval int    `json:"heartbeat_interval"`
 	} `json:"broker"`
 	Master struct {
 		HostIP      string `json:"host_ip"`
@@ -79,8 +80,7 @@ type Config struct {
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
 		Capacity            int                   `json:"capacity"`
-		//EdgeAddress         string                `json:"edge_address"`
-		CAdvisorPort int `json:"cadvisor_port"`
+		HeartbeatInterval   int                   `json:"heartbeat_interval"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		HostIP   string `json:"host_ip"`

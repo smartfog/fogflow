@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -18,8 +18,6 @@ import (
 
 	. "fogflow/common/config"
 )
-
-const MAX_HEARTBEAT_DURATION = 60 // in seconds
 
 type Master struct {
 	cfg *Config
@@ -134,17 +132,14 @@ func (master *Master) Start(configuration *Config) {
 
 func (master *Master) onTimer() {
 	master.counter_lock.Lock()
-	// delta := master.curNumOfTasks - master.prevNumOfTask
-	// fmt.Printf("# of orchestrated tasks = %d, throughput = %d/s\r\n", master.curNumOfTasks, delta)
 	master.prevNumOfTask = master.curNumOfTasks
 	master.counter_lock.Unlock()
 
 	// check the liveness of each worker
 	master.workerList_lock.Lock()
-	for k, w := range master.workers {
-		if w.IsLive(MAX_HEARTBEAT_DURATION) == false {
-			workerID := w.WID
-			delete(master.workers, k)
+	for workerID, worker := range master.workers {
+		if worker.IsLive(master.cfg.Worker.HeartbeatInterval*6) == false {
+			delete(master.workers, workerID)
 			INFO.Println("REMOVE worker " + workerID + " from the list")
 		}
 	}
@@ -194,28 +189,8 @@ func (master *Master) prefetchDockerImages(image DockerImage) {
 	}
 }
 
-func (master *Master) queryWorkers() []*ContextObject {
-	query := QueryContextRequest{}
-
-	query.Entities = make([]EntityId, 0)
-
-	entity := EntityId{}
-	entity.Type = "Worker"
-	entity.IsPattern = true
-	query.Entities = append(query.Entities, entity)
-
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	ctxObjects, err := client.QueryContext(&query)
-	if err != nil {
-		ERROR.Println(err)
-	}
-
-	return ctxObjects
-}
-
 func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
-	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY=========")
-	DEBUG.Println(notifyCtxAvailReq)
+	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY: ", notifyCtxAvailReq)
 	subID := notifyCtxAvailReq.SubscriptionId
 
 	var action string
@@ -230,96 +205,12 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 
 	for _, registrationResp := range notifyCtxAvailReq.ContextRegistrationResponseList {
 		registration := registrationResp.ContextRegistration
-		//entityRegistration := EntityRegistration{}
 		for _, entity := range registration.EntityIdList {
-			// convert context registration to entity registration
-			fmt.Println("entity.MsgFormat", entity.MsgFormat)
-			// if entity.MsgFormat == "NGSILD" {
-			// 	entityRegistration := master.ldContextRegistration2EntityRegistration(&entity, &registration)
-			// 	go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
-			// } else {
 			entityRegistration := master.contextRegistration2EntityRegistration(&entity, &registration)
 			go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
-			// }
-			//go master.taskMgr.HandleContextAvailabilityUpdate(subID, action, entityRegistration)
 		}
 	}
 }
-
-func (master *Master) RetrieveContextLdEntity(eid string, fsp string) interface{} {
-	query := LDQueryContextRequest{}
-
-	query.Entities = make([]EntityId, 0)
-	query.Type = "Query"
-	entity := EntityId{}
-	idSplit := strings.Split(eid, "@")
-	entity.ID = idSplit[0]
-	entity.IsPattern = false
-	query.Entities = append(query.Entities, entity)
-
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	ctxObjects, err := client.QueryLdContext(&query, idSplit[1], fsp)
-	if err == nil && ctxObjects != nil && len(ctxObjects) > 0 {
-		return ctxObjects[0]
-	} else {
-		if err != nil {
-			ERROR.Println("error occured when retrieving a context entity :", err)
-		}
-
-		return nil
-	}
-}
-
-// func (master *Master) ldContextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
-// 	entityRegistration := EntityRegistration{}
-
-// 	ctxObj := master.RetrieveContextLdEntity(entityId.ID, entityId.FiwareServicePath)
-// 	if ctxObj == nil {
-// 		entityRegistration.ID = entityId.ID
-// 		entityRegistration.Type = entityId.Type
-// 		entityRegistration.FiwareServicePath = entityId.FiwareServicePath
-// 		entityRegistration.MsgFormat = entityId.MsgFormat
-// 	} else {
-// 		ldCtcObj := ctxObj.(map[string]interface{})
-// 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
-// 		entityRegistration.MetadataList = make(map[string]ContextMetadata)
-// 		entityRegistration.MsgFormat = entityId.MsgFormat
-// 		for key, attr := range ldCtcObj {
-// 			if key != "modifiedAt" && key != "createdAt" && key != "observationSpace" && key != "operationSpace" && key != "@context" && key != "fiwareServicePath" {
-// 				if key == "id" {
-// 					entityRegistration.ID = entityId.ID
-// 				} else if key == "type" {
-// 					entityRegistration.Type = ldCtcObj[key].(string)
-// 				} else if key == "FiwareServicePath" {
-// 					entityRegistration.FiwareServicePath = ldCtcObj[key].(string)
-// 				} else {
-// 					attrmap := attr.(map[string]interface{})
-// 					if attrmap["type"] != "GeoProperty" {
-// 						attributeRegistration := ContextRegistrationAttribute{}
-// 						attributeRegistration.Name = key
-// 						attributeRegistration.Type = attrmap["type"].(string)
-// 						entityRegistration.AttributesList[key] = attributeRegistration
-// 					} else {
-// 						metaData := attr.(map[string]interface{})
-// 						cm := ContextMetadata{}
-// 						cm.Name = key
-// 						matadataCordinate := metaData["value"].(map[string]interface{})
-// 						typ, points := GetNGSIV1DomainMetaData(matadataCordinate["type"].(string), matadataCordinate["coordinates"])
-// 						cm.Type = typ
-// 						cm.Value = points
-// 						entityRegistration.MetadataList[key] = cm
-// 					}
-// 				}
-// 			}
-// 		}
-// 	}
-
-// 	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
-
-// 	DEBUG.Printf("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
-
-// 	return &entityRegistration
-// }
 
 func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
 	entityRegistration := EntityRegistration{}
@@ -328,13 +219,10 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
-		// entityRegistration.FiwareServicePath = entityId.FiwareServicePath
-		// entityRegistration.MsgFormat = entityId.MsgFormat
 	} else {
 		entityRegistration.ID = ctxObj.Entity.ID
 		entityRegistration.Type = ctxObj.Entity.Type
-		// entityRegistration.FiwareServicePath = entityId.FiwareServicePath
-		// entityRegistration.MsgFormat = entityId.MsgFormat
+
 		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
 		for attrName, attrValue := range ctxObj.Attributes {
 			attributeRegistration := ContextRegistrationAttribute{}
@@ -356,46 +244,10 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 
 	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
 
-	DEBUG.Printf("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
-
-	return &entityRegistration
-}
-
-func (master *Master) contextRegistration2EntityRegistrationNew(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
-	entityRegistration := EntityRegistration{}
-
-	entityRegistration.ID = entityId.ID
-	entityRegistration.Type = entityId.Type
-
-	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
-
-	for _, attribute := range ctxRegistration.ContextRegistrationAttributes {
-		attributeRegistration := ContextRegistrationAttribute{}
-		attributeRegistration.Name = attribute.Name
-		attributeRegistration.Type = attribute.Type
-
-		entityRegistration.AttributesList[attribute.Name] = attributeRegistration
-	}
-
-	entityRegistration.MetadataList = make(map[string]ContextMetadata)
-	for _, ctxmeta := range ctxRegistration.Metadata {
-		cm := ContextMetadata{}
-		cm.Name = ctxmeta.Name
-		cm.Type = ctxmeta.Type
-		cm.Value = ctxmeta.Value
-
-		entityRegistration.MetadataList[ctxmeta.Name] = cm
-	}
-
-	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
-
-	DEBUG.Printf("REGISTERATION OF ENTITY CONTEXT AVAILABILITY: %+v\r\n", entityRegistration)
-
 	return &entityRegistration
 }
 
 func (master *Master) subscribeContextAvailability(availabilitySubscription *SubscribeContextAvailabilityRequest) string {
-
 	availabilitySubscription.Reference = master.myURL + "/notifyContextAvailability"
 
 	client := NGSI9Client{IoTDiscoveryURL: master.cfg.GetDiscoveryURL(), SecurityCfg: &master.cfg.HTTPS}
@@ -559,7 +411,6 @@ func (master *Master) RemoveInputEntity(flowInfo FlowInfo) {
 //
 // the shared functions for function manager and topology manager to call
 //
-
 func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 	query := QueryContextRequest{}
 
@@ -572,18 +423,19 @@ func (master *Master) RetrieveContextEntity(eid string) *ContextObject {
 
 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
 	ctxObjects, err := client.QueryContext(&query)
-	if err == nil && ctxObjects != nil && len(ctxObjects) > 0 {
-		return ctxObjects[0]
-	} else {
-		if err != nil {
-			ERROR.Println("error occured when retrieving a context entity :", err)
-		}
 
+	if err != nil || ctxObjects == nil || len(ctxObjects) == 0 {
+		ERROR.Println("error occured when retrieving a context entity :", err)
 		return nil
 	}
+
+	return ctxObjects[0]
 }
 
 func (master *Master) GetWorkerList(w rest.ResponseWriter, r *rest.Request) {
+	master.workerList_lock.RLock()
+	defer master.workerList_lock.RUnlock()
+
 	w.WriteJson(master.workers)
 }
 
@@ -602,7 +454,8 @@ func (master *Master) GetStatus(w rest.ResponseWriter, r *rest.Request) {
 func (master *Master) SelectWorker(locations []Point) string {
 	master.workerList_lock.RLock()
 	defer master.workerList_lock.RUnlock()
-	fmt.Println("&&&& len(locations) &&&&&&&&&", len(locations))
+
+	// if no location information is provided, just return the first worker in the list
 	if len(locations) == 0 {
 		for _, worker := range master.workers {
 			return worker.WID
@@ -610,14 +463,10 @@ func (master *Master) SelectWorker(locations []Point) string {
 		return ""
 	}
 
-	DEBUG.Printf("points: %+v\r\n", locations)
-	fmt.Println("&&&& master.workers &&&&&&", master.workers)
-
 	// select the workers with the closest distance and also the worker is currently not overloaded
 	closestWorkerID := ""
-	closestTotalDistance := uint64(18446744073709551615)
+	closestTotalDistance := uint64(math.MaxUint64)
 	for _, worker := range master.workers {
-		fmt.Println("***** master.worker *******", worker)
 		INFO.Printf("check worker %+v\r\n", worker)
 
 		// if this worker is already overloaded, check the next one
@@ -648,8 +497,6 @@ func (master *Master) SelectWorker(locations []Point) string {
 
 		INFO.Println("closest worker ", closestWorkerID, " with the closest distance ", closestTotalDistance)
 	}
-
-	// select the one with lowest capacity if there are more than one with the closest distance
 
 	return closestWorkerID
 }
@@ -688,9 +535,7 @@ func (master *Master) getTopologyByName(name string) *Topology {
 		return nil
 	}
 
-	INFO.Printf("%+v", topology)
-
-	// // update the list of operators
+	// update the list of operators
 	master.operatorList_lock.Lock()
 	for _, operator := range topology.Operators {
 		master.operatorList[operator.Name] = operator

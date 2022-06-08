@@ -165,13 +165,13 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 	case "CREATE", "UPDATE":
 		//update context availability
 		if _, exist := inputSubscription.ReceivedEntityRegistrations[entityID]; exist {
-			fmt.Println("update an existing entity")
+			DEBUG.Println("update an existing entity: ", entityID)
 			//update context availability
 			existEntityRegistration := inputSubscription.ReceivedEntityRegistrations[entityID]
 			existEntityRegistration.Update(registredEntity)
 		} else {
 			inputSubscription.ReceivedEntityRegistrations[entityID] = registredEntity
-			fmt.Println("create new entity")
+			DEBUG.Println("add a new entity: ", entityID)
 		}
 
 		//update the group keyvalue table for orchestration
@@ -842,37 +842,29 @@ func (tMgr *TaskMgr) selector2Subscription(inputSelector *InputStreamConfig, geo
 //
 // the main function to deal with data-driven and context aware task orchestration
 //
-
 func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction string, entityRegistration *EntityRegistration) {
-	INFO.Println("handle the change of stream availability")
-	INFO.Println(subID, entityAction, entityRegistration.ID)
 	INFO.Printf("received registration: %+v\r\n", entityRegistration)
+
 	tMgr.subID2FogFunc_lock.RLock()
-	if _, exist := tMgr.subID2FogFunc[subID]; exist == false {
+	funcName, fogFunctionExist := tMgr.subID2FogFunc[subID]
+	if fogFunctionExist == false {
 		INFO.Println("this subscripption is not issued by me")
 		tMgr.subID2FogFunc_lock.RUnlock()
 		return
 	}
-	funcName := tMgr.subID2FogFunc[subID]
 	tMgr.subID2FogFunc_lock.RUnlock()
 
 	// update the received context availability information
 	tMgr.fogFlows_lock.Lock()
 	defer tMgr.fogFlows_lock.Unlock()
-	// fiwareServicePath := entityRegistration.FiwareServicePath
-	// mgsFormat := entityRegistration.MsgFormat
 
-	fogflow := tMgr.fogFlows[funcName]
-	DEBUG.Printf("~~~~~~~ access the flow %+s, %+v ~~~~~~~~~~~~~~~~~\r\n", funcName, fogflow)
-
-	if fogflow == nil {
+	fogflow, fogFlowExist := tMgr.fogFlows[funcName]
+	if fogFlowExist == false {
+		INFO.Println("no flow established for this function: ", funcName)
 		return
 	}
 
-	fmt.Println("***** subid, entityAction, entityregistration***********", subID, entityAction, entityRegistration)
-
 	deploymentActions := fogflow.MetadataDrivenTaskOrchestration(subID, entityAction, entityRegistration)
-
 	if deploymentActions == nil || len(deploymentActions) == 0 {
 		DEBUG.Println("nothing is triggered!!!")
 		return
@@ -885,18 +877,13 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
 
-			// scheduledTaskInstance = SetFiwareServicePath(scheduledTaskInstance, fiwareServicePath, mgsFormat)
-
 			// figure out where to deploy this task instance
 			itemList := strings.Split(scheduledTaskInstance.ID, ".")
 			hashID := itemList[len(itemList)-1]
 
 			// find out the worker close to the available inputs
 			locations := fogflow.getLocationOfInputs(hashID)
-			fmt.Println("**** Locations ******", locations)
 			selectedWorkerID := tMgr.master.SelectWorker(locations)
-			fmt.Println("**** selectedWorkerID ******", selectedWorkerID)
-
 			if selectedWorkerID == "" {
 				ERROR.Println("==NOT ABLE TO FIND A WORKER FOR THIS TASK===")
 				return
@@ -906,16 +893,11 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 
 			// find out which implementation image to be used by the assigned worker
 			operator := scheduledTaskInstance.OperatorName
-			fmt.Println(" * * * * * Inside taskmgr *  * * * ", operator)
 			workerID := scheduledTaskInstance.WorkerID
 			scheduledTaskInstance.DockerImage = tMgr.master.DetermineDockerImage(operator, workerID)
-			fmt.Println(" * * * * * Inside taskmgr docker image*  * * * ", scheduledTaskInstance.DockerImage)
 
 			// carry the paramemters associated with this operator
 			scheduledTaskInstance.Parameters = tMgr.master.GetOperatorParamters(operator)
-
-			INFO.Println("TASK INSTANCE TO BE DEPLOYED")
-			INFO.Println(scheduledTaskInstance)
 
 			if scheduledTaskInstance.WorkerID != "" {
 				tMgr.master.DeployTask(&scheduledTaskInstance)
@@ -936,7 +918,6 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			INFO.Printf("add input %+v\r\n", deploymentAction.ActionInfo)
 
 			flowInfo := deploymentAction.ActionInfo.(FlowInfo)
-			// flowInfo = AddFiwareServicePath(flowInfo, fiwareServicePath, mgsFormat)
 			tMgr.master.AddInputEntity(flowInfo)
 
 		case "REMOVE_INPUT":

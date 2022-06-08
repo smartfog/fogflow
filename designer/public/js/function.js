@@ -198,8 +198,7 @@ $(function() {
         fogfunction.intent = intent;
         fogfunction.designboard = scene;
         fogfunction.status = 'enabled';
-        
-               
+                       
         if (topologyName == '' || topology.name == '' || topology.tasks.length==0 || topology.tasks[0].operator == 'null' || 
         topology.tasks[0].operator == '' || topology.tasks[0].input_streams.length==0){
             alert('please provide the required inputs');
@@ -392,7 +391,7 @@ $(function() {
             
             html += '</td>';
 
-            html += '<td>' + JSON.stringify(fogfunction.topology.name) + '</td>';
+            html += '<td>' + fogfunction.topology.name + '</td>';
 
             html += '<td>' + JSON.stringify(fogfunction.intent) + '</td>';
 

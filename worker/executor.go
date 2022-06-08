@@ -108,16 +108,13 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	taskCtx.TaskID = task.ID
 
 	// register the service ports of uservices
-	// check if it is required to set up the portmapping for its endpoint services
 	servicePorts := make([]string, 0)
-
 	for _, parameter := range task.Parameters {
 		// deal with the service port
 		if parameter.Name == "service_port" {
-			servicePorts = append(servicePorts, parameter.Values...)
+			servicePorts = strings.Split(parameter.Value, ";")
 		}
 	}
-
 	if len(servicePorts) > 0 {
 		// currently, we assume that each task will only provide one end-point service
 		eid := e.registerEndPointService(task.TopologyName, task.ID, task.OperatorName, e.workerCfg.ExternalIP, servicePorts[0], e.workerCfg.Location)
@@ -243,80 +240,8 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 	}
 }
 
-// func (e *Executor) updateTask(taskID string, status string) {
-// 	ctxObj := ContextObject{}
-
-// 	ctxObj.Entity.ID = taskID
-// 	ctxObj.Entity.Type = "Task"
-// 	ctxObj.Entity.IsPattern = false
-
-// 	ctxObj.Attributes = make(map[string]ValueObject)
-// 	ctxObj.Attributes["status"] = ValueObject{Type: "string", Value: status}
-
-// 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-// 	err := client.UpdateContextObject(&ctxObj)
-// 	if err != nil {
-// 		ERROR.Println(err)
-// 	}
-// }
-
-// func (e *Executor) deregisterTask(taskID string) {
-// 	entity := EntityId{}
-// 	entity.ID = taskID
-// 	entity.Type = "Task"
-// 	entity.IsPattern = false
-
-// 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-// 	err := client.DeleteContext(&entity)
-// 	if err != nil {
-// 		ERROR.Println(err)
-// 	}
-// }
-
-// Subscribe for NGSILD input stream
-func (e *Executor) subscribeLdInputStream(refURL string, inputStream *InputStream) (string, error) {
-	LdSubscription := LDSubscriptionRequest{}
-
-	newEntity := EntityId{}
-	var Fs, Fsp, ID string
-	if len(inputStream.ID) > 0 { // for a specific context entity
-		newEntity.Type = inputStream.Type
-		ID, Fs = FiwareId(inputStream.ID)
-		if Fs == "default" {
-			Fs = ""
-		}
-		newEntity.ID = ID
-		Fsp = inputStream.FiwareServicePath
-	} else {
-		newEntity.Type = inputStream.Type
-	}
-	fmt.Println("FS,FSP", Fs, Fsp)
-	LdSubscription.Entities = make([]EntityId, 0)
-	LdSubscription.Entities = append(LdSubscription.Entities, newEntity)
-	LdSubscription.Type = "Subscription"
-	if len(inputStream.AttributeList) > 0 {
-		LdSubscription.WatchedAttributes = inputStream.AttributeList
-	}
-
-	LdSubscription.Notification.Endpoint.URI = refURL + "/notifyContext"
-
-	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", LdSubscription)
-	brokerURL := e.brokerURL
-	brokerURL = strings.TrimSuffix(brokerURL, "/ngsi10")
-	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	sid, err := client.SubscribeLdContext(&LdSubscription, true, Fs, Fsp)
-	fmt.Println("sid", sid)
-	if err != nil {
-		ERROR.Println(err)
-		return "", err
-	} else {
-		return sid, nil
-	}
-}
-
-//Subscribe for NGSIV1 input stream
+//Subscribe for the input stream
 func (e *Executor) subscribeInputStream(refURL string, corelatorID string, inputStream *InputStream) (string, error) {
-	fmt.Println("====================Subscription here ===================")
 	subscription := SubscribeContextRequest{}
 
 	newEntity := EntityId{}
@@ -337,7 +262,7 @@ func (e *Executor) subscribeInputStream(refURL string, corelatorID string, input
 
 	subscription.Reference = refURL
 
-	DEBUG.Printf(" =========== issue the following subscription =========== %+v\r\n", subscription)
+	DEBUG.Printf(" =========== issue the following subscription: %+v\r\n", subscription)
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	sid, err := client.SubscribeContext(&subscription, corelatorID, true)

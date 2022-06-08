@@ -776,7 +776,7 @@ func (nc *NGSI9Client) SendHeartBeat(brokerProfile *BrokerProfile) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/broker", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", nc.IoTDiscoveryURL+"/broker/heartbeat", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 

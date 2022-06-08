@@ -8,8 +8,10 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/mitchellh/mapstructure"
 )
@@ -45,6 +47,18 @@ const (
 type BrokerProfile struct {
 	BID   string `json:"id"`
 	MyURL string `json:"myURL"`
+
+	Last_Heartbeat_Update time.Time
+}
+
+func (broker *BrokerProfile) IsLive(duration int) bool {
+	delta := time.Since(broker.Last_Heartbeat_Update)
+
+	if int(delta.Seconds()) >= duration {
+		return false
+	} else {
+		return true
+	}
 }
 
 type NearBy struct {
@@ -288,12 +302,12 @@ func (pAttr *ContextAttribute) UnmarshalJSON(b []byte) error {
 }
 
 type EntityId struct {
-	Type              string `json:"type,omitempty"`
-	IsPattern         bool   `json:"isPattern,omitempty"`
-	ID                string `json:"id"`
-	IdPattern         string `json:"idPattern,omitempty"`
-	FiwareServicePath string `json:"fiwareServicePath,omitempty"`
-	MsgFormat         string `json:"magFormat,omitempty"`
+	Type      string `json:"type,omitempty"`
+	IsPattern bool   `json:"isPattern,omitempty"`
+	ID        string `json:"id"`
+	// IdPattern         string `json:"idPattern,omitempty"`
+	// FiwareServicePath string `json:"fiwareServicePath,omitempty"`
+	// MsgFormat         string `json:"magFormat,omitempty"`
 }
 
 type Conditions struct {
@@ -346,12 +360,148 @@ func (ctxObj *ContextObject) IsEmpty() bool {
 }
 
 type ContextElement struct {
-	Entity     EntityId           `json:"entityId"`
-	ID         string             `json:"id"`
-	Type       string             `json:"type,omitempty"`
-	IsPattern  string             `json:"isPattern"`
+	Entity EntityId `json:"entityId"`
+
+	ID        string `json:"id"`
+	Type      string `json:"type,omitempty"`
+	IsPattern string `json:"isPattern"`
+
 	Attributes []ContextAttribute `json:"attributes,omitempty"`
 	Metadata   []ContextMetadata  `json:"domainMetadata,omitempty"`
+}
+
+func (ce *ContextElement) ReadFromNGSILD(ngsildEntity map[string]interface{}) bool {
+	ce.Attributes = make([]ContextAttribute, 0)
+
+	_, idExist := ngsildEntity["id"]
+	_, typeExist := ngsildEntity["type"]
+
+	if !(idExist && typeExist) {
+		// ignore this entity if the required keys [id, type] are missing
+		return false
+	}
+
+	for k, v := range ngsildEntity {
+		switch strings.ToLower(k) {
+		case "id":
+			ce.Entity.ID = v.(string)
+		case "type":
+			ce.Entity.Type = v.(string)
+		default:
+			if reflect.TypeOf(v).Kind() != reflect.Map {
+				continue
+			}
+
+			attribute := v.(map[string]interface{})
+			attrType := attribute["type"].(string)
+			attrValue := attribute["value"]
+
+			if strings.ToLower(attrType) == "property" {
+				newCtxAttribute := ContextAttribute{}
+				newCtxAttribute.Name = k
+
+				switch attrValue.(type) {
+				case int:
+					newCtxAttribute.Type = "integer"
+				case float64:
+					newCtxAttribute.Type = "float"
+				case string:
+					newCtxAttribute.Type = "string"
+				default:
+					newCtxAttribute.Type = "object"
+				}
+
+				newCtxAttribute.Value = attrValue
+
+				ce.Attributes = append(ce.Attributes, newCtxAttribute)
+			} else if strings.ToLower(attrType) == "relationship" {
+				refObject := attribute["object"]
+				newCtxAttribute := ContextAttribute{}
+				newCtxAttribute.Name = k
+				newCtxAttribute.Type = "relationship"
+				newCtxAttribute.Value = refObject
+
+				ce.Attributes = append(ce.Attributes, newCtxAttribute)
+			}
+
+			if strings.ToLower(k) == "location" {
+				domainMetadata := ContextMetadata{}
+				domainMetadata.Name = k
+				domainMetadata.Type = attrType
+				domainMetadata.Value = attrValue
+
+				ce.Metadata = append(ce.Metadata, domainMetadata)
+			}
+		}
+	}
+
+	return true
+}
+
+func (ce *ContextElement) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) bool {
+	ce.Attributes = make([]ContextAttribute, 0)
+	ce.Metadata = make([]ContextMetadata, 0)
+
+	_, idExist := ngsiv2Entity["id"]
+	_, typeExist := ngsiv2Entity["type"]
+
+	if !(idExist && typeExist) {
+		// ignore this entity if the required keys [id, type] are missing
+		return false
+	}
+
+	for k, v := range ngsiv2Entity {
+		switch strings.ToLower(k) {
+		case "id":
+			ce.Entity.ID = v.(string)
+		case "type":
+			ce.Entity.Type = v.(string)
+		default:
+			if reflect.TypeOf(v).Kind() != reflect.Map {
+				continue
+			}
+
+			attribute := v.(map[string]interface{})
+			attrType := attribute["type"].(string)
+			attrValue := attribute["value"]
+
+			newCtxAttribute := ContextAttribute{}
+			newCtxAttribute.Name = k
+			newCtxAttribute.Type = attrType
+			newCtxAttribute.Value = attrValue
+
+			attributeMetadata, metadataExist := attribute["metadata"]
+			if metadataExist == true {
+				metadataMap := attributeMetadata.(map[string]interface{})
+
+				newCtxAttribute.Metadata = make([]ContextMetadata, 0)
+
+				for metadata_name, metadata := range metadataMap {
+					newCtxAttributeMetadata := ContextMetadata{}
+
+					newCtxAttributeMetadata.Name = metadata_name
+					m := metadata.(map[string]interface{})
+					newCtxAttributeMetadata.Type = m["type"].(string)
+					newCtxAttributeMetadata.Value = m["value"]
+
+					newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxAttributeMetadata)
+				}
+			}
+
+			if strings.ToLower(k) == "location" {
+				domainMetadata := ContextMetadata{}
+				domainMetadata.Name = k
+				domainMetadata.Type = attrType
+				domainMetadata.Value = attrValue
+
+				ce.Metadata = append(ce.Metadata, domainMetadata)
+			}
+
+			ce.Attributes = append(ce.Attributes, newCtxAttribute)
+		}
+	}
+
+	return true
 }
 
 func (ce *ContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *ContextElement {
@@ -806,6 +956,40 @@ type UpdateContextRequest struct {
 	Correlator      string
 }
 
+func (updateCtxReq *UpdateContextRequest) ReadFromNGSILD(ngsildEntities []map[string]interface{}) int {
+	updateCtxReq.UpdateAction = "Update"
+	updateCtxReq.ContextElements = make([]ContextElement, 0)
+
+	counter := 0
+	for _, ngsildEntityUpdate := range ngsildEntities {
+		newCtxElement := ContextElement{}
+
+		validEntity := newCtxElement.ReadFromNGSILD(ngsildEntityUpdate)
+		if validEntity {
+			updateCtxReq.ContextElements = append(updateCtxReq.ContextElements, newCtxElement)
+			counter = counter + 1
+		}
+	}
+
+	return counter
+}
+
+func (updateCtxReq *UpdateContextRequest) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) int {
+	updateCtxReq.UpdateAction = "Update"
+	updateCtxReq.ContextElements = make([]ContextElement, 0)
+
+	counter := 0
+	newCtxElement := ContextElement{}
+
+	validEntity := newCtxElement.ReadFromNGSIv2(ngsiv2Entity)
+	if validEntity {
+		updateCtxReq.ContextElements = append(updateCtxReq.ContextElements, newCtxElement)
+		counter = counter + 1
+	}
+
+	return counter
+}
+
 type UpdateContextResponse struct {
 	ContextResponses []ContextElementResponse `json:"contextResponses"`
 }
@@ -1094,17 +1278,17 @@ func (element *ContextElement) SetEntityID() {
 	}
 }
 
-// Integration with wirecloud
-func (element *Subject) SetIDpattern() {
+// // Integration with wirecloud
+// func (element *Subject) SetIDpattern() {
 
-	for index, entities := range element.Entities {
+// 	for index, entities := range element.Entities {
 
-		if entities.IdPattern != "" {
-			entities.ID = entities.IdPattern
-			element.Entities[index] = entities
-		}
-	}
-}
+// 		if entities.IdPattern != "" {
+// 			entities.ID = entities.IdPattern
+// 			element.Entities[index] = entities
+// 		}
+// 	}
+// }
 
 /*
 func (element *LDSubscriptionRequest) SetLdIdPattern() {

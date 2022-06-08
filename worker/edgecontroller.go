@@ -149,7 +149,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 		ERROR.Fatalf("Error occured during marshaling. Error: %s", err.Error())
 	}
 
-	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/deployment/fogflow", jsonPayload)
+	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/deployment/fogflow", task.Parameters, jsonPayload)
 
 	serviceSpec := &coreV1.Service{
 		TypeMeta: metaV1.TypeMeta{
@@ -180,7 +180,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 		return "", "", err
 	}
 
-	resp, err := mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/service/fogflow", jsonPayload)
+	resp, err := mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/service/fogflow", task.Parameters, jsonPayload)
 	if err != nil {
 		ERROR.Fatalf("NOT able to interact with Edge Controller: %s", err.Error())
 		return "", "", err
@@ -200,17 +200,22 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 
 func (mec *EdgeController) StopTask(taskId string) {
 	deploymentName := taskId
-	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/deployment/fogflow/"+deploymentName, nil)
+	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/deployment/fogflow/"+deploymentName, nil, nil)
 
 	serviceName := taskId
-	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/service/fogflow/"+serviceName, nil)
+	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/service/fogflow/"+serviceName, nil, nil)
 }
 
-func (mec *EdgeController) sendRequest(method string, url string, payload []byte) ([]byte, error) {
+func (mec *EdgeController) sendRequest(method string, url string, parameters []Parameter, payload []byte) ([]byte, error) {
 	INFO.Println(method, url, string(payload))
 
 	request, _ := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
+
+	// set the header based on the parameters of the operator
+	for _, parameter := range parameters {
+		request.Header.Set(parameter.Name, parameter.Value)
+	}
 
 	client := &http.Client{}
 	response, err := client.Do(request)

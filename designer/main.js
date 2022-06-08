@@ -32,7 +32,6 @@ var photo_folder = './public/data/photo';
 fs.mkdir(photo_folder, { recursive: true })
 
 
-
 const adapter = new JSONFile(metadata_folder + '/db.json');
 const db = new Low(adapter);
 
@@ -192,12 +191,12 @@ function issueLoadedIntents() {
         // existing fog functions
         Object.keys(db.data.fogfunctions).forEach(function (key) {
             var fogfunction = db.data.fogfunctions[key];
-
-            fogfunction.status = 'enabled';
-
-            var intent = fogfunction.intent;
-            intent.action = 'ADD';
-            publishMetadata("ServiceIntent", intent);
+            
+            if (fogfunction.status == 'enabled') {
+                var intent = fogfunction.intent;
+                intent.action = 'ADD';
+                publishMetadata("ServiceIntent", intent);                
+            }
         });
 
         send_loaded_intents = true;
@@ -562,6 +561,9 @@ app.get('/fogfunction/:name/enable', async function (req, res) {
     serviceintent.action = 'ADD';
     publishMetadata("ServiceIntent", serviceintent);
 
+    // sync-up the status change
+    await db.write();
+
     res.json(fogfunction);
 });
 
@@ -575,6 +577,9 @@ app.get('/fogfunction/:name/disable', async function (req, res) {
     var serviceintent = fogfunction.intent;
     serviceintent.action = 'DELETE';
     publishMetadata("ServiceIntent", serviceintent);
+
+    // sync-up the status change
+    await db.write();
 
     res.json(fogfunction);
 });

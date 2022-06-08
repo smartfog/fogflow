@@ -205,7 +205,7 @@ $(function() {
                     if (block.id == edge.block1) {
                         var parameter = {};
                         parameter.name = block.values.name
-                        parameter.values = block.values.values;
+                        parameter.value = block.values.value;
 
                         parameters.push(parameter);
                     }
@@ -230,8 +230,6 @@ $(function() {
             dockerImageRegistration();
         });
     }
-        
-
 
     function initDockerImageList(){                        
         fetch('/dockerimage').then(res => res.json()).then(imageList => {
