@@ -62,12 +62,12 @@ func matchEntityId(entity EntityId, subscribedEntity EntityId) bool {
 				return false
 			}
 		}
-		if subscribedEntity.IdPattern != "" {
-			matched, _ := regexp.MatchString(subscribedEntity.IdPattern, entity.ID)
-			if matched == false {
-				return false
-			}
-		}
+		// if subscribedEntity.IdPattern != "" {
+		// 	matched, _ := regexp.MatchString(subscribedEntity.IdPattern, entity.ID)
+		// 	if matched == false {
+		// 		return false
+		// 	}
+		// }
 	} else {
 		if subscribedEntity.Type != "" {
 			matched := subscribedEntity.Type == entity.Type && subscribedEntity.ID == entity.ID

@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/ant0ine/go-json-rest/rest"
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
+	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
 )
 
@@ -29,6 +31,7 @@ type FastDiscovery struct {
 	//backend entity repository
 	repository EntityRepository
 
+	cfg         *Config
 	SecurityCfg *HTTPS
 
 	//list of active brokers within the same site
@@ -44,12 +47,13 @@ type FastDiscovery struct {
 	cache_lock  sync.RWMutex
 }
 
-func (fd *FastDiscovery) Init(httpsCfg *HTTPS) {
+func (fd *FastDiscovery) Init(config *Config) {
 	fd.subscriptions = make(map[string]*SubscribeContextAvailabilityRequest)
 	fd.BrokerList = make(map[string]*BrokerProfile)
 	fd.notifyCache = make([]*CacheItem, 0)
 
-	fd.SecurityCfg = httpsCfg
+	fd.cfg = config
+	fd.SecurityCfg = &config.HTTPS
 
 	fd.repository.Init()
 }
@@ -136,8 +140,19 @@ func (fd *FastDiscovery) updateRegistration(registReq *RegisterContextRequest) {
 
 func (fd *FastDiscovery) deleteRegistration(eid string) {
 	registration := fd.repository.retrieveRegistration(eid)
-	if registration != nil {
-		fd.notifySubscribers(registration, "DELETE")
+	if registration == nil {
+		DEBUG.Println("the entity registration does not exist: ", eid)
+		return
+	}
+
+	fd.notifySubscribers(registration, "DELETE")
+
+	// if the registration is for the broker itself, we need to update the broker list
+	if registration.Type == "IoTBroker" {
+		brokerID := registration.ID
+		fd.broker_list_lock.Lock()
+		delete(fd.BrokerList, brokerID)
+		fd.broker_list_lock.Unlock()
 	}
 
 	fd.repository.deleteEntity(eid)
@@ -346,10 +361,12 @@ func (fd *FastDiscovery) resendCachedItems() {
 	}
 }
 
-// for every 2 second
 func (fd *FastDiscovery) OnTimer() {
-	//try to send the items in the cache
+	// try to send the items in the cache
 	fd.resendCachedItems()
+
+	// check the liveness of brokers
+	fd.checkBrokerList()
 }
 
 func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyContextAvailabilityRequest) bool {
@@ -495,7 +512,21 @@ func (fd *FastDiscovery) onBrokerHeartbeat(w rest.ResponseWriter, r *rest.Reques
 
 	if broker, exist := fd.BrokerList[brokerProfile.BID]; exist {
 		broker.MyURL = brokerProfile.MyURL
+		broker.Last_Heartbeat_Update = time.Now()
 	} else {
+		brokerProfile.Last_Heartbeat_Update = time.Now()
 		fd.BrokerList[brokerProfile.BID] = &brokerProfile
+	}
+}
+
+func (fd *FastDiscovery) checkBrokerList() {
+	fd.broker_list_lock.Lock()
+	defer fd.broker_list_lock.Unlock()
+
+	for brokerID, brokerProfile := range fd.BrokerList {
+		if brokerProfile.IsLive(fd.cfg.Broker.HeartbeatInterval*6) == false {
+			delete(fd.BrokerList, brokerID)
+			INFO.Println("REMOVE broker " + brokerID + " from the list")
+		}
 	}
 }

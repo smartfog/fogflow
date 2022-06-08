@@ -184,9 +184,9 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 		entity := EntityId{}
 		entity.ID = candidate.ID
 		entity.Type = candidate.Type
-		entity.IsPattern = false
-		entity.FiwareServicePath = candidate.FiwareServicePath
-		entity.MsgFormat = candidate.MsgFormat
+		// entity.IsPattern = false
+		// entity.FiwareServicePath = candidate.FiwareServicePath
+		// entity.MsgFormat = candidate.MsgFormat
 
 		providerURL := candidate.ProviderURL
 		entityMap[providerURL] = append(entityMap[providerURL], entity)

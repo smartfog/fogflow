@@ -15,7 +15,8 @@
         "http_port": 8090
     },
     "broker": {
-        "http_port": 8070
+        "http_port": 8070,
+        "heartbeat_interval": 30  
     },     
     "master": {
         "ngsi_agent_port": 1060,    
@@ -24,7 +25,8 @@
     "worker": {
         "container_autoremove": false,
         "start_actual_task": true,
-        "capacity": 8
+        "capacity": 8,
+        "heartbeat_interval": 30          
     },
     "designer": {
         "webSrvPort": 8080,
