@@ -9,17 +9,12 @@ import (
 	. "fogflow/common/ngsi"
 )
 
-type TaskIntentRecord struct {
-	taskIntent TaskIntent
-	site       SiteInfo
-}
-
 type ServiceMgr struct {
 	master *Master
 
 	// list of all service intents and also the mapping between service intent and task intents
 	serviceIntentMap map[string]*ServiceIntent
-	service2TaskMap  map[string][]*TaskIntentRecord
+	service2TaskMap  map[string][]*TaskIntent
 	intentList_lock  sync.RWMutex
 }
 
@@ -29,7 +24,7 @@ func NewServiceMgr(myMaster *Master) *ServiceMgr {
 
 func (sMgr *ServiceMgr) Init() {
 	sMgr.serviceIntentMap = make(map[string]*ServiceIntent)
-	sMgr.service2TaskMap = make(map[string][]*TaskIntentRecord)
+	sMgr.service2TaskMap = make(map[string][]*TaskIntent)
 }
 
 func (sMgr *ServiceMgr) handleServiceIntentUpdate(sIntent *ServiceIntent) {
@@ -62,8 +57,7 @@ func (sMgr *ServiceMgr) updateServiceIntentStatus(eid string, status string, rea
 // to break down the service intent from the service level into the task level
 //
 func (sMgr *ServiceMgr) handleServiceIntent(serviceIntent *ServiceIntent) {
-	INFO.Println("receive a service intent")
-	INFO.Println(serviceIntent)
+	INFO.Println("=====receive a service intent: %+v", serviceIntent)
 
 	sMgr.intentList_lock.Lock()
 	_, existFlag := sMgr.serviceIntentMap[serviceIntent.ID]
@@ -85,13 +79,12 @@ func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent
 	var topologyObject = sMgr.master.getTopologyByName(serviceIntent.TopologyName)
 	if topologyObject == nil {
 		ERROR.Println("failed to find the associated topology")
-		//sMgr.updateServiceIntentStatus(serviceIntent.ID, "NOT_ACTIVATED", "failed to find the associated topology")
 		return
 	}
 
 	serviceIntent.TopologyObject = topologyObject
 
-	listTaskIntent := make([]*TaskIntentRecord, 0)
+	listTaskIntent := make([]*TaskIntent, 0)
 
 	for _, task := range serviceIntent.TopologyObject.Tasks {
 		// to handle the task intent directly
@@ -113,11 +106,7 @@ func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent
 
 		sMgr.master.taskMgr.handleTaskIntent(&taskIntent)
 
-		record := TaskIntentRecord{}
-		record.taskIntent = taskIntent
-		record.site.IsLocalSite = true
-
-		listTaskIntent = append(listTaskIntent, &record)
+		listTaskIntent = append(listTaskIntent, &taskIntent)
 	}
 
 	sMgr.intentList_lock.Lock()
@@ -127,8 +116,6 @@ func (sMgr *ServiceMgr) updateExistingServiceIntent(serviceIntent *ServiceIntent
 	sMgr.service2TaskMap[serviceIntent.ID] = listTaskIntent
 	// record the service intent
 	sMgr.serviceIntentMap[serviceIntent.ID] = serviceIntent
-
-	//sMgr.updateServiceIntentStatus(serviceIntent.ID, "ACTIVATED", "scheduled")
 }
 
 //
@@ -145,7 +132,7 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 
 	serviceIntent.TopologyObject = topologyObject
 
-	listTaskIntent := make([]*TaskIntentRecord, 0)
+	listTaskIntent := make([]*TaskIntent, 0)
 
 	for _, task := range serviceIntent.TopologyObject.Tasks {
 		// to handle the task intent directly
@@ -168,11 +155,7 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 
 		sMgr.master.taskMgr.handleTaskIntent(&taskIntent)
 
-		record := TaskIntentRecord{}
-		record.taskIntent = taskIntent
-		record.site.IsLocalSite = true
-
-		listTaskIntent = append(listTaskIntent, &record)
+		listTaskIntent = append(listTaskIntent, &taskIntent)
 	}
 
 	sMgr.intentList_lock.Lock()
@@ -182,110 +165,6 @@ func (sMgr *ServiceMgr) createNewServiceIntent(serviceIntent *ServiceIntent) {
 	sMgr.service2TaskMap[serviceIntent.ID] = listTaskIntent
 	// record the service intent
 	sMgr.serviceIntentMap[serviceIntent.ID] = serviceIntent
-
-	//sMgr.updateServiceIntentStatus(serviceIntent.ID, "ACTIVATED", "scheduled")
-}
-
-//
-// to divide the task intent for all sites in this geoscope
-//
-func (sMgr *ServiceMgr) intentPartition(taskIntent *TaskIntent) []*TaskIntentRecord {
-	var geoscope = taskIntent.GeoScope
-
-	listTaskIntent := make([]*TaskIntentRecord, 0)
-
-	client := NGSI9Client{IoTDiscoveryURL: sMgr.master.discoveryURL, SecurityCfg: &sMgr.master.cfg.HTTPS}
-	siteList, err := client.QuerySiteList(geoscope)
-	if err != nil {
-		ERROR.Println("error happens when querying the site list from IoT Discovery")
-		ERROR.Println(err)
-	} else {
-		DEBUG.Printf("%+v\n", siteList)
-
-		for _, site := range siteList {
-			if site.IsLocalSite == true {
-				DEBUG.Printf("%+v is a local site\n", site)
-
-				intent := TaskIntent{}
-
-				// new random uid
-				u1, _ := uuid.NewUUID()
-				rid := u1.String()
-				intent.ID = rid
-
-				intent.GeoScope = geoscope
-				intent.Priority = taskIntent.Priority
-				intent.QoS = taskIntent.QoS
-				intent.TopologyName = taskIntent.TopologyName
-				intent.TaskObject = taskIntent.TaskObject
-
-				// handle a sub-intent locally
-				sMgr.master.taskMgr.handleTaskIntent(&intent)
-
-				record := TaskIntentRecord{}
-				record.taskIntent = *taskIntent
-				record.site = site
-
-				listTaskIntent = append(listTaskIntent, &record)
-			} else {
-				DEBUG.Printf("%+v is a remote site\n", site)
-
-				// forward a sub-intent to the remote site
-				intent := TaskIntent{}
-
-				// new random uid
-				u1, _ := uuid.NewUUID()
-				rid := u1.String()
-				intent.ID = rid
-
-				intent.GeoScope = geoscope
-				intent.Priority = taskIntent.Priority
-				intent.QoS = taskIntent.QoS
-				intent.TopologyName = taskIntent.TopologyName
-				intent.TaskObject = taskIntent.TaskObject
-
-				sMgr.ForwardIntentToRemoteSite(&intent, site)
-
-				record := TaskIntentRecord{}
-				record.taskIntent = *taskIntent
-				record.site = site
-
-				listTaskIntent = append(listTaskIntent, &record)
-			}
-		}
-	}
-
-	return listTaskIntent
-}
-
-func (sMgr *ServiceMgr) ForwardIntentToRemoteSite(taskIntent *TaskIntent, site SiteInfo) {
-	brokerURL := "http://" + site.ExternalAddress + "/proxy"
-
-	ctxElem := ContextElement{}
-	ctxElem.Entity.ID = "TaskIntent." + taskIntent.ID
-	ctxElem.Entity.Type = "TaskIntent"
-
-	ctxElem.Attributes = make([]ContextAttribute, 0)
-
-	attribute := ContextAttribute{}
-	attribute.Type = "object"
-	attribute.Name = "intent"
-	attribute.Value = taskIntent
-
-	ctxElem.Attributes = append(ctxElem.Attributes, attribute)
-
-	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &sMgr.master.cfg.HTTPS}
-	client.UpdateContext(&ctxElem)
-}
-
-func (sMgr *ServiceMgr) RemoveIntentFromRemoteSite(taskIntentRecord *TaskIntentRecord) {
-	brokerURL := "http://" + taskIntentRecord.site.ExternalAddress + "/proxy"
-
-	ctxElem := ContextElement{}
-	ctxElem.Entity.ID = "TaskIntent." + taskIntentRecord.taskIntent.ID
-
-	client := NGSI10Client{IoTBrokerURL: brokerURL, SecurityCfg: &sMgr.master.cfg.HTTPS}
-	client.UpdateContext(&ctxElem)
 }
 
 func (sMgr *ServiceMgr) removeServiceIntent(id string) {
@@ -295,15 +174,9 @@ func (sMgr *ServiceMgr) removeServiceIntent(id string) {
 	defer sMgr.intentList_lock.Unlock()
 
 	// remove all related task intents
-	listTaskIntentRecord := sMgr.service2TaskMap[id]
-	for _, taskIntentRecord := range listTaskIntentRecord {
-		if taskIntentRecord.site.IsLocalSite == true {
-			// remove this task intent for the local site
-			sMgr.master.taskMgr.removeTaskIntent(&taskIntentRecord.taskIntent)
-		} else {
-			// issue a request to delete this task intent that has been handled by a remote site
-			sMgr.RemoveIntentFromRemoteSite(taskIntentRecord)
-		}
+	listTaskIntent := sMgr.service2TaskMap[id]
+	for _, taskIntent := range listTaskIntent {
+		sMgr.master.taskMgr.removeTaskIntent(taskIntent)
 	}
 
 	// remove this service intent

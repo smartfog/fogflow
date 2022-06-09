@@ -80,6 +80,14 @@ func (p *Point) IsEmpty() bool {
 	}
 }
 
+func (p *Point) IsEqual(p2 *Point) bool {
+	if p.Latitude == p2.Latitude && p.Longitude == p2.Longitude {
+		return true
+	}
+
+	return false
+}
+
 type Circle struct {
 	Latitude  float64 `json:"centerLatitude"`
 	Longitude float64 `json:"centerLongitude"`
@@ -846,9 +854,6 @@ type ContextRegistration struct {
 	ContextRegistrationAttributes []ContextRegistrationAttribute `json:"attributes,omitempty"`
 	Metadata                      []ContextMetadata              `json:"contextMetadata,omitempty"`
 	ProvidingApplication          string                         `json:"providingApplication"`
-	FiwareServicePath             string
-	MsgFormat                     string
-	FiwareService                 string
 }
 
 type ContextRegistrationResponse struct {

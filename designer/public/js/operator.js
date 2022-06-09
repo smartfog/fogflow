@@ -250,23 +250,6 @@ $(function() {
             }               
         })          
     }
-    
-//    function addDockerImage(image) {
-        
-//        //register a new docker image        
-//        fetch("/dockerimage", {
-//            method: "POST",
-//            headers: {
-//                Accept: "application/json",
-//                "Content-Type": "application/json"
-//            },
-//            body: JSON.stringify([image])
-//        })
-//        .then(response => {
-//            console.log("add a new docker image: ", response.status)
-//        })
-//        .catch(err => console.log(err));        
-//    }
 
     function dockerImageRegistration() {
         $('#info').html('New docker image registration');

@@ -342,7 +342,6 @@ func (tb *ThinBroker) handleExternalUpdateContext(w rest.ResponseWriter, updateC
 	case "UPDATE", "APPEND":
 		for _, ctxElem := range updateCtxReq.ContextElements {
 			brokerURL := tb.queryOwnerOfEntity(ctxElem.Entity.ID)
-
 			if brokerURL == tb.myProfile.MyURL {
 				tb.UpdateContext2LocalSite(&ctxElem, updateCtxReq.Correlator, w)
 			} else {
@@ -376,32 +375,34 @@ func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
 
 	if inLocalBroker == true {
 		return tb.myProfile.MyURL
-	} else {
-		client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
-		brokerURL, _ := client.GetProviderURL(eid)
-		if brokerURL == "" {
-			return tb.myProfile.MyURL
-		}
-		return brokerURL
 	}
+
+	// ask the discovery service which broker is hosting this entity
+	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
+	brokerURL, _ := client.GetProviderURL(eid)
+	if brokerURL == "" {
+		return tb.myProfile.MyURL
+	}
+
+	return brokerURL
 }
 
 func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, correlator string, params ...rest.ResponseWriter) {
+	// register the entity if there is any changes on attribute list, domain metadata
 	tb.entities_lock.Lock()
 	eid := ctxElem.Entity.ID
 	hasUpdatedMetadata := hasUpdatedMetadata(ctxElem, tb.entities[eid])
 	tb.entities_lock.Unlock()
+
+	if hasUpdatedMetadata == true {
+		tb.registerContextElement(ctxElem)
+	}
 
 	// apply the new update to the entity in the entity map
 	tb.updateContextElement(ctxElem)
 
 	// propogate this update to its subscribers
 	go tb.notifySubscribers(ctxElem, correlator, true)
-
-	// register the entity if there is any changes on attribute list, domain metadata
-	if hasUpdatedMetadata == true {
-		tb.registerContextElement(ctxElem)
-	}
 }
 
 func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAction string, brokerURL string) {
@@ -731,7 +732,6 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 	registration.ContextRegistrationAttributes = attributes
 	registration.Metadata = element.Metadata
 	registration.ProvidingApplication = tb.MyURL
-	registration.MsgFormat = "NGSIV1"
 
 	// create or update registered context
 	registerCtxReq := RegisterContextRequest{}

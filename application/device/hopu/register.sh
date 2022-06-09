@@ -3,7 +3,7 @@ curl -iX POST \
   -H 'Content-Type: application/json' \
   -d '
     {
-        "id": "urn:Device.12346",
+        "id": "urn:Device.12345",
         "type": "HOPU",
         "attributes": {
             "protocol": {

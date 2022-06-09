@@ -152,35 +152,31 @@ func (flow *FogFlow) Init() {
 //
 // to update the execution plan based on the changes of registered context availability
 //
-func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction string, registredEntity *EntityRegistration) []*DeploymentAction {
+func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction string, registredEntity *EntityRegistration, workerSelection ProximityWorkerSelectionFn) []*DeploymentAction {
 	if _, exist := flow.Subscriptions[subID]; exist == false {
-		fmt.Println(" ************** Inside false************")
+		DEBUG.Println(subID, "subscription does not exist any more")
 		return nil
 	}
 
 	inputSubscription := flow.Subscriptions[subID]
-	fmt.Println("********* inputSubscription***********", inputSubscription)
 	entityID := registredEntity.ID
+	DEBUG.Println(entityAction, " entity ", entityID, "from Subscription ", subID)
 	switch entityAction {
 	case "CREATE", "UPDATE":
 		//update context availability
 		if _, exist := inputSubscription.ReceivedEntityRegistrations[entityID]; exist {
-			DEBUG.Println("update an existing entity: ", entityID)
-			//update context availability
 			existEntityRegistration := inputSubscription.ReceivedEntityRegistrations[entityID]
 			existEntityRegistration.Update(registredEntity)
 		} else {
 			inputSubscription.ReceivedEntityRegistrations[entityID] = registredEntity
-			DEBUG.Println("add a new entity: ", entityID)
 		}
 
-		//update the group keyvalue table for orchestration
+		//update the group key-value table for orchestration
 		flow.updateGroupedKeyValueTable(inputSubscription, entityID)
 
 		//check what needs to be instantiated when all required inputs are available
 		if flow.checkInputAvailability() == true {
-			INFO.Println("input available")
-			return flow.expandExecutionPlan(entityID, inputSubscription)
+			return flow.expandExecutionPlan(entityID, inputSubscription, workerSelection)
 		}
 
 	case "DELETE":
@@ -205,9 +201,7 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 // for all required and subscribed context availability
 //
 func (flow *FogFlow) checkInputAvailability() bool {
-	fmt.Println("****** flow.Subscriptions **********", flow.Subscriptions)
 	for _, inputSubscription := range flow.Subscriptions {
-		fmt.Println("****** inputSubscription *******", inputSubscription.ReceivedEntityRegistrations)
 		if len(inputSubscription.ReceivedEntityRegistrations) == 0 {
 			return false
 		}
@@ -242,7 +236,7 @@ func (flow *FogFlow) checkInputsOfTaskInstance(taskCfg *TaskConfig) bool {
 	return true
 }
 
-func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *InputSubscription) []*DeploymentAction {
+func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *InputSubscription, workerSelection ProximityWorkerSelectionFn) []*DeploymentAction {
 	groups := flow.getRelevantGroups(inputSubscription, entityID)
 	deploymentActions := make([]*DeploymentAction, 0)
 
@@ -254,7 +248,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 			INFO.Printf("inputs: %+v", task.Inputs)
 			entitiesList := flow.searchRelevantEntities(&group, entityID)
 			for _, entity := range entitiesList {
-				DEBUG.Printf("input entity : %+v\r\n", entity)
+				DEBUG.Printf("====UPDATE===input entity : %+v\r\n", entity)
 				newInput := true
 				for _, input := range task.Inputs {
 					if input.ID == entity.ID {
@@ -288,6 +282,44 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 					deploymentAction.ActionInfo = flowInfo
 
 					deploymentActions = append(deploymentActions, &deploymentAction)
+				} else {
+					// check if the location if this input entity is changed
+					locationChanged := true
+					for i := 0; i < len(task.Inputs); i++ {
+						if task.Inputs[i].Location.IsEqual(&entity.Location) == false {
+							locationChanged = true
+							// update the input entities with the new location
+							task.Inputs[i].Location = entity.Location
+							break
+						}
+					}
+
+					// if the location is changed, calculate the new optimal worker assignment
+					newOptimalWorkerID := task.WorkerID
+					if locationChanged == true {
+						locations := make([]Point, 0)
+						for _, input := range task.Inputs {
+							locations = append(locations, input.Location)
+						}
+
+						selectedWorkerID := workerSelection(locations)
+						if newOptimalWorkerID != selectedWorkerID {
+							newOptimalWorkerID = selectedWorkerID
+						}
+					}
+
+					// prepare the new deployment actions for this task migration
+					if newOptimalWorkerID != task.WorkerID {
+						DEBUG.Printf("+++++ task migration is required, from %s to %s\r\n", task.WorkerID, task)
+
+						removeTaskAction := flow.removeExistingTask(task)
+						deploymentActions = append(deploymentActions, removeTaskAction)
+
+						task.WorkerID = newOptimalWorkerID
+
+						addTaskAction := flow.addNewTask(task)
+						deploymentActions = append(deploymentActions, addTaskAction)
+					}
 				}
 			}
 		} else {
@@ -296,68 +328,82 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 			task.TaskID = "Task." + flow.Intent.TopologyName + "." + flow.Intent.TaskObject.Name + "." + hashID
 			task.Operator = flow.Intent.TaskObject.Operator
 			task.Name = flow.Intent.TaskObject.Name
-
 			task.Status = "scheduled"
-
 			task.Inputs = flow.searchRelevantEntities(&group, entityID)
 			task.Outputs = flow.generateOutputs(&group)
 
 			flow.ExecutionPlan[hashID] = &task
 
+			DEBUG.Printf("new task %+v, hashID %s, taskID %s\r\n", task, hashID, task.TaskID)
+
 			//generate a deployment action
-			DEBUG.Println("new task")
-			DEBUG.Println(task)
-			DEBUG.Printf("hashID %s, taskID %s\r\n", hashID, task.TaskID)
-
-			taskInstance := ScheduledTaskInstance{}
-
-			taskInstance.ID = task.TaskID
-
-			taskInstance.TopologyName = flow.Intent.TopologyName
-			taskInstance.OperatorName = task.Operator
-			taskInstance.TaskName = task.Name
-			taskInstance.ServiceIntentID = flow.Intent.ServiceIntentID
-
-			taskInstance.IsExclusive = flow.Intent.Priority.IsExclusive
-			taskInstance.PriorityLevel = flow.Intent.Priority.Level
-			taskInstance.Status = "scheduled"
-
-			// set up its input streams
-			taskInstance.Inputs = make([]InputStream, 0)
-			for _, inputEntity := range task.Inputs {
-				instream := InputStream{}
-				instream.Type = inputEntity.Type
-				instream.ID = inputEntity.ID
-				instream.AttributeList = inputEntity.AttributeList
-
-				taskInstance.Inputs = append(taskInstance.Inputs, instream)
-			}
-
-			// set up its output streams
-			taskInstance.Outputs = make([]OutputStream, 0)
-			for _, ctxElem := range task.Outputs {
-				outstream := OutputStream{}
-				outstream.Type = ctxElem.Entity.Type
-				outstream.StreamID = ctxElem.Entity.ID
-				outstream.Annotations = ctxElem.Attributes
-
-				taskInstance.Outputs = append(taskInstance.Outputs, outstream)
-			}
-
-			// create a deployment action
-			deploymentAction := DeploymentAction{}
-			deploymentAction.ActionType = "ADD_TASK"
-			deploymentAction.ActionInfo = taskInstance
-
-			deploymentActions = append(deploymentActions, &deploymentAction)
+			deploymentAction := flow.addNewTask(&task)
+			deploymentActions = append(deploymentActions, deploymentAction)
 		}
 	}
 
 	return deploymentActions
 }
 
-func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *InputSubscription) []*DeploymentAction {
+func (flow *FogFlow) addNewTask(task *TaskConfig) *DeploymentAction {
+	taskInstance := ScheduledTaskInstance{}
 
+	taskInstance.ID = task.TaskID
+
+	taskInstance.TopologyName = flow.Intent.TopologyName
+	taskInstance.OperatorName = task.Operator
+	taskInstance.TaskName = task.Name
+	taskInstance.ServiceIntentID = flow.Intent.ServiceIntentID
+
+	taskInstance.IsExclusive = flow.Intent.Priority.IsExclusive
+	taskInstance.PriorityLevel = flow.Intent.Priority.Level
+	taskInstance.Status = "scheduled"
+
+	// set up its input streams
+	taskInstance.Inputs = make([]InputStream, 0)
+	for _, inputEntity := range task.Inputs {
+		instream := InputStream{}
+		instream.Type = inputEntity.Type
+		instream.ID = inputEntity.ID
+		instream.AttributeList = inputEntity.AttributeList
+
+		taskInstance.Inputs = append(taskInstance.Inputs, instream)
+	}
+
+	// set up its output streams
+	taskInstance.Outputs = make([]OutputStream, 0)
+	for _, ctxElem := range task.Outputs {
+		outstream := OutputStream{}
+		outstream.Type = ctxElem.Entity.Type
+		outstream.StreamID = ctxElem.Entity.ID
+		outstream.Annotations = ctxElem.Attributes
+
+		taskInstance.Outputs = append(taskInstance.Outputs, outstream)
+	}
+
+	// create a deployment action
+	deploymentAction := DeploymentAction{}
+	deploymentAction.ActionType = "ADD_TASK"
+	deploymentAction.ActionInfo = taskInstance
+
+	return &deploymentAction
+}
+
+func (flow *FogFlow) removeExistingTask(task *TaskConfig) *DeploymentAction {
+	//generate a deployment action
+	taskInstance := ScheduledTaskInstance{}
+	taskInstance.ID = task.TaskID
+	taskInstance.WorkerID = flow.DeploymentPlan[task.TaskID].WorkerID
+
+	// create a deployment action
+	deploymentAction := DeploymentAction{}
+	deploymentAction.ActionType = "REMOVE_TASK"
+	deploymentAction.ActionInfo = taskInstance
+
+	return &deploymentAction
+}
+
+func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *InputSubscription) []*DeploymentAction {
 	groups := flow.getRelevantGroups(inputSubscription, entityID)
 
 	DEBUG.Printf("removing groups = %+v\r\n", groups)
@@ -379,18 +425,9 @@ func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *Inp
 				// remove this task
 				DEBUG.Printf("removing an existing task %+v\r\n", task)
 
-				//generate a deployment action
-				taskInstance := ScheduledTaskInstance{}
-				taskInstance.ID = task.TaskID
-				taskInstance.WorkerID = flow.DeploymentPlan[task.TaskID].WorkerID
-
-				// create a deployment action
-				deploymentAction := DeploymentAction{}
-				deploymentAction.ActionType = "REMOVE_TASK"
-				deploymentAction.ActionInfo = taskInstance
-
 				// add it into the deployment action list
-				deploymentActions = append(deploymentActions, &deploymentAction)
+				deploymentAction := flow.removeExistingTask(task)
+				deploymentActions = append(deploymentActions, deploymentAction)
 
 				// remove the group key from the table
 				DEBUG.Printf(" GROUP KEY %+v\r\n", group)
@@ -436,7 +473,14 @@ func (flow *FogFlow) getLocationOfInputs(hashID string) []Point {
 
 func (flow *FogFlow) updateDeploymentPlan(scheduledTask *ScheduledTaskInstance) {
 	flow.DeploymentPlan[scheduledTask.ID] = scheduledTask
-	DEBUG.Printf("==UPDATE DEPLOYMENT PLAN== %+v\r\n", flow)
+}
+
+func (flow *FogFlow) updateExecutionPlan(scheduledTask *ScheduledTaskInstance) {
+	for _, task := range flow.ExecutionPlan {
+		if task.TaskID == scheduledTask.ID {
+			task.WorkerID = scheduledTask.WorkerID
+		}
+	}
 }
 
 func (flow *FogFlow) removeGroupKeyFromTable(groupInfo *GroupInfo) {
@@ -651,10 +695,6 @@ func (tMgr *TaskMgr) Init() {
 	tMgr.subID2FogFunc = make(map[string]string)
 }
 
-func (tMgr *TaskMgr) queryTaskIntent(taskIntent *TaskIntent) {
-
-}
-
 //
 // deal with received task intents
 //
@@ -675,9 +715,6 @@ func (tMgr *TaskMgr) handleTaskIntentUpdate(intentCtxObj *ContextObject) {
 }
 
 func (tMgr *TaskMgr) handleTaskIntent(taskIntent *TaskIntent) {
-	INFO.Println("orchestrating task intent")
-	INFO.Println(taskIntent)
-
 	tMgr.handleASynchronousTaskIntent(taskIntent)
 	// if taskIntent.SType == "SYN" {
 	// 	tMgr.handleSynchronousTaskIntent(taskIntent)
@@ -687,8 +724,7 @@ func (tMgr *TaskMgr) handleTaskIntent(taskIntent *TaskIntent) {
 }
 
 func (tMgr *TaskMgr) handleSynchronousTaskIntent(taskIntent *TaskIntent) {
-	INFO.Println("orchestrating task intent")
-	INFO.Println(taskIntent)
+	INFO.Println("[SYNC]orchestrating task intent: %+v", taskIntent)
 
 	fogflow := FogFlow{}
 
@@ -729,8 +765,7 @@ func (tMgr *TaskMgr) handleSynchronousTaskIntent(taskIntent *TaskIntent) {
 }
 
 func (tMgr *TaskMgr) handleASynchronousTaskIntent(taskIntent *TaskIntent) {
-	INFO.Println("orchestrating task intent")
-	INFO.Println(taskIntent)
+	INFO.Println("[ASYNC]orchestrating task intent: %+v", taskIntent)
 
 	fogflow := FogFlow{}
 
@@ -738,13 +773,11 @@ func (tMgr *TaskMgr) handleASynchronousTaskIntent(taskIntent *TaskIntent) {
 	fogflow.Intent = taskIntent
 
 	fID := taskIntent.TopologyName + "." + taskIntent.TaskObject.Name
-
 	task := taskIntent.TaskObject
 
 	for _, inputStreamConfig := range task.InputStreams {
 		INFO.Println(inputStreamConfig)
 		subID := tMgr.selector2Subscription(&inputStreamConfig, taskIntent.GeoScope)
-
 		if subID == "" {
 			ERROR.Printf("failed to issue a subscription for this type of input, %+v\r\n", inputStreamConfig)
 			continue
@@ -771,22 +804,18 @@ func (tMgr *TaskMgr) handleASynchronousTaskIntent(taskIntent *TaskIntent) {
 }
 
 func (tMgr *TaskMgr) removeTaskIntent(taskIntent *TaskIntent) {
-	INFO.Printf("remove the task intent")
-	INFO.Println(taskIntent)
+	INFO.Println("remove the task intent: ", taskIntent)
 
 	fID := taskIntent.TopologyName + "." + taskIntent.TaskObject.Name
 
 	// remove all related subscriptions to IoT Discovery
 	sidList := make([]string, 0)
-
 	tMgr.subID2FogFunc_lock.Lock()
-
 	for subscriptionID, functionID := range tMgr.subID2FogFunc {
 		if functionID == fID {
 			sidList = append(sidList, subscriptionID)
 		}
 	}
-
 	tMgr.subID2FogFunc_lock.Unlock()
 
 	// issue unscriptions
@@ -796,14 +825,12 @@ func (tMgr *TaskMgr) removeTaskIntent(taskIntent *TaskIntent) {
 
 	// send commands to terminate all existing task instances
 	tMgr.fogFlows_lock.Lock()
-
 	var fogflow = tMgr.fogFlows[fID]
 	for _, scheduledTaskInstance := range fogflow.DeploymentPlan {
 		tMgr.master.TerminateTask(scheduledTaskInstance)
 	}
 
 	delete(tMgr.fogFlows, fID)
-	DEBUG.Printf("~~~~~~~ remove the flow %+s, %+v ~~~~~~~~~~~~~~~~~\r\n", fID, tMgr.fogFlows)
 	tMgr.fogFlows_lock.Unlock()
 }
 
@@ -864,17 +891,19 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 		return
 	}
 
-	deploymentActions := fogflow.MetadataDrivenTaskOrchestration(subID, entityAction, entityRegistration)
+	// derive the deployment actions according to the received registration
+	deploymentActions := fogflow.MetadataDrivenTaskOrchestration(subID, entityAction, entityRegistration, tMgr.master.SelectWorker)
 	if deploymentActions == nil || len(deploymentActions) == 0 {
 		DEBUG.Println("nothing is triggered!!!")
 		return
 	}
 
+	// schedule and send out the deployment actions
 	for _, deploymentAction := range deploymentActions {
+		DEBUG.Println("[%s] %+v\r\n", deploymentAction.ActionType, deploymentAction.ActionInfo)
+
 		switch deploymentAction.ActionType {
 		case "ADD_TASK":
-			INFO.Printf("add task %+v\r\n", deploymentAction.ActionInfo)
-
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
 
 			// figure out where to deploy this task instance
@@ -885,7 +914,7 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			locations := fogflow.getLocationOfInputs(hashID)
 			selectedWorkerID := tMgr.master.SelectWorker(locations)
 			if selectedWorkerID == "" {
-				ERROR.Println("==NOT ABLE TO FIND A WORKER FOR THIS TASK===")
+				ERROR.Println("===NOT ABLE TO FIND A WORKER FOR THIS TASK===")
 				return
 			}
 
@@ -906,23 +935,20 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			// update the deployment plan
 			fogflow.updateDeploymentPlan(&scheduledTaskInstance)
 
-		case "REMOVE_TASK":
-			INFO.Printf("remove task %+v\r\n", deploymentAction.ActionInfo)
+			// reflect the worker assignment into the execution plan
+			fogflow.updateExecutionPlan(&scheduledTaskInstance)
 
+		case "REMOVE_TASK":
 			scheduledTaskInstance := deploymentAction.ActionInfo.(ScheduledTaskInstance)
 			if scheduledTaskInstance.WorkerID != "" {
 				tMgr.master.TerminateTask(&scheduledTaskInstance)
 			}
 
 		case "ADD_INPUT":
-			INFO.Printf("add input %+v\r\n", deploymentAction.ActionInfo)
-
 			flowInfo := deploymentAction.ActionInfo.(FlowInfo)
 			tMgr.master.AddInputEntity(flowInfo)
 
 		case "REMOVE_INPUT":
-			INFO.Printf("remove input %+v\r\n", deploymentAction.ActionInfo)
-
 			flowInfo := deploymentAction.ActionInfo.(FlowInfo)
 			tMgr.master.RemoveInputEntity(flowInfo)
 		}

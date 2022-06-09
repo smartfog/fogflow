@@ -141,7 +141,7 @@ func (fd *FastDiscovery) updateRegistration(registReq *RegisterContextRequest) {
 func (fd *FastDiscovery) deleteRegistration(eid string) {
 	registration := fd.repository.retrieveRegistration(eid)
 	if registration == nil {
-		DEBUG.Println("the entity registration does not exist: ", eid)
+		INFO.Println("the entity registration does not exist: ", eid)
 		return
 	}
 

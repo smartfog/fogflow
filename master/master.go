@@ -19,6 +19,8 @@ import (
 	. "fogflow/common/config"
 )
 
+type ProximityWorkerSelectionFn func(locations []Point) string
+
 type Master struct {
 	cfg *Config
 

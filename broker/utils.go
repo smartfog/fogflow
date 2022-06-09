@@ -7,6 +7,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
 
 	. "fogflow/common/ngsi"
@@ -372,9 +373,14 @@ func isNewAttribute(name string, ctxElement *ContextElement) bool {
 	return true
 }
 
-func isNewMetadata(name string, ctxElement *ContextElement) bool {
+func hasMetadataChange(curMetadata *ContextMetadata, ctxElement *ContextElement) bool {
 	for _, meta := range (*ctxElement).Metadata {
-		if meta.Name == name {
+		sameName := (meta.Name == curMetadata.Name)
+		sameValue := reflect.DeepEqual(meta.Value, curMetadata.Value)
+		DEBUG.Println(curMetadata.Name, "Domain metadata name is the same: ", sameName)
+		DEBUG.Println(curMetadata.Value, "Domain metadata value is the same: ", sameValue)
+
+		if sameName && sameValue {
 			return false
 		}
 	}
@@ -391,14 +397,16 @@ func hasUpdatedMetadata(recvElement *ContextElement, curElement *ContextElement)
 		return true
 	}
 
+	// check if there is any new attribute name, no check for the change of attribute values
 	for _, attr := range recvElement.Attributes {
 		if isNewAttribute(attr.Name, curElement) == true {
 			return true
 		}
 	}
 
+	// check if there is any update on the domain metadata, including the change of metadata values
 	for _, metadata := range recvElement.Metadata {
-		if isNewMetadata(metadata.Name, curElement) == true {
+		if hasMetadataChange(&metadata, curElement) == true {
 			return true
 		}
 	}
