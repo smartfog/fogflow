@@ -241,7 +241,7 @@ func (e *Executor) registerTask(task *ScheduledTaskInstance, portNum string, con
 }
 
 //Subscribe for the input stream
-func (e *Executor) subscribeInputStream(refURL string, corelatorID string, inputStream *InputStream) (string, error) {
+func (e *Executor) subscribeInputStream(refURL string, correlatorID string, inputStream *InputStream) (string, error) {
 	subscription := SubscribeContextRequest{}
 
 	newEntity := EntityId{}
@@ -265,7 +265,7 @@ func (e *Executor) subscribeInputStream(refURL string, corelatorID string, input
 	DEBUG.Printf(" =========== issue the following subscription: %+v\r\n", subscription)
 
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
-	sid, err := client.SubscribeContext(&subscription, corelatorID, true)
+	sid, err := client.SubscribeContext(&subscription, correlatorID, true)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err

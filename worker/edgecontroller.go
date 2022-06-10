@@ -67,6 +67,12 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 	setBrokerCmd["brokerURL"] = brokerURL
 	commands = append(commands, setBrokerCmd)
 
+	// set CorrelatorID
+	setCorrelatorCmd := make(map[string]interface{})
+	setCorrelatorCmd["command"] = "SET_CORRELATORID"
+	setCorrelatorCmd["correlatorID"] = task.ID
+	commands = append(commands, setCorrelatorCmd)
+
 	// pass the reference URL to the task so that the task can issue context subscription as well
 	setReferenceCmd := make(map[string]interface{})
 	setReferenceCmd["command"] = "SET_REFERENCE"
