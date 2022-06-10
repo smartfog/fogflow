@@ -4,10 +4,11 @@ $(function() {
     var handlers = {};
 
     addMenuItem('Operator', 'Operator', showOperator);
-    addMenuItem('DockerImage', 'Docker Image', showDockerImage);
     
-    initOperatorList();
-    initDockerImageList();    
+    showOperator();
+    
+    //initOperatorList();
+    //initDockerImageList();    
 
     $(window).on('hashchange', function() {
         var hash = window.location.hash;
@@ -95,18 +96,29 @@ $(function() {
         html += '<thead><tr>';
         html += '<th>Operator</th>';
         html += '<th>Description</th>';
-        html += '<th>#Parameters</th>';
+        html += '<th>#Images</th>';
+        html += '<th>#Parameters</th>';        
+        html += '<th>Actions</th>';        
         html += '</tr></thead>';
 
         for (var i = 0; i < operators.length; i++) {
-            html += '<tr>';
-            html += '<td>' + operators[i].name + '</td>';
-            html += '<td>' + operators[i].description + '</td>';
+            var operator = operators[i];
             
-            if ('parameters' in operators[i])
-                html += '<td>' + operators[i].parameters.length + '</td>';
+            html += '<tr>';
+            html += '<td>' + operator.name + '</td>';
+            html += '<td>' + operator.description + '</td>';
+            html += '<td>' + operator.dockerimages.length + '</td>';
+            
+            if ('parameters' in operator)
+                html += '<td>' + operator.parameters.length + '</td>';
             else
                 html += '<td>' + 0 + '</td>';
+
+            html += '<td>';            
+            html += '<button id="add-' + operator.name + '" type="button" class="btn btn-primary btn-separator">add images</button>';            
+            html += '<button id="editor-' + operator.name + '" type="button" class="btn btn-primary btn-separator">view</button>';
+            html += '<button id="delete-' + operator.name + '" type="button" class="btn btn-primary btn-separator">delete</button>';            
+            html += '</td>';
 
             html += '</tr>';
         }
@@ -114,10 +126,103 @@ $(function() {
         html += '</table>';
 
         $('#operatorList').html(html);
+        
+        // associate a click handler to the editor button
+        for (var i = 0; i < operators.length; i++) {
+            var operator = operators[i];            
+
+            var addButton = document.getElementById('add-' + operator.name);
+            addButton.onclick = function(myOperator) {
+                return function() {
+                    console.log("add buttion ", myOperator);
+                    addDockerImage(myOperator);
+                };
+            }(operator);
+
+            var editorButton = document.getElementById('editor-' + operator.name);
+            editorButton.onclick = function(myOperator) {
+                return function() {
+                    console.log("editor buttion ", myOperator);
+                    openOperatorEditor(myOperator);
+                };
+            }(operator);
+
+            var deleteButton = document.getElementById('delete-' + operator.name);
+            deleteButton.onclick = function(myOperator) {
+                return function() {
+                    console.log("delete buttion ", myOperator);
+                    deleteOperator(myOperator.name);
+                };
+            }(operator);                       
+        }                
+    }
+    
+    function deleteOperator(operatorName) {                
+        fetch("/operator/" + operatorName, {
+            method: "DELETE"
+        })
+        .then(response => {
+            console.log("delete an operator: ", response.status)
+            if (response.status == 200) {
+                showOperator();
+            } else {
+                alert("this operator can not be removed due to the dependency from existing topologies");                
+            }    
+        })
+        .catch(err => console.log(err));   
     }
     
     
-    function showOperatorEditor() {
+    function addDockerImage(operator) {
+        $('#info').html('New docker image registration');
+
+        var html = '<div id="dockerRegistration" class="form-horizontal"><fieldset>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Operator</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="operatorName" value="' + operator.name + '" disabled>';
+        html += '</div></div>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Image(*)</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="dockerImageName">';
+        html += '</div></div>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">Tag(*)</label>';
+        html += '<div class="controls"><input type="text" class="input-xlarge" id="imageTag" placeholder="latest">';
+        html += '</div></div>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">HardwareType(*)</label>';
+        html += '<div class="controls"><select id="hwType"><option>X86</option><option>ARM</option></select></div>'
+        html += '</div>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01">OSType(*)</label>';
+        html += '<div class="controls"><select id="osType"><option>Linux</option><option>Windows</option></select></div>'
+        html += '</div>';
+
+        html += '<div class="control-group"><label class="control-label" for="optionsCheckbox">Prefetched</label>';
+        html += '<div class="controls"> <label class="checkbox"><input type="checkbox" id="Prefetched" value="option1">';
+        html += 'docker image must be fetched by the platform in advance';
+        html += '</label></div>';
+        html += '</div>';
+
+        html += '<div class="control-group"><label class="control-label" for="input01"></label>';
+        html += '<div class="controls"><button id="submitRegistration" type="button" class="btn btn-primary">Register</button>';
+        html += '</div></div>';
+
+        html += '</fieldset></div>';
+
+        $('#content').html(html);
+
+        // associate functions to clickable buttons
+        $('#submitRegistration').click(registerDockerImage);
+    }    
+
+    function openOperatorEditor(myOperator) {
+        if (myOperator && myOperator.designboard) {
+            showOperatorEditor(myOperator.designboard);
+        }
+    }
+    
+    function showOperatorEditor(currentScene) {
         $('#info').html('to specify an operator');
 
         var html = '';
@@ -135,6 +240,11 @@ $(function() {
 
         blocks.types.addCompatibility('string', 'choice');
 
+        if (currentScene != null) {
+            blocks.importData(currentScene);
+            $('#generateOperator').hide();
+        }
+
         blocks.ready(function() {
             // associate functions to clickable buttons
             $('#generateOperator').click(function() {
@@ -148,7 +258,7 @@ $(function() {
         var operator = boardScene2Operator(scene);
         
         if(operator.name && operator.name != "unknown")
-            submitOperator(operator, scene);
+            submitOperator(operator);
         else
             alert('please provide the required inputs');
     }
@@ -187,6 +297,9 @@ $(function() {
                 break;
             }
         }
+        
+        operator.dockerimages = [];
+        operator.designboard = scene;
 
         return operator;
     }
@@ -216,92 +329,13 @@ $(function() {
         return parameters;
     }
 
-    function showDockerImage() {
-        $('#info').html('list of docker images in the docker registry');
-
-        var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
-        html += '<div id="dockerImageList"></div>';
-
-        $('#content').html(html);
-
-        updateDockerImageList();
-
-        $("#registerDockerImage").click(function() {
-            dockerImageRegistration();
-        });
-    }
-
-    function initDockerImageList(){                        
-        fetch('/dockerimage').then(res => res.json()).then(imageList => {
-            if (Object.keys(imageList).length === 0) {
-                var images = defaultDockerImageList();
-                fetch("/dockerimage", {
-                    method: "POST",
-                    headers: {
-                        Accept: "application/json",
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(images)
-                })
-                .then(response => {
-                    console.log("send the initial list of docker images: ", response.status)
-                })
-                .catch(err => console.log(err));
-            }               
-        })          
-    }
-
-    function dockerImageRegistration() {
-        $('#info').html('New docker image registration');
-
-        var html = '<div id="dockerRegistration" class="form-horizontal"><fieldset>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">Image(*)</label>';
-        html += '<div class="controls"><input type="text" class="input-xlarge" id="dockerImageName">';
-        html += '</div></div>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">Tag(*)</label>';
-        html += '<div class="controls"><input type="text" class="input-xlarge" id="imageTag" placeholder="latest">';
-        html += '</div></div>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">HardwareType(*)</label>';
-        html += '<div class="controls"><select id="hwType"><option>X86</option><option>ARM</option></select></div>'
-        html += '</div>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">OSType(*)</label>';
-        html += '<div class="controls"><select id="osType"><option>Linux</option><option>Windows</option></select></div>'
-        html += '</div>';
-
-        html += '<div class="control-group"><label class="control-label" for="input01">Operator(*)</label>';
-        html += '<div class="controls"><select id="OperatorList"></select>';
-        html += '</div></div>';
-
-        html += '<div class="control-group"><label class="control-label" for="optionsCheckbox">Prefetched</label>';
-        html += '<div class="controls"> <label class="checkbox"><input type="checkbox" id="Prefetched" value="option1">';
-        html += 'docker image must be fetched by the platform in advance';
-        html += '</label></div>';
-        html += '</div>';
-
-
-        html += '<div class="control-group"><label class="control-label" for="input01"></label>';
-        html += '<div class="controls"><button id="submitRegistration" type="button" class="btn btn-primary">Register</button>';
-        html += '</div></div>';
-
-        html += '</fieldset></div>';
-
-        $('#content').html(html);
-
-        queryOperatorList();
-
-        // associate functions to clickable buttons
-        $('#submitRegistration').click(registerDockerImage);
-    }
-
 
     function registerDockerImage() {
         console.log('register a new docker image');
 
         // take the inputs    
+        var operatorName = $('#operatorName').val();
+        
         var image = $('#dockerImageName').val();
 
         var tag = $('#imageTag').val();
@@ -311,7 +345,6 @@ $(function() {
 
         var hwType = $('#hwType option:selected').val();
         var osType = $('#osType option:selected').val();
-        var operatorName = $('#OperatorList option:selected').val();
 
         var prefetched = document.getElementById('Prefetched').checked;
 
@@ -331,16 +364,16 @@ $(function() {
         
         console.log([newImageObject]);        
         
-        fetch("/dockerimage", {
+        fetch("/dockerimage/" + operatorName, {
             method: "POST",
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify([newImageObject])
+            body: JSON.stringify(newImageObject)
         })
         .then(data => {
-            showDockerImage();            
+            showOperator();            
         })
         .catch(err => {
             console.log('failed to register the new docker image, ', err);
@@ -400,3 +433,86 @@ $(function() {
     }
 
 });
+
+
+
+//    function showDockerImage() {
+//        $('#info').html('list of docker images in the docker registry');
+
+//        var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
+//        html += '<div id="dockerImageList"></div>';
+
+//        $('#content').html(html);
+
+//        updateDockerImageList();
+
+//        $("#registerDockerImage").click(function() {
+//            dockerImageRegistration();
+//        });
+//    }
+
+//   function initDockerImageList(){                        
+//       fetch('/dockerimage').then(res => res.json()).then(imageList => {
+//           if (Object.keys(imageList).length === 0) {
+//               var images = defaultDockerImageList();
+//               fetch("/dockerimage", {
+//                   method: "POST",
+//                   headers: {
+//                       Accept: "application/json",
+//                       "Content-Type": "application/json"
+//                   },
+//                   body: JSON.stringify(images)
+//               })
+//               .then(response => {
+//                   console.log("send the initial list of docker images: ", response.status)
+//               })
+//               .catch(err => console.log(err));
+//           }               
+//       })          
+//   }
+
+//    function dockerImageRegistration() {
+//        $('#info').html('New docker image registration');
+
+//        var html = '<div id="dockerRegistration" class="form-horizontal"><fieldset>';
+
+//        html += '<div class="control-group"><label class="control-label" for="input01">Image(*)</label>';
+//        html += '<div class="controls"><input type="text" class="input-xlarge" id="dockerImageName">';
+//        html += '</div></div>';
+
+//        html += '<div class="control-group"><label class="control-label" for="input01">Tag(*)</label>';
+//        html += '<div class="controls"><input type="text" class="input-xlarge" id="imageTag" placeholder="latest">';
+//        html += '</div></div>';
+
+//        html += '<div class="control-group"><label class="control-label" for="input01">HardwareType(*)</label>';
+//        html += '<div class="controls"><select id="hwType"><option>X86</option><option>ARM</option></select></div>'
+//        html += '</div>';
+
+//        html += '<div class="control-group"><label class="control-label" for="input01">OSType(*)</label>';
+//        html += '<div class="controls"><select id="osType"><option>Linux</option><option>Windows</option></select></div>'
+//        html += '</div>';
+
+//        html += '<div class="control-group"><label class="control-label" for="input01">Operator(*)</label>';
+//        html += '<div class="controls"><select id="OperatorList"></select>';
+//        html += '</div></div>';
+
+//        html += '<div class="control-group"><label class="control-label" for="optionsCheckbox">Prefetched</label>';
+//        html += '<div class="controls"> <label class="checkbox"><input type="checkbox" id="Prefetched" value="option1">';
+//        html += 'docker image must be fetched by the platform in advance';
+//        html += '</label></div>';
+//        html += '</div>';
+
+
+//        html += '<div class="control-group"><label class="control-label" for="input01"></label>';
+//        html += '<div class="controls"><button id="submitRegistration" type="button" class="btn btn-primary">Register</button>';
+//        html += '</div></div>';
+
+//        html += '</fieldset></div>';
+
+//        $('#content').html(html);
+
+//        queryOperatorList();
+
+//        // associate functions to clickable buttons
+//        $('#submitRegistration').click(registerDockerImage);
+//    }

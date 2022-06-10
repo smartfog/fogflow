@@ -32,7 +32,8 @@ $(function() {
     addMenuItem('Topology', 'Service Topology', showTopologies);
     addMenuItem('Intent', 'Service Intent', showIntents);
     
-    initTopologyExamples();
+    //initTopologyExamples();
+    showTopologies();
     
     queryOperatorList();
     queryEntityTypeList();

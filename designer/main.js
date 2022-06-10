@@ -10,7 +10,6 @@ import socketio from 'socket.io'
 
 import NGSIClient from './public/lib/ngsi/ngsiclient.cjs'
 import NGSIAgent from './public/lib/ngsi/ngsiagent.cjs'
-import NGSILDAgent from './public/lib/ngsi/LDngsiagent.cjs'
 
 const globalConfigFile = JSON.parse(await fs.readFile('config.json'))
 
@@ -353,7 +352,7 @@ app.get('/info/type', async function (req, res) {
 
 
 app.get('/operator', async function (req, res) {
-    var operators = db.data.operators;
+    var operators = db.data.operators;        
     res.json(operators);
 });
 app.get('/operator/:name', async function (req, res) {
@@ -374,38 +373,59 @@ app.post('/operator', jsonParser, async function (req, res) {
     res.sendStatus(200)
 });
 
-app.get('/dockerimage', async function (req, res) {
-    var dockerimages = db.data.dockerimages;
-    res.json(dockerimages);
-});
 app.get('/dockerimage/:operator', async function (req, res) {
-    var operator = req.params.operator;
-    var imageList = [];
-
-    var dockerimages = db.data.dockerimages;
-    Object.values(dockerimages).forEach(dockerimage => {
-        if (dockerimage.operatorName == operator) {
-            imageList.push(dockerimage)
-        }
-    })
-
-    res.json(imageList);
+    var operatorName = req.params.operator;    
+    var operator = db.data.operators[operatorName];
+    res.json(operator.dockerimages);
 });
 
-app.post('/dockerimage', jsonParser, async function (req, res) {
-    var dockerimages = req.body;
-    console.log(dockerimages);
+app.post('/dockerimage/:operator', jsonParser, async function (req, res) {
+    var operatorName = req.params.operator;
+    var dockerimage = req.body;
 
-    for (var i = 0; i < dockerimages.length; i++) {
-        var dockerimage = dockerimages[i];
-        console.log(dockerimage);
-        db.data.dockerimages[dockerimage.name] = dockerimage;
-    }
+    if (operatorName in db.data.operators) {
+        db.data.operators[operatorName].dockerimages.push(dockerimage)         
+    }    
 
     await db.write();
 
     res.sendStatus(200)
 });
+
+app.delete('/operator/:name', async function (req, res) {
+    try {
+        var name = req.params.name;
+
+        var operator = db.data.operators[name];
+        if (operator === undefined) {
+            res.sendStatus(404);
+            return;
+        }
+        
+        // check if there is any dependency from existing topologies
+        var hasRelatedTopology = false;
+        for (var key in db.data.topologies) {
+            var topology = db.data.topologies[key];
+            if (hasOperator(topology, name)==true) {
+                hasRelatedTopology = true;
+                break;
+            }            
+        }
+
+        if (hasRelatedTopology) {
+            res.sendStatus(501)                    
+        } else {
+            delete db.data.operators[name];
+            await db.write();
+    
+            res.sendStatus(200)        
+        }
+    } catch (error) {
+        console.log("failed to delete the operator for ", name, ", [ERROR]", error.message);
+        res.sendStatus(404)
+    }
+});
+
 
 app.get('/topology', async function (req, res) {
     var topologies = [];
@@ -424,7 +444,6 @@ app.get('/topology/:name', async function (req, res) {
 
     var topology = db.data.topologies[name];
 
-    topology.dockerimages = [];
     topology.operators = [];
 
     // include the related docker images for the operators used by this topology
@@ -432,10 +451,8 @@ app.get('/topology/:name', async function (req, res) {
         var task = topology.tasks[i];
         var name = task.operator;
 
-        var dockerimages = getDockerImages(name);
-        var operator = getOperator(name);
-        if (operator != null) {
-            operator.dockerimages = dockerimages;
+        if (name in db.data.operators) {
+            var operator = db.data.operators[name];
             topology.operators.push(operator);
         }
     }
@@ -781,13 +798,17 @@ function getDockerImages(name) {
 }
 
 
-// return the operator for a given operator name
-function getOperator(name) {
-    if (name in db.data.operators) {
-        return db.data.operators[name];
-    } else {
-        return null
-    };
+// check if the operator is used by this topology
+function hasOperator(topology, operatorName) {
+    for (var i = 0; i < topology.tasks.length; i++) {
+        var task = topology.tasks[i];
+        
+        if (task.operator == operatorName) {
+            return true;
+        }
+    }    
+    
+    return false;
 }
 
 // publish the created metadata related to service orchestration
@@ -821,9 +842,6 @@ function handleNotify(req, ctxObjects, res) {
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
-
-NGSILDAgent.setNotifyHandler(handleNotify);
-NGSILDAgent.start(config.ldAgentPort);
 
 var webServer;
 webServer = app.listen(config.webSrvPort, function () {
