@@ -7,7 +7,8 @@ exports.handler = function(contextEntity, publish, query, subscribe)
     
     var updateEntity = {};
     updateEntity.entityId = {
-           id: entityID.replace("Device", "Result"),
+//           id: "Result" + entityID,
+           id: entityID,
            type: 'Result',
            isPattern: false
     };	    	
