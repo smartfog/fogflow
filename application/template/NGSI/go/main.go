@@ -18,7 +18,7 @@ var ctxUpdateBuffer []*ContextObject
 var isConfigured = false
 var brokerURL = ""
 var myReferenceURL = ""
-
+var myCorrelatorID = ""
 var inputEntityId = ""
 var inputEntityType = ""
 
@@ -146,6 +146,8 @@ func handleCmd(cmd ConfigCommand) {
 		setOutputs(cmd)
 	case "SET_REFERENCE":
 		setReferenceURL(cmd)
+	case "SET_CORRELATORID":
+		setCorrelatorID(cmd)
 	}
 }
 
@@ -167,6 +169,11 @@ func setOutputs(cmd ConfigCommand) {
 func setReferenceURL(cmd ConfigCommand) {
 	myReferenceURL = cmd.ReferenceURL
 	fmt.Println("your application can subscribe addtional inputs under the reference URL: " + myReferenceURL)
+}
+
+func setCorrelatorID(cmd ConfigCommand) {
+	myCorrelatorID = cmd.CorrelatorID
+	fmt.Println("set the correlatorID to avoid message looping: ", myCorrelatorID)
 }
 
 //

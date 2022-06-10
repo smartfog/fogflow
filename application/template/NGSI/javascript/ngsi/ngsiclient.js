@@ -58,7 +58,7 @@ var NGSI10Client = (function() {
     };
     
     // update context 
-    NGSI10Client.prototype.updateContext = function updateContext(ctxObj) {
+    NGSI10Client.prototype.updateContext = function updateContext(ctxObj, myHeaders) {
         contextElement = JSONObject2CtxElement(ctxObj);
         
         var updateCtxReq = {};
@@ -70,6 +70,7 @@ var NGSI10Client = (function() {
 		      
         return axios({
             method: 'post',
+            headers: myHeaders,            
             url: this.brokerURL + '/updateContext',
             data: updateCtxReq
         }).then( function(response){
@@ -129,9 +130,10 @@ var NGSI10Client = (function() {
     };    
         
     // subscribe context
-    NGSI10Client.prototype.subscribeContext = function subscribeContext(subscribeCtxReq) {        
+    NGSI10Client.prototype.subscribeContext = function subscribeContext(subscribeCtxReq, myHeaders) {        
         return axios({
             method: 'post',
+            headers: myHeaders,                        
             url: this.brokerURL + '/subscribeContext',
             data: subscribeCtxReq
         }).then( function(response){
