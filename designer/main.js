@@ -40,7 +40,6 @@ db.data ||= {
     devices: {},
     subscriptions: {},
     operators: {},
-    dockerimages: {},
     topologies: {},
     services: {},
     serviceintents: {},
@@ -388,6 +387,24 @@ app.post('/dockerimage/:operator', jsonParser, async function (req, res) {
     }    
 
     await db.write();
+
+    res.sendStatus(200)
+});
+
+app.delete('/dockerimage/:operator', jsonParser, async function (req, res) {
+    var operatorName = req.params.operator;
+    var dockerimage = req.query.image; 
+    
+    if (operatorName in db.data.operators) {       
+        for (var i=0; i<db.data.operators[operatorName].dockerimages.length; i++) {
+            if (db.data.operators[operatorName].dockerimages[i].name == dockerimage) {
+                console.log("remove the docker image: ", dockerimage);
+                db.data.operators[operatorName].dockerimages.splice(i, 1);                
+                await db.write();        
+                break;
+            }
+        }        
+    }    
 
     res.sendStatus(200)
 });
@@ -783,19 +800,6 @@ app.get('/config.js', function (req, res) {
     var data = 'var config = ' + JSON.stringify(config) + '; '
     res.end(data);
 });
-
-
-// return the docker images for a given operator name
-function getDockerImages(name) {
-    var dockerimages = [];
-    Object.values(db.data.dockerimages).forEach(dockerimage => {
-        if (dockerimage.operatorName == name) {
-            dockerimages.push(dockerimage);
-        }
-    });
-
-    return dockerimages;
-}
 
 
 // check if the operator is used by this topology

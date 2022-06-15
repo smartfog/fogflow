@@ -107,15 +107,20 @@ $(function() {
             html += '<tr>';
             html += '<td>' + operator.name + '</td>';
             html += '<td>' + operator.description + '</td>';
-            html += '<td>' + operator.dockerimages.length + '</td>';
             
-            if ('parameters' in operator)
-                html += '<td>' + operator.parameters.length + '</td>';
-            else
-                html += '<td>' + 0 + '</td>';
+            html += '<td>';
+            html += operator.dockerimages.length;                
+            html += '</td>';                                
+                        
+            if ('parameters' in operator) {
+                html += '<td>' + operator.parameters.length + '</td>';                
+            } else {
+                html += '<td>' + 0 + '</td>';                
+            }
 
             html += '<td>';            
             html += '<button id="add-' + operator.name + '" type="button" class="btn btn-primary btn-separator">add images</button>';            
+            html += '<button id="listimage-' + operator.name + '" type="button" class="btn btn-primary btn-separator">list images</button>';                        
             html += '<button id="editor-' + operator.name + '" type="button" class="btn btn-primary btn-separator">view</button>';
             html += '<button id="delete-' + operator.name + '" type="button" class="btn btn-primary btn-separator">delete</button>';            
             html += '</td>';
@@ -130,6 +135,14 @@ $(function() {
         // associate a click handler to the editor button
         for (var i = 0; i < operators.length; i++) {
             var operator = operators[i];            
+
+            var listImageButton = document.getElementById('listimage-' + operator.name);
+            listImageButton.onclick = function(myOperator) {
+                return function() {
+                    console.log("list docker images for ", myOperator);
+                    listDockerImage(myOperator.name);
+                };
+            }(operator);
 
             var addButton = document.getElementById('add-' + operator.name);
             addButton.onclick = function(myOperator) {
@@ -381,8 +394,15 @@ $(function() {
     }
 
 
-    function updateDockerImageList() {
-        fetch('/dockerimage').then(res => res.json()).then(dockerimages => {
+    function listDockerImage(myOperator) {        
+       $('#info').html('list of docker images in the docker registry');
+
+       var html = '<div id="dockerImageList"></div>';
+
+       $('#content').html(html);        
+        
+        var reqURL = '/dockerimage/' + myOperator;
+        fetch(reqURL).then(res => res.json()).then(dockerimages => {
             var imageList = Object.values(dockerimages);
             displayDockerImageList(imageList);
         })
@@ -406,6 +426,7 @@ $(function() {
         html += '<th>Hardware Type</th>';
         html += '<th>OS Type</th>';
         html += '<th>Prefetched</th>';
+        html += '<th>Action</th>';        
         html += '</tr></thead>';
 
         for (var i = 0; i < images.length; i++) {
@@ -423,6 +444,8 @@ $(function() {
             } else {
                 html += '<td>' + dockerImage.prefetched + '</td>';
             }
+            
+            html += '<td><button id="delete-image-' + i + '" type="button" class="btn btn-primary btn-separator">delete</button></td>';                        
 
             html += '</tr>';
         }
@@ -430,26 +453,50 @@ $(function() {
         html += '</table>';
 
         $('#dockerImageList').html(html);
+        
+        // associate a click handler to the editor button
+        for (var i = 0; i < images.length; i++) {
+            var dockerImage = images[i];
+            var deleteButton = document.getElementById('delete-image-' + i);
+            deleteButton.onclick = function(myDockerImage) {
+                return function() {
+                    console.log("delete docker image ", myDockerImage);
+                    deleteDockerImage(myDockerImage);
+                };
+            }(dockerImage);                       
+        }                         
+    }
+
+    function deleteDockerImage(dockerImage) {                
+        fetch("/dockerimage/" + dockerImage.operatorName + "?image=" + dockerImage.name, {
+            method: "DELETE"
+        })
+        .then(response => {
+            console.log("delete a docker image: ", response.status)
+            if (response.status == 200) {
+                listDockerImage(dockerImage.operatorName);
+            }  
+        })
+        .catch(err => console.log(err));   
     }
 
 });
 
 
 
-//    function showDockerImage() {
-//        $('#info').html('list of docker images in the docker registry');
+//   function showDockerImage(operatorName) {
+//       $('#info').html('list of docker images in the docker registry');
 
-//        var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
-//        html += '<div id="dockerImageList"></div>';
+//       var html = '<div style="margin-bottom: 10px;"><button id="registerDockerImage" type="button" class="btn btn-primary">register</button></div>';
+//       html += '<div id="dockerImageList"></div>';
 
-//        $('#content').html(html);
+//       $('#content').html(html);
 
-//        updateDockerImageList();
-
-//        $("#registerDockerImage").click(function() {
-//            dockerImageRegistration();
-//        });
-//    }
+//       updateDockerImageList(operatorName);
+////       $("#registerDockerImage").click(function() {
+////           dockerImageRegistration();
+////       });
+//   }
 
 //   function initDockerImageList(){                        
 //       fetch('/dockerimage').then(res => res.json()).then(imageList => {
