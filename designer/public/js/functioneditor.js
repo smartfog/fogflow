@@ -45,7 +45,7 @@ function registerAllBlocks(blocks, operators, dtypes) {
             {
                 name: "SelectedType",
                 type: "string",
-                choices: dtypes,                
+//                choices: dtypes,                
                 attrs: "editable"
             },
             {
