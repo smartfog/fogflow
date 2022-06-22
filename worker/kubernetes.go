@@ -127,7 +127,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 	// pass the reference URL to the task so that the task can issue context subscription as well
 	setReferenceCmd := make(map[string]interface{})
 	setReferenceCmd["command"] = "SET_REFERENCE"
-	setReferenceCmd["url"] = "http://fogflow-deployment-" + freePort + ":" + freePort
+	setReferenceCmd["url"] = "http://fogflow-task-" + freePort + ":" + freePort
 	commands = append(commands, setReferenceCmd)
 
 	// set output stream
