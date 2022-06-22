@@ -252,6 +252,10 @@ app.post('/data/photo', function (req, res) {
 
 //============= FogFlow API =================================
 
+ngsiProxy.on('error', function (err, req, res) {
+       res.end('Error occurr'+ err);
+});
+
 app.all("/ngsi10/*", function (req, res) {
     console.log('redirecting to ngsi-v1 broker', cloudBrokerURL);
     ngsiProxy.web(req, res, { target: cloudBrokerURL });
