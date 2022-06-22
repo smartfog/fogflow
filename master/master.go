@@ -140,7 +140,8 @@ func (master *Master) onTimer() {
 	// check the liveness of each worker
 	master.workerList_lock.Lock()
 	for workerID, worker := range master.workers {
-		if worker.IsLive(master.cfg.Worker.HeartbeatInterval*6) == false {
+		duration := master.cfg.Worker.HeartbeatInterval * master.cfg.Worker.DetectionDuration
+		if worker.IsLive(duration) == false {
 			delete(master.workers, workerID)
 			INFO.Println("REMOVE worker " + workerID + " from the list")
 		}
@@ -325,6 +326,7 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 		profile.Workload = 0
 		profile.Last_Heartbeat_Update = time.Now()
 		master.workers[workerID] = profile
+		INFO.Println("ADD worker ", workerID, " into the list")
 	}
 
 	master.workerList_lock.Unlock()
@@ -341,6 +343,7 @@ func (master *Master) onWorkerJoin(from string, profile *WorkerProfile) {
 		profile.Workload = 0
 		profile.Last_Heartbeat_Update = time.Now()
 		master.workers[workerID] = profile
+		INFO.Println("[JOIN] worker ", workerID, " into the list")
 	}
 
 	master.workerList_lock.Unlock()
@@ -352,6 +355,7 @@ func (master *Master) onWorkerLeave(from string, profile *WorkerProfile) {
 	workerID := profile.WID
 	if _, exist := master.workers[workerID]; exist {
 		delete(master.workers, workerID)
+		INFO.Println("[LEAVE] worker ", workerID, " into the list")
 	}
 
 	master.workerList_lock.Unlock()
