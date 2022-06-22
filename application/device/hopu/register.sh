@@ -1,5 +1,5 @@
 curl -iX POST \
-  'http://127.0.0.1:8080/device' \
+  'http://10.11.11.166:8080/device' \
   -H 'Content-Type: application/json' \
   -d '
     {

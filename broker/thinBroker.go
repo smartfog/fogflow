@@ -66,7 +66,7 @@ func (tb *ThinBroker) Start(cfg *Config) {
 	tb.main2Other = make(map[string][]string)
 
 	tb.myProfile.BID = tb.myEntityId
-	tb.myProfile.MyURL = tb.MyURL
+	tb.myProfile.MyURL = cfg.GetExternalBrokerURL()
 
 	// register itself to the IoT discovery
 	tb.registerMyself()

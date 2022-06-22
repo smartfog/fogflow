@@ -332,7 +332,7 @@ func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest) ([]Cont
 	return ctxElements, nil
 }
 
-func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, corelatorID string, requireReliability bool) (string, error) {
+func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, correlatorID string, requireReliability bool) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
@@ -341,7 +341,7 @@ func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, corelator
 	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/subscribeContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
-	req.Header.Add("Fiware-Correlator", corelatorID)
+	req.Header.Add("Fiware-Correlator", correlatorID)
 
 	if requireReliability == true {
 		req.Header.Add("Require-Reliability", "true")

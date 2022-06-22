@@ -81,6 +81,7 @@ type Config struct {
 		StartActualTask     bool                  `json:"start_actual_task"`
 		Capacity            int                   `json:"capacity"`
 		HeartbeatInterval   int                   `json:"heartbeat_interval"`
+		DetectionDuration   int                   `json:"detection_duration"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		HostIP   string `json:"host_ip"`
@@ -170,6 +171,22 @@ func (c *Config) GetBrokerURL() string {
 
 	if c.Broker.HostIP != "" {
 		hostip = c.Broker.HostIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d/ngsi10", protocol, hostip, port)
+}
+
+func (c *Config) GetExternalBrokerURL() string {
+	protocol := "http"
+	port := c.Broker.HTTPPort
+	if c.HTTPS.Enabled == true {
+		protocol = "https"
+		port = c.Broker.HTTPSPort
+	}
+
+	hostip := c.InternalIP
+	if c.ExternalIP != "" {
+		hostip = c.ExternalIP
 	}
 
 	return fmt.Sprintf("%s://%s:%d/ngsi10", protocol, hostip, port)

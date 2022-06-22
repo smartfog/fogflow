@@ -885,7 +885,6 @@ type Subscriber struct {
 	RequireReliability bool
 	BrokerURL          string
 	NotifyCache        []*ContextElement
-	LDNotifyCache      []map[string]interface{}
 	DestinationType    string
 	Tenant             string
 	Correlator         string
@@ -1191,6 +1190,7 @@ type ConfigCommand struct {
 	InputEntityType string `json:"type"`
 	InputEntityId   string `json:"id"`
 	ReferenceURL    string `json:"url"`
+	CorrelatorID    string `json:"correlatorID"`
 }
 
 //To handle RegisterContextRequest coming from IoT Agent
