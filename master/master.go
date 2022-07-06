@@ -321,6 +321,7 @@ func (master *Master) onHeartbeat(from string, profile *WorkerProfile) {
 	workerID := profile.WID
 	if worker, exist := master.workers[workerID]; exist {
 		worker.Capacity = profile.Capacity
+		worker.Workload = profile.Workload
 		worker.Last_Heartbeat_Update = time.Now()
 	} else {
 		profile.Workload = 0

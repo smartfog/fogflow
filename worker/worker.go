@@ -33,7 +33,7 @@ func (w *Worker) Start(config *Config) bool {
 	w.profile.WID = w.id
 	w.profile.Capacity = config.Worker.Capacity
 	w.profile.PLocation = config.Location
-
+	w.profile.Workload = 0
 	w.profile.OSType = runtime.GOOS
 	w.profile.HWType = runtime.GOARCH
 
@@ -100,6 +100,7 @@ func (w *Worker) Quit() {
 
 func (w *Worker) Process(msg *RecvMessage) error {
 	var err error
+	INFO.Println(msg.Type)
 
 	switch msg.Type {
 	case "ADD_TASK":
@@ -140,7 +141,15 @@ func (w *Worker) Process(msg *RecvMessage) error {
 }
 
 func (w *Worker) onTimer() {
+	w.profile.Workload = w.getNumTasks()
 	w.heartbeat()
+}
+
+func (w *Worker) getNumTasks() int {
+	w.taskList_lock.RLock()
+	defer w.taskList_lock.RUnlock()
+
+	return len(w.allTasks)
 }
 
 func (w *Worker) publishMyself() {

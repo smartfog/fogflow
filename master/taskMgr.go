@@ -390,17 +390,21 @@ func (flow *FogFlow) addNewTask(task *TaskConfig) *DeploymentAction {
 }
 
 func (flow *FogFlow) removeExistingTask(task *TaskConfig) *DeploymentAction {
-	//generate a deployment action
-	taskInstance := ScheduledTaskInstance{}
-	taskInstance.ID = task.TaskID
-	taskInstance.WorkerID = flow.DeploymentPlan[task.TaskID].WorkerID
+	if _, exist := flow.DeploymentPlan[task.TaskID]; exist {
+		//generate a deployment action
+		taskInstance := ScheduledTaskInstance{}
+		taskInstance.ID = task.TaskID
+		taskInstance.WorkerID = flow.DeploymentPlan[task.TaskID].WorkerID
 
-	// create a deployment action
-	deploymentAction := DeploymentAction{}
-	deploymentAction.ActionType = "REMOVE_TASK"
-	deploymentAction.ActionInfo = taskInstance
+		// create a deployment action
+		deploymentAction := DeploymentAction{}
+		deploymentAction.ActionType = "REMOVE_TASK"
+		deploymentAction.ActionInfo = taskInstance
 
-	return &deploymentAction
+		return &deploymentAction
+	}
+
+	return nil
 }
 
 func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *InputSubscription) []*DeploymentAction {
@@ -427,7 +431,9 @@ func (flow *FogFlow) removeExecutionPlan(entityID string, inputSubscription *Inp
 
 				// add it into the deployment action list
 				deploymentAction := flow.removeExistingTask(task)
-				deploymentActions = append(deploymentActions, deploymentAction)
+				if deploymentAction != nil {
+					deploymentActions = append(deploymentActions, deploymentAction)
+				}
 
 				// remove the group key from the table
 				DEBUG.Printf(" GROUP KEY %+v\r\n", group)
