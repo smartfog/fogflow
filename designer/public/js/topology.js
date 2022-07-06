@@ -83,7 +83,7 @@ $(function() {
     }
 
 
-    function showTopologyEditor() {
+    function showTopologyEditor(editable) {
         $('#info').html('to design a service topology');
 
         var html = '';
@@ -97,11 +97,13 @@ $(function() {
         html += '<div class="controls"><textarea class="form-control" rows="3" id="serviceDescription"></textarea>';
         html += '</div></div>';
 
-        html += '<div class="control-group"><label class="control-label">task</label><div class="controls">';
-        html += '<span>  </span><button id="cleanBoard" type="button" class="btn btn-default">Clean Board</button>';
-        html += '<span>  </span><button id="saveBoard" type="button" class="btn btn-default">Save Board</button>';
-        html += '<span>  </span><button id="generateTopology" type="button" class="btn btn-primary">Generate Topology</button>';
-        html += '</div></div>';
+        if (editable) {        
+            html += '<div class="control-group"><label class="control-label">task</label><div class="controls">';
+            html += '<span>  </span><button id="cleanBoard" type="button" class="btn btn-default">Clean Board</button>';
+            html += '<span>  </span><button id="saveBoard" type="button" class="btn btn-default">Save Board</button>';
+            html += '<span>  </span><button id="generateTopology" type="button" class="btn btn-primary">Generate Topology</button>';
+            html += '</div></div>';
+        }
 
         html += '</fieldset></div>';
 
@@ -138,7 +140,7 @@ $(function() {
     function openTopologyEditor(topologyEntity) {
         if (topologyEntity.designboard) {
             CurrentScene = topologyEntity.designboard;
-            showTopologyEditor();
+            showTopologyEditor(false);
 
             var topology = topologyEntity.topology;
             $('#serviceName').val(topology.name);
@@ -330,7 +332,7 @@ $(function() {
         $('#content').html(html);
 
         $("#registerTopology").click(function() {
-            showTopologyEditor();
+            showTopologyEditor(true);
         });
 
         // update the list of submitted topologies

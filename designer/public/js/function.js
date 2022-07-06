@@ -81,7 +81,7 @@ $(function() {
         })        
     }
 
-    function showFogFunctionEditor() {
+    function showFogFunctionEditor(editable) {
         $('#info').html('to design a fog function');
 
         var html = '';
@@ -96,17 +96,21 @@ $(function() {
         html += '<div class="controls"><textarea class="form-control" rows="3" id="serviceDescription"></textarea>';
         html += '</div></div>';
 
-        html += '<div class="control-group"><label class="control-label">topology</label><div class="controls">';
-        html += '<span>  </span><button id="cleanBoard" type="button" class="btn btn-default">Clean Board</button>';
-        html += '<span>  </span><button id="saveBoard" type="button" class="btn btn-default">Save Board</button>';
-        html += '<span>  </span><button id="generateFunction" type="button" class="btn btn-primary">Submit</button>';
-        html += '</div></div>';
+        if (editable) {
+            html += '<div class="control-group"><label class="control-label">topology</label><div class="controls">';
+            html += '<span>  </span><button id="cleanBoard" type="button" class="btn btn-default">Clean Board</button>';
+            html += '<span>  </span><button id="saveBoard" type="button" class="btn btn-default">Save Board</button>';
+            html += '<span>  </span><button id="generateFunction" type="button" class="btn btn-primary">Submit</button>';
+            html += '</div></div>';            
+        }
 
         html += '</fieldset></div>';
 
         html += '<div id="blocks" style="width:800px; height:400px"></div>';
 
         $('#content').html(html);
+
+
 
         blocks = new Blocks();
 
@@ -138,7 +142,7 @@ $(function() {
     function openFogFunctionEditor(fogfunction) {
         if (fogfunction && fogfunction.designboard) {
             CurrentScene = fogfunction.designboard;
-            showFogFunctionEditor();
+            showFogFunctionEditor(false);
 
             var topology = fogfunction.topology;
             $('#serviceName').val(topology.name);
@@ -341,7 +345,7 @@ $(function() {
         $("#registerFunction").click(function() {
             selectedFogFunction = null;
             CurrentScene = null
-            showFogFunctionEditor();
+            showFogFunctionEditor(true);
         });
 
         // update the list of submitted fog functions
