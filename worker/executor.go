@@ -38,8 +38,9 @@ type Executor struct {
 
 	worker *Worker
 
-	taskInstances map[string]*taskContext
-	taskMap_lock  sync.RWMutex
+	taskInstances           map[string]*taskContext
+	delayedAddInputCommands map[string][]*FlowInfo
+	taskMap_lock            sync.RWMutex
 }
 
 func (e *Executor) Init(cfg *Config, selectedBrokerURL string, pWorker *Worker) bool {
@@ -48,6 +49,7 @@ func (e *Executor) Init(cfg *Config, selectedBrokerURL string, pWorker *Worker) 
 	e.workerCfg = cfg
 	e.brokerURL = selectedBrokerURL
 	e.taskInstances = make(map[string]*taskContext)
+	e.delayedAddInputCommands = make(map[string][]*FlowInfo)
 
 	if strings.EqualFold(cfg.Worker.ContainerManagement, "docker") {
 		e.client = &DockerEngine{}
@@ -147,6 +149,9 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	//e.registerTask(task, refURL, containerId)
 	info := "refURL=" + refURL + "; containerID=" + containerId
 	e.worker.TaskInfo(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, info)
+
+	// check the pending ADD_INPUT commands
+	e.handleDelayedAddInputCommands(task.ID)
 
 	return true
 }
@@ -399,12 +404,24 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 	e.taskMap_lock.Lock()
 	defer e.taskMap_lock.Unlock()
 
-	taskCtx := e.taskInstances[flow.TaskInstanceID]
-	if taskCtx == nil {
-		ERROR.Println("the requested task does not exist")
-		return
-	}
+	if _, exist := e.taskInstances[flow.TaskInstanceID]; exist {
+		e.handleAddInput(flow)
+	} else {
+		ERROR.Println("the requested task does not exist, add it into the queue")
 
+		tID := flow.TaskInstanceID
+		if _, hasFlow := e.delayedAddInputCommands[tID]; hasFlow == false {
+			e.delayedAddInputCommands[tID] = make([]*FlowInfo, 0)
+		}
+		e.delayedAddInputCommands[tID] = append(e.delayedAddInputCommands[tID], flow)
+
+		INFO.Println("length of the queue = ", len(e.delayedAddInputCommands[tID]))
+	}
+}
+
+// add the specified input for an existing task
+func (e *Executor) handleAddInput(flow *FlowInfo) {
+	taskCtx := e.taskInstances[flow.TaskInstanceID]
 	subID, err := e.subscribeInputStream(taskCtx.refURL, taskCtx.TaskID, &flow.InputStream)
 	if err == nil {
 		DEBUG.Println("===========subscribe new input = ", flow, " , subID = ", subID)
@@ -412,6 +429,21 @@ func (e *Executor) onAddInput(flow *FlowInfo) {
 		taskCtx.EntityID2SubID[flow.InputStream.ID] = subID
 	} else {
 		ERROR.Println(err)
+	}
+}
+
+// handle all delayed ADD_INPUT commands
+func (e *Executor) handleDelayedAddInputCommands(taskInstanceID string) {
+	e.taskMap_lock.Lock()
+	defer e.taskMap_lock.Unlock()
+
+	if flowList, exist := e.delayedAddInputCommands[taskInstanceID]; exist {
+		INFO.Println("To handle ADD_INPUT: length = ", len(flowList))
+		for i := 0; i < len(flowList); i++ {
+			e.handleAddInput(flowList[i])
+		}
+
+		delete(e.delayedAddInputCommands, taskInstanceID)
 	}
 }
 

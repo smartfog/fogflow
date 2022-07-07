@@ -105,7 +105,6 @@ var NGSI10Client = (function() {
     
     // query context
     NGSI10Client.prototype.queryContext = function queryContext(queryCtxReq) {  
-        console.log("queryContext url *** ",this.brokerURL); 
         return axios({
             method: 'post',
             url: this.brokerURL + '/queryContext',
@@ -118,7 +117,6 @@ var NGSI10Client = (function() {
                     var obj = CtxElement2JSONObject(ctxElements[i].contextElement);
                     objectList.push(obj);
                 }
-                console.log("inside in ngsi 10 client ",objectList)
                 return objectList;
 
             } else {

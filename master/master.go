@@ -193,7 +193,6 @@ func (master *Master) prefetchDockerImages(image DockerImage) {
 }
 
 func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyContextAvailabilityRequest) {
-	INFO.Println("===========RECEIVE CONTEXT AVAILABILITY: ", notifyCtxAvailReq)
 	subID := notifyCtxAvailReq.SubscriptionId
 
 	var action string
@@ -363,8 +362,7 @@ func (master *Master) onWorkerLeave(from string, profile *WorkerProfile) {
 }
 
 func (master *Master) onTaskUpdate(from string, update *TaskUpdate) {
-	INFO.Println("==task update=========")
-	INFO.Println(update)
+	INFO.Println("[Task update]: ", update)
 }
 
 func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
@@ -474,8 +472,6 @@ func (master *Master) SelectWorker(locations []Point) string {
 	closestWorkerID := ""
 	closestTotalDistance := uint64(math.MaxUint64)
 	for _, worker := range master.workers {
-		INFO.Printf("check worker %+v\r\n", worker)
-
 		// if this worker is already overloaded, check the next one
 		if worker.IsOverloaded() == true {
 			continue
@@ -494,15 +490,12 @@ func (master *Master) SelectWorker(locations []Point) string {
 
 			distance := Distance(&wp, &location)
 			totalDistance += distance
-			INFO.Printf("distance = %d between %+v, %+v\r\n", distance, wp, location)
 		}
 
 		if totalDistance < closestTotalDistance {
 			closestWorkerID = worker.WID
 			closestTotalDistance = totalDistance
 		}
-
-		INFO.Println("closest worker ", closestWorkerID, " with the closest distance ", closestTotalDistance)
 	}
 
 	return closestWorkerID
@@ -533,7 +526,6 @@ func (master *Master) getTopologyByName(name string) *Topology {
 	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
-	INFO.Println("response Body:", string(body))
 
 	topology := Topology{}
 	jsonErr := json.Unmarshal(body, &topology)
@@ -556,8 +548,6 @@ func (master *Master) getTopologyByName(name string) *Topology {
 // to select the right docker image of an operator for the selected worker
 //
 func (master *Master) DetermineDockerImage(operatorName string, wID string) string {
-	INFO.Println("select a suitable image to execute on the selected worker")
-
 	master.workerList_lock.RLock()
 	wProfile := master.workers[wID]
 	master.workerList_lock.RUnlock()
@@ -578,9 +568,6 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	dockerimages := operator.DockerImages
 
 	for _, image := range dockerimages {
-		fmt.Println("*****image*******", image)
-		DEBUG.Println(wProfile)
-
 		hwType := "X86"
 		osType := "Linux"
 
@@ -597,8 +584,6 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 			break
 		}
 	}
-
-	DEBUG.Println(selectedDockerImageName)
 
 	return selectedDockerImageName
 }

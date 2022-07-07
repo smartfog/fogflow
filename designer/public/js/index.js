@@ -16,9 +16,6 @@ $(function () {
 
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
-    var ldclient = new NGSILDclient(config.LdbrokerURL);        
-
-    var ldDeviceObj = []
 
     addMenuItem('Architecture', showArch);
     addMenuItem('Discovery', showDiscovery);
@@ -29,7 +26,7 @@ $(function () {
     addMenuItem('Subscriptions', showSubscriptions);
     addMenuItem('uService', showEndPointService);
     addMenuItem('Task', showTasks);    
-    addMenuItem('Entity', showStreams);
+    addMenuItem('Entity', showEntities);
 
     showArch();
 
@@ -132,7 +129,6 @@ $(function () {
 
         for (var i = 0; i < masters.length; i++) {
             var master = masters[i];
-            console.log(master);
             html += '<tr><td>' + master.id + '</td><td>' + JSON.stringify(master.location) + '</td><td>' + master.agent + '</td></tr>';
         }
 
@@ -230,7 +226,6 @@ $(function () {
 
         for (var i = 0; i < workerList.length; i++) {
             var worker = workerList[i];
-            console.log(worker)
 
             var latitude = worker.location.latitude;
             var longitude = worker.location.longitude;
@@ -289,8 +284,6 @@ $(function () {
 
     function updateDeviceList() {
         fetch('/device').then(res => res.json()).then(devices => {
-            console.log("the list of all registered devices");
-            console.log(devices);
             var deviceList = Object.values(devices);
             displayDeviceList(deviceList);            
         }).catch(function(error) {
@@ -682,8 +675,6 @@ $(function () {
         });
 
         fetch('/subscription').then(res => res.json()).then(subscriptions => {
-            console.log("the list of permanent subscriptions");
-            console.log(subscriptions);
             var subscriptionList = Object.values(subscriptions);
             displaySubscriptionList(subscriptions);            
         }).catch(function(error) {
@@ -829,8 +820,6 @@ $(function () {
         $('#info').html('list of running data processing tasks');
 
         fetch('/info/task').then(res => res.json()).then(tasks => {
-            console.log("the list of tasks ");
-            console.log(tasks);
             var taskList = Object.values(tasks);
             displayTaskList(taskList);            
         }).catch(function(error) {
@@ -858,8 +847,6 @@ $(function () {
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
 
-            console.log(task);
-
             html += '<tr>';
             html += '<td>' + task.TaskID + '</td>';
             html += '<td>' + task.TopologyName + '</td>';
@@ -880,8 +867,21 @@ $(function () {
         $('#content').html(html);
     }
 
-    function showStreams() {
+    function showEntities() {
         $('#info').html('list of all entities');
+
+        var html = ''
+
+        // list all brokers
+        html += '<div class="form-horizontal"><fieldset>';
+        html += '<div class="control-group"><label class="control-label" for="input01">scope</label>';
+        html += '<div class="controls"><select id="scopeList"><option>ALL</option></select></div>'
+        html += '</div>';  
+        html += '</fieldset></div>';
+
+        html += '<div id="result"></div>';
+
+        $('#content').html(html);
 
         var queryReq = {}
         queryReq.entities = [{ id: '.*', isPattern: true }];
@@ -892,14 +892,39 @@ $(function () {
             console.log(error);
             console.log('failed to query context');
         });
+
+        fetch('/info/broker').then(res => res.json()).then(brokers => {            
+            for (var i = 0; i < brokers.length; i++) {
+                $("#scopeList").append($('<option>', {value: brokers[i].myURL, text: brokers[i].id}));
+            }
+        });        
+
+        $('#scopeList').change(function () {
+            var selectedScope = $('#scopeList option:selected').val();
+
+            if (selectedScope == "ALL") {   // query all entitities from the entire system     
+                var queryReq = {}
+                queryReq.entities = [{ id: '.*', isPattern: true }];        
+                client.queryContext(queryReq).then(function (entityList) {
+                    displayEntityList(entityList);
+                }).catch(function (error) {
+                    console.log(error);
+                    console.log('failed to query context');
+                });                    
+            } else {    // query all entitities from a selected broker
+                fetch(selectedScope + '/entity').then(res => res.json()).then(ctxElementList => {
+                    var entityList = [];
+                    for(var i=0; i<ctxElementList.length; i++) {
+                        var entityObj = CtxElement2JSONObject(ctxElementList[i]);
+                        entityList.push(entityObj)
+                    }
+                    displayEntityList(entityList);
+                });                   
+            }
+        });            
     }
 
     function displayEntityList(entities) {
-        if (entities == null || entities.length == 0) {
-            $('#content').html('');
-            return
-        }
-
         var html = '<table class="table table-striped table-bordered table-condensed">';
 
         html += '<thead><tr>';
@@ -922,7 +947,7 @@ $(function () {
 
         html += '</table>';
 
-        $('#content').html(html);
+        $('#result').html(html);
     }
 
 });

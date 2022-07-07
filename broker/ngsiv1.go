@@ -205,6 +205,8 @@ func (tb *ThinBroker) NGSIV1_UnsubscribeContext(w rest.ResponseWriter, r *rest.R
 					unsubscribeContextProvider(otherSubID, tb.subscriptions[otherSubID].Subscriber.BrokerURL, tb.SecurityCfg)
 				}
 			}
+
+			delete(tb.subscriptions, otherSubID)
 		}
 	}
 

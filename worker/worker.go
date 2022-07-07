@@ -166,6 +166,7 @@ func (w *Worker) unpublishMyself() {
 
 func (w *Worker) heartbeat() {
 	msg := SendMessage{Type: "WORKER_HEARTBEAT", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	DEBUG.Println(msg)
 	w.communicator.Publish(&msg)
 }
 

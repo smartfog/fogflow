@@ -1030,7 +1030,6 @@ type SubscribeContextAvailabilityRequest struct {
 	Duration       string      `json:"duration,omitempty"`
 	Restriction    Restriction `json:"restriction,omitempty"`
 	SubscriptionId string      `json:"subscriptionId,omitempty"`
-	FiwareService  string
 }
 
 type Subscribev2ContextAvailabilityRequest struct {
