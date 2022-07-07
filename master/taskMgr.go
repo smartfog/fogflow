@@ -283,10 +283,10 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 
 					deploymentActions = append(deploymentActions, &deploymentAction)
 				} else {
-					// check if the location if this input entity is changed
+					// check if the location in this input entity is changed
 					locationChanged := true
 					for i := 0; i < len(task.Inputs); i++ {
-						if task.Inputs[i].Location.IsEqual(&entity.Location) == false {
+						if task.Inputs[i].ID == entity.ID && task.Inputs[i].Location.IsEqual(&entity.Location) == false {
 							locationChanged = true
 							// update the input entities with the new location
 							task.Inputs[i].Location = entity.Location
@@ -310,7 +310,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 
 					// prepare the new deployment actions for this task migration
 					if newOptimalWorkerID != task.WorkerID {
-						DEBUG.Printf("+++++ task migration is required, from %s to %s\r\n", task.WorkerID, task)
+						INFO.Println("[Task migration]:", task.TaskID, " migrated from ", task.WorkerID, " to ", newOptimalWorkerID)
 
 						removeTaskAction := flow.removeExistingTask(task)
 						deploymentActions = append(deploymentActions, removeTaskAction)
