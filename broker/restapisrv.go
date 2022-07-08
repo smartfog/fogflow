@@ -71,6 +71,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		// subscrie and notify
 		rest.Post("/ngsi-ld/v1/subscriptions/", broker.NGSILD_SubcribeContext),
+		rest.Post("/ngsi-ld/v1/notifyContext", broker.NGSILD_NotifyContext),
 		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NGSILD_NotifyContext),
 		rest.Delete("/ngsi-ld/v1/subscriptions/#sid", broker.NGSILD_UnsubscribeLDContext),
 	)

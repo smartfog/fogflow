@@ -263,6 +263,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 					inputEntity := InputEntity{}
 					inputEntity.ID = entity.ID
 					inputEntity.Type = entity.Type
+					inputEntity.Location = entity.Location
 					inputEntity.AttributeList = inputSubscription.InputSelector.SelectedAttributes
 
 					task.Inputs = append(task.Inputs, inputEntity)
@@ -284,10 +285,11 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 					deploymentActions = append(deploymentActions, &deploymentAction)
 				} else {
 					// check if the location in this input entity is changed
-					locationChanged := true
+					locationChanged := false
 					for i := 0; i < len(task.Inputs); i++ {
 						if task.Inputs[i].ID == entity.ID && task.Inputs[i].Location.IsEqual(&entity.Location) == false {
 							locationChanged = true
+							DEBUG.Println("[location changed] entity: ", entity.ID)
 							// update the input entities with the new location
 							task.Inputs[i].Location = entity.Location
 							break

@@ -267,14 +267,13 @@ func (e *Executor) subscribeInputStream(refURL string, correlatorID string, inpu
 
 	subscription.Reference = refURL
 
-	DEBUG.Printf(" =========== issue the following subscription: %+v\r\n", subscription)
-
 	client := NGSI10Client{IoTBrokerURL: e.brokerURL, SecurityCfg: &e.workerCfg.HTTPS}
 	sid, err := client.SubscribeContext(&subscription, correlatorID, true)
 	if err != nil {
 		ERROR.Println(err)
 		return "", err
 	} else {
+		INFO.Println("[Create subscription] ", sid)
 		return sid, nil
 	}
 }
@@ -342,12 +341,11 @@ func (e *Executor) TerminateTask(taskID string, paused bool) {
 
 	// issue unsubscribe
 	for _, subID := range e.taskInstances[taskID].Subscriptions {
-		INFO.Println("issued subscription: ", subID)
 		err := e.unsubscribeInputStream(subID)
 		if err != nil {
 			ERROR.Println(err)
 		}
-		INFO.Printf(" subscriptions (%s) have been canceled\n", subID)
+		INFO.Println("[Cancel subscriptions]", subID)
 	}
 
 	// delete the output streams of the terminated task

@@ -185,10 +185,8 @@ type DockerImage struct {
 }
 
 type InputStream struct {
-	Type string
-	ID   string
-	// FiwareServicePath string
-	//	MsgFormat         string
+	Type          string
+	ID            string
 	AttributeList []string
 }
 
