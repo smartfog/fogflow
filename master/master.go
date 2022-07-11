@@ -221,6 +221,9 @@ func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId,
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
 		entityRegistration.Type = entityId.Type
+
+		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+		entityRegistration.MetadataList = make(map[string]ContextMetadata)
 	} else {
 		entityRegistration.ID = ctxObj.Entity.ID
 		entityRegistration.Type = ctxObj.Entity.Type
