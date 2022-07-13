@@ -208,7 +208,12 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 		// convert it to NGSI-LD
 		element := make(map[string]interface{})
 
-		element["id"] = "urn:" + elem.Entity.ID
+		if strings.HasPrefix(elem.Entity.ID, "urn:") || strings.HasPrefix(elem.Entity.ID, "URN:") {
+			element["id"] = elem.Entity.ID
+		} else {
+			element["id"] = "urn:" + elem.Entity.ID
+		}
+
 		element["type"] = elem.Entity.Type
 
 		// include all attributes from the ngsi v1 entity
