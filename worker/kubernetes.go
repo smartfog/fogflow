@@ -170,8 +170,9 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:  taskName,
-							Image: dockerImage,
+							Name:            taskName,
+							Image:           dockerImage,
+							ImagePullPolicy: "Always",
 							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http",
