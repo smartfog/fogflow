@@ -38,31 +38,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "available_entity_type",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://{{FogFlow}}:{{DISCOVERY_PORT}}/etype",
-							"protocol": "http",
-							"host": [
-								"{{FogFlow}}"
-							],
-							"port": "{{DISCOVERY_PORT}}",
-							"path": [
-								"etype"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -208,10 +183,46 @@
 					"response": []
 				},
 				{
+					"name": "query_entity_by_type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"entities\":[{\"type\":\"Temperature\",\"isPattern\":true}]}"
+						},
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/queryContext",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"ngsi10",
+								"queryContext"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "delete_entity_by_id",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
 							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/entity/Device.temp001",
 							"protocol": "http",
@@ -234,70 +245,661 @@
 			"name": "designer",
 			"item": [
 				{
-					"name": "get_master_info",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/master",
-							"protocol": "http",
-							"host": [
-								"{{FogFlow}}"
-							],
-							"port": "{{DESIGNER_PORT}}",
-							"path": [
-								"info",
-								"master"
-							]
+					"name": "system_info",
+					"item": [
+						{
+							"name": "get_master_info",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/master",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"info",
+										"master"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_broker_info",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/broker",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"info",
+										"broker"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_woker_info",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/worker",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"info",
+										"worker"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_task_info",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/task",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"info",
+										"task"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_data_types",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/type",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"info",
+										"type"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "get_broker_info",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/broker",
-							"protocol": "http",
-							"host": [
-								"{{FogFlow}}"
-							],
-							"port": "{{DESIGNER_PORT}}",
-							"path": [
-								"info",
-								"broker"
-							]
+					"name": "operator",
+					"item": [
+						{
+							"name": "register_operator",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[{\n    \"name\": \"dummy\",\n    \"description\": \"test\",\n    \"parameters\": [\n        {\n            \"name\": \"virtual_network_interface\",\n            \"value\": \"yes\"\n        }\n    ],\n    \"dockerimages\": []\n}]"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/operator",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"operator"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get_operator_list",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/operator",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"operator"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "retrieve_operator_by_name",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/operator/dummy",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"operator",
+										"dummy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_docker_image_to_operator",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"fogflow/dummy\",\n    \"hwType\": \"X86\",\n    \"osType\": \"Linux\",\n    \"operatorName\": \"dummy\",\n    \"prefetched\": false,\n    \"tag\": \"latest\"\n}\n"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/dockerimage/dummy",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"dockerimage",
+										"dummy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_docker_image_for_operator",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/dockerimage/dummy",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"dockerimage",
+										"dummy"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_docker_image_from_operator",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/dockerimage/dummy?image=fogflow/dummy",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"dockerimage",
+										"dummy"
+									],
+									"query": [
+										{
+											"key": "image",
+											"value": "fogflow/dummy"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_operator",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/dockerimage/dummy?image=fogflow/dummy",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"dockerimage",
+										"dummy"
+									],
+									"query": [
+										{
+											"key": "image",
+											"value": "fogflow/dummy"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "get_woker_info",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/worker",
-							"protocol": "http",
-							"host": [
-								"{{FogFlow}}"
-							],
-							"port": "{{DESIGNER_PORT}}",
-							"path": [
-								"info",
-								"worker"
-							]
+					"name": "service_topology",
+					"item": [
+						{
+							"name": "register_service",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[{\n    \"name\": \"dummy2\",\n    \"description\": \"test\",\n    \"parameters\": [\n        {\n            \"name\": \"virtual_network_interface\",\n            \"value\": \"yes\"\n        }\n    ],\n    \"dockerimages\": []\n},{\n    \"name\": \"dummy3\",\n    \"description\": \"test\",\n    \"parameters\": [\n        {\n            \"name\": \"virtual_network_interface\",\n            \"value\": \"yes\"\n        }\n    ],\n    \"dockerimages\": []\n}]"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/topology/test",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"topology",
+										"test"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_topology",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/topology",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"topology"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "retrieve_topology",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/topology/test1",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"topology",
+										"test1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_service",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/service",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"service"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "retrieve_service",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/service/test1",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"service",
+										"test1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_service",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/service/test1",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"service",
+										"test1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "add_intent",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topology\": \"test1\",\n    \"stype\": \"SYN\",\n    \"priority\": {\n        \"exclusive\": false,\n        \"level\": 0\n    },\n    \"qos\": \"NONE\",\n    \"geoscope\": {\n        \"scopeType\": \"global\",\n        \"scopeValue\": \"global\"\n    },\n    \"id\": \"ServiceIntent.001\"\n}"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/intent",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"intent"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_intent",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/intent",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"intent"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_intent",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topology\": \"test1\",\n    \"stype\": \"SYN\",\n    \"priority\": {\n        \"exclusive\": false,\n        \"level\": 0\n    },\n    \"qos\": \"NONE\",\n    \"geoscope\": {\n        \"scopeType\": \"global\",\n        \"scopeValue\": \"global\"\n    },\n    \"id\": \"ServiceIntent.001\"\n}"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/intent/ServiceIntent.001",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"intent",
+										"ServiceIntent.001"
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
+				},
+				{
+					"name": "fog_function",
+					"item": [
+						{
+							"name": "register_fog_function",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "[\n    {\n        \"name\": \"myTest\",\n        \"topology\": {\n            \"name\": \"myTest\",\n            \"description\": \"demo\",\n            \"tasks\": [\n                {\n                    \"name\": \"main\",\n                    \"operator\": \"dummy2\",\n                    \"input_streams\": [\n                        {\n                            \"selected_type\": \"Temperature\",\n                            \"selected_attributes\": [],\n                            \"groupby\": \"EntityID\",\n                            \"scoped\": false\n                        }\n                    ],\n                    \"output_streams\": [\n                        {\n                            \"entity_type\": \"Out\"\n                        }\n                    ]\n                }\n            ]\n        },\n        \"intent\": {\n            \"id\": \"ServiceIntent.002\",\n            \"topology\": \"myTest\",\n            \"priority\": {\n                \"exclusive\": false,\n                \"level\": 0\n            },\n            \"qos\": \"default\",\n            \"geoscope\": {\n                \"scopeType\": \"global\",\n                \"scopeValue\": \"global\"\n            }\n        },\n        \"status\": \"enabled\"\n    }\n]"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"fogfunction"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_fog_function",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"fogfunction"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "enable_fog_function_by_name",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/myTest/enable",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"fogfunction",
+										"myTest",
+										"enable"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "disenable_fog_function_by_name",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/myTest/disable",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"fogfunction",
+										"myTest",
+										"disable"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_fog_function",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"topology\": \"test1\",\n    \"stype\": \"SYN\",\n    \"priority\": {\n        \"exclusive\": false,\n        \"level\": 0\n    },\n    \"qos\": \"NONE\",\n    \"geoscope\": {\n        \"scopeType\": \"global\",\n        \"scopeValue\": \"global\"\n    },\n    \"id\": \"ServiceIntent.001\"\n}"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/mytest",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"fogfunction",
+										"mytest"
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
-		},
-		{
-			"name": "master",
-			"item": []
 		}
 	],
 	"event": [
@@ -315,7 +917,9 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					""
+					"pm.test(\"Status code is 200\", function () {",
+					"    pm.response.to.have.status(200);",
+					"});"
 				]
 			}
 		}
