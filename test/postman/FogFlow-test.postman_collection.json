@@ -572,18 +572,17 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[{\n    \"name\": \"dummy2\",\n    \"description\": \"test\",\n    \"parameters\": [\n        {\n            \"name\": \"virtual_network_interface\",\n            \"value\": \"yes\"\n        }\n    ],\n    \"dockerimages\": []\n},{\n    \"name\": \"dummy3\",\n    \"description\": \"test\",\n    \"parameters\": [\n        {\n            \"name\": \"virtual_network_interface\",\n            \"value\": \"yes\"\n        }\n    ],\n    \"dockerimages\": []\n}]"
+									"raw": "[{\n  \"topology\": {\n    \"name\": \"test1\",\n    \"description\": \"demo\",\n    \"tasks\": [\n      {\n        \"name\": \"main\",\n        \"operator\": \"dummy\",\n        \"input_streams\": [\n          {\n            \"selected_type\": \"Temperature\",\n            \"selected_attributes\": [\n              \n            ],\n            \"groupby\": \"EntityID\",\n            \"scoped\": false\n          }\n        ],\n        \"output_streams\": [\n          {\n            \"entity_type\": \"Out\"\n          }\n        ]\n      }\n    ]\n  }\n}]"
 								},
 								"url": {
-									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/topology/test",
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/service",
 									"protocol": "http",
 									"host": [
 										"{{FogFlow}}"
 									],
 									"port": "{{DESIGNER_PORT}}",
 									"path": [
-										"topology",
-										"test"
+										"service"
 									]
 								}
 							},
@@ -790,7 +789,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "[\n    {\n        \"name\": \"myTest\",\n        \"topology\": {\n            \"name\": \"myTest\",\n            \"description\": \"demo\",\n            \"tasks\": [\n                {\n                    \"name\": \"main\",\n                    \"operator\": \"dummy2\",\n                    \"input_streams\": [\n                        {\n                            \"selected_type\": \"Temperature\",\n                            \"selected_attributes\": [],\n                            \"groupby\": \"EntityID\",\n                            \"scoped\": false\n                        }\n                    ],\n                    \"output_streams\": [\n                        {\n                            \"entity_type\": \"Out\"\n                        }\n                    ]\n                }\n            ]\n        },\n        \"intent\": {\n            \"id\": \"ServiceIntent.002\",\n            \"topology\": \"myTest\",\n            \"priority\": {\n                \"exclusive\": false,\n                \"level\": 0\n            },\n            \"qos\": \"default\",\n            \"geoscope\": {\n                \"scopeType\": \"global\",\n                \"scopeValue\": \"global\"\n            }\n        },\n        \"status\": \"enabled\"\n    }\n]"
+									"raw": "[\n    {\n        \"name\": \"mytest\",\n        \"topology\": {\n            \"name\": \"mytest\",\n            \"description\": \"demo\",\n            \"tasks\": [\n                {\n                    \"name\": \"main\",\n                    \"operator\": \"dummy\",\n                    \"input_streams\": [\n                        {\n                            \"selected_type\": \"Temperature\",\n                            \"selected_attributes\": [],\n                            \"groupby\": \"EntityID\",\n                            \"scoped\": false\n                        }\n                    ],\n                    \"output_streams\": [\n                        {\n                            \"entity_type\": \"Out\"\n                        }\n                    ]\n                }\n            ]\n        },\n        \"intent\": {\n            \"id\": \"ServiceIntent.002\",\n            \"topology\": \"myTest\",\n            \"priority\": {\n                \"exclusive\": false,\n                \"level\": 0\n            },\n            \"qos\": \"default\",\n            \"geoscope\": {\n                \"scopeType\": \"global\",\n                \"scopeValue\": \"global\"\n            }\n        },\n        \"status\": \"enabled\"\n    }\n]"
 								},
 								"url": {
 									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction",
@@ -831,7 +830,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/myTest/enable",
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/mytest/enable",
 									"protocol": "http",
 									"host": [
 										"{{FogFlow}}"
@@ -839,7 +838,7 @@
 									"port": "{{DESIGNER_PORT}}",
 									"path": [
 										"fogfunction",
-										"myTest",
+										"mytest",
 										"enable"
 									]
 								}
@@ -852,7 +851,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/myTest/disable",
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/mytest/disable",
 									"protocol": "http",
 									"host": [
 										"{{FogFlow}}"
@@ -860,7 +859,7 @@
 									"port": "{{DESIGNER_PORT}}",
 									"path": [
 										"fogfunction",
-										"myTest",
+										"mytest",
 										"disable"
 									]
 								}
@@ -880,7 +879,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"topology\": \"test1\",\n    \"stype\": \"SYN\",\n    \"priority\": {\n        \"exclusive\": false,\n        \"level\": 0\n    },\n    \"qos\": \"NONE\",\n    \"geoscope\": {\n        \"scopeType\": \"global\",\n        \"scopeValue\": \"global\"\n    },\n    \"id\": \"ServiceIntent.001\"\n}"
+									"raw": ""
 								},
 								"url": {
 									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/fogfunction/mytest",
@@ -892,6 +891,142 @@
 									"path": [
 										"fogfunction",
 										"mytest"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "device",
+					"item": [
+						{
+							"name": "add_new_device",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": \"001\",\n    \"type\": \"Temperature\",\n    \"attributes\": {\n        \"protocol\": {\n            \"type\": \"string\",\n            \"value\": \"NGSI-v1\"\n        }\n    },\n    \"metadata\": {\n        \"location\": {\n            \"type\": \"point\",\n            \"value\": {\n                \"latitude\": 38.019492708382884,\n                \"longitude\": -1.17098808157607\n            }\n        }\n    }\n}"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/device",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"device"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_device",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/device",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"device"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete_new_device",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"id\": \"001\",\n    \"type\": \"Temperature\",\n    \"attributes\": {\n        \"protocol\": {\n            \"type\": \"string\",\n            \"value\": \"NGSI-v1\"\n        }\n    },\n    \"metadata\": {\n        \"location\": {\n            \"type\": \"point\",\n            \"value\": {\n                \"latitude\": 38.019492708382884,\n                \"longitude\": -1.17098808157607\n            }\n        }\n    }\n}"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/device/001",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"device",
+										"001"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "subscription",
+					"item": [
+						{
+							"name": "add_persistent_subscription",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"entity_type\": \"Temperature\",\n  \"destination_broker\": \"NGSI-LD\",\n  \"reference_url\": \"http://127.0.0.1:9090\",\n  \"tenant\": \"ccoc\"\n}"
+								},
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/subscription",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"subscription"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "list_subscription",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/subscription",
+									"protocol": "http",
+									"host": [
+										"{{FogFlow}}"
+									],
+									"port": "{{DESIGNER_PORT}}",
+									"path": [
+										"subscription"
 									]
 								}
 							},
