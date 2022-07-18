@@ -1,0 +1,350 @@
+{
+	"info": {
+		"_postman_id": "bb90a96d-8b51-4149-91cd-a755dd3a8a74",
+		"name": "FogFlow-test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5009088"
+	},
+	"item": [
+		{
+			"name": "discovery",
+			"item": [
+				{
+					"name": "lookup_nearby_broker",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n       \"entities\":[\n          {\n             \"type\":\"IoTBroker\",\n             \"isPattern\":true\n          }\n       ],\n       \"restriction\":{\n          \"scopes\":[\n             {\n                \"scopeType\":\"nearby\",\n                \"scopeValue\":{\n                   \"latitude\":35.692221,\n                   \"longitude\":139.709059,\n                   \"limit\":1\n                }\n             }\n          ]\n       }\n    }"
+						},
+						"url": {
+							"raw": "http://{{FogFlow}}:{{DISCOVERY_PORT}}/ngsi9/discoverContextAvailability",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{DISCOVERY_PORT}}",
+							"path": [
+								"ngsi9",
+								"discoverContextAvailability"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "available_entity_type",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{DISCOVERY_PORT}}/etype",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{DISCOVERY_PORT}}",
+							"path": [
+								"etype"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "broker",
+			"item": [
+				{
+					"name": "get_version",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/version",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"version"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create_new_entity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n        \"contextElements\": [\n            {\n                \"entityId\": {\n                    \"id\": \"Device.temp001\",\n                    \"type\": \"Temperature\",\n                    \"isPattern\": false\n                },\n                \"attributes\": [\n                {\n                  \"name\": \"temp\",\n                  \"type\": \"integer\",\n                  \"value\": 10\n                }\n                ],\n                \"domainMetadata\": [\n                {\n                    \"name\": \"location\",\n                    \"type\": \"point\",\n                    \"value\": {\n                        \"latitude\": 49.406393,\n                        \"longitude\": 8.684208\n                    }\n                },{\n                    \"name\": \"city\",\n                    \"type\": \"string\",\n                    \"value\": \"Heidelberg\"\n                }\n                ]\n            }\n        ],\n        \"updateAction\": \"UPDATE\"\n    }"
+						},
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/updateContext",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"ngsi10",
+								"updateContext"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_entity_list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/entity",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"ngsi10",
+								"entity"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "retrieve_entity_by_id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/entity/Device.temp001",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"ngsi10",
+								"entity",
+								"Device.temp001"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "query_entity_by_id",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"entities\":[{\"id\":\"Device.*\",\"isPattern\":true}]}"
+						},
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/queryContext",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"ngsi10",
+								"queryContext"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_entity_by_id",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{BROKER_PORT}}/ngsi10/entity/Device.temp001",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{BROKER_PORT}}",
+							"path": [
+								"ngsi10",
+								"entity",
+								"Device.temp001"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "designer",
+			"item": [
+				{
+					"name": "get_master_info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/master",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{DESIGNER_PORT}}",
+							"path": [
+								"info",
+								"master"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_broker_info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/broker",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{DESIGNER_PORT}}",
+							"path": [
+								"info",
+								"broker"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get_woker_info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{FogFlow}}:{{DESIGNER_PORT}}/info/worker",
+							"protocol": "http",
+							"host": [
+								"{{FogFlow}}"
+							],
+							"port": "{{DESIGNER_PORT}}",
+							"path": [
+								"info",
+								"worker"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "master",
+			"item": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "FogFlow",
+			"value": "127.0.0.1",
+			"type": "string"
+		},
+		{
+			"key": "DISCOVERY_PORT",
+			"value": "8090",
+			"type": "string"
+		},
+		{
+			"key": "BROKER_PORT",
+			"value": "8070",
+			"type": "string"
+		},
+		{
+			"key": "DESIGNER_PORT",
+			"value": "8080",
+			"type": "string"
+		},
+		{
+			"key": "MASTER_PORT",
+			"value": "1060",
+			"type": "string"
+		}
+	]
+}
