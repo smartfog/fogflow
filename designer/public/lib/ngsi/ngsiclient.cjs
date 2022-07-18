@@ -27,7 +27,6 @@ function CtxElement2JSONObject(e) {
 
 
 function JSONObject2CtxElement(ob) {
-    console.log('convert json object to context element') 
     var contextElement = {};
     
     contextElement.entityId = ob.entityId;
@@ -65,9 +64,7 @@ var NGSI10Client = (function() {
         updateCtxReq.contextElements = [];
         updateCtxReq.contextElements.push(contextElement)
         updateCtxReq.updateAction = 'UPDATE'
-         
-		console.log(updateCtxReq);
-		      
+         		      
         return axios({
             method: 'post',
             url: this.brokerURL + '/updateContext',

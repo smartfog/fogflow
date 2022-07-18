@@ -802,9 +802,6 @@ type EntityRegistration struct {
 	AttributesList       map[string]ContextRegistrationAttribute
 	MetadataList         map[string]ContextMetadata
 	ProvidingApplication string
-	// FiwareServicePath    string
-	// MsgFormat            string
-	// FiwareService        string
 }
 
 func (registredEntity *EntityRegistration) GetLocation() Point {

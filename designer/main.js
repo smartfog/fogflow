@@ -68,6 +68,51 @@ if (!('host_ip' in globalConfigFile.broker)) {
 var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port
 var ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL + "/ngsi10");
 
+var recheck_interval = 2000;
+var timerID = setTimeout(function entityrestore(){
+    var url = cloudBrokerURL + "/version";
+    fetch(url).then(res => {    
+        // create all persistent device entites at the FogFlow Cloud Broker
+        Object.values(db.data.devices).forEach(deviceEntity => {
+            ngsi10client.updateContext(deviceEntity).then(function (data) {
+                console.log('create the device entity ', deviceEntity.id);
+            }).catch(function (error) {
+                console.log('failed to publish the new device object: ', deviceEntity.id);
+            }); 
+        });
+        
+        // create the persistent subscriptions at the FogFlow Cloud Broker
+        Object.values(db.data.subscriptions).forEach(subscription => {        
+            var headers = {};
+        
+            if (subscription.destination_broker == 'NGSI-LD') {
+                headers["Content-Type"] = "application/json";
+                headers["Destination"] = "NGSI-LD";
+                headers["NGSILD-Tenant"] = subscription.tenant;
+            } else if (subscription.destination_broker == 'NGSIv2') {
+                headers["Content-Type"] = "application/json";
+                headers["Destination"] = "NGSIv2";        
+            }            
+            
+            var subscribeCtxReq = {};
+            subscribeCtxReq.entities = [{ type: subscription['entity_type'], isPattern: true }];
+            subscribeCtxReq.reference = subscription['reference_url'];
+            ngsi10client.subscribeContextWithHeaders(subscribeCtxReq, headers).then(function (subscriptionId) {
+                console.log("new subscription id = ", subscriptionId);
+                console.log(subscription)                
+            }).catch(function (error) {
+                console.log('failed to subscribe context, ', error);
+            });            
+        });        
+        
+    }).catch(error=>{
+        console.log("try it again due to the error: ", error.code);
+        timerID = setTimeout(entityrestore, recheck_interval);              
+    });
+   
+}, recheck_interval);
+
+
 if (config.host_ip) {
     config.agentIP = config.host_ip;
 } else {
@@ -289,11 +334,11 @@ app.get('/info/broker', async function (req, res) {
     try {
         var url = discoveryURL + "/ngsi9/broker";
         const response = await fetch(url);
-        const workers = await response.json();
-        var workerList = Array.from(Object.values(workers));
-        res.json(workerList);
+        const brokers = await response.json();
+        var brokerList = Array.from(Object.values(brokers));
+        res.json(brokerList);
     } catch (error) {
-        console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
+        console.log("failed to connect the discovery at ", url, '[ERROR CODE]', error.code);
         res.json([]);
     };
 });

@@ -217,6 +217,36 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
 	entityRegistration := EntityRegistration{}
 
+	entityRegistration.ID = entityId.ID
+	entityRegistration.Type = entityId.Type
+
+	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+	for _, ctxRegistedAttribute := range ctxRegistration.ContextRegistrationAttributes {
+		attributeRegistration := ContextRegistrationAttribute{}
+		attributeRegistration.Name = ctxRegistedAttribute.Name
+		attributeRegistration.Type = ctxRegistedAttribute.Type
+
+		entityRegistration.AttributesList[ctxRegistedAttribute.Name] = attributeRegistration
+	}
+
+	entityRegistration.MetadataList = make(map[string]ContextMetadata)
+	for _, ctxmeta := range ctxRegistration.Metadata {
+		cm := ContextMetadata{}
+		cm.Name = ctxmeta.Name
+		cm.Type = ctxmeta.Type
+		cm.Value = ctxmeta.Value
+
+		entityRegistration.MetadataList[ctxmeta.Name] = cm
+	}
+
+	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
+
+	return &entityRegistration
+}
+
+func (master *Master) contextRegistration2EntityRegistration_tbd(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
+	entityRegistration := EntityRegistration{}
+
 	ctxObj := master.RetrieveContextEntity(entityId.ID)
 	if ctxObj == nil {
 		entityRegistration.ID = entityId.ID
