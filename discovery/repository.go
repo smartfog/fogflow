@@ -7,12 +7,10 @@ import (
 )
 
 type Candidate struct {
-	ProviderURL       string
-	ID                string
-	Type              string
-	FiwareServicePath string
-	MsgFormat         string
-	Distance          uint64
+	ProviderURL string
+	ID          string
+	Type        string
+	Distance    uint64
 }
 
 type EntityRepository struct {
@@ -184,9 +182,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 		entity := EntityId{}
 		entity.ID = candidate.ID
 		entity.Type = candidate.Type
-		// entity.IsPattern = false
-		// entity.FiwareServicePath = candidate.FiwareServicePath
-		// entity.MsgFormat = candidate.MsgFormat
 
 		providerURL := candidate.ProviderURL
 		entityMap[providerURL] = append(entityMap[providerURL], entity)

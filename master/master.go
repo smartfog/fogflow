@@ -217,26 +217,34 @@ func (master *Master) onReceiveContextAvailability(notifyCtxAvailReq *NotifyCont
 func (master *Master) contextRegistration2EntityRegistration(entityId *EntityId, ctxRegistration *ContextRegistration) *EntityRegistration {
 	entityRegistration := EntityRegistration{}
 
-	entityRegistration.ID = entityId.ID
-	entityRegistration.Type = entityId.Type
+	ctxObj := master.RetrieveContextEntity(entityId.ID)
+	if ctxObj == nil {
+		entityRegistration.ID = entityId.ID
+		entityRegistration.Type = entityId.Type
 
-	entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
-	for _, ctxRegistedAttribute := range ctxRegistration.ContextRegistrationAttributes {
-		attributeRegistration := ContextRegistrationAttribute{}
-		attributeRegistration.Name = ctxRegistedAttribute.Name
-		attributeRegistration.Type = ctxRegistedAttribute.Type
+		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+		entityRegistration.MetadataList = make(map[string]ContextMetadata)
+	} else {
+		entityRegistration.ID = ctxObj.Entity.ID
+		entityRegistration.Type = ctxObj.Entity.Type
 
-		entityRegistration.AttributesList[ctxRegistedAttribute.Name] = attributeRegistration
-	}
+		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+		for attrName, attrValue := range ctxObj.Attributes {
+			attributeRegistration := ContextRegistrationAttribute{}
+			attributeRegistration.Name = attrName
+			attributeRegistration.Type = attrValue.Type
+			entityRegistration.AttributesList[attrName] = attributeRegistration
+		}
 
-	entityRegistration.MetadataList = make(map[string]ContextMetadata)
-	for _, ctxmeta := range ctxRegistration.Metadata {
-		cm := ContextMetadata{}
-		cm.Name = ctxmeta.Name
-		cm.Type = ctxmeta.Type
-		cm.Value = ctxmeta.Value
+		entityRegistration.MetadataList = make(map[string]ContextMetadata)
+		for metaname, ctxmeta := range ctxObj.Metadata {
+			cm := ContextMetadata{}
+			cm.Name = metaname
+			cm.Type = ctxmeta.Type
+			cm.Value = ctxmeta.Value
 
-		entityRegistration.MetadataList[ctxmeta.Name] = cm
+			entityRegistration.MetadataList[metaname] = cm
+		}
 	}
 
 	entityRegistration.ProvidingApplication = ctxRegistration.ProvidingApplication
