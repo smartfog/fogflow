@@ -59,6 +59,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 		// update
 		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.NGSILD_UpdateContext),
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert/", broker.NGSILD_UpdateContext),
 		rest.Post("/ngsi-ld/v1/entities/", broker.NGSILD_CreateEntity),
 		rest.Post("/ngsi-ld/v1/entities", broker.NGSILD_CreateEntity),
 		rest.Delete("/ngsi-ld/v1/entities/#eid", broker.NGSILD_DeleteEntity),
