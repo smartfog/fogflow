@@ -6,7 +6,6 @@ $(function() {
         scopeType: "local",
         scopeValue: "local"
     };
-    console.log("call to utility function ",testfunction())
     var RuleSet = { threshold: 30 };
     var curTopology = null;
     var curIntent = null;
@@ -29,8 +28,7 @@ $(function() {
 
     //connect to the broker
     var client = new NGSI10Client(config.brokerURL);
-    // connect to internal server
-    var clientDes = new NGSI10Client('./internal');
+        
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -92,116 +90,39 @@ $(function() {
     }
 
     function checkTopology() {
-        var queryReq = {}
-        //queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
-        var name = "anomaly-detection"
-        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(resultList) {
+        fetch('/topology/anomaly-detection').then(res => res.json()).then(topology => {
+            if (Object.keys(topology).length > 0) { //non-empty       
+                curTopology = topology;   
+            }
             
-            if (resultList.data && resultList.data.length > 0) {
-                console.log("check topology ",isDataExists(name,resultList.data));
-                var cTopolody = isDataExists(name,resultList.data);
-                if (cTopolody.length != 0) {
-                    curTopology = cTopolody[0];
-                }
-            }
-
-            showTopology();
+            showTopology();                   
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required topology');
+       });        
     }
+    
     function checkIntent() {
-        var queryReq = {};
-       // queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
-        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        scopeValue = 'anomaly-detection'
-        clientDes.getContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList.data && resultList.data.length > 0) {
-                var result = resultList.data.filter(x => x.topology === scopeValue);
-                if (result.length > 0) {
-                    console.log("service intent result ---- ",result);
-                    curIntent = result[0];
-                    //update the current geoscope as well
-                    geoscope = result[0].geoscope;
-                }
-                
-            }
+        fetch('/intent/topology/anomaly-detection').then(res => res.json()).then(intent => {
+            if (Object.keys(intent).length > 0) { //non-empty 
+                curIntent = intent; 
+                //update the current geoscope as well
+                geoscope = intent[0].geoscope;                 
+            }              
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required intent');
+       });    
     }
    
-
 
     function showTopology() {
         $('#info').html('IoT service topology');
 
         var html = '';
-        html += '<div class="input-prepend">';
-
-        if (curTopology) {
-            html += '<button id="submitTopology" type="button" class="btn btn-default" disabled>submit</button>';
-        } else {
-            html += '<button id="submitTopology" type="button" class="btn btn-default">submit</button>';
-        }
-
-        html += '<input id="loadTopology" type="file" style="display: none;" accept=".json"></input>';
-        html += '</div> ';
-
         html += '<div><img src="/img/anomaly.jpg"></img></div>';
 
         $('#content').html(html);
-
-        // associate functions to clickable buttons
-        $('#loadTopology').change(loadTopologyFile);
-        $('#submitTopology').click(function() {
-            $('#loadTopology').trigger('click');
-        });
-    }
-
-    function submitTopology(topology) {
-        console.log('submit a topology ', topology);
-
-        var topologyCtxObj = {};
-
-    
-
-        topologyCtxObj.attributes = topology ;
-        topologyCtxObj.internalType = 'Topology';
-        topologyCtxObj.updateAction = 'UPDATE';
-
-        clientDes.updateContext(topologyCtxObj).then(function(data) {
-            console.log(data);
-            // update the current topology
-            curTopology = topologyCtxObj;
-        }).catch(function(error) {
-            console.log('failed to submit the topology');
-        });
-
-        //disable the submit button
-        $('#submitTopology').prop('disabled', true);
-    }
-
-    function loadTopologyFile(evt) {
-        var files = evt.target.files;
-
-        if (files && files[0]) {
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    json = JSON.parse(e.target.result);
-                    submitTopology(json);
-                } catch (ex) {
-                    alert('error when trying to load topology file');
-                }
-            }
-            reader.readAsText(files[0]);
-        }
     }
 
     function showMgt() {
@@ -209,6 +130,8 @@ $(function() {
 
         var html = '';
         html += '<div class="input-prepend">';
+        
+        console.log(curIntent);
 
         if (curIntent == null) {
             html += '<button id="enableService" type="button" class="btn btn-default">Start</button>';
@@ -233,88 +156,63 @@ $(function() {
     }
 
     function sendIntent() {
-        if (clientDes == null) {
-            console.log('no nearby broker');
-            return;
-        }
-
         console.log('issue an service intent for this service topology ', curTopology);
-
-        var topology = curTopology.name
         var intent = {};
-        var intentCtxObj = {};
-        var attribute = {};
-        attribute.topology = topology;
-        attribute.priority = {
+        
+        intent.topology = "anomaly-detection";
+        intent.stype = "Asynchronous";
+        intent.priority = {
             'exclusive': false,
-            'level': 50
+            'level': 0
         };
-        attribute.qos = "default";
-        attribute.geoscope = geoscope;
-        attribute.id = 'ServiceIntent.' + uuid();
-        attribute.action= 'UPDATE'
-
-      
-        console.log(JSON.stringify(intentCtxObj));
-        intentCtxObj.attribute = attribute;
-        intentCtxObj.internalType = "ServiceIntent";
-        intentCtxObj.updateAction = "UPDATE";
-        clientDes.updateContext(intentCtxObj).then(function(data) {
-            console.log(data);
-            curIntent = intentCtxObj;
+        intent.qos = "Min-cost";
+        intent.geoscope = geoscope;        
+        intent.id = 'ServiceIntent.' + uuid();
+        
+        fetch("/intent", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(intent)
+        })
+        .then(response => {
+            console.log("issue a new intent: ", response.status)
+            curIntent = intent;
 
             // change the button status
             $('#enableService').prop('disabled', true);
             $('#disableService').prop('disabled', false);
-        }).catch(function(error) {
-            console.log('failed to submit the defined intent');
-        });
+        })
+        .catch(err => console.log(err));  
     }
 
     function cancelIntent() {
-        if (clientDes == null) {
-            console.log('no nearby broker');
-            return;
-        }
-
-
-        var sInent = {};
-        var attribute = {id:curIntent.id, action:'DELETE'}
-        sInent.attribute = attribute
-        sInent.updateAction = 'DELETE';
-        sInent.internalType = 'ServiceIntent';
-        sInent.uid = curIntent.uid
-
-        clientDes.deleteContext(sInent).then(function(data) {
-            console.log(data);
-            curIntent = null;
-            geoscope = {
-                scopeType: "local",
-                scopeValue: "local"
-            };
-
+        fetch("/intent/" + curIntent.id, {
+            method: "DELETE"
+        })
+        .then(data => {
             $('#enableService').prop('disabled', false);
             $('#disableService').prop('disabled', true);
-        }).catch(function(error) {
-            console.log('failed to cancel the service intent');
-        });
+        })
+        .catch(err => console.log(err));           
     }
-
 
     function showTasks() {
         $('#info').html('list of running data processing tasks');
+        
+        console.log("current intent id: ", curIntent.id);
 
-        var queryReq = {}
-        queryReq.entities = [{ type: 'Task', isPattern: true }];
-        queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=anomaly-detection' }] }
-
-        client.queryContext(queryReq).then(function(taskList) {
-            console.log(taskList);
-            displayTaskList(taskList);
+        fetch('/info/task/' + curIntent.id).then(res => res.json()).then(tasks => {
+            console.log("the list of tasks ");
+            console.log(tasks);
+            var taskList = Object.values(tasks);
+            displayTaskList(taskList);            
         }).catch(function(error) {
             console.log(error);
-            console.log('failed to query task');
-        });
+            console.log('failed to fetch the list of create tasks');
+        });  
     }
 
 
@@ -332,24 +230,25 @@ $(function() {
         html += '<th>ID</th>';
         html += '<th>Service</th>';
         html += '<th>Task</th>';
-        html += '<th>worker</th>';
-        html += '<th>port</th>';
-        html += '<th>status</th>';
+        html += '<th>Worker</th>';
+        html += '<th>Status</th>';
         html += '</tr></thead>';
 
         for (var i = 0; i < tasks.length; i++) {
             var task = tasks[i];
-            html += '<tr>';
-            html += '<td>' + task.attributes.id.value + '</td>';
-            html += '<td>' + task.attributes.service.value + '</td>';
-            html += '<td>' + task.attributes.task.value + '</td>';
-            html += '<td>' + task.attributes.worker.value + '</td>';
-            html += '<td>' + task.attributes.port.value + '</td>';
 
-            if (task.attributes.status.value == "paused") {
-                html += '<td><font color="red">' + task.attributes.status.value + '</font></td>';
+            console.log(task);
+
+            html += '<tr>';
+            html += '<td>' + task.TaskID + '</td>';
+            html += '<td>' + task.TopologyName + '</td>';
+            html += '<td>' + task.TaskName + '</td>';
+            html += '<td>' + task.Worker + '</td>';            
+
+            if (task.Status == "paused") {
+                html += '<td><font color="red">' + task.Status + '</font></td>';
             } else {
-                html += '<td><font color="green">' + task.attributes.status.value + '</font></td>';
+                html += '<td><font color="green">' + task.Status + '</font></td>';
             }
 
             html += '</tr>';

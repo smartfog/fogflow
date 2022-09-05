@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: fogflow                      
   name: rabbitmq
 spec:
   selector:
@@ -23,13 +22,12 @@ spec:
           value: mypass
         - name: RABBITMQ_DEFAULT_USER
           value: admin          
-      serviceAccountName: default     
+
 ---          
           
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow                      
   name: rabbitmq
   labels:
     run: rabbitmq
@@ -41,6 +39,5 @@ spec:
       targetPort: 5672
   selector:
     run: rabbitmq
-  externalIPs: [172.30.48.24]
-
+  externalIPs: [10.0.0.10]
 

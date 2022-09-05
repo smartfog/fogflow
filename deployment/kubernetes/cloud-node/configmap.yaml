@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   config.json: |
         {
-            "my_hostip": "172.30.48.24",
+            "my_hostip": "10.0.0.10",
             "physical_location":{
                 "longitude": 139.709059,
                 "latitude": 35.692221
@@ -15,66 +15,42 @@ data:
                 "debug": "stdout"
             },
             "discovery": {
+                "host_ip":"discovery",
                 "http_port": 8090
             },
-            "broker": {              
+            "broker": {     
+                "host_ip":"cloudbroker",                     
                 "http_port": 8070
             },     
-            "master": {                        
-                "ngsi_agent_port": 1060    
+            "master": {       
+                "host_ip":"master",                                                  
+                "ngsi_agent_port": 1060,
+                "rest_api_port": 8010                                                
             },
             "worker": {
+                "container_management": "kubernetes", 
+                "app_namespace": "fogflow-cloud",
                 "container_autoremove": false,
                 "start_actual_task": true,
                 "capacity": 8
             },
-            "designer": {                       
+            "designer": {   
+                "host_ip":"designer",                                                     
                 "webSrvPort": 8080,
-                "agentPort": 1030               
+                "agentPort": 1030,
+                "ldAgentPort":1090                               
             },    
-            "rabbitmq": {                                     
+            "rabbitmq": {     
                 "port": 5672,
                 "username": "admin",
                 "password":"mypass"
             },
             "https": {
                 "enabled" : false
-            },
-            "persistent_storage": {                                                      
-                "port": 9080
             } 
-        }
-
-  nginx.conf: |
-        events {
-          worker_connections  4096;  
-        }
-        
-        http {
-            server { 
-                listen              80;
-                server_name         www.fogflow.io;
-        
-                location / {
-                    proxy_pass   http://designer:8080/;
-                }
-        
-                location /ngsi9/ {
-                    proxy_pass   http://discovery:8090/ngsi9/;
-                }
-        
-                location /ngsi10/ {
-                    proxy_pass   http://cloudbroker:8070/ngsi10/;
-                }
-            
-                location /ngsi-ld/ {
-                    proxy_pass   http://cloudbroker:8070/ngsi-ld/;
-                }
-            }
         }
 
 kind: ConfigMap
 metadata:
-  namespace: fogflow
   name: fogflow-configmap
   resourceVersion: "v3.2.2"

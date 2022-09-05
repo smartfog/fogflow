@@ -1,36 +1,39 @@
+import subprocess
+from embedding import kNNEmbeddingEngine
+from scipy import ndimage
+import numpy as np
+from PIL import Image
+import time
+from picamera import PiCamera
+import io
+import RPi.GPIO as GPIO  # Import Raspberry Pi GPIO library
 print('Initializing...')
 
-import RPi.GPIO as GPIO # Import Raspberry Pi GPIO library
 
-## imports 
+# imports
 # camera
-import io
-from picamera import PiCamera
-import time
 # images
-from PIL import Image
 #import matplotlib.pyplot as plt
-import numpy as np
-from scipy import ndimage
 
 # edge-tpu
-from embedding import kNNEmbeddingEngine
 
-import subprocess
 
-GPIO.setwarnings(False) # Ignore warning for now
-GPIO.setmode(GPIO.BOARD) # Use physical pin numbering
-GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 10 to be an input pin and set initial value to be pulled low (off)
-GPIO.setup(11, GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 11 to be an input pin and set initial value to be pulled low (off)
-GPIO.setup(13, GPIO.OUT) # For LED.
+GPIO.setwarnings(False)  # Ignore warning for now
+GPIO.setmode(GPIO.BOARD)  # Use physical pin numbering
+# Set pin 10 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(10, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+# Set pin 11 to be an input pin and set initial value to be pulled low (off)
+GPIO.setup(11, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(13, GPIO.OUT)  # For LED.
 
-## parameter configuration
+# parameter configuration
 model_path = "test_data/mobilenet_v2_1.0_224_quant_edgetpu.tflite"
 width = 224
 height = 224
 
 kNN = 3
 engine = kNNEmbeddingEngine(model_path, kNN)
+
 
 def capture_image():
     stream = io.BytesIO()
@@ -42,18 +45,20 @@ def capture_image():
     # Return image converted to PIL.
     return Image.open(stream)
 
+
 def show_image(image):
     #plt.imshow(ndimage.rotate(np.asarray(image), 180))
-    #plt.axis('off')
-    #plt.show()
+    # plt.axis('off')
+    # plt.show()
     pass
-    
-## learning
+
+
+# learning
 labels = ["good_block", "bad_block"]
 count = 1
 
 print('Ready')
-while True: # Run forever
+while True:  # Run forever
     if GPIO.input(10) == GPIO.HIGH or GPIO.input(11) == GPIO.HIGH:
         time.sleep(0.1)
         s10 = GPIO.input(10)
@@ -61,11 +66,11 @@ while True: # Run forever
         if s10 == GPIO.HIGH and s11 == GPIO.HIGH:
             # Reset model.
             engine = kNNEmbeddingEngine(model_path, kNN)
-            GPIO.output(13,GPIO.LOW)
+            GPIO.output(13, GPIO.LOW)
             for _ in range(3):
-                GPIO.output(13,GPIO.HIGH)
+                GPIO.output(13, GPIO.HIGH)
                 time.sleep(0.1)
-                GPIO.output(13,GPIO.LOW)
+                GPIO.output(13, GPIO.LOW)
                 time.sleep(0.1)
             print("Both buttons pushed")
             pass
@@ -74,11 +79,11 @@ while True: # Run forever
             if s10 == GPIO.HIGH:
                 print("Button 1 was pushed!")
                 label = labels[0]
-                GPIO.output(13,GPIO.HIGH)
+                GPIO.output(13, GPIO.HIGH)
             elif s11 == GPIO.HIGH:
                 print("Button 2 was pushed!")
                 label = labels[1]
-                
+
             print("Object: " + label)
             image = capture_image()
             show_image(image)

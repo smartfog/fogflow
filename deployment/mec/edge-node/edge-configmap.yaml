@@ -1,0 +1,47 @@
+apiVersion: v1
+data:
+  config.json: |
+        {
+           "coreservice_ip": "10.11.11.166",
+           "my_hostip": "10.7.3.166",
+           "physical_location":{
+                "longitude": 36.4,
+                "latitude": 138.5
+           },
+           "site_id": "002",
+           "logging":{
+                "info":"stdout",
+                "error":"stdout",
+                "protocol": "stdout",
+                "debug": "stdout"
+           },
+           "discovery": {
+                "http_port": 80
+           },
+           "broker": {
+                "http_port": 80
+           },
+           "worker": {
+                "container_management": "mec", 
+                "edge_controller_port": 31125,            
+                "container_autoremove": false,
+                "start_actual_task": true,
+                "capacity": 4
+           },
+           "rabbitmq": {
+                "port": 5672,
+                "username": "admin",
+                "password":"mypass"
+           },
+           "https": {
+                "enabled" : false
+           }
+        }
+
+
+kind: ConfigMap
+metadata:
+  namespace: fogflow
+  name: edge-configmap
+  resourceVersion: "v3.2.2"
+

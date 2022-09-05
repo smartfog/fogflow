@@ -1,10 +1,8 @@
 {
-    "coreservice_ip": "192.168.0.59",
-    "external_ip": "192.168.0.59",
-    "my_hostip": "192.168.0.59",
+    "my_hostip": "127.0.0.1",
     "physical_location":{
-        "longitude": 139,
-        "latitude": 35
+        "longitude": 139.709059,
+        "latitude": 35.692221
     },
     "site_id": "001",
     "logging":{
@@ -17,15 +15,18 @@
         "http_port": 8090
     },
     "broker": {
-        "http_port": 8070
+        "http_port": 8070,
+        "heartbeat_interval": 30                          
     },     
     "master": {
-        "ngsi_agent_port": 1060    
+        "ngsi_agent_port": 1060,    
+        "rest_api_port": 8010     
     },
     "worker": {
         "container_autoremove": false,
         "start_actual_task": true,
-        "capacity": 8
+        "capacity": 8,
+        "heartbeat_interval": 30                          
     },
     "designer": {
         "webSrvPort": 8080,
@@ -37,6 +38,12 @@
         "password":"mypass"
     },
     "https": {
-        "enabled" : false
+        "enabled" : false,
+        "my_certificate": "cloud_node.pem",
+        "my_key": "cloud_node.key",
+        "my_ca": "root_ca.pem"        
+    },
+    "persistent_storage": {
+        "port": 9082
     } 
 }

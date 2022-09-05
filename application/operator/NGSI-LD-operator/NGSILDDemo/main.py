@@ -70,9 +70,9 @@ def object2Element(ctxObj):
 
     for key in ctxObj:
         if key != 'id' and key != 'type' and key != 'modifiedAt' \
-            and key != 'createdAt' and key != 'observationSpace' \
-            and key != 'operationSpace' and key != 'location' and key \
-            != '@context':
+                and key != 'createdAt' and key != 'observationSpace' \
+                and key != 'operationSpace' and key != 'location' and key \
+                != '@context':
             if ctxObj[key].has_key('createdAt'):
                 ctxObj[key].pop('createdAt')
             if ctxObj[key].has_key('modifiedAt'):
@@ -96,6 +96,7 @@ def readContextElements(data):
 def handleNotify(contextObjs):
     for ctx in contextObjs:
         fogflow.handleEntity(ctx, publishResult)
+
 
 def handleConfig(configurations):
     global brokerURL
@@ -154,8 +155,8 @@ def fetchInputByQuery():
         jsonResult = response.json()
 
         ctxObj = element2Object(jsonResult)
-	ctxElments = []
-	ctxElments.append(ctxObj)
+        ctxElments = []
+        ctxElments.append(ctxObj)
         return ctxElments
 
 
@@ -166,10 +167,10 @@ def requestInputBySubscription():
 
     if id in input:
         ctxSubReq['entities'].append({'id': input['id'],
-                'isPattern': False})
+                                      'isPattern': False})
     else:
         ctxSubReq['entities'].append({'type': input['type'],
-                'isPattern': True})
+                                      'isPattern': True})
 
     subrequestUri['uri'] = 'http://host.docker.internal:' \
         + os.getenv('myport')
@@ -253,4 +254,3 @@ if __name__ == '__main__':
         runInOperationMode()
     else:
         runInTestMode()
-

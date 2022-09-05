@@ -70,9 +70,9 @@ def object2Element(ctxObj):
 
     for key in ctxObj:
         if key != 'id' and key != 'type' and key != 'modifiedAt' \
-            and key != 'createdAt' and key != 'observationSpace' \
-            and key != 'operationSpace' and key != 'location' and key \
-            != '@context':
+                and key != 'createdAt' and key != 'observationSpace' \
+                and key != 'operationSpace' and key != 'location' and key \
+                != '@context':
             if ctxObj[key].has_key('createdAt'):
                 ctxObj[key].pop('createdAt')
             if ctxObj[key].has_key('modifiedAt'):
@@ -138,11 +138,11 @@ def publishResult(ctxObj):
         print 'Successfully updated'
         print response.text
     elif response.status_code == 207:
-	print 'Failed to update some  entity'
-	print response.text
+        print 'Failed to update some  entity'
+        print response.text
     else:
-	print "failed to update"
-	print response.text
+        print "failed to update"
+        print response.text
 
 
 def fetchInputByQuery():
@@ -161,7 +161,7 @@ def fetchInputByQuery():
         jsonResult = response.json()
 
         ctxObj = element2Object(jsonResult)
-	ctxElments = []
+        ctxElments = []
         ctxElments.append(ctxObj)
         return ctxElments
 
@@ -173,10 +173,10 @@ def requestInputBySubscription():
 
     if id in input:
         ctxSubReq['entities'].append({'id': input['id'],
-                'isPattern': False})
+                                      'isPattern': False})
     else:
         ctxSubReq['entities'].append({'type': input['type'],
-                'isPattern': True})
+                                      'isPattern': True})
 
     subrequestUri['uri'] = 'http://host.docker.internal:' \
         + os.getenv('myport')
@@ -231,6 +231,7 @@ def notify2execution():
 
 '''
 
+
 def runInOperationMode():
     print("===== OPERATION MODEL========")
     global brokerURL
@@ -238,7 +239,7 @@ def runInOperationMode():
     myCfg = os.getenv('adminCfg')
 
     print(myCfg)
-    if myCfg != None :
+    if myCfg != None:
 
         adminCfg = json.loads(myCfg)
         handleConfig(adminCfg)
@@ -252,6 +253,7 @@ def runInOperationMode():
 
 # one time execution triggered by query
 
+
 def query2execution():
     ctxObjects = fetchInputByQuery()
     handleNotify(ctxObjects)
@@ -260,6 +262,8 @@ def query2execution():
 '''
         read config File
 '''
+
+
 def readConfig():
 
     # load the configuration
@@ -268,9 +272,11 @@ def readConfig():
         print config
         handleConfig(config)
 
+
 '''
         Query from FogFlow broker to run the code in test mode
 '''
+
 
 def runInTestMode():
     print '===== TEST NGSILD MODEL========'
@@ -286,4 +292,3 @@ if __name__ == '__main__':
         runInOperationMode()
     else:
         runInTestMode()
-

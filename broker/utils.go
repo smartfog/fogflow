@@ -2,42 +2,39 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"fmt"
-	//	. "fogflow/common/constants"
-	. "fogflow/common/constants"
-	. "fogflow/common/ngsi"
-
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strings"
-	"sync"
-	"time"
 
-	"github.com/piprate/json-gold/ld"
+	. "fogflow/common/ngsi"
 )
 
-func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, IsOrionBroker bool, httpsCfg *HTTPS) error {
-	//INFO.Println("NOTIFY: ", URL)
-	elementRespList := make([]ContextElementResponse, 0)
+func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, DestinationBrokerType string, tenant string, httpsCfg *HTTPS) error {
+	INFO.Println("destionation protocol: ", DestinationBrokerType)
 
-	if IsOrionBroker == true {
-		return postOrionV2NotifyContext(ctxElems, URL, subscriptionId)
+	switch DestinationBrokerType {
+	case "NGSI-LD":
+		return postNGSILDUpsert(ctxElems, subscriptionId, URL, tenant)
+	case "NGSIv2":
+		return postNGSIV2NotifyContext(ctxElems, subscriptionId, URL, tenant)
+	default:
+		return postNGSIV1NotifyContext(ctxElems, subscriptionId, URL, httpsCfg)
 	}
+}
 
-	for _, elem := range ctxElems {
-		elementResponse := ContextElementResponse{}
-		elementResponse.ContextElement = elem
-		elementResponse.StatusCode.Code = 200
-		elementResponse.StatusCode.ReasonPhrase = "OK"
+// for ngsiv1 consumer
+func postNGSIV1NotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, httpsCfg *HTTPS) error {
+	INFO.Println("NGSIv1 NOTIFY: ", URL)
 
-		elementRespList = append(elementRespList, elementResponse)
-	}
+	payload := toNGSIv1Payload(ctxElems)
 
 	notifyCtxReq := &NotifyContextRequest{
 		SubscriptionId:   subscriptionId,
-		ContextResponses: elementRespList,
+		ContextResponses: payload,
 	}
 
 	body, err := json.Marshal(notifyCtxReq)
@@ -67,24 +64,63 @@ func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL str
 	return nil
 }
 
-type OrionV2NotifyContextRequest struct {
-	SubscriptionId string                   `json:"subscriptionId"`
-	Entities       []map[string]interface{} `json:"data"`
+func toNGSIv1Payload(ctxElems []ContextElement) []ContextElementResponse {
+	elementRespList := make([]ContextElementResponse, 0)
+
+	for _, elem := range ctxElems {
+		elementResponse := ContextElementResponse{}
+		elementResponse.ContextElement = elem
+		elementResponse.StatusCode.Code = 200
+		elementResponse.StatusCode.ReasonPhrase = "OK"
+
+		elementRespList = append(elementRespList, elementResponse)
+	}
+
+	return elementRespList
 }
 
-type OrionV2Attribute struct {
-	Type     string                 `json:"type"`
-	Value    interface{}            `json:"value"`
-	Metadata map[string]interface{} `json:"metadata,omitempty"`
+// for NGSIv2 consumer
+func postNGSIV2NotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, tenant string) error {
+	INFO.Println("NGSIv2 NOTIFY: ", URL)
+
+	payload := toNGSIv2Payload(ctxElems)
+
+	notifyCtxReq := &OrionV2NotifyContextRequest{
+		SubscriptionId: subscriptionId,
+		Entities:       payload,
+	}
+
+	body, err := json.Marshal(notifyCtxReq)
+	if err != nil {
+		return err
+	}
+
+	INFO.Println(string(body))
+
+	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Accept", "application/json")
+
+	client := &http.Client{}
+	if strings.HasPrefix(URL, "https") == true {
+		transCfg := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+		}
+		client = &http.Client{Transport: transCfg}
+	}
+
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-type OrionV2Metadata struct {
-	Type  string      `json:"type"`
-	Value interface{} `json:"value"`
-}
-
-// send an notify to orion broker based on v2, for the compatability reason
-func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptionId string) error {
+func toNGSIv2Payload(ctxElems []ContextElement) []map[string]interface{} {
 	elementList := make([]map[string]interface{}, 0)
 	for _, elem := range ctxElems {
 		// convert it to NGSI v2
@@ -93,6 +129,7 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptio
 		element["id"] = elem.Entity.ID
 		element["type"] = elem.Entity.Type
 
+		// include all attributes
 		for _, attr := range elem.Attributes {
 			attribute := OrionV2Attribute{}
 			attribute.Type = attr.Type
@@ -110,76 +147,148 @@ func postOrionV2NotifyContext(ctxElems []ContextElement, URL string, subscriptio
 			element[attr.Name] = attribute
 		}
 
+		// include all domain metadata
+		for _, dmeta := range elem.Metadata {
+			attribute := OrionV2Attribute{}
+			attribute.Type = dmeta.Type
+			attribute.Value = dmeta.Value
+
+			element[dmeta.Name] = attribute
+		}
+
 		elementList = append(elementList, element)
 	}
 
-	notifyCtxReq := &OrionV2NotifyContextRequest{
-		SubscriptionId: subscriptionId,
-		Entities:       elementList,
-	}
+	return elementList
+}
 
-	body, err := json.Marshal(notifyCtxReq)
+// for NGSI-LD consumer
+func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL string, tenant string) error {
+	INFO.Println("NGSI-LD NOTIFY: ", URL)
+
+	payload := toNGSILDPayload(ctxElems)
+
+	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
 	INFO.Println(string(body))
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+
+	brokerURL := URL + "/ngsi-ld/v1/entityOperations/upsert"
+	req, err := http.NewRequest("POST", brokerURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
+	req.Header.Add("NGSILD-Tenant", tenant)
+	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
+	if strings.HasPrefix(URL, "https") == true {
+		transCfg := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
+		}
+		client = &http.Client{Transport: transCfg}
+	}
+
 	resp, err := client.Do(req)
 	if resp != nil {
 		defer resp.Body.Close()
 	}
 	if err != nil {
+		ERROR.Println(err)
 		return err
 	}
 
 	return nil
 }
 
-func subscriptionLDContextProvider(sub *LDSubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
-	body, err := json.Marshal(*sub)
-	if err != nil {
-		return "", err
+func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
+	elementList := make([]map[string]interface{}, 0)
+	for _, elem := range ctxElems {
+		// convert it to NGSI-LD
+		element := make(map[string]interface{})
+
+		if strings.HasPrefix(elem.Entity.ID, "urn:") || strings.HasPrefix(elem.Entity.ID, "URN:") {
+			element["id"] = elem.Entity.ID
+		} else {
+			element["id"] = "urn:" + elem.Entity.ID
+		}
+
+		element["type"] = elem.Entity.Type
+
+		// include all attributes from the ngsi v1 entity
+		for _, attr := range elem.Attributes {
+			propertyValue := make(map[string]interface{})
+
+			switch strings.ToLower(attr.Type) {
+			case "relationship":
+				propertyValue["type"] = "Relationship"
+				propertyValue["object"] = attr.Value
+
+			case "datetime":
+				datatimeValue := make(map[string]interface{})
+				datatimeValue["@type"] = "datetime"
+				datatimeValue["@value"] = attr.Value
+
+				propertyValue["type"] = "Property"
+				propertyValue["value"] = datatimeValue
+			default:
+				propertyValue["type"] = "Property"
+				propertyValue["value"] = attr.Value
+			}
+
+			element[attr.Name] = propertyValue
+		}
+
+		// include all domain metadata from the ngsi v1 entity as extra properities
+		for _, meta := range elem.Metadata {
+			propertyValue := make(map[string]interface{})
+
+			INFO.Println(meta.Type)
+
+			switch meta.Type {
+			case "point":
+				propertyValue["type"] = "GeoProperty"
+
+				location := meta.Value.(Point)
+
+				pointLocation := make(map[string]interface{})
+				pointLocation["type"] = "Point"
+				coordinates := [2]interface{}{
+					location.Longitude,
+					location.Latitude,
+				}
+				pointLocation["coordinates"] = coordinates
+				propertyValue["value"] = pointLocation
+
+			default:
+				propertyValue["type"] = "Property"
+				propertyValue["value"] = meta.Value
+			}
+
+			element[meta.Name] = propertyValue
+		}
+
+		elementList = append(elementList, element)
 	}
 
-	req, err := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions/", bytes.NewBuffer(body)) // add NGSILD url
+	return elementList
+}
 
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("User-Agent", "lightweight-iot-broker")
-	req.Header.Add("Require-Reliability", "true")
-	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
-	// add link header
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
+type OrionV2NotifyContextRequest struct {
+	SubscriptionId string                   `json:"subscriptionId"`
+	Entities       []map[string]interface{} `json:"data"`
+}
 
-	client := httpsCfg.GetHTTPClient()
-	resp, err := client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return "", err
-	}
+type OrionV2Attribute struct {
+	Type     string                 `json:"type"`
+	Value    interface{}            `json:"value"`
+	Metadata map[string]interface{} `json:"metadata,omitempty"`
+}
 
-	text, _ := ioutil.ReadAll(resp.Body)
-
-	subscribeCtxResp := SubscribeContextResponse{}
-	err = json.Unmarshal(text, &subscribeCtxResp)
-	if err != nil {
-		return "", err
-	}
-
-	if subscribeCtxResp.SubscribeResponse.SubscriptionId != "" {
-		return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
-	} else {
-		err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
-		return "", err
-	}
-
+type OrionV2Metadata struct {
+	Type  string      `json:"type"`
+	Value interface{} `json:"value"`
 }
 
 func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
@@ -215,43 +324,6 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 		return subscribeCtxResp.SubscribeResponse.SubscriptionId, nil
 	} else {
 		err = errors.New(subscribeCtxResp.SubscribeError.ErrorCode.ReasonPhrase)
-		return "", err
-	}
-}
-
-//NGSIV2
-func subscriptionProvider(sub *SubscriptionRequest, ProviderURL string, httpsCfg *HTTPS) (string, error) {
-	body, err := json.Marshal(*sub)
-	if err != nil {
-		return "", err
-	}
-
-	req, err := http.NewRequest("POST", ProviderURL+"/v2/subscriptions", bytes.NewBuffer(body))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("User-Agent", "lightweight-iot-broker")
-	req.Header.Add("Require-Reliability", "true")
-	client := httpsCfg.GetHTTPClient()
-	resp, err := client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return "", err
-	}
-
-	text, _ := ioutil.ReadAll(resp.Body)
-
-	subscribeCtxResp := Subscribev2Response{}
-	err = json.Unmarshal(text, &subscribeCtxResp)
-	if err != nil {
-		return "", err
-	}
-
-	if subscribeCtxResp.SubscriptionResponse.SubscriptionId != "" {
-		return subscribeCtxResp.SubscriptionResponse.SubscriptionId, nil
-	} else {
-		err = errors.New(subscribeCtxResp.SubscriptionError.ErrorCode.ReasonPhrase)
 		return "", err
 	}
 }
@@ -296,46 +368,6 @@ func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS)
 	}
 }
 
-//NGSIV2
-func unsubscribev2ContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
-	unsubscription := &UnsubscribeContextRequest{
-		SubscriptionId: sid,
-	}
-
-	body, err := json.Marshal(unsubscription)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeContext", bytes.NewBuffer(body))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("User-Agent", "lightweight-iot-broker")
-
-	client := httpsCfg.GetHTTPClient()
-	resp, err := client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return err
-	}
-
-	text, _ := ioutil.ReadAll(resp.Body)
-
-	unsubscribeCtxResp := UnsubscribeContextResponse{}
-	err = json.Unmarshal(text, &unsubscribeCtxResp)
-	if err != nil {
-		return err
-	}
-
-	if unsubscribeCtxResp.StatusCode.Code == 200 {
-		return nil
-	} else {
-		err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
-		return err
-	}
-}
 func isNewAttribute(name string, ctxElement *ContextElement) bool {
 	for _, attr := range (*ctxElement).Attributes {
 		if attr.Name == name {
@@ -346,9 +378,14 @@ func isNewAttribute(name string, ctxElement *ContextElement) bool {
 	return true
 }
 
-func isNewMetadata(name string, ctxElement *ContextElement) bool {
+func hasMetadataChange(curMetadata *ContextMetadata, ctxElement *ContextElement) bool {
 	for _, meta := range (*ctxElement).Metadata {
-		if meta.Name == name {
+		sameName := (meta.Name == curMetadata.Name)
+		sameValue := reflect.DeepEqual(meta.Value, curMetadata.Value)
+		DEBUG.Println(curMetadata.Name, "Domain metadata name is the same: ", sameName)
+		DEBUG.Println(curMetadata.Value, "Domain metadata value is the same: ", sameValue)
+
+		if sameName && sameValue {
 			return false
 		}
 	}
@@ -365,14 +402,16 @@ func hasUpdatedMetadata(recvElement *ContextElement, curElement *ContextElement)
 		return true
 	}
 
+	// check if there is any new attribute name, no check for the change of attribute values
 	for _, attr := range recvElement.Attributes {
 		if isNewAttribute(attr.Name, curElement) == true {
 			return true
 		}
 	}
 
+	// check if there is any update on the domain metadata, including the change of metadata values
 	for _, metadata := range recvElement.Metadata {
-		if isNewMetadata(metadata.Name, curElement) == true {
+		if hasMetadataChange(&metadata, curElement) == true {
 			return true
 		}
 	}
@@ -426,392 +465,4 @@ func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement)
 
 	// add it as new metadata
 	(*ctxElement).Metadata = append((*ctxElement).Metadata, *metadata)
-}
-
-// NGSI-LD starts here.
-
-var ExpandOnce sync.Once
-var CompactOnce sync.Once
-var ldE *ld.RFC7324CachingDocumentLoader
-var ldC *ld.RFC7324CachingDocumentLoader
-var expand_lock sync.RWMutex
-
-var compact_lock sync.RWMutex
-
-//creating expand singleton object for document loader
-
-func Expand_once() *ld.RFC7324CachingDocumentLoader {
-	if ldE == nil {
-		ExpandOnce.Do(
-			func() {
-				ldE = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldE.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-				fmt.Println("created object", ldE, err)
-			})
-	} else {
-		fmt.Println("The loader object is already created")
-	}
-	return ldE
-}
-
-//creating compact  singleton object for document loader
-
-func Compact_once() *ld.RFC7324CachingDocumentLoader {
-	if ldC == nil {
-		CompactOnce.Do(
-			func() {
-				ldC = ld.NewRFC7324CachingDocumentLoader(nil)
-				_, err := ldC.LoadDocument("https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-				fmt.Println("created object", ldC, err)
-			})
-	} else {
-		fmt.Println("The loader object is already created")
-	}
-	return ldC
-}
-
-func compactData(entity map[string]interface{}, context interface{}) (interface{}, error) {
-	cdl := Compact_once()
-	proc := ld.NewJsonLdProcessor()
-	opts := ld.NewJsonLdOptions("")
-	opts.ProcessingMode = ld.JsonLd_1_1
-	opts.DocumentLoader = cdl
-	//options := ld.NewJsonLdOptions("")
-	compacted, err := proc.Compact(entity, context, opts)
-	return compacted, err
-}
-
-func removeSystemAppendedTime(element map[string]interface{}) map[string]interface{} {
-	elements := make(map[string]interface{})
-	for k, _ := range element {
-		if k != "modifiedAt" && k != "createdAt" {
-			elements[k] = element[k]
-		}
-	}
-	return elements
-}
-
-func ldPostNotifyContext(ldCtxElems []map[string]interface{}, subscriptionId string, URL string, integration string, fiwareService string, fiwareServicePath string, httpsCfg *HTTPS) error {
-	INFO.Println("NOTIFY: ", URL)
-	ldCompactedElems := make([]map[string]interface{}, 0)
-	for k, _ := range ldCtxElems {
-		compact_lock.Lock()
-		resolved, err := compactData(ldCtxElems[k], "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld")
-		compact_lock.Unlock()
-		if err != nil {
-			continue
-		}
-		ldCompactedElems = append(ldCompactedElems, resolved.(map[string]interface{}))
-	}
-	INFO.Println("Compacted Element:",ldCompactedElems)
-	var notifyCtxReq interface{}
-	var notifyURL string
-	var newBody []byte
-	if integration != "IoTI" {
-		LdElementList := make([]interface{}, 0)
-		for _, ldEle := range ldCompactedElems {
-			element := make(map[string]interface{})
-			id, _ := FiwareId(ldEle["id"].(string))
-			element["id"] = id
-			element["type"] = ldEle["type"]
-			for k, _ := range ldEle {
-				if k != "id" && k != "type" && k != "modifiedAt" && k != "createdAt" && k != "observationSpace" && k != "operationSpace" && k != "location" && k != "@context" && k != "fiwareServicePath" && k != "msgFormat" {
-					attr := removeSystemAppendedTime(ldEle[k].(map[string]interface{}))
-					element[k] = attr
-				}
-			}
-			LdElementList = append(LdElementList, element)
-		}
-		if integration == "NGSILDBroker" {
-			notifyCtxReq = LdElementList
-			notifyURL = URL + "/ngsi-ld/v1/entityOperations/upsert"
-		} else {
-			notifyCtxReq = &LDNotifyContextRequest{
-				SubscriptionId: subscriptionId,
-				Data:           LdElementList,
-				Type:           "Notification",
-				Id:             "fogflow:notification",
-				NotifyAt:       time.Now().String(),
-			}
-			notifyURL = URL
-		}
-		body, err := json.Marshal(notifyCtxReq)
-		if err != nil {
-			ERROR.Println("Not able to marshal to notifyData")
-			return err
-		}
-		newBody = body
-		err = upsertRequest(newBody, notifyURL, fiwareService, fiwareServicePath, httpsCfg)
-		return err
-	} else {
-		var id string
-		//var updatedAttr string
-		for _, ldEle := range ldCompactedElems {
-			id, _ = FiwareId(ldEle["id"].(string))
-			var updateAttr string
-			result := make(map[string]interface{})
-			if val, ok := ldEle["command"]; ok {
-				commandResult := val.(map[string]interface{})
-				if _, ok := commandResult["value"]; ok {
-					updateAttr = commandResult["value"].(string)
-					result["type"] = "Property"
-					result["value"] = ""
-					notifyURL = URL + "/ngsi-ld/v1/entities/" + id + "/attrs/" + updateAttr
-					body, err := json.Marshal(result)
-					if err != nil {
-						return err
-					}
-					err = patchRequest(body, notifyURL, fiwareService, fiwareServicePath, httpsCfg)
-					return err
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func patchRequest(body []byte, URL string, fiwreService string, FiwareServicePath string, httpsCfg *HTTPS) error {
-	req, err := http.NewRequest("PATCH", URL, bytes.NewBuffer(body))
-	if err != nil {
-		return err
-	}
-	if fiwreService != "default" {
-		req.Header.Add("fiware-service", fiwreService)
-	}
-	if FiwareServicePath != "default" {
-		req.Header.Add("fiware-servicepath", FiwareServicePath)
-	}
-
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	//	req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
-
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
-	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
-		client = httpsCfg.GetHTTPClient()
-	}
-	resp, err := client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		 ERROR.Println("Error in notification response: ", err)
-		return err
-	}
-
-	ioutil.ReadAll(resp.Body)
-
-	return nil
-}
-
-func upsertRequest(body []byte, URL string, fiwreService string, FiwareServicePath string, httpsCfg *HTTPS) error {
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
-	if err != nil {
-		return nil
-	}
-	if fiwreService != "default" {
-		req.Header.Add("fiware-service", fiwreService)
-	}
-	if FiwareServicePath != "default" {
-		req.Header.Add("fiware-servicepath", FiwareServicePath)
-	}
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	//req.Header.Add("Link", "<https://fiware.github.io/data-models/context.jsonld>; rel=\"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld\"; type=\"application/ld+json\"")
-
-	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
-
-	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
-		client = httpsCfg.GetHTTPClient()
-	}
-	resp, err := client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		ERROR.Println("Error in notification response: ", err)
-		return err
-	}
-
-	ioutil.ReadAll(resp.Body)
-
-	return nil
-}
-
-func ldCloneWithSelectedAttributes(ldElem map[string]interface{}, selectedAttributes []string) map[string]interface{} {
-	if len(selectedAttributes) == 0 {
-		return ldElem
-	} else {
-		preparedCopy := make(map[string]interface{})
-		for key, val := range ldElem {
-			if key == "id" {
-				preparedCopy["id"] = val
-			} else if key == "type" {
-				preparedCopy["type"] = val
-			} else if key == "createdAt" {
-				preparedCopy["createdAt"] = val
-			} else if key == "modifiedAt" {
-				//preparedCopy["modifiedAt"] = val
-			} else if key == "location" {
-				preparedCopy["location"] = val
-			} else if key == "@context" {
-				preparedCopy["@context"] = val
-			} else {
-				// add attribute only if present in selectedAttributes
-				for _, requiredAttrName := range selectedAttributes {
-					if key == requiredAttrName {
-						preparedCopy[key] = val
-						break
-					}
-				}
-			}
-		}
-		return preparedCopy
-	}
-}
-
-func isNewLdAttribute(name string, currEle map[string]interface{}) bool {
-	for attr, _ := range currEle {
-		if attr == name {
-			return false
-		}
-	}
-
-	return true
-}
-
-func getId(updateCtxEle map[string]interface{}) string {
-	var eid string
-	if _, ok := updateCtxEle["id"]; ok == true {
-		eid = updateCtxEle["id"].(string)
-	} else if _, ok := updateCtxEle["@id"]; ok == true {
-		eid = updateCtxEle["@id"].(string)
-	}
-	return eid
-}
-
-func hasLdUpdatedMetadata(recCtxEle interface{}, currCtxEle interface{}) bool {
-	if recCtxEle == nil && currCtxEle == nil {
-		return false
-	}
-	if currCtxEle == nil {
-		return true
-	}
-	recCtxEleMap := recCtxEle.(map[string]interface{})
-	currCtxEleMap := currCtxEle.(map[string]interface{})
-	for attr, _ := range recCtxEleMap {
-		if attr != "@id" && attr != "id" && attr != "type" && attr != "modifiedAt" && attr != "createdAt" && attr != "observationSpace" && attr != "operationSpace" && attr != "location" && attr != "@context" && attr != "fiwareServicePath" && attr != "msgFormat" {
-			if isNewLdAttribute(attr, currCtxEleMap) == true {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-/*
-   Header validation for upsert api
-*/
-
-func contentTypeValidator(cType string) error {
-	if cType == "application/x-www-form-urlencoded" {
-		err := errors.New("No content type header provided")
-		return err
-	}
-	cTypeInLower := strings.ToLower(cType)
-	if cTypeInLower != "application/json" && cTypeInLower != "application/ld+json" {
-		err := errors.New("Unsupported content type. Allowed are application/json and application/ld+json.")
-		return err
-	}
-	return nil
-}
-
-func getActualEntity(resultEntity map[string]interface{}) string {
-	id := resultEntity["id"].(string)
-	idSplit := strings.Split(id, "@")
-	actualId := idSplit[0]
-	return actualId
-}
-
-func getIoTID(id string, fiwareService string) string {
-	Id := id + "@" + fiwareService
-	return Id
-}
-
-func unsubscribeContextLDProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
-	unsubscription := &UnsubscribeContextRequest{
-		SubscriptionId: sid,
-	}
-
-	body, err := json.Marshal(unsubscription)
-	if err != nil {
-		return err
-	}
-
-	req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeLDContext", bytes.NewBuffer(body))
-	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("User-Agent", "lightweight-iot-broker")
-
-	client := httpsCfg.GetHTTPClient()
-	resp, err := client.Do(req)
-	if resp != nil {
-		defer resp.Body.Close()
-	}
-	if err != nil {
-		return err
-	}
-
-	text, _ := ioutil.ReadAll(resp.Body)
-
-	unsubscribeCtxResp := UnsubscribeContextResponse{}
-	err = json.Unmarshal(text, &unsubscribeCtxResp)
-	if err != nil {
-		return err
-	}
-
-	if unsubscribeCtxResp.StatusCode.Code == 200 {
-		return nil
-	} else {
-		err = errors.New(unsubscribeCtxResp.StatusCode.ReasonPhrase)
-		return err
-	}
-}
-
-func extractLinkHeaderFields(link string) string {
-	var splitLink string
-	linkArray := strings.Split(link, ";")
-	extractedLink := linkArray[0]
-	leftTrim := strings.TrimLeft(extractedLink, "<")
-	newlink := strings.TrimRight(leftTrim, ">")
-	if strings.HasPrefix(newlink, "http") {
-		splitLink = string(newlink)
-	} else {
-		splitLink = "default"
-	}
-
-	return splitLink
-}
-
-func extractcontext(cType string, link string) ([]interface{}, bool) {
-	var context []interface{}
-	cTypeInLower := strings.ToLower(cType)
-	contextInPayload := false
-	if cTypeInLower == "application/ld+json" {
-		contextInPayload = true
-	} else {
-		if link != "" {
-			link := extractLinkHeaderFields(link)
-			if link == "default" {
-				context = append(context, DEFAULT_CONTEXT)
-			} else {
-				context = append(context, link)
-			}
-		} else {
-			context = append(context, DEFAULT_CONTEXT)
-		}
-	}
-	return context, contextInPayload
 }

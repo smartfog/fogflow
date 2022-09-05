@@ -57,26 +57,31 @@ type Config struct {
 		HTTPSPort int    `json:"https_port"`
 	} `json:"discovery"`
 	Broker struct {
-		HostIP    string `json:"host_ip"`
-		HTTPPort  int    `json:"http_port"`
-		HTTPSPort int    `json:"https_port"`
+		HostIP            string `json:"host_ip"`
+		HTTPPort          int    `json:"http_port"`
+		HTTPSPort         int    `json:"https_port"`
+		HeartbeatInterval int    `json:"heartbeat_interval"`
 	} `json:"broker"`
 	Master struct {
-		HostIP    string `json:"host_ip"`
-		AgentPort int    `json:"ngsi_agent_port"`
+		HostIP      string `json:"host_ip"`
+		AgentPort   int    `json:"ngsi_agent_port"`
+		RESTAPIPort int    `json:"rest_api_port"`
 	} `json:"master"`
 	Designer struct {
-                HostIP    string `json:"host_ip"`
-                WebSrvPort int   `json:"webSrvPort"`
-                HTTPSPort  int   `json:"https_webSrvPort"`
-        }`json:"designer"`
+		HostIP     string `json:"host_ip"`
+		WebSrvPort int    `json:"webSrvPort"`
+		HTTPSPort  int    `json:"https_webSrvPort"`
+	} `json:"designer"`
 	Worker struct {
+		ContainerManagement string                `json:"container_management"`
+		AppNameSpace        string                `json:"app_namespace"`
+		EdgeControllerPort  int                   `json:"edge_controller_port"`
 		Registry            RegistryConfiguration `json:"registry,omitempty"`
 		ContainerAutoRemove bool                  `json:"container_autoremove"`
 		StartActualTask     bool                  `json:"start_actual_task"`
 		Capacity            int                   `json:"capacity"`
-		//EdgeAddress         string                `json:"edge_address"`
-		CAdvisorPort int `json:"cadvisor_port"`
+		HeartbeatInterval   int                   `json:"heartbeat_interval"`
+		DetectionDuration   int                   `json:"detection_duration"`
 	} `json:"worker"`
 	RabbitMQ struct {
 		HostIP   string `json:"host_ip"`
@@ -112,21 +117,33 @@ func (c *Config) GetDiscoveryURL() string {
 	return fmt.Sprintf("%s://%s:%d/ngsi9", protocol, hostip, port)
 }
 
+func (c *Config) GetEdgeControllerURL() string {
+	protocol := "http"
+	port := c.Worker.EdgeControllerPort
+
+	hostip := c.InternalIP
+	if c.ExternalIP != "" {
+		hostip = c.ExternalIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d", protocol, hostip, port)
+}
+
 func (c *Config) GetDesignerURL() string {
-        protocol := "http"
-        port := c.Designer.WebSrvPort
-        if c.HTTPS.Enabled == true {
-                protocol = "https"
-                port = c.Designer.HTTPSPort
-        }
+	protocol := "http"
+	port := c.Designer.WebSrvPort
+	if c.HTTPS.Enabled == true {
+		protocol = "https"
+		port = c.Designer.HTTPSPort
+	}
 
-        hostip := c.InternalIP
-        
-        if c.Designer.HostIP != "" {
-                hostip = c.Designer.HostIP
-        }
+	hostip := c.InternalIP
 
-        return fmt.Sprintf("%s://%s:%d", protocol, hostip, port)
+	if c.Designer.HostIP != "" {
+		hostip = c.Designer.HostIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d", protocol, hostip, port)
 }
 
 func (c *Config) GetBrokerURL4Task() string {
@@ -154,6 +171,22 @@ func (c *Config) GetBrokerURL() string {
 
 	if c.Broker.HostIP != "" {
 		hostip = c.Broker.HostIP
+	}
+
+	return fmt.Sprintf("%s://%s:%d/ngsi10", protocol, hostip, port)
+}
+
+func (c *Config) GetExternalBrokerURL() string {
+	protocol := "http"
+	port := c.Broker.HTTPPort
+	if c.HTTPS.Enabled == true {
+		protocol = "https"
+		port = c.Broker.HTTPSPort
+	}
+
+	hostip := c.InternalIP
+	if c.ExternalIP != "" {
+		hostip = c.ExternalIP
 	}
 
 	return fmt.Sprintf("%s://%s:%d/ngsi10", protocol, hostip, port)

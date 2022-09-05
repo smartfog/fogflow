@@ -1,13 +1,13 @@
 var entityID = "";
 exports.handler = function(contextEntity, publish, query, subscribe)
 {
-	console.log("enter into the user-defined fog function");
+    console.log("enter into the user-defined fog function");
     
     entityID = contextEntity.entityId.id
     
     var updateEntity = {};
     updateEntity.entityId = {
-           id: entityID.replace("Device", "Result"),
+           id: "Result" + entityID,
            type: 'Result',
            isPattern: false
     };	    	

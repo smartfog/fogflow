@@ -1,90 +1,90 @@
 # Payload to persist Operator
-test001=\
+test001 =\
     {
     }
 
-test002=\
+test002 =\
     {
-    "name":"counter"
+        "name": "counter"
     }
 
-test003=\
+test003 =\
     {
-    "name":"counter",
-    "description":"Hi there, all okay!",
+        "name": "counter",
+        "description": "Hi there, all okay!",
     }
 
 test0 =\
     {
-    "name":"counter",
-    "description":"Hi there, all okay!",
-    "parameters":[]
+        "name": "counter",
+        "description": "Hi there, all okay!",
+        "parameters": []
     }
 
 
 # Payload to persist FogFunction
-test101=\
+test101 =\
     {
     }
 
-test102=\
+test102 =\
     {
-    "id": 'FogFunction.ParkingLotRecommendation'
-    }        
+        "id": 'FogFunction.ParkingLotRecommendation'
+    }
 
-test103=\
+test103 =\
     {
-    "id": 'FogFunction.ParkingLotRecommendation',
-    "name": 'ParkingLotRecommendation',
-    "topology":
+        "id": 'FogFunction.ParkingLotRecommendation',
+        "name": 'ParkingLotRecommendation',
+        "topology":
         {
             "name": 'ParkingLotRecommendation',
             "description": 'to recommend where to park around the destination',
-            "tasks":[[]]
+            "tasks": [[]]
         }
     }
 
-test104=\
+test104 =\
     {
-    "id": 'FogFunction.ParkingLotRecommendation',
-    "name": 'ParkingLotRecommendation',
+        "id": 'FogFunction.ParkingLotRecommendation',
+        "name": 'ParkingLotRecommendation',
 
-    "geoscope":
+        "geoscope":
         {
             "scopeType": 'global', "scopeValue": 'global'
         },
-    "status": 'enabled',
-    "action": 'UPDATE'
+        "status": 'enabled',
+        "action": 'UPDATE'
     }
 
 test1 =\
-    { 
-    "id": 'FogFunction.ParkingLotRecommendation',
-    "name": 'ParkingLotRecommendation',
-    "topology":
-        { 
+    {
+        "id": 'FogFunction.ParkingLotRecommendation',
+        "name": 'ParkingLotRecommendation',
+        "topology":
+        {
             "name": 'ParkingLotRecommendation',
             "description": 'to recommend where to park around the destination',
-            "tasks":[[]]
+            "tasks": [[]]
         },
-    "intent":
-        { 
+        "intent":
+        {
             "topology": 'ParkingLotRecommendation',
-            "priority": 
-            { 
-                "exclusive": False, "level": 0 
+            "priority":
+            {
+                "exclusive": False, "level": 0
             },
-    "qos": 'Max Throughput',
-    "geoscope": 
-        {   
-            "scopeType": 'global', "scopeValue": 'global' 
-        },
-    "status": 'enabled',
-    "action": 'UPDATE' 
-    	}
+            "qos": 'Max Throughput',
+            "geoscope":
+            {
+                "scopeType": 'global', "scopeValue": 'global'
+            },
+            "status": 'enabled',
+            "action": 'UPDATE'
+        }
     }
-        
-       
+
+
 # Payload to persist DockerImage
 
 test200 =\
@@ -95,114 +95,114 @@ test200 =\
 
 test201 =\
     {
-    "operater": "counter",
+        "operater": "counter",
     }
 
 test202 =\
     {
-    "operater": "counter",
-    "name": "fogflow/counter"
+        "operater": "counter",
+        "name": "fogflow/counter"
     }
 
 test203 =\
     {
-    "operater": "counter",
-    "name": "fogflow/counter",
-    "hwType": "X86",
-    "osType": "Linux"
+        "operater": "counter",
+        "name": "fogflow/counter",
+        "hwType": "X86",
+        "osType": "Linux"
     }
 
 test2 =\
     {
-    "operater": "counter",
-    "name": "fogflow/counter",
-    "tag": "latest",
-    "hwType": "X86",
-    "osType": "Linux",
-    "prefetched": False
-}
+        "operater": "counter",
+        "name": "fogflow/counter",
+        "tag": "latest",
+        "hwType": "X86",
+        "osType": "Linux",
+        "prefetched": False
+    }
 
 # payload to persist Topology
-test300=\
-	{
-	}
+test300 =\
+    {
+    }
 
-test301=\
-	{
-	"description": "detect anomaly events in shops",
-    	"name": "anomaly-detection"
-	}
+test301 =\
+    {
+        "description": "detect anomaly events in shops",
+        "name": "anomaly-detection"
+    }
 
 test3 =\
-    	{
-   	"description": "detect anomaly events in shops",
-   	"name": "anomaly-detection",
-   	"tasks": [
-      	{
-        "input_streams": [
+    {
+        "description": "detect anomaly events in shops",
+        "name": "anomaly-detection",
+        "tasks": [
+                {
+                    "input_streams": [
+                        {
+                            "groupby": "ALL",
+                            "scoped": True,
+                            "selected_attributes": [],
+                            "selected_type": "Anomaly"
+                        }
+                    ],
+                    "name": "Counting",
+                    "operator": "counter",
+                    "output_streams": [
+                        {
+                            "entity_type": "Stat32_new"
+                        }
+                    ]
+                },
             {
-               "groupby": "ALL",
-               "scoped": True,
-               "selected_attributes": [],
-               "selected_type": "Anomaly"
+                    "input_streams": [
+                        {
+                            "groupby": "EntityID",
+                            "scoped": True,
+                            "selected_attributes": [],
+                            "selected_type": "PowerPanel"
+                        },
+                        {
+                            "groupby": "ALL",
+                            "scoped": False,
+                            "selected_attributes": [],
+                            "selected_type": "Rule"
+                        }
+                    ],
+                    "name": "Detector",
+                    "operator": "anomaly",
+                    "output_streams": [
+                        {
+                            "entity_type": "Anomaly32_new"
+                        }
+                    ]
             }
-         ],
-         "name": "Counting",
-         "operator": "counter",
-         "output_streams": [
-            {
-               "entity_type": "Stat32_new"
-            }
-         ]
-      },
-      {
-         "input_streams": [
-            {
-               "groupby": "EntityID",
-               "scoped": True,
-               "selected_attributes": [],
-               "selected_type": "PowerPanel"
-            },
-           {
-               "groupby": "ALL",
-               "scoped": False,
-               "selected_attributes": [],
-               "selected_type": "Rule"
-            }
-         ],
-         "name": "Detector",
-         "operator": "anomaly",
-         "output_streams": [
-            {
-               "entity_type": "Anomaly32_new"
-            }
-         ]
-      }
-   ]
-}
-
-
-#payload to persist service intent
-test400=\
-    {   
-    }
-test401=\
-    {   
-    "topology": "anomaly-detection",
-    "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2"
-    }
-test402=\
-    {   
-    "topology": "anomaly-detection",
-    "geoscope": { "scopeType": "global", "scopeValue": "global" },
+        ]
     }
 
-test4=\
-    {   
-    "topology": "anomaly-detection",
-    "priority": { "exclusive": False, "level": 50 },
-    "qos": 'NONE',
-    "geoscope": { "scopeType": "global", "scopeValue": "global" },
-    "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2"
-    }
 
+# payload to persist service intent
+# test400 =\
+#     {
+#     }
+# test401 =\
+#     {
+#         "topology": "anomaly-detection",
+#         "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2",
+#     }
+# test402 =\
+#     {
+#         "topology": "anomaly-detection",
+#         "geoscope": {"scopeType": "global", "scopeValue": "global"},
+#     }
+
+test4 =\
+    {
+        "topology": "anomaly-detection",
+        "stype": "Asynchronous",
+        "priority": {"exclusive": False, "level": 50},
+        "qos": 'NONE',
+        "geoscope": {"scopeType": "global", "scopeValue": "global"},
+        "id": "ServiceIntent.849ecf56-4590-4493-a982-7b1a257053e2"
+    }

@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: fogflow                      
+  name: designer
+spec:
+  selector:
+    matchLabels:
+      run: designer
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: designer
+    spec:
+      containers:
+      - name: designer
+        image: fogflow/designer:k8s
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080  
+        - containerPort: 1030        
+        - containerPort: 1090                    
+        volumeMounts:
+        - name: config-json       
+          mountPath: /app/config.json
+          subPath: config.json                    
+          readOnly: true
+        - name: meta-storage
+          mountPath: /app/public/data/meta
+          subPath: meta                                      
+        - name: meta-storage
+          mountPath: /app/public/data/photo
+          subPath: photo                                                         
+      volumes:
+      - name: config-json 
+        configMap:
+          name: fogflow-configmap               
+      - name: meta-storage
+        persistentVolumeClaim:
+          claimName: designer-pvc
+      serviceAccountName: default  
+          
+---          
+          
+apiVersion: v1
+kind: Service
+metadata:
+  name: designer
+  labels:
+    run: designer
+spec:
+  type: ClusterIP
+  ports:
+    - name: "8080"
+      port: 8080  
+      targetPort: 8080
+    - name: "1030"
+      port: 1030
+      targetPort: 1030  
+    - name: "1090"
+      port: 1090
+      targetPort: 1090             
+  selector:
+    run: designer
+    
+
+    

@@ -35,7 +35,7 @@ func main() {
 
 	// initialize IoT Discovery
 	iotDiscovery := FastDiscovery{}
-	iotDiscovery.Init(&config.HTTPS)
+	iotDiscovery.Init(&config)
 
 	// start REST API server
 	router, err := rest.MakeRouter(
@@ -52,13 +52,14 @@ func main() {
 		rest.Get("/ngsi9/ngsi-ld/registration/#eid", iotDiscovery.getRegisteredLDEntity),
 		rest.Get("/ngsi9/subscription/#sid", iotDiscovery.getSubscription),
 		rest.Get("/ngsi9/subscription", iotDiscovery.getSubscriptions),
+		rest.Get("/etype", iotDiscovery.getEntityTypes),
 
 		// for health check
 		rest.Get("/ngsi9/status", iotDiscovery.getStatus),
 		rest.Get("/ngsi9/broker", iotDiscovery.getBrokerList),
 
 		// hearbeat from active brokers
-		rest.Post("/ngsi9/broker", iotDiscovery.onBrokerHeartbeat),
+		rest.Post("/ngsi9/broker/heartbeat", iotDiscovery.onBrokerHeartbeat),
 	)
 	if err != nil {
 		log.Fatal(err)

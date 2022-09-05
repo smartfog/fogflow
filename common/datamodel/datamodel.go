@@ -23,10 +23,23 @@ type RecvMessage struct {
 }
 
 type TaskUpdate struct {
-	ServiceName string
-	TaskName    string
-	TaskID      string
-	Status      string
+	TaskID string
+
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
+
+	Status string
+}
+
+type TaskInfo struct {
+	TaskID string
+
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
+
+	Info string
 }
 
 // =========== messages used as the interfaces between different components ====================
@@ -65,8 +78,8 @@ type QoS struct {
 }
 
 type ServiceIntent struct {
-	ID string `json:"id"`
-	//	SType          string         `json:"stype"`
+	ID             string         `json:"id"`
+	SType          string         `json:"stype"`
 	QoS            string         `json:"qos"`
 	GeoScope       OperationScope `json:"geoscope"`
 	Priority       Priority       `json:"priority"`
@@ -78,11 +91,12 @@ type ServiceIntent struct {
 type TaskIntent struct {
 	ID string `json:"id"`
 	//	SType       string         `json:"stype"`
-	QoS         string         `json:"qos"`
-	GeoScope    OperationScope `json:"geoscope"`
-	Priority    Priority       `json:"priority"`
-	ServiceName string         `json:"service"`
-	TaskObject  Task           `json:"task"`
+	QoS             string         `json:"qos"`
+	GeoScope        OperationScope `json:"geoscope"`
+	Priority        Priority       `json:"priority"`
+	TopologyName    string         `json:"topology"`
+	TaskObject      Task           `json:"task"`
+	ServiceIntentID string         `json:"serviceIntentID"`
 }
 
 type InputStreamConfig struct {
@@ -97,14 +111,15 @@ type OutputStreamConfig struct {
 }
 
 type Parameter struct {
-	Name   string   `json:"name"`
-	Values []string `json:"values"`
+	Name  string `json:"name"`
+	Value string `json:"value"`
 }
 
 type Operator struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	Parameters  []Parameter `json:"parameters"`
+	Name         string        `json:"name"`
+	Description  string        `json:"description"`
+	Parameters   []Parameter   `json:"parameters"`
+	DockerImages []DockerImage `json:"dockerimages"`
 }
 
 type Task struct {
@@ -144,15 +159,16 @@ type Priority struct {
 }
 
 type Topology struct {
-	Id          string `json:"id"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	Tasks       []Task `json:"tasks"`
-	Action      string `json:"action"`
+	// Id          string `json:"id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	Tasks       []Task     `json:"tasks"`
+	Operators   []Operator `json:"operators"`
+	// Action      string     `json:"action"`
 }
 
 type FogFunction struct {
-	Id       string        `json:"id"`
+	// Id       string        `json:"id"`
 	Name     string        `json:"name"`
 	Topology Topology      `json:"topology"`
 	Intent   ServiceIntent `json:"intent"`
@@ -169,11 +185,9 @@ type DockerImage struct {
 }
 
 type InputStream struct {
-	Type              string
-	ID                string
-	FiwareServicePath string
-	MsgFormat         string
-	AttributeList     []string
+	Type          string
+	ID            string
+	AttributeList []string
 }
 
 func (myInputStream *InputStream) Equal(otherInputStream *InputStream) bool {
@@ -233,9 +247,10 @@ type FlowInfo struct {
 }
 
 type ScheduledTaskInstance struct {
-	ID          string
-	ServiceName string
-	TaskName    string
+	ID              string
+	TopologyName    string
+	TaskName        string
+	ServiceIntentID string
 
 	OperatorName string
 
@@ -256,17 +271,17 @@ type ScheduledTaskInstance struct {
 }
 
 type WorkerProfile struct {
-	WID          string
-	PLocation    PhysicalLocation
-	GeohashID    string
-	OSType       string
-	HWType       string
-	Capacity     int
-	Workload     int
+	WID          string           `json:"id"`
+	PLocation    PhysicalLocation `json:"location"`
+	GeohashID    string           `json:"geohash_id"`
+	OSType       string           `json:"os"`
+	HWType       string           `json:"hardware"`
+	Capacity     int              `json:"capacity"`
+	Workload     int              `json:"workload"`
 	CAdvisorPort int
 	EdgeAddress  string
 
-	Last_Hearbeat_Update time.Time
+	Last_Heartbeat_Update time.Time
 }
 
 func (worker *WorkerProfile) IsOverloaded() bool {
@@ -278,13 +293,19 @@ func (worker *WorkerProfile) IsOverloaded() bool {
 }
 
 func (worker *WorkerProfile) IsLive(duration int) bool {
-	delta := time.Since(worker.Last_Hearbeat_Update)
+	delta := time.Since(worker.Last_Heartbeat_Update)
 
 	if int(delta.Seconds()) >= duration {
 		return false
 	} else {
 		return true
 	}
+}
+
+type MasterProfile struct {
+	WID       string           `json:"id"`
+	PLocation PhysicalLocation `json:"location"`
+	AgentURL  string           `json:"agent"`
 }
 
 type StreamProfile struct {
@@ -295,29 +316,4 @@ type StreamProfile struct {
 	Location   PhysicalLocation
 
 	StreamObject *ContextObject
-}
-
-type PrometheusConfig struct {
-	Targets []string `json:"targets"`
-	Labels  struct {
-		Job string `json:"job"`
-	} `json:"labels"`
-}
-
-func SetFiwareServicePath(scheduledTaskInstance ScheduledTaskInstance, fiwareServicePath string, msgFormat string) ScheduledTaskInstance {
-	//fmt.Println("SetFiwareServicePath",fiwareServicePath)
-	newInputStream := make([]InputStream, 0)
-	for _, entity := range scheduledTaskInstance.Inputs {
-		entity.FiwareServicePath = fiwareServicePath
-		entity.MsgFormat = msgFormat
-		newInputStream = append(newInputStream, entity)
-	}
-	scheduledTaskInstance.Inputs = newInputStream
-	return scheduledTaskInstance
-}
-
-func AddFiwareServicePath(flowInfo FlowInfo, fiwareServicePath string, msgFormat string) FlowInfo {
-	flowInfo.InputStream.FiwareServicePath = fiwareServicePath
-	flowInfo.InputStream.MsgFormat = msgFormat
-	return flowInfo
 }

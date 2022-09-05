@@ -77,7 +77,7 @@ pygments_style = 'sphinx'
 todo_include_todos = False
 
 
-def setup(app):      
+def setup(app):
     app.add_stylesheet('css/fiware_readthedocs.css')
     app.add_stylesheet('css/fiware_readthedocs_processing.css')
 
@@ -98,7 +98,7 @@ def setup(app):
 #
 # This is required for the alabaster theme
 # refs: http://alabaster.readthedocs.io/en/latest/installation.html#sidebars
-#html_sidebars = {
+# html_sidebars = {
 #    '**': [
 #        'about.html',
 #        'navigation.html',
@@ -106,7 +106,7 @@ def setup(app):
 #        'searchbox.html',
 #        'donate.html',
 #    ]
-#}
+# }
 
 
 # -- Options for HTMLHelp output ------------------------------------------
@@ -164,6 +164,3 @@ texinfo_documents = [
      author, 'fogflow', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-    
-

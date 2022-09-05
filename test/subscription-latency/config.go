@@ -7,13 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-)
 
-var (
-	INFO     *log.Logger
-	PROTOCOL *log.Logger
-	ERROR    *log.Logger
-	DEBUG    *log.Logger
+	. "fogflow/common/ngsi"
 )
 
 //The default output for all the loggers is set to ioutil.Discard

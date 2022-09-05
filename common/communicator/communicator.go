@@ -131,7 +131,8 @@ func (communicator *Communicator) Publish(msg *SendMessage) error {
 		amqp.Publishing{
 			ContentType:  "application/json",
 			Body:         message,
-			DeliveryMode: amqp.Persistent,
+			DeliveryMode: amqp.Transient,
+			//DeliveryMode: amqp.Persistent,
 		},
 	); err != nil {
 		return err

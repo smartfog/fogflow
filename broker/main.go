@@ -62,7 +62,6 @@ func main() {
 	go func() {
 		for _ = range ticker.C {
 			broker.OnTimer()
-			broker.NGSILDOnTimer()
 		}
 	}()
 

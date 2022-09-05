@@ -878,269 +878,695 @@ sid              the subscription ID created when the subscription is issued
 curl -iX DELETE http://localhost:80/ngsi10/subscription/#sid
 
 
+FogFlow Designer API
+===================================
+
+FogFlow uses its own REST APIs to manage all internal objects, 
+including operator, docker image, service topology, service intent, and fog function. 
+In addition, FogFlow also provides the extra interface for device registration and 
+the management of subscriptions to exchange data with other FIWARE brokers, 
+such as Orion/Orion-LD and Scorpio, 
+which could be used both as the data sources to fetch the original data 
+or as the destination to publish the generated results. 
 
 
-FogFlow Service Orchestrator API
-=========================================
+Operator
+-------------------
 
 
-The overall development process of an IoT Service in FogFlow is shown in the following figure. 
-For the development of a fog function, the steps 4 and 5 are combined, which means a default requirement 
-is issued by the FogFlow editor when a fog function is submmited. 
+**a. To create a new Operator**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /operator**
+
+**Example**   
+ 
+.. code-block:: console
+
+	curl -X POST \
+	  'http://127.0.0.1:8080/operator' \
+	  -H 'Content-Type: application/json' \
+	  -d '
+	    [{
+	        "name": "dummy",
+	        "description": "test",
+	        "parameters": []
+	    }]
+	    '
 
 
-.. figure:: figures/development_process.png
-   :width: 100 %
+**b. To retrieve all the operators**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /operator**
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/operator'
+
+**c. To retrieve a specific operator based on operator name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /operator/<name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing operator
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/operator/dummy'
+
+DockerImage
+-------------------
+
+
+**a. To create a new DockerImage**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /dockerimage**
 
 
 
-Implement an operator
------------------------------------------------
+**Example**   
+ 
+.. code-block:: console
 
-Before defining the designed service topology, 
-all operators used in your service topology must be provided by you or the other provider in the FogFlow system. 
-
-
-* `nodejs-based`_ 
-
-* `python-based`_ 
-
-
-.. _`nodejs-based`: https://github.com/smartfog/fogflow/tree/master/application/template/javascript
-.. _`python-based`: https://github.com/smartfog/fogflow/tree/master/application/template/python
-
-
-.. note:: currently two templates are provided: one for nodejs based Implement and the other for python-based implementation
-
-
-
-Publish the operator
------------------------------------------------
-
-The image of operator can be published to the public docker registry or on private docker registery. 
-If you do not want to use any docker registry, you have to make sure that 
-the docker image of an operator is built on all edge nodes. 
-Currently, when the FogFlow worker receives a command to launch a task instance, 
-it will first search the required docker image from the local storage. If it does not find it, 
-it will start to fetch the required docker image for the docker registry (the public one or any private one, which is up to the 
-configuration of the FogFlow worker). 
-
-If anyone would like to publish the image, then following docker command can be used. 
+	curl -X POST \
+	  'http://127.0.0.1:8080/dockerimage' \
+	  -H 'Content-Type: application/json' \
+	  -d '
+	    [
+	        {
+	            "name": "fogflow/dummy",
+	            "hwType": "X86",
+	            "osType": "Linux",
+	            "operatorName": "dummy",
+	            "prefetched": false,
+	            "tag": "latest"
+	        }
+	    ]
+	    '
 
 
-.. code-block:: console   
+
+**b. To retrieve all the DockerImage**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /dockerimage**
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/dockerimage'
+
+
+**c. To retrieve a specific DockerImage based on operator name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /dockerimage/<operator name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing operator
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/dockerimage/dummy'
+
+
+Service Topology
+-------------------
+
+
+**a. To create a new Service**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /service**
+
+
+**Example**   
+ 
+.. code-block:: console
 	
-	docker push  [the name of your image]
-
-
-.. note:: this step is done with only docker commands
-
-
-Define and register operator
------------------------------------------------
-
-An operator docker image can also be registered by sending a constructed NGSI update message to the IoT Broker deployed in the cloud. 
-
-Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, the Javascript-based library is being used to interact with FogFlow IoT Broker. 
-The library can be found from the github code repository (designer/public/lib/ngsi), ngsiclient.js shall be included into the web page. 
-
-
-.. code-block:: javascript
-
-    var image = {
-        name: "counter",
-        tag: "latest",
-        hwType: "X86",
-        osType: "Linux",
-        operatorName: "counter",
-        prefetched: false
-    };
-
-    //register a new docker image
-    var newImageObject = {};
-
-    newImageObject.entityId = {
-        id : image.name + ':' + image.tag, 
-        type: 'DockerImage',
-        isPattern: false
-    };
-
-    newImageObject.attributes = {};   
-    newImageObject.attributes.image = {type: 'string', value: image.name};        
-    newImageObject.attributes.tag = {type: 'string', value: image.tag};    
-    newImageObject.attributes.hwType = {type: 'string', value: image.hwType};      
-    newImageObject.attributes.osType = {type: 'string', value: image.osType};          
-    newImageObject.attributes.operator = {type: 'string', value: image.operatorName};      
-    newImageObject.attributes.prefetched = {type: 'boolean', value: image.prefetched};                      
-    
-    newImageObject.metadata = {};    
-    newImageObject.metadata.operator = {
-        type: 'string',
-        value: image.operatorName
-    };               
-    
-    // assume the config.brokerURL is the IP of cloud IoT Broker
-    var client = new NGSI10Client(config.brokerURL);    
-    client.updateContext(newImageObject).then( function(data) {
-        console.log(data);
-    }).catch( function(error) {
-        console.log('failed to register the new device object');
-    });        
+	curl -X POST \
+	  'http://127.0.0.1:8080/service' \
+	  -H 'Content-Type: application/json' \
+	  -d '
+	    [
+	        {
+	            "topology": {
+	                "name": "MyTest",
+	                "description": "a simple case",
+	                "tasks": [
+	                    {
+	                        "name": "main",
+	                        "operator": "dummy",
+	                        "input_streams": [
+	                            {
+	                                "selected_type": "Temperature",
+	                                "selected_attributes": [],
+	                                "groupby": "EntityID",
+	                                "scoped": false
+	                            }
+	                        ],
+	                        "output_streams": [
+	                            {
+	                                "entity_type": "Out"
+	                            }
+	                        ]
+	                    }
+	                ]
+	            }
+	        }
+	    ]
+	    '
 
 
 
-Define and register your service topology
------------------------------------------------
+**b. To retrieve all the Service**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Usually,service topology can be defined and registered via the FogFlow topology editor. 
-However, it can also be defined and registered with own code. 
+**GET /service**
 
-To register a service topology, A constructed NGSI update message is needed to be send by the code to the IoT Broker deployed in the cloud. 
+**Example:**
 
-Here is a Javascript-based code example to register an operator docker image. 
-Within this code example, the Javascript-based library is used to interact with FogFlow IoT Broker. 
-The library can be found from the github code repository (designer/public/lib/ngsi). An ngsiclient.js must be included into the web page. 
+.. code-block:: console
 
-.. code-block:: javascript
+	curl -iX GET \
+	  'http://127.0.0.1:8080/service'
 
-    // the json object that represent the structure of your service topology
-    // when using the FogFlow topology editor, this is generated by the editor
-    var topology = {  
-       "description":"detect anomaly events from time series data points",
-       "name":"anomaly-detection",
-       "priority": {
-            "exclusive": false,
-            "level": 100
-       },
-       "trigger": "on-demand",   
-       "tasks":[  
-          {  
-             "name":"AnomalyDetector",
-             "operator":"anomaly",
-             "groupBy":"shop",
-             "input_streams":[  
-                {  
-                      "type": "PowerPanel",
-                    "shuffling": "unicast",
-                      "scoped": true
-                },
-                {  
-                      "type": "Rule",
-                    "shuffling": "broadcast",
-                      "scoped": false               
-                }                       
-             ],
-             "output_streams":[  
-                {  
-                   "type":"Anomaly"
-                }
-             ]
-          },
-          {  
-             "name":"Counter",
-             "operator":"counter",
-             "groupBy":"*",
-             "input_streams":[  
-                {  
-                   "type":"Anomaly",
-                   "shuffling": "unicast",
-                   "scoped": true               
-                }           
-             ],
-             "output_streams":[  
-                {  
-                   "type":"Stat"
-                }
-             ]
-          }          
-       ]
-    }
-    
-    //submit it to FogFlow via NGSI Update
-    var topologyCtxObj = {};
-    
-    topologyCtxObj.entityId = {
-        id : 'Topology.' + topology.name, 
-        type: topology.name,
-        isPattern: false
-    };
-    
-    topologyCtxObj.attributes = {};   
-    topologyCtxObj.attributes.status = {type: 'string', value: 'enabled'};
-    topologyCtxObj.attributes.template = {type: 'object', value: topology};    
-    
-    // assume the config.brokerURL is the IP of cloud IoT Broker
-    var client = new NGSI10Client(config.brokerURL);    
+**c. To retrieve a specific service based on service name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    // send NGSI10 update    
-    client.updateContext(topologyCtxObj).then( function(data) {
-        console.log(data);                
-    }).catch( function(error) {
-        console.log('failed to submit the topology');
-    });    
+**GET /service/<service name>**
 
+==============   ============================
+Param		      Description
+==============   ============================
+name              Name of existing service
+==============   ============================	
 
+**Example:** 
 
-Create a requirement entity to trigger the service topology
---------------------------------------------------------------
+.. code-block:: console
 
+	curl -iX GET \
+	  'http://127.0.0.1:8080/service/MyTest'
 
-Here is the Javascript-based code example to trigger a service topology by sending a customized requirement entity to FogFlow. 
-
-
-.. code-block:: javascript
-
-    var rid = 'Requirement.' + uuid();    
    
-    var requirementCtxObj = {};    
-    requirementCtxObj.entityId = {
-        id : rid, 
-        type: 'Requirement',
-        isPattern: false
-    };
-    
-    var restriction = { scopes:[{scopeType: geoscope.type, scopeValue: geoscope.value}]};
-                
-    requirementCtxObj.attributes = {};   
-    requirementCtxObj.attributes.output = {type: 'string', value: 'Stat'};
-    requirementCtxObj.attributes.scheduler = {type: 'string', value: 'closest_first'};    
-    requirementCtxObj.attributes.restriction = {type: 'object', value: restriction};    
-                        
-    requirementCtxObj.metadata = {};               
-    requirementCtxObj.metadata.topology = {type: 'string', value: curTopology.entityId.id};
-    
-    console.log(requirementCtxObj);
-            
-    // assume the config.brokerURL is the IP of cloud IoT Broker
-    var client = new NGSI10Client(config.brokerURL);                
-    client.updateContext(requirementCtxObj).then( function(data) {
-        console.log(data);
-    }).catch( function(error) {
-        console.log('failed to send a requirement');
-    });    
+
+**d. To delete a specific service based on service name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /service/<service name>**
+
+==============   ============================
+Param		 		Description
+==============   ============================
+name              Name of existing service
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X DELETE  'http://localhost:8080/service/MyTest' \
+   -H 'Content-Type: application/json'
+
+
+
+Intent
+-------------------
+
+
+**a. To create a new Intent**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /intent**
+
+**Example**   
+ 
+.. code-block:: console
+
+	curl -X POST \
+	  'http://127.0.0.1:8080/intent' \
+	  -H 'Content-Type: application/json' \
+	  -d '
+	    {
+	        "id": "ServiceIntent.594e3d10-59f9-4ee6-97be-fe50b9c99bd8",        
+	        "topology": "MyTest",
+	        "stype": "ASYN",
+	        "priority": {
+	            "exclusive": false,
+	            "level": 0
+	        },
+	        "qos": "NONE",
+	        "geoscope": {
+	            "scopeType": "global",
+	            "scopeValue": "global"
+	        }
+	    }
+    '
+
+
+**b. To retrieve all the Intent**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /intent**
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/intent'
+
+
+**c. To retrieve a specific Intent based on Intent ID**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /intent/<intent id>**
+
+==============   ============================
+Param		       Description
+==============   ============================
+id                ID of existing intent
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/intent/ServiceIntent.594e3d10-59f9-4ee6-97be-fe50b9c99bd8'
+
+**d. To delete a specific Intent based on intent id**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /intent/<intent id>**
+
+==============   ============================
+Param		      Description
+==============   ============================
+id                ID of the existing intent
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+curl -iX DELETE \
+  'http://127.0.0.1:8080/intent/ServiceIntent.594e3d10-59f9-4ee6-97be-fe50b9c99bd8'
+   
+
+**e. To retrieve list service intents for the given service topology**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /intent/topology/<TopologeName>**
+
+==============   ======================================
+Param		       Description
+==============   ======================================
+TopologeName       name of the given service topology 
+==============   ======================================	
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/intent/topology/MyTest'
+
+Topology
+-------------------
+
+**a. To retrieve all the Topology**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /topology**
+
+**Example:**
+
+.. code-block:: console
+
+   curl -X GET 'http://localhost:8080/topology' \
+  -H 'Content-Type: application/json'
+
+
+**b. To retrieve a specific Topology based on topology name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /topology/<topology name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+Name             name of the existing Topology
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+   curl -X GET  'http://localhost:8080/topology/MyTest' \
+   -H 'Content-Type: application/json' 
 
 
 
 
-Remove a requirement entity to terminate the service topology
----------------------------------------------------------------
+Fog Function
+-------------------
 
 
-Here is the Javascript-based code example to terminate a service topology by deleting the requirement entity. 
+**a. To create a new Fogfunction**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /fogfunction**
 
 
-.. code-block:: javascript
 
-    var rid = [the id of your created requirement entity];    
-            
-    // 
-    var client = new NGSI10Client(config.brokerURL);                
-    client.deleteContext(rid).then( function(data) {
-        console.log(data);
-    }).catch( function(error) {
-        console.log('failed to send a requirement');
-    });    
+**Example**   
+ 
+.. code-block:: console
+
+	
+	curl -X POST \
+	  'http://127.0.0.1:8080/fogfunction' \
+	  -H 'Content-Type: application/json' \
+	  -d '
+		[
+		    {
+		        "name": "ffTest",
+		        "topology": {
+		            "name": "ffTest",
+		            "description": "a fog function",
+		            "tasks": [
+		                {
+		                    "name": "main",
+		                    "operator": "mqtt-adapter",
+		                    "input_streams": [
+		                        {
+		                            "selected_type": "HOPU",
+		                            "selected_attributes": [],
+		                            "groupby": "EntityID",
+		                            "scoped": false
+		                        }
+		                    ],
+		                    "output_streams": [
+		                        {
+		                            "entity_type": "Out"
+		                        }
+		                    ]
+		                }
+		            ]
+		        },
+		        "intent": {
+		            "id": "ServiceIntent.1c6396bb-281d-4c14-b61d-f0cc0dcc1006",
+		            "topology": "ffTest",
+		            "priority": {
+		                "exclusive": false,
+		                "level": 0
+		            },
+		            "qos": "default",
+		            "geoscope": {
+		                "scopeType": "global",
+		                "scopeValue": "global"
+		            }
+		        },
+		        "status": "enabled"
+		    }
+		]
+	    '
+
+
+
+
+**b. To retrieve all the Fogfunction**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /fogfunction**
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/fogfunction'
+
+
+**c. To retrieve a specific Fogfunction based on fogfunction name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /fogfunction/<name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name             Name of existing fogfunction
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/fogfunction/ffTest'
+
+**d. To delete a specific fogfunction based on fogfunction name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**DELETE /fogfunction/<fogfunction name>**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name              Name of existing fogfunction
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX DELETE \
+	  'http://127.0.0.1:8080/fogfunction/ffTest'
+
+
+**e. To enable a specific fogfunction based on fogfunction name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**GET /fogfunction/<fogfunction name>/enable**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name              Name of existing fogfunction
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/fogfunction/ffTest/enable'
+
+
+**F. To disable a specific fogfunction based on fogfunction name**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+**GET /fogfunction/<fogfunction name>/disable**
+
+==============   ============================
+Param		 Description
+==============   ============================
+name              Name of existing fogfunction
+==============   ============================
+
+
+**Example:**
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/fogfunction/ffTest/disable'
+
+
+
+Device
+-------------------
+
+**a. To create a new device**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /device**
+
+
+
+**Example**   
+ 
+.. code-block:: console
+
+	curl -iX POST \
+	  'http://127.0.0.1:8080/device' \
+	  -H 'Content-Type: application/json' \
+	  -d '
+	    {
+	        "id": "urn:Device.12345",
+	        "type": "HOPU",
+	        "attributes": {
+	            "protocol": {
+	                "type": "string",
+	                "value": "MQTT"
+	                },
+	            "mqttbroker":  {
+	                "type": "string",
+	                "value": "mqtt://mqtt.cdtidev.nec-ccoc.com:1883"
+	                },
+	            "topic": {
+	                "type": "string",
+	                "value": "/api/12345/attrs"
+	                },
+	            "mappings": {
+	                "type": "object",
+	                "value": {
+	                    "temp8": {
+	                        "name": "temperature",
+	                        "type": "float",
+	                        "entity_type": "AirQualityObserved"
+	                    },
+	                    "hum8": {
+	                        "name": "humidity",
+	                        "type": "float",
+	                        "entity_type": "AirQualityObserved"
+	                    }
+	                }
+	            }          
+	        },
+	        "metadata": {
+	            "location": {
+	                    "type": "point",
+	                    "value": {
+	                        "latitude": 49.406393,
+	                        "longitude": 8.684208
+	                    }
+	            }
+	        }
+	    }'
+
+
+**b. To get the list of all registered devices**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /device**
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/device'
+
+
+**c. To delete a specific device**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**DELETE /device/<device_id>** 
+
+==============   ============================
+Param		      Description
+==============   ============================
+device_id         entity ID of this device
+==============   ============================	
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX DELETE \
+	  'http://127.0.0.1:8080/device/urn:Device.12345'
+
+
+
+Subscription
+-------------------
+
+**a. To create a subscription for a given destination**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**POST /subscription**
+
+
+**Example**   
+ 
+.. code-block:: console
+
+	curl -iX POST \
+	  'http://127.0.0.1:8080/subscription' \
+	  -H 'Content-Type: application/json' \
+	  -d '{
+	            "entity_type": "AirQualityObserved",
+	            "destination_broker": "NGSI-LD",
+	            "reference_url": "http://127.0.0.1:9090",
+	            "tenant": "ccoc"
+	      }'
+
+
+**b. To get the list of all registered subscription**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**GET /subscription**
+
+**Example:** 
+
+.. code-block:: console
+
+	curl -iX GET \
+	  'http://127.0.0.1:8080/subscription'
+
+
+**c. To delete a specific subscription**
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**DELETE /subscription/<subscription_id>** 
+
+=================   ============================
+Param                 Description
+=================   ============================
+subscription_id      ID of this subscription
+=================   ============================
+
+
+**Example:** 
+
+.. code-block:: console
+
+
+	curl -iX DELETE \
+	  'http://127.0.0.1:8080/subscription/88bba05c-dda2-11ec-ba1d-acde48001122'
 
 
 NGSI-LD Supported API's

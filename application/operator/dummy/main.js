@@ -12,6 +12,7 @@ var outputs = [];
 var input = {};
 var threshold = 30;
 var myReferenceURL;
+var myCorrelatorID = null;
 var mySubscriptionId = null;
 var isConfigured = false;
 
@@ -53,8 +54,17 @@ function handleCmd(commandObj) {
         setOutputs(commandObj);
     } else if (commandObj.command == 'SET_REFERENCE') {
         setReferenceURL(commandObj);
+    } else if (commandObj.command == 'SET_CORRELATORID') {
+        setCorrelatorID(commandObj);
     }
 }
+
+
+function setCorrelatorID(cmd) {
+    myCorrelatorID = cmd.correlatorID
+    console.log('set my correlatorID to avoid message looping: ', myCorrelatorID);
+}
+
 
 // connect to the IoT Broker
 function connectBroker(cmd) {
@@ -113,7 +123,14 @@ function subscribe(subscribeCtxReq) {
     console.log("================trigger my own subscription===================");
     console.log(subscribeCtxReq);
 
-    ngsi10client.subscribeContext(subscribeCtxReq).then(function(subscriptionId) {
+    var myheaders = {};
+    myheaders["content-type"] = "application/json";
+    
+    if (myCorrelatorID != null) {
+        myheaders["Fiware-Correlator"] = myCorrelatorID;        
+    }
+
+    ngsi10client.subscribeContext(subscribeCtxReq, myheaders).then(function(subscriptionId) {
         console.log("subscription id = " + subscriptionId);
         mySubscriptionId = subscriptionId;
     }).catch(function(error) {
@@ -130,7 +147,14 @@ function publish(ctxUpdate) {
         return
     }
 
-    ngsi10client.updateContext(ctxUpdate).then(function(data) {
+    var myheaders = {};
+    myheaders["content-type"] = "application/json";
+    
+    if (myCorrelatorID != null) {
+        myheaders["Fiware-Correlator"] = myCorrelatorID;        
+    }
+ 
+    ngsi10client.updateContext(ctxUpdate, myheaders).then(function(data) {
         console.log('======send update======');
         console.log(data);
     }).catch(function(error) {

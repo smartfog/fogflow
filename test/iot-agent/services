@@ -10,7 +10,7 @@ set -e
 SCORPIO="http://scorpio:9090/scorpio/v1/info/"
 ORION="http://orion:1026/version"
 IOT_AGENT="http://iot-agent:4041/version"
-CONTEXT="https://fiware.github.io/data-models/context.jsonld"
+CONTEXT="https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld"
 
 if (( $# != 1 )); then
 	echo "Illegal number of parameters"

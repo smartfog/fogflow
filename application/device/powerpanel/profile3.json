@@ -1,5 +1,5 @@
 {
-    "discoveryURL":"http://192.168.0.59/ngsi9",
+    "discoveryURL":"http://host.docker.internal:8080/ngsi9",
     "location": {
         "latitude": 34.804536,
         "longitude": 137.820524

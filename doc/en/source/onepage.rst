@@ -1,3 +1,6 @@
+Quick Start
+===========================================================
+
 
 This is an one-page introductory tutorial to FogFlow.
 In the FIWARE-based architecture, FogFlow can be used to dynamically trigger data processing functions 
@@ -58,8 +61,7 @@ required version 18.03.1-ce, required version > 2.4.2
 
 
 
-Set up all FogFlow components on a single machine
-===========================================================
+
 
 
 Fetch all required scripts
@@ -186,7 +188,7 @@ Once you are able to access the FogFlow dashboard, you can see the following web
 .. figure:: figures/dashboard.png
 
 
-Try out an existing IoT service
+Hello World Example
 ===========================================================
 
 Once the FogFlow cloud node is set up, you can try out some existing IoT services without running any FogFlow edge node.

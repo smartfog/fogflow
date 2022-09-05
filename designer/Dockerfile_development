@@ -1,4 +1,4 @@
-FROM node:11-alpine
+FROM node:16-alpine
 
 WORKDIR /app
 
@@ -8,8 +8,7 @@ ADD package.json /app
 RUN npm install
 
 ADD main.js /app
-ADD dgraph.js /app
-ADD rabbitmq.js /app
+ADD rabbitmq.cjs /app
 ADD ./public /app/public
 
 

@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, abort, request, make_response
-import requests 
+import requests
 import json
 import time
 import datetime
@@ -12,7 +12,7 @@ import os
 import sys
 
 
-app = Flask(__name__, static_url_path = "")
+app = Flask(__name__, static_url_path="")
 
 # global variables
 brokerURL = ''
@@ -21,41 +21,46 @@ timer = None
 lock = threading.Lock()
 camera = None
 cameraURL = ''
-total_size = 0 
+total_size = 0
 
 threshold = 1.0
 imageDemension = 96
-align = openface.AlignDlib('/root/openface/models/dlib/shape_predictor_68_face_landmarks.dat')
-net = openface.TorchNeuralNet('/root/openface/models/openface/nn4.small2.v1.t7', imageDemension)
+align = openface.AlignDlib(
+    '/root/openface/models/dlib/shape_predictor_68_face_landmarks.dat')
+net = openface.TorchNeuralNet(
+    '/root/openface/models/openface/nn4.small2.v1.t7', imageDemension)
 
 saveLocation = ''
 featuresOfTarget = None
 targetedFeaturesIsSet = False
 
+
 @app.errorhandler(400)
 def not_found(error):
-    return make_response(jsonify( { 'error': 'Bad request' } ), 400)
+    return make_response(jsonify({'error': 'Bad request'}), 400)
+
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify( { 'error': 'Not found' } ), 404)
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
 
 @app.route('/admin', methods=['POST'])
-def admin():    
+def admin():
     if not request.json:
         abort(400)
-    
+
     configObjs = request.json
-    handleConfig(configObjs)    
-        
-    return jsonify({ 'responseCode': 200 })
+    handleConfig(configObjs)
+
+    return jsonify({'responseCode': 200})
 
 
-@app.route('/notifyContext', methods = ['POST'])
+@app.route('/notifyContext', methods=['POST'])
 def notifyContext():
-    print ('=============notify=============')
+    print('=============notify=============')
     sys.stdout.flush()
-    print (request.json)
+    print(request.json)
     sys.stdout.flush()
     if not request.json:
         abort(400)
@@ -66,12 +71,14 @@ def notifyContext():
     handleNotify(objs)
     return jsonify({'responseCode': 200})
 
+
 def element2Object(element):
     ctxObj = {}
     for key in element:
         ctxObj[key] = element[key]
 
-    return ctxObj 
+    return ctxObj
+
 
 def object2Element(ctxObj):
     ctxElement = {}
@@ -80,29 +87,32 @@ def object2Element(ctxObj):
 
     for key in ctxObj:
         if key != 'id' and key != 'type' and key != 'modifiedAt' \
-            and key != 'createdAt' and key != 'observationSpace' \
-            and key != 'operationSpace' and key != 'location' and key \
-            != '@context':
+                and key != 'createdAt' and key != 'observationSpace' \
+                and key != 'operationSpace' and key != 'location' and key \
+                != '@context':
             if ctxObj[key].has_key('createdAt'):
                 ctxObj[key].pop('createdAt')
             if ctxObj[key].has_key('modifiedAt'):
                 ctxObj[key].pop('modifiedAt')
             ctxElement[key] = ctxObj[key]
 
-    return ctxElement    
+    return ctxElement
+
 
 def readContextElements(data):
     ctxObjects = []
-    print (data['type'])
+    print(data['type'])
     if data['type'] == 'Notification':
         for attr in data['data']:
             ctxObj = element2Object(attr)
             ctxObjects.append(ctxObj)
     return ctxObjects
 
+
 def handleNotify(contextObjs):
     for ctxObj in contextObjs:
         processInputStreamData(ctxObj)
+
 
 def processInputStreamData(obj):
     print '===============receive context entity===================='
@@ -116,46 +126,50 @@ def processInputStreamData(obj):
         getCameraURL(obj)
     elif obj['type'] == 'ChildLost':
         getChildInfo(obj)
-    
-    with lock: 
+
+    with lock:
         faceMatching()
+
 
 def getCameraURL(entityObj):
     global camera, cameraURL
-    
-    camera = entityObj    
+
+    camera = entityObj
     if 'url' in entityObj:
-        cameraURL = entityObj['url']['value']   
-        print("====== camera url ====",cameraURL)
+        cameraURL = entityObj['url']['value']
+        print("====== camera url ====", cameraURL)
+
 
 def getChildInfo(entityObj):
     global featuresOfTarget, saveLocation, targetedFeaturesIsSet
     if 'imageURL' in entityObj:
-        imageURL = entityObj['imageURL']['value']        
-        image =  url2Image(imageURL)
-            
-        if targetedFeaturesIsSet == False: 
-           featuresOfTarget = getRep(image)
-           targetedFeaturesIsSet = True
-            
-        saveLocation = entityObj['saveLocation']['value']  
+        imageURL = entityObj['imageURL']['value']
+        image = url2Image(imageURL)
 
-def handleConfig(configurations):  
+        if targetedFeaturesIsSet == False:
+            featuresOfTarget = getRep(image)
+            targetedFeaturesIsSet = True
+
+        saveLocation = entityObj['saveLocation']['value']
+
+
+def handleConfig(configurations):
     global brokerURL
-    global num_of_outputs  
+    global num_of_outputs
     for config in configurations:
         if config['command'] == 'CONNECT_BROKER':
             brokerURL = config['brokerURL']
-	    print("********brkerURL********",brokerURL)
+            print("********brkerURL********", brokerURL)
         elif config['command'] == 'SET_OUTPUTS':
             outputs.append({'id': config['id'], 'type': config['type']})
         elif config['command'] == 'SET_INPUTS':
             setInput(config)
 
+
 def setInput(cmd):
     global input
-    print ('cmd')
-    print (cmd)
+    print('cmd')
+    print(cmd)
     if 'id' in cmd:
         input['id'] = cmd['id']
 
@@ -165,9 +179,9 @@ def setInput(cmd):
 def handleTimer():
     global timer
 
-    with lock: 
-        faceMatching()  
-        
+    with lock:
+        faceMatching()
+
     timer = threading.Timer(10, handleTimer)
     timer.start()
 
@@ -195,10 +209,11 @@ def publishResult(ctxObj):
                              data=json.dumps(ctxObj),
                              headers=headers)
     if response.status_code != 201:
-        print ('failed to update context')
+        print('failed to update context')
         sys.stdout.flush()
-        print (response.text)
+        print(response.text)
         sys.stdout.flush()
+
 
 def fetchInputByQuery():
     ctxQueryReq = {}
@@ -210,7 +225,7 @@ def fetchInputByQuery():
                             + input['id'], headers=headers)
 
     if response.status_code != 200:
-        print ('failed to query the input data')
+        print('failed to query the input data')
         return {}
     else:
         jsonResult = response.json()
@@ -221,81 +236,86 @@ def fetchInputByQuery():
         return ctxElments
 
 
-def url2Image(url): 
+def url2Image(url):
     global total_size
     resp = urllib.urlopen(url)
     data = resp.read()
-    
+
     total_size += len(data)
-    
-    image = np.asarray(bytearray(data), dtype=np.uint8)    
+
+    image = np.asarray(bytearray(data), dtype=np.uint8)
     image = cv2.imdecode(image, cv2.CV_LOAD_IMAGE_COLOR)
-    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)    
+    rgbImg = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     return rgbImg
 
-    
+
 def getRep(img):
     bb = align.getLargestFaceBoundingBox(img)
     if bb is None:
         raise Exception("Unable to find a face: {}")
-        
-    alignedFace = align.align(imageDemension, img, bb, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
+
+    alignedFace = align.align(
+        imageDemension, img, bb, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
     if alignedFace is None:
         raise Exception("Unable to align image: {}")
 
     rep = net.forward(alignedFace)
     return rep
-    
 
-def faceMatching():     
+
+def faceMatching():
     global camera, cameraURL, featuresOfTarget, targetedFeaturesIsSet
-    
-    if camera == None or cameraURL == '' or targetedFeaturesIsSet == False:        
+
+    if camera == None or cameraURL == '' or targetedFeaturesIsSet == False:
         print 'parameters are not yet set', camera, cameraURL, featuresOfTarget
-        return     
+        return
 
     image = url2Image(cameraURL)
     if image is None:
         raise Exception("Unable to load image: {}".format(camera))
-        
+
     faces = align.getAllFaceBoundingBoxes(image)
     if faces is None:
         raise Exception("Unable to find a face: {}".format(camera))
-    
+
     for face in faces:
-        alignedFace = align.align(96, image, face, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
+        alignedFace = align.align(
+            96, image, face, landmarkIndices=openface.AlignDlib.OUTER_EYES_AND_NOSE)
         if alignedFace is None:
             raise Exception("Unable to align image: {}")
 
         rep = net.forward(alignedFace)
         d = rep - featuresOfTarget
-        print("  + Squared l2 distance between representations: {:0.3f}".format(np.dot(d, d)))
-            
-        distance = np.dot(d, d);
-        if  distance < threshold:
-            distance = "{:0.3f}".format(distance);        
-            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")              
-        
+        print(
+            "  + Squared l2 distance between representations: {:0.3f}".format(np.dot(d, d)))
+
+        distance = np.dot(d, d)
+        if distance < threshold:
+            distance = "{:0.3f}".format(distance)
+            now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
             # save the image and post it to the remote image server
-            fileName = 'childfound-' + camera['cameraID']['value'] + '-' + str(int(time.time())) + '.png'
-            bgrImg = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)    
+            fileName = 'childfound-' + \
+                camera['cameraID']['value'] + '-' + \
+                str(int(time.time())) + '.png'
+            bgrImg = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
             cv2.imwrite(fileName, bgrImg)
             files = {fileName: open(fileName, 'rb')}
             requests.post(saveLocation, files=files)
-           
-	    print("camera***********",camera) 
-            result = {  "date": {"type":"Property", "value":now}, 
-                        "cameraID": {"type":"Property", "value":camera['cameraID']['value']}, 
-                        "where": {"type":"Property", "value":[35.0878,140.578]}, 
-                        "delta": {"type":"Property", "value":distance}, 
-                        "image": {"type":"Property", "value":saveLocation + '/' + fileName},
-                        "totalbytes": {"type":"Property", "value":total_size}
-                    }
-            
-            print("**** Result *******",result)
-            #update context
-            publishResult(result)  
-            
+
+            print("camera***********", camera)
+            result = {"date": {"type": "Property", "value": now},
+                      "cameraID": {"type": "Property", "value": camera['cameraID']['value']},
+                      "where": {"type": "Property", "value": [35.0878, 140.578]},
+                      "delta": {"type": "Property", "value": distance},
+                      "image": {"type": "Property", "value": saveLocation + '/' + fileName},
+                      "totalbytes": {"type": "Property", "value": total_size}
+                      }
+
+            print("**** Result *******", result)
+            # update context
+            publishResult(result)
+
 
 def requestInputBySubscription():
     ctxSubReq = {}
@@ -304,10 +324,10 @@ def requestInputBySubscription():
 
     if id in input:
         ctxSubReq['entities'].append({'id': input['id'],
-                'isPattern': False})
+                                      'isPattern': False})
     else:
         ctxSubReq['entities'].append({'type': input['type'],
-                'isPattern': True})
+                                      'isPattern': True})
 
     subrequestUri['uri'] = 'http://host.docker.internal:' \
         + os.getenv('myport')
@@ -328,29 +348,29 @@ def requestInputBySubscription():
                              headers=headers)
 
     if response.status_code != 200:
-        print ('failed to query the input data')
+        print('failed to query the input data')
     else:
-        print ('subscribed to the input data')
+        print('subscribed to the input data')
 
 
 # continuous execution to handle received notifications
 
 def notify2execution():
     myport = int(os.getenv('myport'))
-    print ('listening on port ' + os.getenv('myport'))
+    print('listening on port ' + os.getenv('myport'))
 
     app.run(host='0.0.0.0', port=myport)
     timer.cancel()
 
 
 def runInOperationMode():
-    print ('===== OPERATION MODEL========')
+    print('===== OPERATION MODEL========')
 
     # apply the configuration received from the environmental varible
 
     myCfg = os.getenv('adminCfg')
 
-    print (myCfg)
+    print(myCfg)
 
     adminCfg = json.loads(myCfg)
     handleConfig(adminCfg)
@@ -370,13 +390,13 @@ def query2execution():
 
 
 def runInTestMode():
-    print ('===== TEST NGSILD MODEL========')
+    print('===== TEST NGSILD MODEL========')
 
     # load the configuration
 
     with open('config.json') as json_file:
         config = json.load(json_file)
-        print (config)
+        print(config)
 
         handleConfig(config)
 
@@ -391,5 +411,4 @@ if __name__ == '__main__':
     if len(parameters) == 2 and parameters[1] == '-o':
         runInOperationMode()
     else:
-        runInTestMode()    
-    
+        runInTestMode()

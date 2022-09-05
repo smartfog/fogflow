@@ -3,14 +3,17 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ant0ine/go-json-rest/rest"
-	"github.com/google/uuid"
-	_ "github.com/lib/pq"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/ant0ine/go-json-rest/rest"
+	"github.com/google/uuid"
+	_ "github.com/lib/pq"
+
+	. "fogflow/common/config"
 	. "fogflow/common/ngsi"
 )
 
@@ -28,10 +31,12 @@ type FastDiscovery struct {
 	//backend entity repository
 	repository EntityRepository
 
+	cfg         *Config
 	SecurityCfg *HTTPS
 
 	//list of active brokers within the same site
-	BrokerList map[string]*BrokerProfile
+	BrokerList       map[string]*BrokerProfile
+	broker_list_lock sync.RWMutex
 
 	//mapping from subscriptionID to subscription
 	subscriptions      map[string]*SubscribeContextAvailabilityRequest
@@ -42,12 +47,13 @@ type FastDiscovery struct {
 	cache_lock  sync.RWMutex
 }
 
-func (fd *FastDiscovery) Init(httpsCfg *HTTPS) {
+func (fd *FastDiscovery) Init(config *Config) {
 	fd.subscriptions = make(map[string]*SubscribeContextAvailabilityRequest)
 	fd.BrokerList = make(map[string]*BrokerProfile)
 	fd.notifyCache = make([]*CacheItem, 0)
 
-	fd.SecurityCfg = httpsCfg
+	fd.cfg = config
+	fd.SecurityCfg = &config.HTTPS
 
 	fd.repository.Init()
 }
@@ -100,7 +106,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
-		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction, subscription.FiwareService, registration.FiwareService) == true {
+		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction) == true {
 			subscriberURL := subscription.Reference
 			subID := subscription.SubscriptionId
 			entities := make([]EntityId, 0)
@@ -109,8 +115,6 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 			entity.ID = registration.ID
 			entity.Type = registration.Type
 			entity.IsPattern = false
-			entity.FiwareServicePath = registration.FiwareServicePath
-			entity.MsgFormat = registration.MsgFormat
 			entities = append(entities, entity)
 
 			entityMap := make(map[string][]EntityId)
@@ -136,8 +140,19 @@ func (fd *FastDiscovery) updateRegistration(registReq *RegisterContextRequest) {
 
 func (fd *FastDiscovery) deleteRegistration(eid string) {
 	registration := fd.repository.retrieveRegistration(eid)
-	if registration != nil {
-		fd.notifySubscribers(registration, "DELETE")
+	if registration == nil {
+		INFO.Println("the entity registration does not exist: ", eid)
+		return
+	}
+
+	fd.notifySubscribers(registration, "DELETE")
+
+	// if the registration is for the broker itself, we need to update the broker list
+	if registration.Type == "IoTBroker" {
+		brokerID := registration.ID
+		fd.broker_list_lock.Lock()
+		delete(fd.BrokerList, brokerID)
+		fd.broker_list_lock.Unlock()
 	}
 
 	fd.repository.deleteEntity(eid)
@@ -173,7 +188,7 @@ func (fd *FastDiscovery) DiscoverContextAvailability(w rest.ResponseWriter, r *r
 }
 
 func (fd *FastDiscovery) handleQueryCtxAvailability(req *DiscoverContextAvailabilityRequest) []ContextRegistrationResponse {
-	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction, "")
+	entityMap := fd.repository.queryEntities(req.Entities, req.Attributes, req.Restriction)
 
 	// prepare the response
 	registrationList := make([]ContextRegistrationResponse, 0)
@@ -263,7 +278,7 @@ func (fd *FastDiscovery) UpdateLDContextAvailability(w rest.ResponseWriter, r *r
 
 // handle NGSI9 subscription based on the local database
 func (fd *FastDiscovery) handleSubscribeCtxAvailability(subReq *SubscribeContextAvailabilityRequest) {
-	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction, subReq.FiwareService)
+	entityMap := fd.repository.queryEntities(subReq.Entities, subReq.Attributes, subReq.Restriction)
 	if len(entityMap) > 0 {
 		fd.sendNotify(subReq.SubscriptionId, subReq.Reference, entityMap, "CREATE")
 	}
@@ -346,10 +361,12 @@ func (fd *FastDiscovery) resendCachedItems() {
 	}
 }
 
-// for every 2 second
 func (fd *FastDiscovery) OnTimer() {
-	//try to send the items in the cache
+	// try to send the items in the cache
 	fd.resendCachedItems()
+
+	// check the liveness of brokers
+	fd.checkBrokerList()
 }
 
 func (fd *FastDiscovery) postNotify(subscriberURL string, notifyReq *NotifyContextAvailabilityRequest) bool {
@@ -459,12 +476,20 @@ func (fd *FastDiscovery) getSubscriptions(w rest.ResponseWriter, r *rest.Request
 	w.WriteJson(fd.subscriptions)
 }
 
+func (fd *FastDiscovery) getEntityTypes(w rest.ResponseWriter, r *rest.Request) {
+	w.WriteHeader(200)
+	w.WriteJson(fd.repository.GetEntityTypes())
+}
+
 func (fd *FastDiscovery) getStatus(w rest.ResponseWriter, r *rest.Request) {
 	w.WriteHeader(200)
 	w.WriteJson("ok")
 }
 
 func (fd *FastDiscovery) getBrokerList(w rest.ResponseWriter, r *rest.Request) {
+	fd.broker_list_lock.RLock()
+	defer fd.broker_list_lock.RUnlock()
+
 	w.WriteHeader(200)
 	w.WriteJson(fd.BrokerList)
 }
@@ -480,21 +505,28 @@ func (fd *FastDiscovery) onBrokerHeartbeat(w rest.ResponseWriter, r *rest.Reques
 
 	// send out the response
 	updateCtxResp := UpdateContextResponse{}
-	// updateCtxResp.ErrorCode.Code = 200
-	// updateCtxResp.ErrorCode.ReasonPhrase = "OK"
 	w.WriteJson(&updateCtxResp)
+
+	fd.broker_list_lock.Lock()
+	defer fd.broker_list_lock.Unlock()
 
 	if broker, exist := fd.BrokerList[brokerProfile.BID]; exist {
 		broker.MyURL = brokerProfile.MyURL
+		broker.Last_Heartbeat_Update = time.Now()
 	} else {
+		brokerProfile.Last_Heartbeat_Update = time.Now()
 		fd.BrokerList[brokerProfile.BID] = &brokerProfile
 	}
 }
 
-func (fd *FastDiscovery) selectBroker() *BrokerProfile {
-	for _, broker := range fd.BrokerList {
-		return broker
-	}
+func (fd *FastDiscovery) checkBrokerList() {
+	fd.broker_list_lock.Lock()
+	defer fd.broker_list_lock.Unlock()
 
-	return nil
+	for brokerID, brokerProfile := range fd.BrokerList {
+		if brokerProfile.IsLive(fd.cfg.Broker.HeartbeatInterval*6) == false {
+			delete(fd.BrokerList, brokerID)
+			INFO.Println("REMOVE broker " + brokerID + " from the list")
+		}
+	}
 }

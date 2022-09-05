@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: fogflow                      
   name: discovery
 spec:
   selector:
@@ -16,6 +15,7 @@ spec:
       containers:
       - name: discovery
         image: fogflow/discovery:k8s
+        imagePullPolicy: Always
         ports:
         - containerPort: 8090  
         volumeMounts:
@@ -27,23 +27,21 @@ spec:
       - name: config-json 
         configMap:
           name: fogflow-configmap
-      serviceAccountName: default
+          
 ---          
           
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: fogflow                      
   name: discovery
   labels:
     run: discovery
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
     - port: 8090
       targetPort: 8090
   selector:
     run: discovery
-  externalIPs: [172.30.48.24]
 
 

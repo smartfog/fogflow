@@ -25,30 +25,9 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 	// start REST API server
 	router, err := rest.MakeRouter(
-		// standard ngsi10 API
-		rest.Post("/ngsi10/updateContext", broker.UpdateContext),
-		rest.Post("/ngsi10/queryContext", broker.QueryContext),
-		rest.Post("/ngsi10/notifyContext", broker.NotifyContext),
-		rest.Post("/ngsi10/subscribeContext", broker.SubscribeContext),
-		rest.Post("/ngsi10/unsubscribeContext", broker.UnsubscribeContext),
-		rest.Post("/ngsi10/notifyContextAvailability", broker.NotifyContextAvailability),
-		rest.Post("/ngsi10/notifyContextAvailabilityv2", broker.Notifyv2ContextAvailability),
-		rest.Post("/ngsi10/notifyLDContextAvailability", broker.NotifyLDContextAvailability),
-		// ngsiv2 API
-		rest.Post("/v2/subscriptions", broker.Subscriptionv2Context),
-		// api for iot-agent
-		// Fiware Entity Update API
-		rest.Post("/v1/updateContext", broker.UpdateContext),
-
-		//Southbound feature addition- Device Registration API
-		rest.Post("/NGSI9/registerContext", broker.RegisterContext),
-		rest.Delete("/NGSI9/registration/#rid", apisrv.deleteRegistration),
-		rest.Get("/NGSI9/registration/#rid", apisrv.getRegistration),
-
 		// convenient ngsi10 API
 		rest.Get("/version", apisrv.getVersion),
 		rest.Get("/ngsi10/entity", apisrv.getEntities),
-		rest.Get("/v2/entities", apisrv.getEntities),
 		rest.Get("/ngsi10/entity/#eid", apisrv.getEntity),
 		rest.Get("/ngsi10/entity/#eid/#attr", apisrv.getAttribute),
 		rest.Delete("/ngsi10/entity/#eid", apisrv.deleteEntity),
@@ -57,47 +36,45 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 		rest.Get("/ngsi10/subscription/#sid", apisrv.getSubscription),
 		rest.Delete("/ngsi10/subscription/#sid", apisrv.deleteSubscription),
 
-		//NGSIV2 APIs
-		rest.Get("/v2/subscriptions", apisrv.getv2Subscriptions),
-		rest.Get("/v2/subscription/#sid", apisrv.getv2Subscription),
-		rest.Delete("/v2/subscription/#sid", apisrv.deletev2Subscription),
+		//============= standard ngsi10 API ===========================
 
-		//NGSI-LD APIs
+		rest.Post("/ngsi10/updateContext", broker.NGSIV1_UpdateContext),
 
-		// Add upsert Api
-		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.LDUpdateContext),
-		rest.Post("/ngsi-ld/v1/entityOperations/upsert/", broker.LDUpdateContext),
-		rest.Post("/ngsi10/unsubscribeLDContext", broker.UnsubscribeLDContext),
+		rest.Post("/ngsi10/queryContext", broker.NGSIV1_QueryContext),
 
-		//global Query endpoint for NGSILD 
+		rest.Post("/ngsi10/notifyContext", broker.NGSIV1_NotifyContext),
+		rest.Post("/ngsi10/subscribeContext", broker.NGSIV1_SubscribeContext),
+		rest.Post("/ngsi10/unsubscribeContext", broker.NGSIV1_UnsubscribeContext),
+		rest.Post("/ngsi10/notifyContextAvailability", broker.NGSIV1_NotifyContextAvailability),
 
-		rest.Post("/ngsi-ld/v1/entityOperations/query", broker.LDQueryContext),
+		//============= NGSIV2 APIs ===========================
 
-		//create and update
+		rest.Post("/v2/entities", broker.NGSIV2_createEntities),
+		rest.Get("/v2/entities", broker.NGSIV2_getEntities),
+		rest.Get("/v2/entities/", broker.NGSIV2_queryEntities),
+		rest.Get("/v2/entities/#eid", broker.NGSIV2_getEntity),
+		rest.Post("/v2/notify", broker.NGSIV2_notify),
 
-		rest.Post("/ngsi-ld/v1/entities/", broker.LDCreateEntity),
+		//============= NGSI-LD APIs ===========================
 
-		rest.Post("/ngsi-ld/v1/entities/#eid/attrs", broker.LDAppendEntityAttributes),
-		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs", broker.LDUpdateEntityAttributes),
-		rest.Patch("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDUpdateEntityByAttribute),
+		// update
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert", broker.NGSILD_UpdateContext),
+		rest.Post("/ngsi-ld/v1/entityOperations/upsert/", broker.NGSILD_UpdateContext),
+		rest.Post("/ngsi-ld/v1/entities/", broker.NGSILD_CreateEntity),
+		rest.Post("/ngsi-ld/v1/entities", broker.NGSILD_CreateEntity),
+		rest.Delete("/ngsi-ld/v1/entities/#eid", broker.NGSILD_DeleteEntity),
+		rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.NGSILD_DeleteAttribute),
 
-		//query
-		rest.Get("/ngsi-ld/v1/entities/#eid", apisrv.LDGetEntity),
-		rest.Get("/ngsi-ld/v1/entities", apisrv.GetQueryParamsEntities),
+		// query
+		rest.Post("/ngsi-ld/v1/entityOperations/query", broker.NGSILD_QueryByPostedFilters),
+		rest.Get("/ngsi-ld/v1/entities", broker.NGSILD_QueryByParameters),
+		rest.Get("/ngsi-ld/v1/entities/#eid", broker.NGSILD_QueryById),
 
-		//delete
-		rest.Delete("/ngsi-ld/v1/entities/#eid", apisrv.DeleteLDEntity),
-		rest.Delete("/ngsi-ld/v1/entities/#eid/attrs/#attr", broker.LDDeleteEntityAttribute),
-
-		//subscription
-		rest.Post("/ngsi-ld/v1/subscriptions/", broker.LDCreateSubscription),
-		rest.Get("/ngsi-ld/v1/subscriptions/", broker.GetLDSubscriptions),
-		rest.Get("/ngsi-ld/v1/subscriptions/#sid", apisrv.GetLDSubscription),
-		rest.Patch("/ngsi-ld/v1/subscriptions/#sid", broker.UpdateLDSubscription),
-		rest.Delete("/ngsi-ld/v1/subscriptions/#sid", apisrv.DeleteLDSubscription),
-
-		//notify
-		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NotifyLdContext),
+		// subscrie and notify
+		rest.Post("/ngsi-ld/v1/subscriptions/", broker.NGSILD_SubcribeContext),
+		rest.Post("/ngsi-ld/v1/notifyContext", broker.NGSILD_NotifyContext),
+		rest.Post("/ngsi-ld/v1/notifyContext/", broker.NGSILD_NotifyContext),
+		rest.Delete("/ngsi-ld/v1/subscriptions/#sid", broker.NGSILD_UnsubscribeLDContext),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -217,16 +194,6 @@ func (apisrv *RestApiSrv) getSubscriptions(w rest.ResponseWriter, r *rest.Reques
 	w.WriteJson(subscriptions)
 }
 
-/*
-	Handler to delete NGSIV2 subscription by Id
-*/
-
-func (apisrv *RestApiSrv) getv2Subscriptions(w rest.ResponseWriter, r *rest.Request) {
-	v2subscriptions := apisrv.broker.getv2Subscriptions()
-	w.WriteHeader(200)
-	w.WriteJson(v2subscriptions)
-}
-
 func (apisrv *RestApiSrv) getSubscription(w rest.ResponseWriter, r *rest.Request) {
 	var sid = r.PathParam("sid")
 
@@ -239,23 +206,6 @@ func (apisrv *RestApiSrv) getSubscription(w rest.ResponseWriter, r *rest.Request
 	}
 }
 
-/*
-	Handler to get NGSIV2 subscription by SubscriptionId
-*/
-
-func (apisrv *RestApiSrv) getv2Subscription(w rest.ResponseWriter, r *rest.Request) {
-	var sid = r.PathParam("sid")
-
-	v2subscription := apisrv.broker.getv2Subscription(sid)
-
-	if v2subscription == nil {
-		w.WriteHeader(404)
-	} else {
-		w.WriteHeader(200)
-		w.WriteJson(v2subscription)
-	}
-}
-
 func (apisrv *RestApiSrv) deleteSubscription(w rest.ResponseWriter, r *rest.Request) {
 	var sid = r.PathParam("sid")
 
@@ -264,246 +214,5 @@ func (apisrv *RestApiSrv) deleteSubscription(w rest.ResponseWriter, r *rest.Requ
 		w.WriteHeader(200)
 	} else {
 		w.WriteHeader(404)
-	}
-}
-
-/*
-	Handler to delete NGSIV2 subscription by SubscriptionId
-*/
-func (apisrv *RestApiSrv) deletev2Subscription(w rest.ResponseWriter, r *rest.Request) {
-	var sid = r.PathParam("sid")
-
-	err := apisrv.broker.deletev2Subscription(sid)
-	if err == nil {
-		w.WriteHeader(200)
-	} else {
-		w.WriteHeader(404)
-	}
-}
-
-//Southbound feature addition
-func (apisrv *RestApiSrv) getRegistration(w rest.ResponseWriter, r *rest.Request) {
-	var rid = r.PathParam("rid")
-
-	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
-		rid = apisrv.broker.createIdWithFiwareHeaders(rid, r.Header.Get("fiware-service"), r.Header.Get("fiware-servicepath"))
-	} /*else {
-	          rest.Error(w, "Bad Request! Fiware-Service and/or Fiware-ServicePath Headers are Missing!", 400)
-	          return
-	  }
-	  Commented because other registrations also exist, which do not have Fiware headers, like Worker, Broker, etc.*/
-
-	registration := apisrv.broker.getRegistration(rid)
-	if registration == nil {
-		w.WriteHeader(404)
-		w.WriteJson(nil)
-	} else {
-		w.WriteHeader(200)
-		w.WriteJson(registration)
-	}
-}
-
-func (apisrv *RestApiSrv) deleteRegistration(w rest.ResponseWriter, r *rest.Request) {
-	var rid = r.PathParam("rid")
-
-	if r.Header.Get("fiware-service") != "" && r.Header.Get("fiware-servicepath") != "" {
-		rid = apisrv.broker.createIdWithFiwareHeaders(rid, r.Header.Get("fiware-service"), r.Header.Get("fiware-servicepath"))
-	} else {
-		rest.Error(w, "Bad Request! Fiware-Service and/or Fiware-ServicePath Headers are Missing!", 400)
-		return
-	}
-
-	err := apisrv.broker.deleteRegistration(rid)
-	if err == nil {
-		w.WriteHeader(200)
-	} else {
-		w.WriteHeader(400)
-	}
-}
-
-// NGSI-LD starts from here.
-func (apisrv *RestApiSrv) DeleteLDEntity(w rest.ResponseWriter, r *rest.Request) {
-	var eid = r.PathParam("eid")
-	var newEid string
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); (ctype == "application/json" || ctype == "application/ld+json") && accept == "application/ld+json" {
-		if r.Header.Get("fiware-service") != "" {
-			newEid = eid + "@" + r.Header.Get("fiware-service")
-			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-		} else {
-			newEid = eid + "@" + "default"
-		}
-		err := apisrv.broker.ldDeleteEntity(newEid)
-		if err == nil {
-			w.WriteHeader(204)
-		} else {
-			rest.Error(w, err.Error(), 404)
-		}
-	} else {
-		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
-		return
-	}
-}
-
-func (apisrv *RestApiSrv) LDGetEntity(w rest.ResponseWriter, r *rest.Request) {
-	var eid = r.PathParam("eid")
-	var newEid string
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/ld+json" || accept == "application/ld+json" || accept == "application/ld+json" || accept == "application/*" || accept == "application/json" || accept == "*/*" {
-		if r.Header.Get("fiware-service") != "" {
-			newEid = eid + "@" + r.Header.Get("fiware-service")
-			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-		} else {
-			newEid = eid + "@" + "default"
-		}
-
-		if r.Header.Get("fiware-servicepath") != "" {
-			w.Header().Set("fiware-servicepath", r.Header.Get("fiware-servicepath"))
-		}
-		entity := apisrv.broker.ldGetEntity(newEid)
-		if entity != nil {
-			if accept == "application/json" || accept == " " {
-				w.Header().Set("Content-Type", "application/json")
-			} else {
-				w.Header().Set("Content-Type", "application/ld+json")
-			}
-			w.WriteHeader(200)
-			w.WriteJson(entity)
-		} else {
-			w.WriteHeader(404)
-		}
-	} else {
-		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
-		return
-	}
-}
-
-// To get query parameters from NGSI-LD Entity Query Requests
-func (apisrv *RestApiSrv) GetQueryParamsEntities(w rest.ResponseWriter, r *rest.Request) {
-	queryValues := r.URL.Query()
-	fmt.Println("queryValues", queryValues)
-	if ctype, accept := r.Header.Get("Content-Type"), r.Header.Get("Accept"); ctype == "application/json" && accept == "application/ld+json" {
-		var fiwareService string
-		if r.Header.Get("fiware-service") != "" {
-			fiwareService = r.Header.Get("fiware-service")
-			w.Header().Set("fiware-service", r.Header.Get("fiware-service"))
-		} else {
-			fiwareService = "default"
-		}
-
-		if r.Header.Get("fiware-servicepath") != "" {
-			w.Header().Set("fiware-servicepath", r.Header.Get("fiware-servicepath"))
-		}
-
-		if attrs, ok := queryValues["attrs"]; ok == true {
-			if len(queryValues) > 1 {
-				rest.Error(w, "Query parameters other than attrs are not supported in this request!", 400)
-				return
-			}
-			if attrs[0] == "" {
-				rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-				return
-			}
-
-			entities := apisrv.broker.ldEntityGetByAttribute(attrs, fiwareService)
-			if len(entities) > 0 {
-				w.WriteHeader(200)
-				w.WriteJson(entities)
-			} else {
-				w.WriteHeader(404)
-			}
-			return
-		} else if typ, ok := queryValues["type"]; ok == true {
-			if typ[0] == "" {
-				rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-				return
-			}
-			if eid, ok := queryValues["id"]; ok == true {
-				if len(queryValues) > 2 {
-					rest.Error(w, "Query parameters other than id and type are not supported in this request!", 400)
-					return
-				}
-				if eid[0] == "" {
-					rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-					return
-				}
-				entities := apisrv.broker.ldEntityGetById(eid, typ, fiwareService)
-				if len(entities) > 0 {
-					w.WriteHeader(200)
-					w.WriteJson(entities)
-				} else {
-					w.WriteHeader(404)
-				}
-				return
-			}
-			if idPattern, ok := queryValues["idPattern"]; ok == true {
-				if len(queryValues) > 2 {
-					rest.Error(w, "Query parameters other than idPattern and type are not supported in this request!", 400)
-					return
-				}
-				if idPattern[0] == "" {
-					rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-					return
-				}
-				entities := apisrv.broker.ldEntityGetByIdPattern(idPattern, typ)
-				if len(entities) > 0 {
-					w.WriteHeader(200)
-					w.WriteJson(entities)
-				} else {
-					w.WriteHeader(404)
-				}
-				return
-			}
-
-			if len(queryValues) > 1 {
-				rest.Error(w, "Query parameters other than type are not supported in this request!", 400)
-				return
-			}
-			link := r.Header.Get("Link")
-			entities, err := apisrv.broker.ldEntityGetByType(typ, link, fiwareService)
-			if err != nil {
-				w.WriteHeader(500)
-			} else {
-				if len(entities) > 0 {
-					w.WriteHeader(200)
-					w.WriteJson(entities)
-				} else {
-					w.WriteHeader(404)
-				}
-				return
-			}
-		} else {
-			rest.Error(w, "Incorrect or missing query parameters!", http.StatusBadRequest)
-			return
-		}
-	} else {
-		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
-		return
-	}
-}
-func (apisrv *RestApiSrv) GetLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-	if accept := r.Header.Get("Accept"); accept == "application/ld+json" {
-		sid := r.PathParam("sid")
-		subscription := apisrv.broker.getLDSubscription(sid)
-		if subscription != nil {
-			w.WriteHeader(200)
-			w.WriteJson(subscription)
-		} else {
-			w.WriteHeader(404)
-		}
-	} else {
-		rest.Error(w, "Missing Headers or Incorrect Header values!", http.StatusBadRequest)
-	}
-}
-
-func (apisrv *RestApiSrv) DeleteLDSubscription(w rest.ResponseWriter, r *rest.Request) {
-	sid := r.PathParam("sid")
-	err := apisrv.broker.deleteLDSubscription(sid)
-	if err != nil {
-		if err.Error() == "NotFound" {
-			w.WriteHeader(404)
-		} else {
-			rest.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	} else {
-		w.WriteHeader(204)
 	}
 }

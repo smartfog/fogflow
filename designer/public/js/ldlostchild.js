@@ -4,7 +4,7 @@ $(function() {
     var handlers = {}
 
     var childphotoURL = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/lostchild.png';
-    var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo';
+    var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/data/photo';
 
     var cameraMarkers = {};
 
@@ -117,69 +117,29 @@ $(function() {
     }
 
     function checkTopology() {
-        var queryReq = {}
-        //queryReq.entities = [{ id: 'Topology.ld-child-finder', type: 'Topology', isPattern: false }];
-
-        /*client.queryContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList && resultList.length > 0) {
-                curTopology = resultList[0];
-            }*/
-
-	 var name = "ld-child-finder"
-         queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-         clientDes.getContext(queryReq).then(function(resultList) {
-
-		if (resultList.data && resultList.data.length > 0) {
-                console.log("check topology ",isDataExists(name,resultList.data));
-                var cTopolody = isDataExists(name,resultList.data);
-                if (cTopolody.length != 0) {
-                    curTopology = cTopolody[0];
-                }
+        fetch('/topology/ld-child-finder').then(res => res.json()).then(topology => {
+            if (Object.values(topology).length > 0) { //non-empty       
+                curTopology = topology;   
             }
-
-            showTopology();
+            showTopology();                   
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required topology');
+        });    
     }
 
 
     function checkIntent() {
-        var queryReq = {};
-        //queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.ld-child-finder' }] }
-
-        /*client.queryContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList && resultList.length > 0) {
-                curIntent = resultList[0];
-
+		fetch('/intent/topology/ld-child-finder').then(res => res.json()).then(intent => {
+            if (Object.values(intent).length > 0) { //non-empty 
+                curIntent = intent; 
                 //update the current geoscope as well
-                geoscope = curIntent.attributes.intent.value.geoscope;
-            }*/
-
-	queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        scopeValue = 'ld-child-finder'
-	
-	clientDes.getContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList.data && resultList.data.length > 0) {
-                var result = resultList.data.filter(x => x.topology === scopeValue);
-                if (result.length > 0) {
-                    console.log("service intent result ---- ",result);
-                    curIntent = result[0];
-                    //update the current geoscope as well
-                    geoscope = result[0].geoscope;
-                }
-                
-            }
-
+                geoscope = intent[0].geoscope;                 
+            }              
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required intent');
+        });    
     }
 
     function showTopology() {
@@ -213,31 +173,13 @@ $(function() {
 
         var topologyCtxObj = {};
 
-        /*topologyCtxObj.entityId = {
-            id: 'Topology.' + topology.name,
-            type: topology.name,
-            isPattern: false
-        };
-
-        topologyCtxObj.attributes = {};
-        topologyCtxObj.attributes.status = { type: 'string', value: 'disabled' };
-        topologyCtxObj.attributes.template = { type: 'object', value: topology };*/
-
-	topologyCtxObj.attributes = topology ;
-        topologyCtxObj.internalType = 'Topology';
-        topologyCtxObj.updateAction = 'UPDATE';
-
-        clientDes.updateContext(topologyCtxObj).then(function(data) {
-            console.log(data);
-
-            // update the current topology
-            curTopology = topologyCtxObj;
+        topologyCtxObj.attributes = topology ;
+		fetch('/topology/ld-child-finder').then(res => res.json()).then(topologyCtxObj => {
+                curTopology = topologyCtxObj;
         }).catch(function(error) {
-            console.log('failed to submit the topology');
-        });
-
-        //disable the submit button
+           console.log(error);   
         $('#submitTopology').prop('disabled', true);
+        });
     }
 
     function loadTopologyFile(evt) {
@@ -304,81 +246,37 @@ $(function() {
 
 
     function sendIntent() {
-        if (clientDes == null) {
-            console.log('no nearby broker');
-            return;
-        }
-
-        console.log('issue an service intent for this service topology ', curTopology);
-
-        // create the intent object
-        /*var topology = curTopology.attributes.template.value
-
-        var intent = {};
-        intent.topology = topology.name;
-        intent.priority = {
+            console.log('issue an service intent for this service topology ', curTopology);
+	var topology = curTopology.name;
+	var uid = uuid();
+        var sid = 'ServiceIntent.' + uid;
+	var serviceintent = {};
+	serviceintent.id = sid;
+	//serviceintent.stype = "SYN";
+	serviceintent.qos = "default";
+	serviceintent.geoscope = geoscope;
+	serviceintent.priority = {
             'exclusive': false,
             'level': 50
         };
-        intent.qos = "default";
-        intent.geoscope = geoscope;
-
-        // create the intent entity            
-        var intentCtxObj = {};
-        intentCtxObj.entityId = {
-            id: 'ServiceIntent.' + uuid(),
-            type: 'ServiceIntent',
-            isPattern: false
-        };
-        intentCtxObj.attributes = {};
-        intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        intentCtxObj.attributes.intent = { type: 'object', value: intent };
-
-        intentCtxObj.metadata = {};
-        intentCtxObj.metadata.topology = { type: 'string', value: curTopology.entityId.id };
-
-        console.log(JSON.stringify(intentCtxObj));
-
-        // check if the dynamic task controlling is selected
-        //var scopeUpdating = document.getElementById('ScopeUpdating').checked;
-        //var checkingInterval = parseInt($('#checkingInterval option:selected').val(), 10);    
-        //var radiusInterval = parseInt($('#radiusInterval option:selected').val(), 10);*/
-
-	var topology = curTopology.name
-        var intent = {};
-        var intentCtxObj = {};
-        var attribute = {};
-        attribute.topology = topology;
-        attribute.priority = {
-            'exclusive': false,
-            'level': 50
-        };
-        attribute.qos = "default";
-        attribute.geoscope = geoscope;
-        attribute.id = 'ServiceIntent.' + uuid();
-        attribute.action= 'UPDATE'
-
-      
-        console.log(JSON.stringify(intentCtxObj));
-        intentCtxObj.attribute = attribute;
-        intentCtxObj.internalType = "ServiceIntent";
-        intentCtxObj.updateAction = "UPDATE";            
-
-        clientDes.updateContext(intentCtxObj).then(function(data) {
+        serviceintent.topology = topology;
+	serviceintent.action = 'ADD';
+	//console.log(JSON.stringify(serviceintent));
+	fetch("/intent", {
+            method: "POST",
+            headers: {
+                Accept: "application/json+ld",
+                "Content-Type": "application/json"
+            },
+	    body: JSON.stringify(serviceintent)
+        })
+        .then(function(data) {
             console.log(data);
-            curIntent = intentCtxObj;
-
+            curIntent = serviceintent;
+	    console.log(JSON.stringify(curIntent));
             // change the button status
             $('#enableService').prop('disabled', true);
             $('#disableService').prop('disabled', false);
-
-            /*
-            if (scopeUpdating == true) {
-                console.log('start the timer for checking results and updating the search scope')
-                checkingTimer = setInterval(onCheckingTimer, checkingInterval * 1000);
-                radiusStepDistance = radiusInterval;
-            }*/
-
         }).catch(function(error) {
             console.log('failed to submit the defined intent');
         });
@@ -419,43 +317,17 @@ $(function() {
 
 
     function cancelIntent() {
-        if (clientDes == null) {
-            console.log('no nearby broker');
-            return;
-        }
-
         console.log('cancel the issued intent for this service topology ', curTopology.name);
-
-        //stop the timer for result checking
-        if (checkingTimer != null) {
-            console.log('stop the timer for checking results and updating the search scope')
-            clearInterval(checkingTimer);
-        }
-
-        /*var entityid = {
-            id: curIntent.entityId.id,
-            type: 'ServiceIntent',
-            isPattern: false
-        };*/
-
-	var sIntent = {};
-        var attribute = {id:curIntent.id, action:'DELETE'}
-        sIntent.attribute = attribute
-        sIntent.updateAction = 'DELETE';
-        sIntent.internalType = 'ServiceIntent';
-        sIntent.uid = curIntent.uid
-
-        clientDes.deleteContext(sIntent).then(function(data) {
-            console.log(data);
-
+		fetch("/intent/" + curIntent.id, {
+            method: "DELETE"
+        })	
+        .then(function(data) {
+	    console.log(data);
             curIntent = null;
             geoscope = {
                 scopeType: "local",
                 scopeValue: "local"
             };
-
-            personsFound = [];
-
             $('#enableService').prop('disabled', false);
             $('#disableService').prop('disabled', true);
         }).catch(function(error) {
@@ -490,8 +362,8 @@ $(function() {
         console.log('publish the information of the lost child, image at ', childphotoURL);
 
         var lostChildCtxObj = {};
-	lostChildCtxObj.id = 'urn:ngsi-ld:Stream.ChildLost.01';
-	lostChildCtxObj.type = 'ChildLost';
+		lostChildCtxObj.id = 'urn:ngsi-ld:Stream.ChildLost.01';
+		lostChildCtxObj.type = 'ChildLost';
 
         /*lostChildCtxObj.entityId = {
             id: 'Stream.ChildLost.01',

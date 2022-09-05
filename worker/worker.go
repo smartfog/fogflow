@@ -23,7 +23,6 @@ type Worker struct {
 
 	cfg               *Config
 	selectedBrokerURL string
-	//httpBrokerURL     string
 
 	profile WorkerProfile
 }
@@ -34,7 +33,7 @@ func (w *Worker) Start(config *Config) bool {
 	w.profile.WID = w.id
 	w.profile.Capacity = config.Worker.Capacity
 	w.profile.PLocation = config.Location
-
+	w.profile.Workload = 0
 	w.profile.OSType = runtime.GOOS
 	w.profile.HWType = runtime.GOARCH
 
@@ -49,22 +48,12 @@ func (w *Worker) Start(config *Config) bool {
 
 	w.selectedBrokerURL = config.GetBrokerURL()
 
-	INFO.Println("communicating with the broker ", w.selectedBrokerURL)
-
-	for {
-		err := w.publishMyself()
-		if err != nil {
-			INFO.Println("wait for the assigned broker to be ready")
-			time.Sleep(5 * time.Second)
-		} else {
-			INFO.Println("annouce myself to the nearby broker")
-			break
-		}
-	}
-
 	// start the executor to interact with docker
 	w.executor = &Executor{}
-	w.executor.Init(w.cfg, w.selectedBrokerURL)
+	if w.executor.Init(w.cfg, w.selectedBrokerURL, w) == false {
+		ERROR.Println("Failed to initialize the underlying container engine: ", config.Worker.ContainerManagement)
+		return false
+	}
 
 	// create the communicator with the broker info and topics
 	w.communicator = NewCommunicator(&cfg)
@@ -90,6 +79,8 @@ func (w *Worker) Start(config *Config) bool {
 		}
 	}()
 
+	w.publishMyself()
+
 	return true
 }
 
@@ -107,43 +98,9 @@ func (w *Worker) Quit() {
 	w.executor.Shutdown()
 }
 
-func (w *Worker) publishMyself() error {
-	ctxObj := ContextObject{}
-
-	ctxObj.Entity.ID = w.id
-	ctxObj.Entity.Type = "Worker"
-	ctxObj.Entity.IsPattern = false
-
-	ctxObj.Attributes = make(map[string]ValueObject)
-	ctxObj.Attributes["capacity"] = ValueObject{Type: "integer", Value: w.profile.Capacity}
-	ctxObj.Attributes["location"] = ValueObject{Type: "object", Value: w.cfg.Location}
-
-	ctxObj.Metadata = make(map[string]ValueObject)
-	mylocation := Point{}
-	mylocation.Latitude = w.cfg.Location.Latitude
-	mylocation.Longitude = w.cfg.Location.Longitude
-	ctxObj.Metadata["location"] = ValueObject{Type: "point", Value: mylocation}
-
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: &w.cfg.HTTPS}
-	err := client.UpdateContextObject(&ctxObj)
-	return err
-}
-
-func (w *Worker) unpublishMyself() {
-	entity := EntityId{}
-	entity.ID = w.id
-	entity.Type = "Worker"
-	entity.IsPattern = false
-
-	client := NGSI10Client{IoTBrokerURL: w.selectedBrokerURL, SecurityCfg: &w.cfg.HTTPS}
-	err := client.DeleteContext(&entity)
-	if err != nil {
-		ERROR.Println(err)
-	}
-}
-
 func (w *Worker) Process(msg *RecvMessage) error {
 	var err error
+	INFO.Println(msg.Type)
 
 	switch msg.Type {
 	case "ADD_TASK":
@@ -184,22 +141,32 @@ func (w *Worker) Process(msg *RecvMessage) error {
 }
 
 func (w *Worker) onTimer() {
+	w.profile.Workload = w.getNumTasks()
 	w.heartbeat()
 }
 
+func (w *Worker) getNumTasks() int {
+	w.taskList_lock.RLock()
+	defer w.taskList_lock.RUnlock()
+
+	return len(w.allTasks)
+}
+
+func (w *Worker) publishMyself() {
+	msg := SendMessage{Type: "WORKER_JOIN", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	INFO.Println(msg)
+	w.communicator.Publish(&msg)
+}
+
+func (w *Worker) unpublishMyself() {
+	msg := SendMessage{Type: "WORKER_LEAVE", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	INFO.Println(msg)
+	w.communicator.Publish(&msg)
+}
+
 func (w *Worker) heartbeat() {
-	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
-	w.communicator.Publish(&taskUpdateMsg)
-}
-
-func (w *Worker) join() {
-	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
-	w.communicator.Publish(&taskUpdateMsg)
-}
-
-func (w *Worker) leave() {
-	taskUpdateMsg := SendMessage{Type: "heart_beat", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
-	w.communicator.Publish(&taskUpdateMsg)
+	msg := SendMessage{Type: "WORKER_HEARTBEAT", RoutingKey: "heartbeat.", From: w.id, PayLoad: w.profile}
+	w.communicator.Publish(&msg)
 }
 
 func (w *Worker) onAddInput(from string, flow *FlowInfo) {
@@ -210,13 +177,29 @@ func (w *Worker) onRemoveInput(from string, flow *FlowInfo) {
 	w.executor.onRemoveInput(flow)
 }
 
-func (w *Worker) TaskUpdate(masterID string, task *ScheduledTaskInstance, state string) {
+func (w *Worker) TaskUpdate(topologyName string, taskName string, taskID string, serviceIntentID string, state string) {
 	tp := TaskUpdate{}
-	tp.ServiceName = task.ServiceName
-	tp.TaskName = task.TaskName
-	tp.TaskID = task.ID
+	tp.TopologyName = topologyName
+	tp.TaskName = taskName
+	tp.TaskID = taskID
+	tp.ServiceIntentID = serviceIntentID
+
 	tp.Status = state
-	taskUpdateMsg := SendMessage{Type: "task_update", RoutingKey: "master." + masterID + ".", From: w.id, PayLoad: tp}
+
+	taskUpdateMsg := SendMessage{Type: "TASK_UPDATE", RoutingKey: "task.", From: w.id, PayLoad: tp}
+
+	go w.communicator.Publish(&taskUpdateMsg)
+}
+
+func (w *Worker) TaskInfo(topologyName string, taskName string, taskID string, serviceIntentID string, info string) {
+	tInfo := TaskInfo{}
+	tInfo.TopologyName = topologyName
+	tInfo.TaskName = taskName
+	tInfo.TaskID = taskID
+
+	tInfo.Info = info
+
+	taskUpdateMsg := SendMessage{Type: "TASK_INFO", RoutingKey: "task.", From: w.id, PayLoad: tInfo}
 
 	go w.communicator.Publish(&taskUpdateMsg)
 }
@@ -252,7 +235,7 @@ func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 			go w.executor.TerminateTask(existTask.ID, true)
 			existTask.Status = "paused"
 
-			w.TaskUpdate(from, existTask, "paused")
+			w.TaskUpdate(existTask.TopologyName, existTask.TaskName, existTask.ID, existTask.ServiceIntentID, "paused")
 		}
 	}
 
@@ -267,14 +250,14 @@ func (w *Worker) onScheduledTask(from string, task *ScheduledTaskInstance) {
 		w.allTasks[task.ID] = task
 
 		// send ACK back to the master
-		w.TaskUpdate(from, task, "running")
+		w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "running")
 	} else {
 		// add the new task into the local task list
 		task.Status = "paused"
 		w.allTasks[task.ID] = task
 
 		// send ACK back to the master
-		w.TaskUpdate(from, task, "paused")
+		w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "paused")
 	}
 }
 
@@ -331,7 +314,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 				go w.executor.LaunchTask(task)
 				task.Status = "running"
 
-				w.TaskUpdate(from, task, "running")
+				w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "running")
 			}
 		}
 	} else {
@@ -342,7 +325,7 @@ func (w *Worker) onTerminateTask(from string, task *ScheduledTaskInstance) {
 				go w.executor.LaunchTask(task)
 				task.Status = "running"
 
-				w.TaskUpdate(from, task, "running")
+				w.TaskUpdate(task.TopologyName, task.TaskName, task.ID, task.ServiceIntentID, "running")
 			}
 		}
 	}

@@ -1,41 +1,122 @@
-var express =   require('express');
-var multer  =   require('multer');
-var https = require('https');
-const bodyParser = require('body-parser');
-var axios = require('axios')
-var dgraph = require('./dgraph.js');
-var amqp = require('./rabbitmq.js');
+import express from 'express'
+import multer from 'multer'
+import httpProxy from 'http-proxy';
+import fetch from 'node-fetch';
+import bodyParser from 'body-parser'
+import { promises as fs } from 'node:fs'
+import { Low, JSONFile } from 'lowdb'
+
+import socketio from 'socket.io'
+
+import NGSIClient from './public/lib/ngsi/ngsiclient.cjs'
+import NGSIAgent from './public/lib/ngsi/ngsiagent.cjs'
+
+const globalConfigFile = JSON.parse(await fs.readFile('config.json'))
+
+import rabbitmq from './rabbitmq.cjs';
+
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 var jsonParser = bodyParser.json();
-var config_fs_name = './config.json';
 
 
-var args = process.argv.slice(2);
-if (args.length > 0) {
-    config_fs_name = args[0];
+var metadata_folder = './public/data/meta';
+fs.mkdir(metadata_folder, { recursive: true })
+
+var photo_folder = './public/data/photo';
+fs.mkdir(photo_folder, { recursive: true })
+
+
+const adapter = new JSONFile(metadata_folder + '/db.json');
+const db = new Low(adapter);
+
+await db.read()
+
+db.data ||= {
+    devices: {},
+    subscriptions: {},
+    operators: {},
+    topologies: {},
+    services: {},
+    serviceintents: {},
+    fogfunctions: {}
 }
-console.log(config_fs_name);
 
-var fs = require('fs');
-var globalConfigFile = require(config_fs_name)
+var send_loaded_intents = false;
+var send_loaded_devices = false;
+var send_loaded_subscriptions = false;
+
+
 var app = express();
-var NGSIAgent = require('./public/lib/ngsi/ngsiagent.js');
-var NGSIClient = require('./public/lib/ngsi/ngsiclient.js');
-var NGSILDAgent = require('./public/lib/ngsi/LDngsiagent.js');
+
+var ngsiProxy = httpProxy.createProxyServer();
 
 var config = globalConfigFile.designer;
 
+// list of active tasks launched by FogFlow workers
+var taskMap = {};
+
 // get the URL of the cloud broker
 
-if ( !('host_ip' in globalConfigFile.broker)) {
-    globalConfigFile.broker.host_ip = globalConfigFile.my_hostip    
+if (!('host_ip' in globalConfigFile.broker)) {
+    globalConfigFile.broker.host_ip = globalConfigFile.my_hostip
 }
+var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port
+var ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL + "/ngsi10");
 
-var cloudBrokerURL = "http://" + globalConfigFile.broker.host_ip + ":" + globalConfigFile.broker.http_port + "/ngsi10"
+var recheck_interval = 2000;
+var timerID = setTimeout(function entityrestore(){
+    var url = cloudBrokerURL + "/version";
+    fetch(url).then(res => {    
+        // create all persistent device entites at the FogFlow Cloud Broker
+        Object.values(db.data.devices).forEach(deviceEntity => {
+            ngsi10client.updateContext(deviceEntity).then(function (data) {
+                console.log('create the device entity ', deviceEntity.id);
+            }).catch(function (error) {
+                console.log('failed to publish the new device object: ', deviceEntity.id);
+            }); 
+        });
+        
+        // create the persistent subscriptions at the FogFlow Cloud Broker
+        Object.values(db.data.subscriptions).forEach(subscription => {        
+            var headers = {};
+        
+            if (subscription.destination_broker == 'NGSI-LD') {
+                headers["Content-Type"] = "application/json";
+                headers["Destination"] = "NGSI-LD";
+                headers["NGSILD-Tenant"] = subscription.tenant;
+            } else if (subscription.destination_broker == 'NGSIv2') {
+                headers["Content-Type"] = "application/json";
+                headers["Destination"] = "NGSIv2";        
+            }            
+            
+            var subscribeCtxReq = {};
+            subscribeCtxReq.entities = [{ type: subscription['entity_type'], isPattern: true }];
+            subscribeCtxReq.reference = subscription['reference_url'];
+            ngsi10client.subscribeContextWithHeaders(subscribeCtxReq, headers).then(function (subscriptionId) {
+                console.log("new subscription id = ", subscriptionId);
+                console.log(subscription)                
+            }).catch(function (error) {
+                console.log('failed to subscribe context, ', error);
+            });            
+        });        
+        
+    }).catch(error=>{
+        console.log("try it again due to the error: ", error.code);
+        timerID = setTimeout(entityrestore, recheck_interval);              
+    });
+   
+}, recheck_interval);
+
 
 if (config.host_ip) {
-    config.agentIP = config.host_ip;        
+    config.agentIP = config.host_ip;
 } else {
-    config.agentIP = globalConfigFile.my_hostip;    
+    config.agentIP = globalConfigFile.my_hostip;
 }
 
 config.agentPort = globalConfigFile.designer.agentPort;
@@ -46,13 +127,124 @@ config.ldAgentPort = globalConfigFile.designer.ldAgentPort;
 config.discoveryURL = './ngsi9';
 config.brokerURL = './ngsi10';
 config.LdbrokerURL = './ngsi-ld';
-config.webSrvPort = globalConfigFile.designer.webSrvPort
+config.webSrvPort = globalConfigFile.designer.webSrvPort;
 
+
+if (!('host_ip' in globalConfigFile.master)) {
+    globalConfigFile.master.host_ip = globalConfigFile.my_hostip
+}
+const masterURL = "http://" + globalConfigFile.master.host_ip + ":" + globalConfigFile.master.rest_api_port;
+
+
+if (!('host_ip' in globalConfigFile.discovery)) {
+    globalConfigFile.discovery.host_ip = globalConfigFile.my_hostip
+}
+const discoveryURL = "http://" + globalConfigFile.discovery.host_ip + ":" + globalConfigFile.discovery.http_port;
+
+
+if (!('host_ip' in globalConfigFile.rabbitmq)) {
+    globalConfigFile.rabbitmq.host_ip = globalConfigFile.my_hostip
+}
+const rabbitmq_ip = globalConfigFile.rabbitmq.host_ip;
+
+const rabbitmq_port = globalConfigFile.rabbitmq.port || 5672;
+const rabbitmq_user = globalConfigFile.rabbitmq.username || 'admin';
+const rabbitmq_password = globalConfigFile.rabbitmq.password || 'mypass';
+
+const rabbitmq_url = 'amqp://' + rabbitmq_user + ':' + rabbitmq_password + '@'
+    + rabbitmq_ip + ':' + rabbitmq_port.toString();
 
 console.log(config);
 
-dgraph.Init();
-amqp.amqpConnection();
+console.log(rabbitmq_url);
+rabbitmq.Init(rabbitmq_url, handleInternalMessage, issueLoadedIntents);
+function handleInternalMessage(jsonMsg) {
+    console.log(jsonMsg.Type);
+
+    var msgType = jsonMsg.Type;
+    switch (msgType) {
+        case 'MASTER_JOIN':
+
+            break;
+        case 'MASTER_LEAVE':
+
+            break;
+        case 'TASK_UPDATE':
+            onTaskUpdate(jsonMsg)
+            break;
+    }
+}
+
+function onTaskUpdate(msg) {
+    var payload = msg.PayLoad;
+    var workerID = msg.From;
+    if (payload.Status == 'removed') {
+        removeTask(payload.TaskID)
+    } else {
+        updateTaskList(payload, workerID);
+    }
+}
+
+function updateTaskList(updateMsg, fromWorker) {
+    var taskID = updateMsg.TaskID;
+
+    if (taskID in taskMap) {
+        if ("Status" in updateMsg) {
+            taskMap[taskID].Status = updateMsg.Status
+        }
+        if ("Info" in updateMsg) {
+            taskMap[taskID].Info = updateMsg.Info
+        }
+    } else {
+        taskMap[taskID] = updateMsg;
+        taskMap[taskID]['Worker'] = fromWorker;
+    }
+}
+
+function removeTask(taskID) {
+    if (taskID in taskMap) {
+        delete taskMap[taskID];
+    }
+}
+
+function isEmpty(obj) {
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop))
+            return false;
+    }
+
+    return true;
+}
+
+// this is only triggered when starting the task designer
+function issueLoadedIntents() {
+    console.log("[RabbitMQ] is already connected")
+
+    if (send_loaded_intents == false) {
+        console.log("issue the loaded intents to Master");
+
+        // existing service intents
+        Object.keys(db.data.serviceintents).forEach(function (key) {
+            var intent = db.data.serviceintents[key];
+            intent.action = 'ADD';
+            publishMetadata("ServiceIntent", intent);
+        });
+
+        // existing fog functions
+        Object.keys(db.data.fogfunctions).forEach(function (key) {
+            var fogfunction = db.data.fogfunctions[key];
+            
+            if (fogfunction.status == 'enabled') {
+                var intent = fogfunction.intent;
+                intent.action = 'ADD';
+                publishMetadata("ServiceIntent", intent);                
+            }
+        });
+
+        send_loaded_intents = true;
+    }
+}
+
 function uuid() {
     var uuid = "",
         i, random;
@@ -68,12 +260,14 @@ function uuid() {
 }
 
 // all subscriptions that expect data forwarding
-var subscriptions = {};
+var subscriptions_websocket = {};
 
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+
     next();
 });
 
@@ -82,17 +276,17 @@ app.use(express.static(__dirname + '/public', { cache: false }));
 
 // to receive and save uploaded image content
 var storage = multer.diskStorage({
-    destination: function(req, file, callback) {
-        callback(null, './public/photo');
+    destination: function (req, file, callback) {
+        callback(null, './public/data/photo');
     },
-    filename: function(req, file, callback) {
+    filename: function (req, file, callback) {
         console.log(file.fieldname);
         callback(null, file.fieldname);
     }
 });
 var upload = multer({ storage: storage }).any();
-app.post('/photo', function(req, res) {
-    upload(req, res, function(err) {
+app.post('/data/photo', function (req, res) {
+    upload(req, res, function (err) {
         if (err) {
             return res.end("Error uploading file.");
         }
@@ -100,208 +294,630 @@ app.post('/photo', function(req, res) {
     });
 });
 
+//============= FogFlow API =================================
 
-// create a new intent to trigger the corresponding service topology
-app.post('/intent', jsonParser, function(req, res) {
-    intent = req.body
-
-    var intentCtxObj = {};
-
-    var uid = uuid();
-
-    intentCtxObj.entityId = {
-        id: 'ServiceIntent.' + uid,
-        type: 'ServiceIntent',
-        isPattern: false
-    };
-
-    intentCtxObj.attributes = {};
-    intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-    intentCtxObj.attributes.intent = { type: 'object', value: intent };
-
-    intentCtxObj.metadata = {};
-    intentCtxObj.metadata.location = intent.geoscope;
-
-    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL);
-    ngsi10client.updateContext(intentCtxObj).then(function(data) {
-        console.log('======create intent======');
-        console.log(data);
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to create intent');
-    });
-
-    // prepare the response
-    reply = { 'id': intentCtxObj.entityId.id, 'outputType': 'Result' }
-    res.json(reply);
+ngsiProxy.on('error', function (err, req, res) {
+       res.end('Error occurr'+ err);
 });
 
-/*
-  api to create fogFlow internal entities
-*/
+app.all("/ngsi10/*", function (req, res) {
+    console.log('redirecting to ngsi-v1 broker', cloudBrokerURL);
+    ngsiProxy.web(req, res, { target: cloudBrokerURL });
+});
 
-function getResult(filterBy, objList) {
-    console.log("objlist is ---- ",objList);
-    var arr = [];
-    for(var i in objList){
-            if (objList[i].hasOwnProperty("attribute") && Object.keys(objList[i].attribute).length === 0) {
-                console.log("aaaa",objList[i]);
-                continue;}
-            var fType = objList[i]['internalType'];
-            if (fType != undefined && filterBy == fType){
-                    attrObj = JSON.parse(objList[i].attribute) 
-                    attrObj.uid= objList[i].uid
-                    arr.push(attrObj);
-                    continue;
+app.all("/ngsi-ld/*", function (req, res) {
+    //console.log('redirecting to ngsi-ld broker');
+    ngsiProxy.web(req, res, { target: cloudBrokerURL });
+});
+
+app.all("/ngsi9/*", function (req, res) {
+    //console.log('redirecting to ngsi-v1 discovery');
+    ngsiProxy.web(req, res, { target: discoveryURL });
+});
+
+
+//============= FogFlow API =================================
+
+app.get('/info/master', async function (req, res) {
+    try {
+        var url = masterURL + "/status";
+        const response = await fetch(url);
+        const master = await response.json();
+        res.json([master]);
+    } catch (error) {
+        console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
+        res.json([]);
+    };
+});
+
+app.get('/info/broker', async function (req, res) {
+    try {
+        var url = discoveryURL + "/ngsi9/broker";
+        const response = await fetch(url);
+        const brokers = await response.json();
+        var brokerList = Array.from(Object.values(brokers));
+        res.json(brokerList);
+    } catch (error) {
+        console.log("failed to connect the discovery at ", url, '[ERROR CODE]', error.code);
+        res.json([]);
+    };
+});
+
+app.get('/info/worker', async function (req, res) {
+    try {
+        var url = masterURL + "/workers";
+        const response = await fetch(url);
+        const workers = await response.json();
+        var workerList = Array.from(Object.values(workers));
+        res.json(workerList);
+    } catch (error) {
+        console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
+        res.json([]);
+    };
+});
+
+app.get('/info/task', async function (req, res) {
+    var taskList = [];
+    console.log(taskMap)
+    for (const taskID of Object.keys(taskMap)) {
+        var task = taskMap[taskID];
+        task['ID'] = taskID;
+        taskList.push(task);
+    }
+
+    res.json(taskList);
+});
+
+app.get('/info/task/:intent', async function (req, res) {
+    var intentID = req.params.intent;
+
+    var taskList = [];
+
+    for (const taskID of Object.keys(taskMap)) {
+        var task = taskMap[taskID];
+
+        if (task['ServiceIntentID'] == intentID) {
+            task['ID'] = taskID;
+            taskList.push(task);
+        }
+    }
+
+    res.json(taskList);
+});
+
+app.get('/info/type', async function (req, res) {
+    try {
+        var url = discoveryURL + "/etype";
+        const response = await fetch(url);
+        const typeList = await response.json();
+        res.json(typeList);
+    } catch (error) {
+        console.log("failed to connect the master at ", url, '[ERROR CODE]', error.code);
+        res.json([]);
+    };
+});
+
+
+app.get('/operator', async function (req, res) {
+    var operators = db.data.operators;        
+    res.json(operators);
+});
+app.get('/operator/:name', async function (req, res) {
+    var name = req.params.name;
+    var operator = db.data.operators[name];
+    res.json(operator);
+});
+
+app.post('/operator', jsonParser, async function (req, res) {
+    var operators = req.body;
+    for (var i = 0; i < operators.length; i++) {
+        var operator = operators[i];
+        db.data.operators[operator.name] = operator
+    }
+
+    await db.write();
+
+    res.sendStatus(200)
+});
+
+app.get('/dockerimage/:operator', async function (req, res) {
+    var operatorName = req.params.operator;    
+    var operator = db.data.operators[operatorName];
+    res.json(operator.dockerimages);
+});
+
+app.post('/dockerimage/:operator', jsonParser, async function (req, res) {
+    var operatorName = req.params.operator;
+    var dockerimage = req.body;
+
+    if (operatorName in db.data.operators) {
+        db.data.operators[operatorName].dockerimages.push(dockerimage)         
+    }    
+
+    await db.write();
+
+    res.sendStatus(200)
+});
+
+app.delete('/dockerimage/:operator', jsonParser, async function (req, res) {
+    var operatorName = req.params.operator;
+    var dockerimage = req.query.image; 
+    
+    if (operatorName in db.data.operators) {       
+        for (var i=0; i<db.data.operators[operatorName].dockerimages.length; i++) {
+            if (db.data.operators[operatorName].dockerimages[i].name == dockerimage) {
+                console.log("remove the docker image: ", dockerimage);
+                db.data.operators[operatorName].dockerimages.splice(i, 1);                
+                await db.write();        
+                break;
             }
-    }
-    return arr;
-  }
+        }        
+    }    
 
-app.post('/internal/updateContext', jsonParser, async function (req, res) {
-    //var updateContextReq = await req.body
-    let updateContextReq = Object.assign({}, await req.body);
-    console.log("****************** update",updateContextReq);
+    res.sendStatus(200)
+});
 
+app.delete('/operator/:name', async function (req, res) {
+    try {
+        var name = req.params.name;
 
-    if (updateContextReq.updateAction == "DELETE") {
-        console.log("delete entity is ",updateContextReq);
-        amqp.amqpPub(updateContextReq)
-        let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
-        await dgraph.DeleteNodeById(tmpVar.uid);
-
+        var operator = db.data.operators[name];
+        if (operator === undefined) {
+            res.sendStatus(404);
+            return;
+        }
         
-    } else if (updateContextReq.updateAction == "UPDATE") {
-        //console.log("main js obj  ++++ ",updateContextReq)
-        let tmpVar1 = JSON.parse(JSON.stringify(updateContextReq));
-        await amqp.amqpPub(tmpVar1)
-        let tmpVar = JSON.parse(JSON.stringify(updateContextReq));
-        await dgraph.WriteEntity(tmpVar)
+        // check if there is any dependency from existing topologies
+        var hasRelatedTopology = false;
+        for (var key in db.data.topologies) {
+            var topology = db.data.topologies[key];
+            if (hasOperator(topology, name)==true) {
+                hasRelatedTopology = true;
+                break;
+            }            
+        }
+
+        if (hasRelatedTopology) {
+            res.sendStatus(501)                    
+        } else {
+            delete db.data.operators[name];
+            await db.write();
+    
+            res.sendStatus(200)        
+        }
+    } catch (error) {
+        console.log("failed to delete the operator for ", name, ", [ERROR]", error.message);
+        res.sendStatus(404)
     }
-    res.send("")
 });
 
-app.post('/internal/getContext', jsonParser, async function (req, res) {
-    var queryContext = await req.body
-    var dgraphOp = await dgraph.QueryJsonWithType(queryContext.internalType)
-    res.send({data:getResult(queryContext.internalType,dgraphOp.contextElements)})
+
+app.get('/topology', async function (req, res) {
+    var topologies = [];
+    Object.values(db.data.topologies).forEach(topology => {
+        topologies.push(topology)
+    })
+
+    res.json(topologies);
+});
+app.get('/topology/:name', async function (req, res) {
+    var name = req.params.name;
+    if (db.data.topologies.hasOwnProperty(name) == false) {
+        res.json({});
+        return
+    }
+
+    var topology = db.data.topologies[name];
+
+    topology.operators = [];
+
+    // include the related docker images for the operators used by this topology
+    for (var i = 0; i < topology.tasks.length; i++) {
+        var task = topology.tasks[i];
+        var name = task.operator;
+
+        if (name in db.data.operators) {
+            var operator = db.data.operators[name];
+            topology.operators.push(operator);
+        }
+    }
+
+    res.json(topology);
 });
 
-app.post('/masterNotify', jsonParser, async function (req, res) {
-    //dgraphSendToMaster();
-    //res.json({"status":"DONE"})
-    if(global.isAmqpUp){
-        dgraphSendToMaster();
-        res.json({"status":"DONE"})
+
+app.get('/service', async function (req, res) {
+    var services = db.data.services;
+    res.json(services);
+});
+app.get('/service/:name', async function (req, res) {
+    var name = req.params.name;
+    var service = db.data.services[name];
+    res.json(service);
+});
+app.post('/service', jsonParser, async function (req, res) {
+    var services = req.body;
+
+    for (var i = 0; i < services.length; i++) {
+        var service = services[i];
+        console.log(service);
+        var name = service.topology.name
+        db.data.services[name] = service;
+        db.data.topologies[name] = service.topology;
     }
-    else {
+
+    await db.write();
+
+    res.sendStatus(200)
+});
+app.delete('/service/:name', async function (req, res) {
+    var name = req.params.name;
+
+    delete db.data.services[name];
+    delete db.data.topologies[name];
+    await db.write();
+
+    res.sendStatus(200)
+});
+
+
+app.get('/intent', async function (req, res) {
+    var serviceintents = db.data.serviceintents;
+    res.json(serviceintents);
+});
+app.get('/intent/:id', async function (req, res) {
+    var id = req.params.id;
+    var serviceintent = db.data.serviceintents[id];
+    res.json(serviceintent);
+});
+app.get('/intent/topology/:topology', async function (req, res) {
+    var topology = req.params.topology;
+
+    var intents = [];
+    for (var i = 0; i < db.data.serviceintents.length; i++) {
+        var intent = db.data.serviceintents[i];
+        if (intent.topology == topology) {
+            intents.push(intent)
+        }
+    }
+
+    res.json(intents);
+});
+app.post('/intent', jsonParser, async function (req, res) {
+    var serviceintent = req.body;
+
+    if (isEmpty(serviceintent) == true) {
+        res.sendStatus(200)
+        return
+    }
+
+    console.log(serviceintent)
+    db.data.serviceintents[serviceintent.id] = serviceintent;
+    await db.write();
+
+    serviceintent.action = 'ADD';
+    publishMetadata("ServiceIntent", serviceintent);
+
+    res.sendStatus(200)
+});
+app.delete('/intent/:id', async function (req, res) {
+    var id = req.params.id;
+
+    try {
+        var serviceintent = db.data.serviceintents[id];
+        if (serviceintent === undefined) {
+            res.sendStatus(404)
+            return;
+        }
+        serviceintent.action = 'DELETE';
+        publishMetadata("ServiceIntent", serviceintent);
+
+        delete db.data.serviceintents[id];
+        await db.write();
+        res.sendStatus(200)
+    } catch (error) {
+        console.log("Delete Intent API failed for [ID] ", id, ', [ERROR]', error.message);
+        res.sendStatus(404)
+    }
+});
+
+
+app.get('/fogfunction', async function (req, res) {
+    var fogfunctions = db.data.fogfunctions;
+    res.json(fogfunctions);
+});
+app.get('/fogfunction/:name', async function (req, res) {
+    var name = req.params.name;
+    var fogfunction = db.data.fogfunctions[name];
+    res.json(fogfunction);
+});
+
+app.get('/fogfunction/:name/enable', async function (req, res) {
+    var name = req.params.name;
+    var fogfunction = db.data.fogfunctions[name];
+    fogfunction.status = 'enabled';
+
+    console.log("ENABLE fog function", name);
+
+    var serviceintent = fogfunction.intent;
+    serviceintent.action = 'ADD';
+    publishMetadata("ServiceIntent", serviceintent);
+
+    // sync-up the status change
+    await db.write();
+
+    res.json(fogfunction);
+});
+
+app.get('/fogfunction/:name/disable', async function (req, res) {
+    var name = req.params.name;
+    var fogfunction = db.data.fogfunctions[name];
+    fogfunction.status = 'disabled';
+
+    console.log("DISABLE fog function", name);
+
+    var serviceintent = fogfunction.intent;
+    serviceintent.action = 'DELETE';
+    publishMetadata("ServiceIntent", serviceintent);
+
+    // sync-up the status change
+    await db.write();
+
+    res.json(fogfunction);
+});
+
+
+app.post('/fogfunction', jsonParser, async function (req, res) {
+    var fogfunctions = req.body;
+
+    for (var i = 0; i < fogfunctions.length; i++) {
+        var fogfunction = fogfunctions[i];
+
+        fogfunction.status = 'enabled';
+
+        console.log(fogfunction);
+        db.data.fogfunctions[fogfunction.name] = fogfunction;
+        db.data.topologies[fogfunction.name] = fogfunction.topology;
+
+        if (fogfunction.intent.hasOwnProperty('id') == false) {
+            var uid = uuid();
+            var sid = 'ServiceIntent.' + uid;
+            fogfunction.intent.id = sid;
+        }
+
+        var serviceintent = fogfunction.intent;
+        serviceintent.action = 'ADD';
+        publishMetadata("ServiceIntent", serviceintent);
+    }
+
+    await db.write();
+
+    res.sendStatus(200)
+});
+app.delete('/fogfunction/:name', async function (req, res) {
+    try {
+        var name = req.params.name;
+
+        var fogfunction = db.data.fogfunctions[name]
+        if (fogfunction === undefined) {
+            res.sendStatus(404);
+            return;
+        }
+        var serviceintent = fogfunction.intent
+        serviceintent.action = 'DELETE';
+        publishMetadata("ServiceIntent", serviceintent);
+
+        delete db.data.topologies[name];
+        delete db.data.fogfunctions[name];
+        await db.write();
+
+        res.sendStatus(200)
+    } catch (error) {
+        console.log("Delete Fogfunction API failed for [Name] ", name, ', [ERROR]', error.message);
+        res.sendStatus(404)
+    }
+});
+
+
+app.get('/subscription', async function (req, res) {
+    var subscriptions = db.data.subscriptions;
+    res.json(subscriptions);
+});
+app.post('/subscription', jsonParser, async function (req, res) {
+    var subscription = req.body;
+
+    if (isEmpty(subscription) == true) {
+        res.sendStatus(200)
+        return
+    }
+
+    console.log(subscription)
+
+    var headers = {};
+
+    if (subscription.destination_broker == 'NGSI-LD') {
+        headers["Content-Type"] = "application/json";
+        headers["Destination"] = "NGSI-LD";
+        headers["NGSILD-Tenant"] = subscription.tenant;
+    } else if (subscription.destination_broker == 'NGSIv2') {
+        headers["Content-Type"] = "application/json";
+        headers["Destination"] = "NGSIv2";        
+    }
+
+     // issue the subscription to FogFlow Cloud Broker
+    var subscribeCtxReq = {};
+    subscribeCtxReq.entities = [{ type: subscription['entity_type'], isPattern: true }];
+    subscribeCtxReq.reference = subscription['reference_url'];
+    ngsi10client.subscribeContextWithHeaders(subscribeCtxReq, headers).then(function (subscriptionId) {
+        console.log("subscription id = " + subscriptionId);
+        db.data.subscriptions[subscriptionId] = subscription;
+        db.write();
+
+        res.sendStatus(200)
+    }).catch(function (error) {
+        console.log('failed to subscribe context, ', error);
+        res.sendStatus(500)
+    });
+});
+app.delete('/subscription/:id', async function (req, res) {
+    var sid = req.params.id;
+    
+    if (db.data.subscriptions.hasOwnProperty(sid) == false) {
+        res.sendStatus(404)
+        return;
+    }    
+
+    // unsubscribe 
+    ngsi10client.unsubscribeContext(sid).then(function (subscriptionId) {
+        console.log("remove the subscription sid = " + subscriptionId);
+        delete db.data.subscriptions[sid];
+        db.write();
+        res.sendStatus(200)
+    }).catch(function (error) {
+        console.log('failed to unsubscribe the specified subscription');
+        res.sendStatus(500)
+    });
+});
+ 
+
+app.get('/device', async function (req, res) {
+    var devices = db.data.devices;
+    res.json(devices);
+});
+app.post('/device', jsonParser, async function (req, res) {
+    var deviceObj = req.body;
+    
+    if (deviceObj.hasOwnProperty('id')) {
+        var did = deviceObj.id;        
+    } else {
+        var did = deviceObj.type + uuid();        
+    }
         
-        res.status(404).send({"msg":"rabbitMQ is not reachable"});
+    if (isEmpty(deviceObj) == true) {
+        res.sendStatus(200)
+        return
     }
+
+    console.log(deviceObj)
+
+    deviceObj.entityId = {
+           id: deviceObj.id,
+           type: deviceObj.type,
+           isPattern: false		
+	};
+
+    // create the device entity in FogFlow Cloud Broker
+    ngsi10client.updateContext(deviceObj).then(function (data) {
+        console.log(data);
+        db.data.devices[did] = deviceObj;
+        db.write();
+        res.sendStatus(200)        
+    }).catch(function (error) {
+        console.log('failed to register the new device object');
+        res.sendStatus(500)        
+    });    
 });
+app.delete('/device/:id', async function (req, res) {
+    var did = req.params.id;
+    if (db.data.devices.hasOwnProperty(did) == false) {
+        res.sendStatus(404)
+        return;
+    }
 
-// to remove an existing intent
-app.delete('/intent', jsonParser, function(req, res) {
-    eid = req.body.id
-
+    // delete the associated ngsi entity for this device
     var entityid = {
-        id: eid,
+        id: did,
         isPattern: false
     };
-
-    ngsi10client = new NGSIClient.NGSI10Client(cloudBrokerURL);
-    ngsi10client.deleteContext(entityid).then(function(data) {
-        console.log('======delete intent======');
-        console.log(data);
-    }).catch(function(error) {
-        console.log(error);
-        console.log('failed to delete intent');
+     
+    ngsi10client.deleteContext(entityid).then(function (subscriptionId) {
+        console.log('remove the device ', did);
+        delete db.data.devices[did];
+        db.write();
+        res.sendStatus(200)
+    }).catch(function (error) {
+        console.log('failed to delete the corresponding entity');
+        res.sendStatus(500)
     });
-
-    res.end("OK");
 });
 
 
-app.get('/config.js', function(req, res) {
+
+app.get('/config.js', function (req, res) {
     res.setHeader('Content-Type', 'application/json');
     var data = 'var config = ' + JSON.stringify(config) + '; '
     res.end(data);
 });
 
 
-/*
-// fetch the requested URL from the edge node within the internal network
-app.get('/proxy', function(req, res) {
-    console.log(req.query.url);
+// check if the operator is used by this topology
+function hasOperator(topology, operatorName) {
+    for (var i = 0; i < topology.tasks.length; i++) {
+        var task = topology.tasks[i];
+        
+        if (task.operator == operatorName) {
+            return true;
+        }
+    }    
+    
+    return false;
+}
 
-    if (req.query.url) {
-        request(req.query.url).pipe(res);
-    }
-});
-*/
+// publish the created metadata related to service orchestration
+function publishMetadata(dType, dObject) {
+    var jsonMsg = {
+        Type: dType,
+        RoutingKey: "orchestration.",
+        From: "designer",
+        PayLoad: dObject
+    };
+
+    rabbitmq.Publish(jsonMsg);
+    //console.log("Published: ", JSON.stringify(jsonMsg));
+}
+
 
 // handle the received results
 function handleNotify(req, ctxObjects, res) {
     console.log('handle notify');
     var sid = req.body.subscriptionId;
     console.log(sid);
-    if (sid in subscriptions) {
+    if (sid in subscriptions_websocket) {
         for (var i = 0; i < ctxObjects.length; i++) {
             console.log(ctxObjects[i]);
-            var client = subscriptions[sid];
+            var client = subscriptions_websocket[sid];
             client.emit('notify', { 'subscriptionID': sid, 'entities': ctxObjects[i] });
         }
     }
-}
-
-async function dgraphSendToMaster(){
-    var dgraphResult = await dgraph.QueryJsonWithType('all')
-    if (dgraphResult.hasOwnProperty("contextElements")){
-        dgraphData = dgraphResult.contextElements
-        for (var i in dgraphData) {
-            if (dgraphData[i].attribute == undefined) {
-                continue;
-              }
-            dgraphData[i].attribute = JSON.parse(dgraphData[i].attribute)
-            amqp.amqpPub(dgraphData[i])
-        }
-    }
-    
 }
 
 
 NGSIAgent.setNotifyHandler(handleNotify);
 NGSIAgent.start(config.agentPort);
 
-
-NGSILDAgent.setNotifyHandler(handleNotify);
-NGSILDAgent.start(config.ldAgentPort);
-
 var webServer;
-webServer = app.listen(config.webSrvPort, function() {
+webServer = app.listen(config.webSrvPort, function () {
     console.log("HTTP-based web server is listening on port ", config.webSrvPort);
 });
 
+var io = socketio.listen(webServer);
 
-//var io = require('socket.io')();
-var io = require('socket.io').listen(webServer);
-
-io.on('connection', function(client) {
+io.on('connection', function (client) {
     console.log('a client is connecting');
-    client.on('subscriptions', function(subList) {
-	console.log(subList);
+    client.on('subscriptions', function (subList) {
+        console.log(subList);
         for (var i = 0; subList && i < subList.length; i++) {
-            sid = subList[i];
-            subscriptions[sid] = client;
+            var sid = subList[i];
+            subscriptions_websocket[sid] = client;
         }
     });
-    client.on('disconnect', function() {
-        console.log('disconnected');
 
+    client.on('disconnect', function () {
+        console.log('disconnected');
         //remove the subscriptions associated with this socket
-        for (sid in subscriptions) {
-            if (subscriptions[sid] == client) {
-                delete subscriptions[sid];
+        for (var sid in subscriptions_websocket) {
+            if (subscriptions_websocket[sid] == client) {
+                delete subscriptions_websocket[sid];
             }
         }
     });

@@ -1,4 +1,6 @@
-if (( $# != 1 )); then
+#!/bin/bash
+
+if (( $# !=  1 )); then
 	echo "Illegal number of parameters"
 	echo "usage: ./build [multistage|development|arm]"
 	echo "For "development" or  "arm" options to work, golang must be setup in the system." 

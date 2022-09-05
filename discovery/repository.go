@@ -7,12 +7,10 @@ import (
 )
 
 type Candidate struct {
-	ProviderURL       string
-	ID                string
-	Type              string
-	FiwareServicePath string
-	MsgFormat         string
-	Distance          uint64
+	ProviderURL string
+	ID          string
+	Type        string
+	Distance    uint64
 }
 
 type EntityRepository struct {
@@ -42,6 +40,29 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 }
 
 //
+// return all available entity types
+//
+func (er *EntityRepository) GetEntityTypes() []string {
+	er.ctxRegistrationList_lock.RLock()
+	defer er.ctxRegistrationList_lock.RUnlock()
+
+	typeMap := make(map[string]bool)
+	for _, registration := range er.ctxRegistrationList {
+		etype := registration.Type
+		if _, found := typeMap[etype]; !found {
+			typeMap[etype] = true
+		}
+	}
+
+	typeList := make([]string, 0, len(typeMap))
+	for k := range typeMap {
+		typeList = append(typeList, k)
+	}
+
+	return typeList
+}
+
+//
 // for the performance purpose, we still keep the latest view of all registrations
 //
 func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registration *ContextRegistration) *EntityRegistration {
@@ -63,7 +84,6 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		}
 
 		for _, attributeOld := range existRegistration.AttributesList {
-			//fmt.Println("\n---inside attribute print---\n",attributeOld.Name)
 			found := false
 			for _, attributeNew := range attrilist {
 				if attributeNew.Name == attributeOld.Name {
@@ -85,18 +105,6 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 		if len(registration.ProvidingApplication) > 0 {
 			existRegistration.ProvidingApplication = registration.ProvidingApplication
 		}
-
-		//update existing FiwareServicePath
-		if len(registration.FiwareServicePath) > 0 {
-			existRegistration.FiwareServicePath = registration.FiwareServicePath
-		}
-		if len(registration.MsgFormat) > 0 {
-			existRegistration.MsgFormat = registration.MsgFormat
-		}
-		if len(registration.FiwareService) > 0 {
-			existRegistration.FiwareService = registration.FiwareService
-		}
-
 	} else {
 		entityRegistry := EntityRegistration{}
 
@@ -120,61 +128,26 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 			entityRegistry.ProvidingApplication = registration.ProvidingApplication
 		}
 
-		// update FiwareServive path
-		if len(registration.FiwareServicePath) > 0 {
-			entityRegistry.FiwareServicePath = registration.FiwareServicePath
-		}
-
-		if len(registration.MsgFormat) > 0 {
-			entityRegistry.MsgFormat = registration.MsgFormat
-		}
-
-		if len(registration.FiwareService) > 0 {
-			entityRegistry.FiwareService = registration.FiwareService
-		}
-
 		er.ctxRegistrationList[eid] = &entityRegistry
 	}
 	return er.ctxRegistrationList[eid]
 }
 
-/*func(er *EntityRepository) updateDeletedAttribute(entity EntityId, registration *ContextRegistration) {
-	 er.ctxRegistrationList_lock.Lock()
-        defer er.ctxRegistrationList_lock.Unlock()
-
-        eid := entity.ID
-        fmt.Println("\n--------entity id--------\n",eid)
-
-        if existRegistration, exist := er.ctxRegistrationList[eid]; exist {
-
-                // update existing attribute table
-                for _, attr := range registration.ContextRegistrationAttributes {
-                        fmt.Println("\n---Print attr---\n",attr)
-                        //existRegistration.AttributesList[attr.Name] = attr
-                        //fmt.Println("\n---pront---\n",existRegistration.AttributesList[attr.Name])
-                        existRegistration.AttributesList[attr.Name] = attr
-                }
-
-        return er.ctxRegistrationList[eid]
-}*/
-
-func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction, fiwareService string) map[string][]EntityId {
-	return er.queryEntitiesInMemory(entities, attributes, restriction, fiwareService)
+func (er *EntityRepository) queryEntities(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
+	return er.queryEntitiesInMemory(entities, attributes, restriction)
 }
 
-func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attributes []string, restriction Restriction, subfiwareService string) map[string][]EntityId {
+func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attributes []string, restriction Restriction) map[string][]EntityId {
 	er.ctxRegistrationList_lock.RLock()
 	defer er.ctxRegistrationList_lock.RUnlock()
 	nearby := restriction.GetNearbyFilter()
 	candidates := make([]Candidate, 0)
 	for _, registration := range er.ctxRegistrationList {
-		if matchingWithFilters(registration, entities, attributes, restriction, subfiwareService, registration.FiwareService) == true {
+		if matchingWithFilters(registration, entities, attributes, restriction) == true {
 			candidate := Candidate{}
 			candidate.ID = registration.ID
 			candidate.Type = registration.Type
 			candidate.ProviderURL = registration.ProvidingApplication
-			candidate.FiwareServicePath = registration.FiwareServicePath
-			candidate.MsgFormat = registration.MsgFormat
 
 			if nearby != nil {
 				landmark := Point{}
@@ -189,6 +162,7 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 			candidates = append(candidates, candidate)
 		}
 	}
+
 	if nearby != nil {
 		if len(candidates) > nearby.Limit {
 			// for the nearby query, just select the closest n matched entities
@@ -208,9 +182,6 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 		entity := EntityId{}
 		entity.ID = candidate.ID
 		entity.Type = candidate.Type
-		entity.IsPattern = false
-		entity.FiwareServicePath = candidate.FiwareServicePath
-		entity.MsgFormat = candidate.MsgFormat
 
 		providerURL := candidate.ProviderURL
 		entityMap[providerURL] = append(entityMap[providerURL], entity)

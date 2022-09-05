@@ -157,7 +157,7 @@ Download the metricbeat yml file for edge node.
 
 **Optional** - Edit "name" in metricbeat.docker.yml file to add particular name for better identification of edge node. Further user can update the output.elasticsearch.hosts in the metricbeat.docker.yml file.
 
-.. code-block:: json
+.. code-block:: console
 
         name: "<155.54.239.141/edge02>"
         metricbeat.modules:

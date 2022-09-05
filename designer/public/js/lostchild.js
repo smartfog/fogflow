@@ -4,7 +4,7 @@ $(function() {
     var handlers = {}
 
     var childphotoURL = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo/lostchild.png';
-    var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/photo';
+    var saveLocation = 'http://' + config.agentIP + ':' + config.webSrvPort + '/data/photo';
 
     var cameraMarkers = {};
 
@@ -37,6 +37,7 @@ $(function() {
 
     // client to interact with IoT Broker
     var client = new NGSI10Client(config.brokerURL);
+    var clientDes = new NGSI10Client('./internal');
     subscribeResult();
     checkTopology();
     checkIntent();
@@ -97,50 +98,28 @@ $(function() {
     }
 
     function checkTopology() {
-        var queryReq = {}
-        //queryReq.entities = [{ id: 'Topology.anomaly-detection', type: 'Topology', isPattern: false }];
-        var name = "child-finder"
-        queryReq = { internalType: "Topology", updateAction: "UPDATE" };
-        clientDes.getContext(queryReq).then(function(resultList) {
-            
-            if (resultList.data && resultList.data.length > 0) {
-                console.log("check topology ",isDataExists(name,resultList.data));
-                var cTopolody = isDataExists(name,resultList.data);
-                if (cTopolody.length != 0) {
-                    curTopology = cTopolody[0];
-                }
+        fetch('/topology/child-finder').then(res => res.json()).then(topology => {
+            if (Object.keys(topology).length > 0) { //non-empty       
+                curTopology = topology;   
             }
-
-            showTopology();
+            showTopology();                   
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required topology');
+       });        
     }
-
-
+    
     function checkIntent() {
-        var queryReq = {};
-       // queryReq.entities = [{ type: 'ServiceIntent', isPattern: true }];
-        //queryReq.restriction = { scopes: [{ scopeType: 'stringQuery', scopeValue: 'topology=Topology.anomaly-detection' }] }
-        queryReq = { internalType: "ServiceIntent", updateAction: "UPDATE" };
-        scopeValue = 'child-finder'
-        clientDes.getContext(queryReq).then(function(resultList) {
-            console.log(resultList);
-            if (resultList.data && resultList.data.length > 0) {
-                var result = resultList.data.filter(x => x.topology === scopeValue);
-                if (result.length > 0) {
-                    console.log("service intent result ---- ",result);
-                    curIntent = result[0];
-                    //update the current geoscope as well
-                    geoscope = result[0].geoscope;
-                }
-                
-            }
+        fetch('/intent/topology/child-finder').then(res => res.json()).then(intent => {
+            if (Object.keys(intent).length > 0) { //non-empty 
+                curIntent = intent; 
+                //update the current geoscope as well
+                geoscope = intent[0].geoscope;                 
+            }              
         }).catch(function(error) {
-            console.log(error);
-            console.log('failed to query context');
-        });
+           console.log(error);
+           console.log('failed to fetch the required intent');
+       });    
     }
 
     function showTopology() {
@@ -262,58 +241,36 @@ $(function() {
 
 
     function sendIntent() {
-        if (client == null) {
-            console.log('no nearby broker');
-            return;
-        }
-
         console.log('issue an service intent for this service topology ', curTopology);
-
-        // create the intent object
-        var topology = curTopology.topology
         var intent = {};
-        var intentCtxObj = {};
-        var attribute = {};
-       // intent.topology = topology.name;
-        attribute.topology = topology;
-        attribute.priority = {
+        
+        intent.topology = "child-finder";
+        intent.stype = "Asynchronous";
+        intent.priority = {
             'exclusive': false,
-            'level': 50
+            'level': 0
         };
-        attribute.qos = "default";
-        attribute.geoscope = geoscope;
-        attribute.id = 'ServiceIntent.' + uuid();
-        attribute.action= 'UPDATE'
-
-        // create the intent entity            
-        // var intentCtxObj = {};
-        // intentCtxObj.entityId = {
-        //     id: 'ServiceIntent.' + uuid(),
-        //     type: 'ServiceIntent',
-        //     isPattern: false
-        // };
-
-        //intentCtxObj.attributes = {};
-        // intentCtxObj.attributes.status = { type: 'string', value: 'enabled' };
-        // intentCtxObj.attributes.intent = { type: 'object', value: intent };
-
-        // intentCtxObj.metadata = {};
-        // intentCtxObj.metadata.topology = { type: 'string', value: curTopology.entityId.id };
-
-        console.log(JSON.stringify(intentCtxObj));
-        intentCtxObj.attribute = attribute;
-        intentCtxObj.internalType = "ServiceIntent";
-        intentCtxObj.updateAction = "UPDATE";
-        clientDes.updateContext(intentCtxObj).then(function(data) {
-            console.log(data);
-            curIntent = intentCtxObj;
+        intent.qos = "Min-cost";
+        intent.geoscope = geoscope;        
+        intent.id = 'ServiceIntent.' + uuid();
+        
+        fetch("/intent", {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(intent)
+        })
+        .then(response => {
+            console.log("issue a new intent: ", response.status)
+            curIntent = intent;
 
             // change the button status
             $('#enableService').prop('disabled', true);
             $('#disableService').prop('disabled', false);
-        }).catch(function(error) {
-            console.log('failed to submit the defined intent');
-        });
+        })
+        .catch(err => console.log(err));  
     }
 
 
@@ -351,46 +308,14 @@ $(function() {
 
 
     function cancelIntent() {
-        if (client == null) {
-            console.log('no nearby broker');
-            return;
-        }
-
-        console.log('cancel the issued intent for this service topology ', curTopology.entityId.id);
-
-        //stop the timer for result checking
-        if (checkingTimer != null) {
-            console.log('stop the timer for checking results and updating the search scope')
-            clearInterval(checkingTimer);
-        }
-
-        // var entityid = {
-        //     id: curIntent.entityId.id,
-        //     type: 'ServiceIntent',
-        //     isPattern: false
-        // };
-
-        var sInent = {};
-        var attribute = {id:curIntent.id, action:'DELETE'}
-        sInent.attribute = attribute
-        sInent.updateAction = 'DELETE';
-        sInent.internalType = 'ServiceIntent';
-        sInent.uid = curIntent.uid
-
-        clientDes.deleteContext(sInent).then(function(data) {
-            console.log(data);
-            curIntent = null;
-            geoscope = {
-                scopeType: "local",
-                scopeValue: "local"
-            };
-            personsFound = [];
+        fetch("/intent/" + curIntent.id, {
+            method: "DELETE"
+        })
+        .then(data => {
             $('#enableService').prop('disabled', false);
             $('#disableService').prop('disabled', true);
-        }).catch(function(error) {
-            console.log('failed to cancel the service intent');
-        });
-       
+        })
+        .catch(err => console.log(err));  
     }
 
 
@@ -817,7 +742,7 @@ $(function() {
                     var marker = L.marker(new L.LatLng(latitude, longitude), { icon: edgeIcon });
                     if (device.entityId.type == 'Camera') {
                         var imageURL = device.attributes.url.value;
-                        marker.addTo(map).bindPopup("<img src=" + window.location.origin + "/proxy?url=" + imageURL + "></img>");
+                        marker.addTo(map).bindPopup("<img src=" + imageURL + "></img>");
                         cameraMarkers[deviceId] = marker;
                     } else {
                         marker.addTo(map).bindPopup(deviceId);
