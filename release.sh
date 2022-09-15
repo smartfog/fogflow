@@ -1,5 +1,5 @@
 # build the images of all FogFlow core components
-./build.sh multistage
+#./build.sh multistage
 
 # tag all docker images with the version number
 if [ $# -gt 0 ]; then
@@ -19,4 +19,8 @@ if [ $# -gt 0 ]; then
     docker push fogflow/master:${VERSION}
     docker push fogflow/worker:${VERSION}
     docker push fogflow/designer:${VERSION}
+
+    # publish the arm version for both worker and broker
+    docker image tag fogflow/broker:arm fogflow/broker:arm
+    docker image tag fogflow/worker:arm fogflow/worker:arm
 fi
