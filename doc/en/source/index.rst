@@ -49,7 +49,6 @@ Currently, FogFlow has been applied into various business use cases in the areas
     :numbered:
     
     setup.rst
-    system_integration.rst	
     system_monitoring.rst
     https.rst
    

@@ -56,7 +56,7 @@ func (dockerengine *DockerEngine) Init(cfg *Config) bool {
 	return true
 }
 
-func (dockerengine *DockerEngine) PullImage(dockerImage string, tag string) (string, error) {
+func (dockerengine *DockerEngine) PullImage(dockerImage string) (string, error) {
 	auth := docker.AuthConfiguration{}
 
 	if dockerengine.workerCfg.Worker.Registry.IsConfigured() == true {
@@ -71,7 +71,6 @@ func (dockerengine *DockerEngine) PullImage(dockerImage string, tag string) (str
 
 	opts := docker.PullImageOptions{
 		Repository: dockerImage,
-		Tag:        tag,
 	}
 
 	DEBUG.Printf("options : %+v\r\n", opts)
@@ -133,6 +132,16 @@ func (dockerengine *DockerEngine) StartTask(task *ScheduledTaskInstance, brokerU
 	dockerImage := task.DockerImage
 	INFO.Println("to execute Task [", task.ID, "] to perform Operation [",
 		dockerImage, "] with parameters [", task.Parameters, "]")
+
+	// first check the image locally
+	if dockerengine.InspectImage(dockerImage) == false {
+		// if the image does not exist locally, try to fetch it from docker hub
+		_, pullError := dockerengine.PullImage(dockerImage)
+		if pullError != nil {
+			ERROR.Printf("failed to fetch the image %s\r\n", dockerImage)
+			return "", "", pullError
+		}
+	}
 
 	// function code
 	functionCode := task.FunctionCode

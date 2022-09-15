@@ -1,8 +1,8 @@
 {
-    "my_hostip": "127.0.0.1",
+    "my_hostip": "host.docker.internal",
     "physical_location":{
-        "longitude": 139.709059,
-        "latitude": 35.692221
+        "longitude": -1.1693835099259555,
+        "latitude": 38.018837048090326        
     },
     "site_id": "001",
     "logging":{
@@ -15,19 +15,23 @@
         "http_port": 8090
     },
     "broker": {
-        "http_port": 8070
+        "http_port": 8070,
+        "heartbeat_interval": 30           
     },     
     "master": {
-        "ngsi_agent_port": 1060,    
-        "rest_api_port": 8010     
+        "ngsi_agent_port": 1060,
+        "rest_api_port": 8010      
     },
     "worker": {
+        "container_management": "docker", 
         "container_autoremove": false,
         "start_actual_task": true,
-        "capacity": 8
+        "capacity": 100,
+        "heartbeat_interval": 30,
+        "detection_duration": 10          
     },
     "designer": {
-        "webSrvPort": 8088,
+        "webSrvPort": 8080,
         "agentPort": 1030               
     },    
     "rabbitmq": {

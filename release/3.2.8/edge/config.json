@@ -1,10 +1,11 @@
 {
-    "my_hostip": "127.0.0.1",
+    "coreservice_ip": "192.168.0.59",   
+    "my_hostip": "192.168.0.16",  
     "physical_location":{
-        "longitude": 139.709059,
-        "latitude": 35.692221
+        "longitude": -1.1715629779027177,
+        "latitude": 38.01506335734526
     },
-    "site_id": "001",
+    "site_id": "002",
     "logging":{
         "info":"stdout",
         "error":"stdout",
@@ -12,24 +13,20 @@
         "debug": "stdout"
     },
     "discovery": {
-        "http_port": 8090
+        "http_port": 8090           
     },
     "broker": {
-        "http_port": 8070
+        "http_port": 8060,
+        "heartbeat_interval": 30          
     },     
-    "master": {
-        "ngsi_agent_port": 1060,    
-        "rest_api_port": 8010     
-    },
     "worker": {
+        "container_management": "docker", 
         "container_autoremove": false,
         "start_actual_task": true,
-        "capacity": 8
+        "capacity": 4,
+        "heartbeat_interval": 30,
+        "detection_duration": 10                        
     },
-    "designer": {
-        "webSrvPort": 8088,
-        "agentPort": 1030               
-    },    
     "rabbitmq": {
         "port": 5672,
         "username": "admin",
