@@ -192,12 +192,16 @@ Download the deployment script
 
 .. code-block:: console    
       
-  #download the deployment scripts
-  wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_start.sh
-  wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/edge_stop.sh	
+	# the docker-compose file to start all FogFlow components on the edge node
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/edge/docker-compose.yml
+
+
+	#download the deployment scripts
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/edge/start.sh
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/edge/stop.sh	
 	
-  #make them executable
-  chmod +x edge_start.sh  edge_stop.sh       
+	#make them executable
+	chmod +x start.sh  stop.sh       
 
 
 Download the default configuration file 
@@ -206,7 +210,7 @@ Download the default configuration file
 .. code-block:: console   
          	
 	#download the configuration file          
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/docker/edge/http/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/edge/config.json
 
 
 Change the configuration file accordingly
@@ -252,7 +256,7 @@ Start Edge node components
 .. code-block:: console    
 
       #start both components in the same script
-      ./edge_start.sh 
+      ./start.sh 
     
       #if the edge node is ARM-basd, please attach arm as the command parameter
       #./edge_start.sh  arm
@@ -264,5 +268,5 @@ Stop Edge node components
 .. code-block:: console    
 
 	#stop both components in the same script
-	./edge_stop.sh 
+	./stop.sh 
 
