@@ -4,8 +4,8 @@ const NGSIClient = require('./ngsiclient');
 // list of active tasks launched by FogFlow workers
 var taskMap = {};
 
-const fogflow_host_ip = 'localhost';
-//const fogflow_host_ip = '10.11.11.166';
+//const fogflow_host_ip = 'localhost';
+const fogflow_host_ip = '10.11.11.166';
 const fogflow_port = '8080';
 
 //const locations = [{
@@ -99,11 +99,17 @@ async function startTest() {
     test_status = "ENABLED";
 }
 
+
 function maxMinAvg(arr) {
     var max = arr[0];
     var min = arr[0];
     var sum = arr[0]; //changed from original post
+    var num = 1;
     for (var i = 1; i < arr.length; i++) {
+        if (arr[i] == null) {
+            continue;
+        }
+        
         if (arr[i] > max) {
             max = arr[i];
         }
@@ -111,8 +117,10 @@ function maxMinAvg(arr) {
             min = arr[i];
         }
         sum = sum + arr[i];
+        num = num + 1
     }
-    return [max, min, sum/arr.length]; //changed from original post
+    
+    return [max, min, sum/num]; //changed from original post
 }
 
 function printTestResult() {
@@ -291,21 +299,27 @@ function onTaskUpdate(msg) {
 }
 
 function onTaskInfo(msg) {
-    console.log("========task_info=========");
+    //console.log("========task_info=========");
   
     var payload = msg.PayLoad;
     var workerID = msg.From;
-    var taskID = payload.TaskID
+    var taskID = payload.TaskID;
 
     if (payload.TopologyName != 'mytest') {
         console.log("non-relevant task");
         return
     }
+    
+    if (taskID in taskMap) {
+        taskMap[taskID].orchestration_time = Date.now() - start_time;
+        console.log(taskID, ": started");        
+    } else {
+        console.log("non-relevant task");
+    }
 
-    taskMap[taskID].orchestration_time = Date.now() - start_time;
-
-    console.log(payload);
+    //console.log(payload);
 }
+
 
 function updateTaskList(updateMsg, fromWorker) {
     console.log("========task_update=========");

@@ -97,6 +97,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 	}
 
 	taskId := "fogflow-deployment-" + freePort
+	appNameSpace := mec.workerCfg.Worker.AppNameSpace
 
 	deployment := &appsv1.Deployment{
 		TypeMeta: metaV1.TypeMeta{
@@ -104,7 +105,7 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 			Kind:       "Deployment",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: mec.workerCfg.Worker.AppNameSpace,
+			Namespace: appNameSpace,
 			Name:      taskId,
 		},
 		Spec: appsv1.DeploymentSpec{
@@ -155,7 +156,8 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 		ERROR.Fatalf("Error occured during marshaling. Error: %s", err.Error())
 	}
 
-	mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/deployment/fogflow", task.Parameters, jsonPayload)
+	requestURL := mec.edgeControllerURL + "/api/v1/create/deployment/" + appNameSpace
+	mec.sendRequest("POST", requestURL, task.Parameters, jsonPayload)
 
 	serviceSpec := &coreV1.Service{
 		TypeMeta: metaV1.TypeMeta{
@@ -186,7 +188,9 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 		return "", "", err
 	}
 
-	resp, err := mec.sendRequest("POST", mec.edgeControllerURL+"/api/v1/create/service/fogflow", task.Parameters, jsonPayload)
+	requestURL = mec.edgeControllerURL + "/api/v1/create/service/" + appNameSpace
+
+	resp, err := mec.sendRequest("POST", requestURL, task.Parameters, jsonPayload)
 	if err != nil {
 		ERROR.Fatalf("NOT able to interact with Edge Controller: %s", err.Error())
 		return "", "", err
@@ -205,11 +209,15 @@ func (mec *EdgeController) StartTask(task *ScheduledTaskInstance, brokerURL stri
 }
 
 func (mec *EdgeController) StopTask(taskId string) {
+	appNameSpace := mec.workerCfg.Worker.AppNameSpace
+
 	deploymentName := taskId
-	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/deployment/fogflow/"+deploymentName, nil, nil)
+	requestURL := mec.edgeControllerURL + "/api/v1/delete/deployment/" + appNameSpace + "/" + deploymentName
+	mec.sendRequest("DELETE", requestURL, nil, nil)
 
 	serviceName := taskId
-	mec.sendRequest("DELETE", mec.edgeControllerURL+"/api/v1/delete/service/fogflow/"+serviceName, nil, nil)
+	requestURL = mec.edgeControllerURL + "/api/v1/delete/service/" + appNameSpace + "/" + serviceName
+	mec.sendRequest("DELETE", requestURL, nil, nil)
 }
 
 func (mec *EdgeController) sendRequest(method string, url string, parameters []Parameter, payload []byte) ([]byte, error) {

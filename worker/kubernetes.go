@@ -144,16 +144,19 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 	iport, err := strconv.ParseInt(freePort, 10, 32)
 	pport := int32(iport)
 	if err != nil {
-		panic(err.Error())
+		ERROR.Println("failed to find a free port: ", err.Error())
+		return "", "", err
 	}
 
 	INFO.Println("[namespace for applications]", k8s.applicationNameSpace)
+
+	taskName = "fogflow-task-" + freePort
 
 	deploymentsClient := k8s.clientset.AppsV1().Deployments(k8s.applicationNameSpace)
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "fogflow-task-" + freePort,
+			Name: taskName,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -170,9 +173,10 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{
 						{
-							Name:            taskName,
-							Image:           dockerImage,
-							ImagePullPolicy: "Always",
+							Name:  taskName,
+							Image: dockerImage,
+							//ImagePullPolicy: "Always",
+							ImagePullPolicy: "IfNotPresent",
 							Ports: []apiv1.ContainerPort{
 								{
 									Name:          "http",
@@ -201,7 +205,8 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 	// Create Deployment
 	result, err := deploymentsClient.Create(context.TODO(), deployment, metav1.CreateOptions{})
 	if err != nil {
-		panic(err)
+		ERROR.Println("failed to launch the deployment: ", deployment.Name)
+		return "", "", err
 	}
 
 	coreV1Client := k8s.clientset.CoreV1()
@@ -209,7 +214,7 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 	serviceSpec := &coreV1.Service{
 		ObjectMeta: metaV1.ObjectMeta{
 			Namespace: k8s.applicationNameSpace,
-			Name:      "fogflow-task-" + freePort,
+			Name:      taskName,
 		},
 		Spec: coreV1.ServiceSpec{
 			Selector: map[string]string{
@@ -225,8 +230,10 @@ func (k8s *Kubernetes) StartTask(task *ScheduledTaskInstance, brokerURL string) 
 
 	service, err := coreV1Client.Services(k8s.applicationNameSpace).Create(context.TODO(), serviceSpec, metaV1.CreateOptions{})
 	if err != nil {
-		panic(err)
+		ERROR.Println("failed to launch the service: ", serviceSpec.Name)
+		return "", "", err
 	}
+
 	refURL := "http://" + service.Spec.ClusterIP + ":" + freePort
 	fmt.Printf("Created service at %s\n", refURL)
 

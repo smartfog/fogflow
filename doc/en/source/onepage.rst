@@ -72,13 +72,13 @@ Download the docker-compose file and the configuration files as below.
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/docker-compose.yml
 	
 	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/config.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/config.json
 	
 	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.6/cloud/nginx.conf
+	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/nginx.conf
 
 
 	
@@ -155,11 +155,11 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 	docker ps -a
 	
 	795e6afe2857   nginx:latest            "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
-	33aa34869968   fogflow/worker:3.2.6      "/worker"                About a minute ago   Up About a minute                                                                                                    fogflow_cloud_worker_1
-	e4055b5cdfe5   fogflow/master:3.2.6      "/master"                About a minute ago   Up About a minute   0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
-	cdf8d4068959   fogflow/designer:3.2.6    "node main.js"           About a minute ago   Up About a minute   0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
-	56daf7f078a1   fogflow/broker:3.2.6      "/broker"                About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
-	51901ce6ee5f   fogflow/discovery:3.2.6   "/discovery"             About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
+	33aa34869968   fogflow/worker:3.2.8      "/worker"                About a minute ago   Up About a minute                                                                                                    fogflow_cloud_worker_1
+	e4055b5cdfe5   fogflow/master:3.2.8      "/master"                About a minute ago   Up About a minute   0.0.0.0:1060->1060/tcp                                                                           fogflow_master_1
+	cdf8d4068959   fogflow/designer:3.2.8    "node main.js"           About a minute ago   Up About a minute   0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
+	56daf7f078a1   fogflow/broker:3.2.8      "/broker"                About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
+	51901ce6ee5f   fogflow/discovery:3.2.8   "/discovery"             About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
 	51eff4975621   dgraph/standalone       "/run.sh"                About a minute ago   Up About a minute   0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
 	eb31cd255fde   rabbitmq:3              "docker-entrypoint.s…"   About a minute ago   Up About a minute   4369/tcp, 5671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                           fogflow_rabbitmq_1
 

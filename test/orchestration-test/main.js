@@ -4,8 +4,8 @@ const NGSIClient = require('./ngsiclient');
 // list of active tasks launched by FogFlow workers
 var taskMap = {};
 
-const fogflow_host_ip = 'localhost';
-//const fogflow_host_ip = '10.11.11.166';
+//const fogflow_host_ip = 'localhost';
+const fogflow_host_ip = '10.11.11.166';
 const fogflow_port = '8080';
 
 //const locations = [{
@@ -97,7 +97,12 @@ function maxMinAvg(arr) {
     var max = arr[0];
     var min = arr[0];
     var sum = arr[0]; //changed from original post
+    var num = 0;
     for (var i = 1; i < arr.length; i++) {
+        if (arr[i] == null) {
+            continue;
+        }
+        
         if (arr[i] > max) {
             max = arr[i];
         }
@@ -105,8 +110,10 @@ function maxMinAvg(arr) {
             min = arr[i];
         }
         sum = sum + arr[i];
+        num = num + 1
     }
-    return [max, min, sum/arr.length]; //changed from original post
+    
+    return [max, min, sum/num]; //changed from original post
 }
 
 function printTestResult() {
@@ -162,7 +169,7 @@ async function create_temperature_entities(num) {
     
         // create the device entity in FogFlow Cloud Broker
         ngsi10client.updateContext(deviceObj).then(function (data) {
-            console.log(data);
+            //console.log(data);
         }).catch(function (error) {
             console.log('failed to register the new device object');
         });         
@@ -170,6 +177,8 @@ async function create_temperature_entities(num) {
 }
 
 async function delete_temperature_entities(num) {
+    console.log("delete all device entities");
+    
     for(var i=1; i<=num; i++) {
 
         entityId = {
@@ -178,11 +187,11 @@ async function delete_temperature_entities(num) {
             isPattern: false		
         };
     
-        console.log("delete the entity: ", "Device." + i);
+        //console.log("delete the entity: ", "Device." + i);
     
         // delete the device entity in FogFlow Cloud Broker
         await ngsi10client.deleteContext(entityId).then(function (data) {
-            console.log(data);
+            //console.log(data);
         }).catch(function (error) {
             console.log('failed to delete the entiti');
         });         
@@ -220,7 +229,7 @@ function handleInternalMessage(jsonMsg) {
 
 
 function onTaskUpdate(msg) {
-    console.log("========task_update=========");
+    //console.log("========task_update=========");
 
     var payload = msg.PayLoad;
     var workerID = msg.From;
@@ -241,24 +250,29 @@ function onTaskUpdate(msg) {
         taskMap[taskID].termination_time = Date.now() - stop_time;
     }
 
-    console.log(payload);
+    console.log(taskID, ": ", payload.Status);
 }
 
 function onTaskInfo(msg) {
-    console.log("========task_info=========");
+    //console.log("========task_info=========");
   
     var payload = msg.PayLoad;
     var workerID = msg.From;
-    var taskID = payload.TaskID
+    var taskID = payload.TaskID;
 
     if (payload.TopologyName != 'mytest') {
         console.log("non-relevant task");
         return
     }
+    
+    if (taskID in taskMap) {
+        taskMap[taskID].orchestration_time = Date.now() - start_time;
+        console.log(taskID, ": started");        
+    } else {
+        console.log("non-relevant task");
+    }
 
-    taskMap[taskID].orchestration_time = Date.now() - start_time;
-
-    console.log(payload);
+    //console.log(payload);
 }
 
 function updateTaskList(updateMsg, fromWorker) {
