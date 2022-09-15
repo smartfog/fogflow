@@ -1,5 +1,5 @@
 # build the images of all FogFlow core components
-#./build.sh multistage
+./build.sh multistage
 
 # tag all docker images with the version number
 if [ $# -gt 0 ]; then
