@@ -77,9 +77,6 @@ Download the docker-compose file and the configuration files as below.
 	# the configuration file used by all FogFlow components
 	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/config.json
 	
-	# the configuration file used by the nginx proxy
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/nginx.conf
-
 
 	
 Change the IP configuration accordingly
@@ -107,7 +104,6 @@ You need to change the following IP addresses in config.json according to your o
 
 		Discovery		8090 
 		Broker			8070
-		Dgraph			9082
 		Designer		8080
 		Nginx			  80
 		Rabbitmq		5672
@@ -120,9 +116,6 @@ You need to change the following IP addresses in config.json according to your o
 
 	**Mac Users:** if you like to test FogFlow on your Macbook, please install Docker Desktop and also use "host.docker.internal" 
 	as my_hostip in the configuration file.
-
-
-.. figure:: figures/Port_Diagram.png
 
 
 Start all Fogflow components 
@@ -160,7 +153,6 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 	cdf8d4068959   fogflow/designer:3.2.8    "node main.js"           About a minute ago   Up About a minute   0.0.0.0:1030->1030/tcp, 0.0.0.0:8080->8080/tcp                                                   fogflow_designer_1
 	56daf7f078a1   fogflow/broker:3.2.8      "/broker"                About a minute ago   Up About a minute   0.0.0.0:8070->8070/tcp                                                                           fogflow_cloud_broker_1
 	51901ce6ee5f   fogflow/discovery:3.2.8   "/discovery"             About a minute ago   Up About a minute   0.0.0.0:8090->8090/tcp                                                                           fogflow_discovery_1
-	51eff4975621   dgraph/standalone       "/run.sh"                About a minute ago   Up About a minute   0.0.0.0:6080->6080/tcp, 0.0.0.0:8000->8000/tcp, 0.0.0.0:8082->8080/tcp, 0.0.0.0:9082->9080/tcp   fogflow_dgraph_1
 	eb31cd255fde   rabbitmq:3              "docker-entrypoint.s…"   About a minute ago   Up About a minute   4369/tcp, 5671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:5672->5672/tcp                           fogflow_rabbitmq_1
 
 .. important:: 
