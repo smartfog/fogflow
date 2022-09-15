@@ -145,7 +145,7 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 .. code-block:: console    
 
-	docker ps -a
+	docker-compose ps
 	
 	795e6afe2857   nginx:latest            "/docker-entrypoint.…"   About a minute ago   Up About a minute   0.0.0.0:80->80/tcp                                                                               fogflow_nginx_1
 	33aa34869968   fogflow/worker:3.2.8      "/worker"                About a minute ago   Up About a minute                                                                                                    fogflow_cloud_worker_1
