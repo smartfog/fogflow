@@ -251,15 +251,12 @@ You can use the default setting for a simple test, but you need to change the fo
 Start Edge node components
 -------------------------------------------------
 
-.. note:: if the edge node is ARM-basd, please attach arm as the command parameter
+.. note:: the edge node is ARM-basd, such as Raspberry Pi.
 
 .. code-block:: console    
 
       #start both components in the same script
       ./start.sh 
-    
-      #if the edge node is ARM-basd, please attach arm as the command parameter
-      #./edge_start.sh  arm
       
 
 Stop Edge node components
