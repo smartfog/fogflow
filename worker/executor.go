@@ -76,7 +76,7 @@ func (e *Executor) GetNumOfTasks() int {
 }
 
 func (e *Executor) PullImage(dockerImage string, tag string) (string, error) {
-	return e.client.PullImage(dockerImage, tag)
+	return e.client.PullImage(dockerImage + ":" + tag)
 }
 
 func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {

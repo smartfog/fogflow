@@ -83,7 +83,7 @@ func fetchClusterConfig() *rest.Config {
 	return config
 }
 
-func (k8s *Kubernetes) PullImage(dockerImage string, tag string) (string, error) {
+func (k8s *Kubernetes) PullImage(dockerImage string) (string, error) {
 	return "test", nil
 }
 

@@ -1,7 +1,7 @@
 version: "3.3"
 services:     
     edge_broker:
-        image: fogflow/broker:3.2.8
+        image: fogflow/broker_arm:3.2.8
         volumes:
             - ./config.json:/config.json 
         ports:
@@ -9,7 +9,7 @@ services:
         restart: always     
                                         
     edge_worker:
-        image: fogflow/worker:3.2.8
+        image: fogflow/worker_arm:3.2.8
         volumes:
             - /tmp:/tmp        
             - ./config.json:/config.json                            

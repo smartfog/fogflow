@@ -2,8 +2,8 @@
     "coreservice_ip": "192.168.0.59",   
     "my_hostip": "192.168.0.16",  
     "physical_location":{
-        "longitude": 138.709059,
-        "latitude": 36.692221
+        "longitude": -1.1715629779027177,
+        "latitude": 38.01506335734526
     },
     "site_id": "002",
     "logging":{
