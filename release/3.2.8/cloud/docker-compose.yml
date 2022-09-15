@@ -28,6 +28,7 @@ services:
             - rabbitmq        
         ports:
             - 1060:1060 
+            - 8010:8010 
         depends_on: 
             - rabbitmq
             - discovery

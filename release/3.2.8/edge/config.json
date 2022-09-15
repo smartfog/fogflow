@@ -20,6 +20,7 @@
         "heartbeat_interval": 30          
     },     
     "worker": {
+        "container_management": "docker", 
         "container_autoremove": false,
         "start_actual_task": true,
         "capacity": 4,

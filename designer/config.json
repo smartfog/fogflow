@@ -37,8 +37,5 @@
     },
     "https": {
         "enabled" : false
-    },
-    "persistent_storage": {
-        "port": 9082
-    } 
+    }
 }
