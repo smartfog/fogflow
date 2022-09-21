@@ -106,12 +106,18 @@ func (master *Master) Start(configuration *Config) {
 
 	// start the message consumer
 	go func() {
+		numConnectionFailure := 0
 		for {
 			retry, err := master.communicator.StartConsuming(master.id, master)
 			if retry {
-				INFO.Printf("Going to retry launching the rabbitmq. Error: %v", err)
+				ERROR.Printf("Going to retry launching the rabbitmq. Error:", err)
+				numConnectionFailure += 1
+				if numConnectionFailure > 10 {
+					ERROR.Printf("break out after 10 failures, Error:", err)
+					break
+				}
 			} else {
-				INFO.Printf("stop retrying")
+				ERROR.Printf("stop retrying, Error: ", err)
 				break
 			}
 		}

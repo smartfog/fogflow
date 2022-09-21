@@ -113,7 +113,7 @@ func (e *Executor) LaunchTask(task *ScheduledTaskInstance) bool {
 	servicePorts := make([]string, 0)
 	for _, parameter := range task.Parameters {
 		// deal with the service port
-		if parameter.Name == "service_port" {
+		if parameter.Name == "service-port" {
 			servicePorts = strings.Split(parameter.Value, ";")
 		}
 	}

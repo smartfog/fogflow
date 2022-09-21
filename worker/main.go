@@ -40,6 +40,8 @@ func main() {
 		myID = myID + "." + *id
 	}
 
+	INFO.Println(myID, " is running ")
+
 	// start the worker to deal with tasks
 	var worker = &Worker{id: myID}
 	if worker.Start(&config) == false {

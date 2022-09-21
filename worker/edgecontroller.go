@@ -221,15 +221,20 @@ func (mec *EdgeController) StopTask(taskId string) {
 }
 
 func (mec *EdgeController) sendRequest(method string, url string, parameters []Parameter, payload []byte) ([]byte, error) {
-	INFO.Println(method, url, string(payload))
+	INFO.Println(method, url, parameters, string(payload))
 
 	request, _ := http.NewRequest(method, url, bytes.NewBuffer(payload))
 	request.Header.Set("Content-Type", "application/json; charset=UTF-8")
 
 	// set the header based on the parameters of the operator
+	INFO.Println("=========parameters==========")
+
 	for _, parameter := range parameters {
+		INFO.Println(parameter.Name, parameter.Value)
 		request.Header.Set(parameter.Name, parameter.Value)
 	}
+
+	INFO.Println("=========END parameters==========")
 
 	client := &http.Client{}
 	response, err := client.Do(request)

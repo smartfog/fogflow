@@ -60,11 +60,20 @@ func (w *Worker) Start(config *Config) bool {
 
 	// start the message consumer
 	go func() {
+		numConnectionFailure := 0
 		for {
 			retry, err := w.communicator.StartConsuming(w.id, w)
 			if retry {
-				INFO.Printf("Going to retry launching the edge node. Error: %v", err)
+				ERROR.Printf("Going to retry launching the edge node. Error: %v", err)
+				numConnectionFailure += 1
+				if numConnectionFailure > 10 {
+					ERROR.Printf("break out after 10 failures, Error: %v", err)
+					break
+				} else {
+					INFO.Println("number of connection failure to RabbitMQ: ", numConnectionFailure)
+				}
 			} else {
+				ERROR.Printf("break out, Error: %v", err)
 				break
 			}
 		}

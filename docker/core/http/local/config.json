@@ -23,11 +23,14 @@
         "rest_api_port": 8010      
     },
     "worker": {
+        "container_management": "mec", 
+        "app_namespace": "fogflow-edge",     
+        "edge_controller_port": 8008,
         "container_autoremove": false,
         "start_actual_task": true,
         "capacity": 100,
         "heartbeat_interval": 30,
-        "detection_duration": 10
+        "detection_duration": 10   
     },
     "designer": {
         "webSrvPort": 8080,
