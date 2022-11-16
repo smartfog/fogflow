@@ -317,12 +317,20 @@ func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest) ([]Cont
 	}
 
 	text, _ := ioutil.ReadAll(resp.Body)
+	// DEBUG.Println(string(text))
+
+	// queryCtxResp := QueryContextResponse{}
+	// err = json.Unmarshal(text, &queryCtxResp)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// DEBUG.Println(queryCtxResp)
 
 	queryCtxResp := QueryContextResponse{}
-	err = json.Unmarshal(text, &queryCtxResp)
-	if err != nil {
-		return nil, err
-	}
+	queryCtxResp.parseQueryContextResponse_HybridNGSI_NGSILD(text)
+
+	// DEBUG.Println(queryCtxResp)
 
 	ctxElements := make([]ContextElement, 0)
 	for _, contextElementResponse := range queryCtxResp.ContextResponses {

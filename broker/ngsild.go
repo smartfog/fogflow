@@ -105,7 +105,7 @@ func (tb *ThinBroker) NGSILD_QueryById(w rest.ResponseWriter, r *rest.Request) {
 		}
 	}
 
-	// send out the matched context elements in the form of NGSIv2
+	// send out the matched context elements in the form of NGSI-LD
 	if len(matchedCtxElement) > 0 {
 		w.WriteJson(toNGSILDPayload(matchedCtxElement)[0])
 	} else {

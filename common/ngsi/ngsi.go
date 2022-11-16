@@ -995,6 +995,108 @@ func (updateCtxReq *UpdateContextRequest) ReadFromNGSILD(ngsildEntities []map[st
 	return counter
 }
 
+func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_NGSILD(queryResponseBody []byte) {
+
+	type InternalContextAttribute struct {
+		Name     string            `json:"name"`
+		Type     string            `json:"type,omitempty"`
+		Value    []interface{}     `json:"value"`
+		Metadata []ContextMetadata `json:"metadata,omitempty"`
+	}
+
+	type InternalContextElement struct {
+		Entity EntityId `json:"entityId"`
+
+		ID        string `json:"id"`
+		Type      string `json:"type,omitempty"`
+		IsPattern string `json:"isPattern"`
+
+		Attributes []InternalContextAttribute `json:"attributes,omitempty"`
+		Metadata   []ContextMetadata          `json:"domainMetadata,omitempty"`
+	}
+
+	type InternalContextElementResponse struct {
+		ContextElement InternalContextElement `json:"contextElement"`
+		StatusCode     StatusCode             `json:"statusCode"`
+	}
+
+	type InternalQueryContextResponseObject struct {
+		ContextResponses []InternalContextElementResponse `json:"contextResponses,omitempty"`
+		ErrorCode        StatusCode                       `json:"errorCode,omitempty"`
+	}
+
+	queryCtxRespInternal := InternalQueryContextResponseObject{}
+	_ = json.Unmarshal(queryResponseBody, &queryCtxRespInternal)
+	// err := json.Unmarshal(queryResponseBody, &queryCtxRespInternal)
+	// if err != nil {
+	// 	ERROR.Println(err)
+	// 	// return
+	// }
+
+	parsedQueryCtxResp := QueryContextResponse{}
+	_ = json.Unmarshal(queryResponseBody, &parsedQueryCtxResp)
+	// err = json.Unmarshal(queryResponseBody, &parsedQueryCtxResp)
+	// if err != nil {
+	// 	ERROR.Println(err)
+	// 	// return
+	// }
+
+	// DEBUG.Println(queryCtxRespInternal)
+	// for _, ctxResp := range queryCtxResp.ContextResponses {
+	// 	for _, contextAttribute := range ctxResp.ContextElement.Attributes {
+	// 		if contextAttribute.Type == "object" && contextAttribute.Value == nil {
+
+	// 		}
+	// 	}
+	// }
+
+	//return (string)queryCtxResp1
+
+	queryCtxResp.ErrorCode = queryCtxRespInternal.ErrorCode
+	contextResponses := make([]ContextElementResponse, 0)
+
+	for ctxResp_index, ctxRespInternal := range queryCtxRespInternal.ContextResponses {
+		ctxResp := ContextElementResponse{}
+
+		ctxResp.StatusCode = ctxRespInternal.StatusCode
+
+		ctxElement := ContextElement{}
+		ctxElement.Entity = ctxRespInternal.ContextElement.Entity
+		ctxElement.ID = ctxRespInternal.ContextElement.Entity.ID
+		ctxElement.Type = ctxRespInternal.ContextElement.Type
+		ctxElement.IsPattern = ctxRespInternal.ContextElement.IsPattern
+		ctxElement.Metadata = ctxRespInternal.ContextElement.Metadata
+		ctxElement.Attributes = make([]ContextAttribute, 0)
+
+		for attribute_index, attributeInternal := range ctxRespInternal.ContextElement.Attributes {
+
+			ctxAttribute := ContextAttribute{}
+			ctxAttribute.Name = attributeInternal.Name
+			ctxAttribute.Type = attributeInternal.Type
+			ctxAttribute.Metadata = attributeInternal.Metadata
+
+			if attributeInternal.Value != nil {
+				ctxAttribute.Value = attributeInternal.Value
+			} else {
+				// DEBUG.Println((parsedQueryCtxResp.ContextResponses)[ctxResp_index])
+				// DEBUG.Println(((parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Attributes)[attribute_index])
+				ctxAttribute.Value = ((parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Attributes)[attribute_index].Value
+			}
+
+			ctxElement.Attributes = append(ctxElement.Attributes, ctxAttribute)
+
+		}
+
+		ctxResp.ContextElement = ctxElement
+		contextResponses = append(contextResponses, ctxResp)
+	}
+
+	queryCtxResp.ContextResponses = contextResponses
+
+	// DEBUG.Println(queryCtxResp)
+
+}
+
 func (updateCtxReq *UpdateContextRequest) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) int {
 	updateCtxReq.UpdateAction = "Update"
 	updateCtxReq.ContextElements = make([]ContextElement, 0)
