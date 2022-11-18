@@ -1027,6 +1027,7 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 
 	queryCtxRespInternal := InternalQueryContextResponseObject{}
 	_ = json.Unmarshal(queryResponseBody, &queryCtxRespInternal)
+	// DEBUG.Println(queryCtxRespInternal)
 	// err := json.Unmarshal(queryResponseBody, &queryCtxRespInternal)
 	// if err != nil {
 	// 	ERROR.Println(err)
@@ -1035,6 +1036,7 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 
 	parsedQueryCtxResp := QueryContextResponse{}
 	_ = json.Unmarshal(queryResponseBody, &parsedQueryCtxResp)
+	// DEBUG.Println(parsedQueryCtxResp)
 	// err = json.Unmarshal(queryResponseBody, &parsedQueryCtxResp)
 	// if err != nil {
 	// 	ERROR.Println(err)
@@ -1062,9 +1064,10 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 
 		ctxElement := ContextElement{}
 		ctxElement.Entity = ctxRespInternal.ContextElement.Entity
-		ctxElement.ID = ctxRespInternal.ContextElement.Entity.ID
-		ctxElement.Type = ctxRespInternal.ContextElement.Type
-		ctxElement.IsPattern = ctxRespInternal.ContextElement.IsPattern
+		//ctxElement.ID = ctxRespInternal.ContextElement.Entity.ID
+		ctxElement.Entity = (parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Entity
+		//ctxElement.Type = ctxRespInternal.ContextElement.Type
+		//ctxElement.IsPattern = ctxRespInternal.ContextElement.IsPattern
 		ctxElement.Metadata = ctxRespInternal.ContextElement.Metadata
 		ctxElement.Attributes = make([]ContextAttribute, 0)
 
@@ -1078,8 +1081,6 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 			if attributeInternal.Value != nil {
 				ctxAttribute.Value = attributeInternal.Value
 			} else {
-				// DEBUG.Println((parsedQueryCtxResp.ContextResponses)[ctxResp_index])
-				// DEBUG.Println(((parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Attributes)[attribute_index])
 				ctxAttribute.Value = ((parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Attributes)[attribute_index].Value
 			}
 
@@ -1092,9 +1093,6 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 	}
 
 	queryCtxResp.ContextResponses = contextResponses
-
-	// DEBUG.Println(queryCtxResp)
-
 }
 
 func (updateCtxReq *UpdateContextRequest) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) int {
