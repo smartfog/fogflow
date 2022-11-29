@@ -325,7 +325,7 @@ func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest) ([]Cont
 	// }
 
 	queryCtxResp := QueryContextResponse{}
-	queryCtxResp.parseQueryContextResponse_HybridNGSI_NGSILD(text)
+	queryCtxResp.ParseQueryContextResponse_HybridNGSI_NGSILD(text)
 
 	ctxElements := make([]ContextElement, 0)
 	for _, contextElementResponse := range queryCtxResp.ContextResponses {

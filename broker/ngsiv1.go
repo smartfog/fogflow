@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
 
 	"github.com/ant0ine/go-json-rest/rest"
@@ -88,16 +89,25 @@ func (tb *ThinBroker) NGSIV1_QueryContext(w rest.ResponseWriter, r *rest.Request
 }
 
 func (tb *ThinBroker) NGSIV1_NotifyContext(w rest.ResponseWriter, r *rest.Request) {
+
+	content, _ := ioutil.ReadAll(r.Body)
+	r.Body.Close()
+	// DEBUG.Println(string(content))
+
 	notifyCtxReq := NotifyContextRequest{}
-	err := r.DecodeJsonPayload(&notifyCtxReq)
-	if err != nil {
-		rest.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	notifyCtxReq.ParseNotifyContextRequest_HybridNGSI_NGSILD(content)
+
+	// err := r.DecodeJsonPayload(&notifyCtxReq)
+	// if err != nil {
+	// 	rest.Error(w, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 
 	// send out the response
 	notifyCtxResp := NotifyContextResponse{}
 	w.WriteJson(&notifyCtxResp)
+
+	//DEBUG.Println(notifyCtxReq)
 
 	// inform its subscribers
 	for _, ctxResp := range notifyCtxReq.ContextResponses {
