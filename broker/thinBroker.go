@@ -420,6 +420,9 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 
 func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator string, checkSelectedAttributes bool) {
 	eid := ctxElem.Entity.ID
+
+	//DEBUG.Println(ctxElem)
+
 	tb.e2sub_lock.RLock()
 	defer tb.e2sub_lock.RUnlock()
 	subscriberList := tb.entityId2Subcriptions[eid]

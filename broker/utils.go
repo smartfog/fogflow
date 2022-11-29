@@ -14,7 +14,7 @@ import (
 )
 
 func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, DestinationBrokerType string, tenant string, httpsCfg *HTTPS) error {
-	INFO.Println("destionation protocol: ", DestinationBrokerType)
+	INFO.Println("destination protocol: ", DestinationBrokerType)
 
 	switch DestinationBrokerType {
 	case "NGSI-LD":
@@ -172,8 +172,6 @@ func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL stri
 	if err != nil {
 		return err
 	}
-
-	INFO.Println(string(body))
 
 	brokerURL := URL + "/ngsi-ld/v1/entityOperations/upsert"
 	req, err := http.NewRequest("POST", brokerURL, bytes.NewBuffer(body))

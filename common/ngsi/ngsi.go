@@ -995,8 +995,7 @@ func (updateCtxReq *UpdateContextRequest) ReadFromNGSILD(ngsildEntities []map[st
 	return counter
 }
 
-func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_NGSILD(queryResponseBody []byte) {
-
+func parseContextElementResponses_HybridNGSI_NGSILD(body []byte, messageType string) interface{} {
 	type InternalContextAttribute struct {
 		Name     string            `json:"name"`
 		Type     string            `json:"type,omitempty"`
@@ -1025,39 +1024,59 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 		ErrorCode        StatusCode                       `json:"errorCode,omitempty"`
 	}
 
-	queryCtxRespInternal := InternalQueryContextResponseObject{}
-	_ = json.Unmarshal(queryResponseBody, &queryCtxRespInternal)
-	// DEBUG.Println(queryCtxRespInternal)
-	// err := json.Unmarshal(queryResponseBody, &queryCtxRespInternal)
-	// if err != nil {
-	// 	ERROR.Println(err)
-	// 	// return
-	// }
+	type InternatlnotifyContextRequest struct {
+		SubscriptionId   string                           `json:"subscriptionId"`
+		Originator       string                           `json:"originator"`
+		ContextResponses []InternalContextElementResponse `json:"contextResponses,omitempty"`
+	}
 
-	parsedQueryCtxResp := QueryContextResponse{}
-	_ = json.Unmarshal(queryResponseBody, &parsedQueryCtxResp)
-	// DEBUG.Println(parsedQueryCtxResp)
-	// err = json.Unmarshal(queryResponseBody, &parsedQueryCtxResp)
-	// if err != nil {
-	// 	ERROR.Println(err)
-	// 	// return
-	// }
+	var queryCtxResp QueryContextResponse
+	var notifyCtxReq NotifyContextRequest
 
-	// DEBUG.Println(queryCtxRespInternal)
-	// for _, ctxResp := range queryCtxResp.ContextResponses {
-	// 	for _, contextAttribute := range ctxResp.ContextElement.Attributes {
-	// 		if contextAttribute.Type == "object" && contextAttribute.Value == nil {
+	var internalContextResponses []InternalContextElementResponse
+	var parsedContextResponses []ContextElementResponse
 
-	// 		}
-	// 	}
-	// }
+	switch messageType {
+	case "QueryContextResponse":
 
-	//return (string)queryCtxResp1
+		queryCtxResp = QueryContextResponse{}
 
-	queryCtxResp.ErrorCode = queryCtxRespInternal.ErrorCode
+		queryCtxRespInternal := InternalQueryContextResponseObject{}
+		_ = json.Unmarshal(body, &queryCtxRespInternal)
+
+		internalContextResponses = queryCtxRespInternal.ContextResponses
+
+		parsedQueryCtxResp := QueryContextResponse{}
+		_ = json.Unmarshal(body, &parsedQueryCtxResp)
+
+		parsedContextResponses = parsedQueryCtxResp.ContextResponses
+
+		queryCtxResp.ErrorCode = queryCtxRespInternal.ErrorCode
+
+	case "NotifyContextRequest":
+		notifyCtxReq = NotifyContextRequest{}
+
+		notifyCtxReqInternal := InternatlnotifyContextRequest{}
+		_ = json.Unmarshal(body, &notifyCtxReqInternal)
+
+		internalContextResponses = notifyCtxReqInternal.ContextResponses
+
+		parsedNotifyCtxReq := NotifyContextRequest{}
+		_ = json.Unmarshal(body, &parsedNotifyCtxReq)
+
+		parsedContextResponses = parsedNotifyCtxReq.ContextResponses
+
+		notifyCtxReq.Originator = notifyCtxReqInternal.Originator
+		notifyCtxReq.SubscriptionId = notifyCtxReqInternal.SubscriptionId
+
+	default:
+		fmt.Println("unknown")
+		return nil
+	}
+
 	contextResponses := make([]ContextElementResponse, 0)
 
-	for ctxResp_index, ctxRespInternal := range queryCtxRespInternal.ContextResponses {
+	for ctxResp_index, ctxRespInternal := range internalContextResponses {
 		ctxResp := ContextElementResponse{}
 
 		ctxResp.StatusCode = ctxRespInternal.StatusCode
@@ -1065,7 +1084,7 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 		ctxElement := ContextElement{}
 		ctxElement.Entity = ctxRespInternal.ContextElement.Entity
 		//ctxElement.ID = ctxRespInternal.ContextElement.Entity.ID
-		ctxElement.Entity = (parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Entity
+		ctxElement.Entity = parsedContextResponses[ctxResp_index].ContextElement.Entity
 		//ctxElement.Type = ctxRespInternal.ContextElement.Type
 		//ctxElement.IsPattern = ctxRespInternal.ContextElement.IsPattern
 		ctxElement.Metadata = ctxRespInternal.ContextElement.Metadata
@@ -1081,7 +1100,7 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 			if attributeInternal.Value != nil {
 				ctxAttribute.Value = attributeInternal.Value
 			} else {
-				ctxAttribute.Value = ((parsedQueryCtxResp.ContextResponses)[ctxResp_index].ContextElement.Attributes)[attribute_index].Value
+				ctxAttribute.Value = (parsedContextResponses[ctxResp_index].ContextElement.Attributes)[attribute_index].Value
 			}
 
 			ctxElement.Attributes = append(ctxElement.Attributes, ctxAttribute)
@@ -1092,7 +1111,34 @@ func (queryCtxResp *QueryContextResponse) parseQueryContextResponse_HybridNGSI_N
 		contextResponses = append(contextResponses, ctxResp)
 	}
 
-	queryCtxResp.ContextResponses = contextResponses
+	switch messageType {
+	case "QueryContextResponse":
+
+		queryCtxResp.ContextResponses = contextResponses
+		return queryCtxResp
+
+	case "NotifyContextRequest":
+		notifyCtxReq.ContextResponses = contextResponses
+		return notifyCtxReq
+
+	default:
+		fmt.Println("unknown")
+		return nil
+	}
+
+}
+
+func (queryCtxResp *QueryContextResponse) ParseQueryContextResponse_HybridNGSI_NGSILD(queryResponseBody []byte) {
+	parsedQueryCtxResp := parseContextElementResponses_HybridNGSI_NGSILD(queryResponseBody, "QueryContextResponse").(QueryContextResponse)
+	queryCtxResp.ErrorCode = parsedQueryCtxResp.ErrorCode
+	queryCtxResp.ContextResponses = parsedQueryCtxResp.ContextResponses
+}
+
+func (notifyCtxReq *NotifyContextRequest) ParseNotifyContextRequest_HybridNGSI_NGSILD(notifyRequestBody []byte) {
+	parsedNotifyContextRequest := parseContextElementResponses_HybridNGSI_NGSILD(notifyRequestBody, "NotifyContextRequest").(NotifyContextRequest)
+	notifyCtxReq.SubscriptionId = parsedNotifyContextRequest.SubscriptionId
+	notifyCtxReq.Originator = parsedNotifyContextRequest.Originator
+	notifyCtxReq.ContextResponses = parsedNotifyContextRequest.ContextResponses
 }
 
 func (updateCtxReq *UpdateContextRequest) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) int {
