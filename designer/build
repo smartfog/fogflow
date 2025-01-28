@@ -9,7 +9,7 @@ fi
 command="$1"
 case "${command}" in
 	"multistage")
-		     time docker build -f ./Dockerfile_multistage -t "fogflow/designer"  ../
+		     time docker build -f ./Dockerfile_multistage -t "fogflow/designer"  .
 		     ;;
 	"development")
 		      npm install

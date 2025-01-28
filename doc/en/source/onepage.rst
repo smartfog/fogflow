@@ -49,7 +49,7 @@ To install Docker CE, please refer to `Install Docker CE`_, required version > 1
 
 
 .. important:: 
-	**please also allow your user to execute the Docker Command without Sudo**
+	**please also allow your user to execute the Docker Command without Sudo `Docker Post-Install`_**
 
 
 
@@ -58,6 +58,7 @@ required version 18.03.1-ce, required version > 2.4.2
 
 .. _`Install Docker CE`: https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-16-04
 .. _`Install Docker Compose`: https://www.digitalocean.com/community/tutorials/how-to-install-docker-compose-on-ubuntu-16-04
+.. _`Docker Post-Install`: https://docs.docker.com/engine/install/linux-postinstall/
 
 
 
@@ -72,23 +73,109 @@ Download the docker-compose file and the configuration files as below.
 .. code-block:: console    
 
 	# the docker-compose file to start all FogFlow components on the cloud node
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/docker-compose.yml
+	wget https://raw.githubusercontent.com/smartfog/fogflow/refs/heads/development/release/latest/cloud/docker-compose.yml
 	
-	# the configuration file used by all FogFlow components
-	wget https://raw.githubusercontent.com/smartfog/fogflow/master/release/3.2.8/cloud/config.json
-	
+	# the template of the configuration file used by all FogFlow components
+	wget https://github.com/smartfog/fogflow/blob/development/release/latest/cloud/config-template.json
+
+	# the configuration file for ngsix server
+	wget https://raw.githubusercontent.com/smartfog/fogflow/refs/heads/development/release/latest/cloud/nginx.conf
 
 	
-Change the IP configuration accordingly
+Configure FogFlow for the tutorial
 -------------------------------------------------------------
 
+Generate your config.json file starting from the download template
+
+.. code-block:: console    
+
+	cp config-template.json config.json
+
+
+In order to have the hello world running configure the config.json file as following:
+
+.. code-block:: console  
+
+	{
+		...
+		"designer": {
+			...
+			"doNotInitApplications": false
+		},
+		...
+	}
+
+The overall config.json might look as the following.
+
+.. code-block:: console  
+
+	{
+		"my_hostip": "10.1.99.99",
+		"physical_location":{
+			"longitude": 139,
+			"latitude": 35
+		},
+		"site_id": "001",
+		"logging":{
+			"info":"stdout",
+			"error":"stdout",
+			"protocol": "stdout",
+			"debug": "discard"
+		},
+		"discovery": {
+			"http_port": 8090,
+			"storeOnDisk": false,
+			"delayStoreOnFile" : 3
+		},
+		"broker": {
+			"http_port": 8070,
+			"heartbeat_interval": 30
+		},     
+		"master": {
+			"ngsi_agent_port": 1060,
+			"rest_api_port": 8010,
+			"infinite_reconnection_tries": true    
+		},
+		"worker": {
+			"container_autoremove": false,
+			"start_actual_task": true,
+			"capacity": 8,
+			"heartbeat_interval": 30,
+			"detection_duration": 10,
+			"infinite_reconnection_tries": true
+		},
+		"designer": {
+			"webSrvPort": 8080,
+			"agentPort": 1030,
+			"ldAgentPort":1090,
+			"doNotInitApplications": false
+		},    
+		"rabbitmq": {
+			"port": 5672,
+			"username": "admin",
+			"password":"mypass"
+		},
+		"https": {
+			"enabled" : false
+		},
+		"persistent_storage": {
+			"port": 9082
+		}     
+	}
+
+
+Other configuration that might be useful:
+
+- **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
+- **physical_location**: the geo-location of the FogFlow node;
+- **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
+
+Change the IP configuration in the configuration file
+-------------------------------------------------------------
 
 You need to change the following IP addresses in config.json according to your own environment and also check if the used port nubmers are blocked by your firewall. 
 
 - **my_hostip**: this is the IP of your host machine, which should be accessible for both the web browser on your host machine and docker containers. Please DO NOT use "127.0.0.1" for this. 
-- **site_id**: each FogFlow node (either cloud node or edge node) requires to have a unique string-based ID to identify itself in the system;
-- **physical_location**: the geo-location of the FogFlow node;
-- **worker.capacity**: it means the maximal number of docker containers that the FogFlow node can invoke;  
 
 
 .. important:: 
@@ -180,7 +267,147 @@ Once you are able to access the FogFlow dashboard, you can see the following web
 .. figure:: figures/dashboard.png
 
 
-Hello World Example
+Hello World Example - NGSI-LD
+===========================================================
+
+Once the FogFlow cloud node is set up, you can try out some existing IoT services without running any FogFlow edge node.
+For example, you can try out a simple fog function as below.  
+
+
+Initialize all defined services with three clicks
+-------------------------------------------------------------
+
+.. important:: 
+
+	Make sure to have correctly configured the following parameter in the config.json: `"doNotInitApplications": false`
+
+
+- Click "Operator Registry" in the top navigator bar to triger the initialization of pre-defined operators. 
+
+After you first click "Operator Registry", a list of pre-defined operators will be registered in the FogFlow system. 
+With a second click, you can see the refreshed list as shown in the following figure.
+
+
+.. figure:: figures/operator-list.png
+
+
+- Click "Service Topology" in the top navigator bar to triger the initialization of pre-defined service topologies. 
+
+After you first click "Service Topology", a list of pre-defined topologies will be registered in the FogFlow system. 
+With a second click, you can see the refreshed list as shown in the following figure.
+
+.. figure:: figures/topology-list.png
+
+
+- Click "Fog Function" in the top navigator bar to triger the initialization of pre-defined fog functions. 
+
+After you first click "Fog Function", a list of pre-defined functions will be registered in the FogFlow system. 
+With a second click, you can see the refreshed list as shown in the following figure.
+
+
+.. figure:: figures/function-list.png
+
+
+Send an NGSI-LD entity to FogFlow
+-------------------------------------------------------------
+
+ 
+Send a curl request to the FogFlow broker for entity update:
+
+.. code-block:: console    
+
+	
+	curl --location 'http://localhost:8070/ngsi-ld/v1/entities' \
+	--header 'Content-Type: application/ld+json' \
+	--data-raw '{
+	"id": "house2:smartrooms:Temperature:temp006",
+	"type": "Temperature",
+	"temperature": {
+			"value": 23,
+			"unitCode": "CEL",
+			"type": "Property",
+			"providedBy": {
+					"type": "Relationship",
+					"object": "smartbuilding:house2:sensor0815"
+			}
+	},
+	"isPartOf": {
+			"type": "Relationship",
+			"object": "smartcity:houses:house2"
+	},
+	"@context": [
+			{"Room": "urn:mytypes:room", "temperature": "myuniqueuri:temperature", "isPartOf": "myuniqueuri:isPartOf"},
+			"https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"]
+	}'
+
+
+Check if the fog function is triggered
+-------------------------------------------------------------
+
+With the initialization process, a fogfunction is registered to wait for "Temperature" entities. As soon a first occurrence of such entity appear in FogFlow, the task is started.
+Since we have push such entity with the previous NGSI-LD request, the task is started. Check if a task is created under "Task" in System Management.**
+
+.. figure:: figures/fog-function-task-running.png
+
+This dummy task is simply taking as input the pushed entity, change the id to "Result+<inputEntityId>" and send it back to FogFlow. Thus, we can check if everything worked coorectly by looking at the entities:
+System Management.**
+
+.. figure:: figures/fog-function-entities-dummyresult.png
+
+
+Connect a NGSI-LD context broker to FogFlow
+===========================================================
+
+FogFlow can be easily integrated in the FIWARE ecosystem by establishing data streams from and to a NGSI-LD context broker.
+Let's first connect FogFlow to get the data from a NGSI-LD context broker. The idea is issue a NGSI-LD subscription to the context broker with a reference back to the FogFlow broker as the following image:
+
+.. figure:: figures/ngsildbroker2fogflow.png
+
+In order to do so, send the following request:
+
+.. code-block:: console  
+	curl --silent --output /dev/null  --location "http://<SCORPIO_HOST>:9090/ngsi-ld/v1/subscriptions" \
+        --header 'Content-Type: application/ld+json' \
+        --data-raw '{ 
+                    "type": "Subscription",
+                    "entities": [{
+                            "type": "Temperature"
+                    }],
+                    "notification": {
+                            "endpoint": {
+                                    "uri": "http://<FOGFLOW_BROKER>:8070/ngsi-ld/v1/notifyContext",
+                                    "accept": "application/json"
+                            }
+                    },
+                    "notificationTrigger" : ["entityCreated", "entityUpdated"] ,
+                    "@context": ["https://pastebin.com/raw/hFbLejdG"]
+            }''
+
+At this point every notification will flow inside FogFlow and to respective register fogfunctions.
+
+In order to connect FogFlow to forward data to the NGSI-LD context broker, we need to do a similar setting as the following picture:
+
+.. figure:: figures/fogflow2ngsildbroker.png
+
+with a request that looks like the following (note that to set the destination as NGSI-LD we use a header):
+
+.. code-block:: console  
+	curl --location 'http://<FOGFLOW_BROKER>:8070/ngsi10/subscribeContext' \
+	--header 'Destination: NGSI-LD' \
+	--header 'Fiware-Correlator: http://<SCORPIO_HOST>:9090/' \
+	--header 'Content-Type: text/plain' \
+	--data '{
+	"entities": [
+		{
+		"type": "Temperature",
+		"isPattern": true
+		}
+	],
+	"reference": "http://<SCORPIO_HOST>:9090/"
+	}'
+
+
+Hello World Example - NGSI-v1
 ===========================================================
 
 Once the FogFlow cloud node is set up, you can try out some existing IoT services without running any FogFlow edge node.
