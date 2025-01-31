@@ -366,6 +366,8 @@ Let's first connect FogFlow to get the data from a NGSI-LD context broker. The i
 In order to do so, send the following request:
 
 .. code-block:: console  
+
+	
 	curl --silent --output /dev/null  --location "http://<SCORPIO_HOST>:9090/ngsi-ld/v1/subscriptions" \
         --header 'Content-Type: application/ld+json' \
         --data-raw '{ 
@@ -392,6 +394,8 @@ In order to connect FogFlow to forward data to the NGSI-LD context broker, we ne
 with a request that looks like the following (note that to set the destination as NGSI-LD we use a header):
 
 .. code-block:: console  
+
+
 	curl --location 'http://<FOGFLOW_BROKER>:8070/ngsi10/subscribeContext' \
 	--header 'Destination: NGSI-LD' \
 	--header 'Fiware-Correlator: http://<SCORPIO_HOST>:9090/' \

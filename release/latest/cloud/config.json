@@ -1,5 +1,5 @@
 {
-    "my_hostip": "10.1.99.17",
+    "my_hostip": "host.docker.internal",
     "physical_location":{
         "longitude": 139,
         "latitude": 35
@@ -9,7 +9,7 @@
         "info":"stdout",
         "error":"stdout",
         "protocol": "stdout",
-        "debug": "stdout"
+        "debug": "discard"
     },
     "discovery": {
         "http_port": 8090,
