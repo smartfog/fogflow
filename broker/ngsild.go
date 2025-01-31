@@ -38,7 +38,9 @@ func (tb *ThinBroker) NGSILD_CreateEntity(w rest.ResponseWriter, r *rest.Request
 
 	err := r.DecodeJsonPayload(&entity)
 	if err != nil {
-		DEBUG.Println("not able to decode the received message")
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("not able to decode the received message")
+		}
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -46,13 +48,21 @@ func (tb *ThinBroker) NGSILD_CreateEntity(w rest.ResponseWriter, r *rest.Request
 	ngsildUpsert := make([]map[string]interface{}, 0)
 	ngsildUpsert = append(ngsildUpsert, entity)
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI LD Upsert:")
+		DEBUG.Println(ngsildUpsert)
+	}
+
 	updateCtxReq := UpdateContextRequest{}
 	numUpdates := updateCtxReq.ReadFromNGSILD(ngsildUpsert)
 
 	// check and add the "Fiware-Correlator" header into the update message
 	updateCtxReq.Correlator = r.Header.Get("Fiware-Correlator")
 
-	// DEBUG.Println(updateCtxReq)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI updateCtxReq")
+		DEBUG.Println(updateCtxReq)
+	}
 
 	if numUpdates > 0 {
 		tb.handleInternalUpdateContext(&updateCtxReq)

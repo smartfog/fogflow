@@ -202,11 +202,11 @@ func (dockerengine *DockerEngine) StartTask(task *ScheduledTaskInstance, brokerU
 			if parameter.Value == "all" {
 				gpu_count = -1
 			} else {
-				count, err = strconv.Atoi(parameter.Value)
+				gpu_count, err = strconv.Atoi(parameter.Value)
 				DEBUG.Println("Error converting parameter to int: ", err)
 			}
 
-			if count != 0 {
+			if gpu_count != 0 {
 				// Configure GPU resources
 				// DEBUG.Println("Request GPU devices")
 				hostConfig.DeviceRequests = append(hostConfig.DeviceRequests, docker.DeviceRequest{

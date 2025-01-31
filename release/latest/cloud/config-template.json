@@ -13,7 +13,7 @@
     },
     "discovery": {
         "http_port": 8090,
-        "storeOnDisk": true,
+        "storeOnDisk": false,
         "delayStoreOnFile" : 3
     },
     "broker": {
@@ -37,7 +37,7 @@
         "webSrvPort": 8080,
         "agentPort": 1030,
         "ldAgentPort":1090,
-	"doNotInitApplications":true
+	    "doNotInitApplications":true
     },    
     "rabbitmq": {
         "port": 5672,

@@ -117,6 +117,10 @@ func (w *Worker) Process(msg *RecvMessage) error {
 	var err error
 	INFO.Println(msg.Type)
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Printf("Received Message: %s", msg.PayLoad)
+	}
+
 	switch msg.Type {
 	case "ADD_TASK":
 		task := ScheduledTaskInstance{}

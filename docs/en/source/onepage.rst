@@ -49,7 +49,8 @@ To install Docker CE, please refer to `Install Docker CE`_, required version > 1
 
 
 .. important:: 
-	**please also allow your user to execute the Docker Command without Sudo `Docker Post-Install`_**
+	
+	Please also allow your user to execute the Docker Command without Sudo `Docker Post-Install`_
 
 
 
@@ -76,7 +77,7 @@ Download the docker-compose file and the configuration files as below.
 	wget https://raw.githubusercontent.com/smartfog/fogflow/refs/heads/development/release/latest/cloud/docker-compose.yml
 	
 	# the template of the configuration file used by all FogFlow components
-	wget https://github.com/smartfog/fogflow/blob/development/release/latest/cloud/config-template.json
+	wget https://raw.githubusercontent.com/smartfog/fogflow/refs/heads/development/release/latest/cloud/config-template.json
 
 	# the configuration file for ngsix server
 	wget https://raw.githubusercontent.com/smartfog/fogflow/refs/heads/development/release/latest/cloud/nginx.conf
@@ -244,13 +245,13 @@ There are two ways to check if the FogFlow cloud node is started correctly:
 
 .. important:: 
 
-	if you see any container is missing, you can run "docker ps -a" to check if any FogFlow component is terminated with some 
+	If you see any container missing, you can run "docker ps -a" to check if any FogFlow component is terminated with some 
 	problem. If there is, you can further check its output log by running "docker logs [container ID]"
 
 
 - Check the system status from the FogFlow DashBoard
 
-You can open the FogFlow dashboard in your web browser to see the current system status via the URL: http://<my_hostip>/index.html
+You can open the FogFlow dashboard in your web browser to see the current system status via the URL: `http://<my_hostip>/index.html`
 
 
 .. important:: 
