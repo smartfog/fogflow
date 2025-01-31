@@ -429,7 +429,9 @@ func (tb *ThinBroker) UpdateContext2RemoteSite(ctxElem *ContextElement, updateAc
 func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator string, checkSelectedAttributes bool) {
 	eid := ctxElem.Entity.ID
 
-	// DEBUG.Println("elements", ctxElem)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("elements to check against subscription", ctxElem)
+	}
 
 	tb.e2sub_lock.RLock()
 	defer tb.e2sub_lock.RUnlock()
@@ -480,7 +482,9 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 			elements = append(elements, *ctxElem)
 		}
 
-		// DEBUG.Println("elements", elements)
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("elements", elements)
+		}
 		go tb.sendReliableNotify(elements, sid)
 	}
 }

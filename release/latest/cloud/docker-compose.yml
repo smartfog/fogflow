@@ -1,19 +1,19 @@
 version: "3"
 services:     
-#    designer:
-#        image: fogflow/designer:latest
-#        volumes:
-#            - ./config.json:/app/config.json
+    designer:
+        image: fogflow/designer:latest
+        volumes:
+            - ./config.json:/app/config.json
 #            - ./designerDB/:/app/public/data/meta/
-#        ports:
-#            - 8080:8080
-#            - 1030:1030
-#            - 1090:1090
-#        depends_on: 
-#            - discovery
-#            - cloud_broker
-#            - rabbitmq
-#        restart: always
+        ports:
+            - 8080:8080
+            - 1030:1030
+            - 1090:1090
+        depends_on: 
+            - discovery
+            - cloud_broker
+            - rabbitmq
+        restart: always
                        
     discovery:
         image: fogflow/discovery:latest
@@ -22,7 +22,7 @@ services:
 #            - ./discoveryDB/registrations.json:/registrations.json                        
 #            - ./discoveryDB/brokers.json:/brokers.json                        
 #            - ./discoveryDB/subscriptions.json:/subscriptions.json                        
-            - ./discoveryDB/:/discoveryDB/                        
+#            - ./discoveryDB/:/discoveryDB/                        
         ports:
             - 8090:8090
         restart: always

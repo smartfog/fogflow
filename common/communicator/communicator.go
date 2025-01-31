@@ -155,8 +155,6 @@ func (communicator *Communicator) consumeOne(d amqp.Delivery, taskProcessor Task
 		return
 	}
 
-	//log.Printf("Received new message: %s", d.Body)
-
 	msg := RecvMessage{}
 	if err := json.Unmarshal(d.Body, &msg); err != nil {
 		d.Nack(false, false) // multiple, requeue

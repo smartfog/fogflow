@@ -4,10 +4,10 @@
     "description": "web portal for users to manage the system and applications",
     "author": "Bin Cheng<bin.cheng@neclab.eu>",
     "main": "main.js",
+    "type": "module",
     "scripts": {
         "start": "node main.js"
     },
-    "type": "module",
     "dependencies": {
         "amqplib": "^0.8.0",
         "axios": "*",
