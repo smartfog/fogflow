@@ -165,8 +165,11 @@ func toNGSIv2Payload(ctxElems []ContextElement) []map[string]interface{} {
 
 // for NGSI-LD consumer
 func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL string, tenant string) error {
-	//INFO.Println("NGSI-LD NOTIFY: ", URL)
-	// DEBUG.Println(ctxElems)
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI-LD NOTIFY: ", URL)
+		DEBUG.Println(ctxElems)
+	}
 
 	payload := toNGSILDPayload(ctxElems)
 
@@ -218,6 +221,9 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 
 		// include all attributes from the ngsi v1 entity
 		for _, attr := range elem.Attributes {
+
+			// fmt.Println("  attr: ", attr)
+
 			propertyValue := make(map[string]interface{})
 
 			switch strings.ToLower(attr.Type) {
@@ -240,7 +246,28 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 				}
 			}
 
-			element[attr.Name] = propertyValue
+			if len(attr.Metadata) > 0 {
+				for _, metadata := range attr.Metadata {
+					propertyValue[metadata.Name] = metadata.Value
+				}
+
+			}
+
+			if existingValue, ok := element[attr.Name]; ok {
+
+				if existingSlice, isSlice := existingValue.([]interface{}); isSlice {
+					// Append the new value to the existing slice
+					element[attr.Name] = append(existingSlice, propertyValue)
+				} else {
+					tempValue := element[attr.Name]
+					// If it's not a slice, create a new slice and append both the old and new values
+					element[attr.Name] = []interface{}{existingValue, propertyValue}
+					element[attr.Name] = append(existingSlice, tempValue)
+					element[attr.Name] = append(existingSlice, propertyValue)
+				}
+			} else {
+				element[attr.Name] = propertyValue
+			}
 		}
 
 		// include all domain metadata from the ngsi v1 entity as extra properities

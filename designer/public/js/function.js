@@ -302,6 +302,8 @@ $(function() {
 
                             inputstream.groupby = block.values['groupby'];
                             inputstream.scoped = block.values['scoped'];
+                            inputstream.informationmodel = block.values['informationmodel'];
+
 
                             inputstreams.push(inputstream)
                         }

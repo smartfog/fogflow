@@ -409,82 +409,232 @@ func (ce *ContextElement) ReadFromNGSILD(ngsildEntity map[string]interface{}) bo
 	}
 
 	for k, v := range ngsildEntity {
+
 		switch strings.ToLower(k) {
 		case "id":
 			ce.Entity.ID = v.(string)
 		case "type":
 			ce.Entity.Type = v.(string)
 		default:
-			if reflect.TypeOf(v).Kind() != reflect.Map {
-				continue
-			}
 
-			attribute := v.(map[string]interface{})
-			attrType := attribute["type"].(string)
-			attrValue := attribute["value"]
+			switch value := v.(type) {
+			case map[string]interface{}:
+				// fmt.Println("  (Map Object)")
 
-			if strings.ToLower(attrType) == "property" {
 				newCtxAttribute := ContextAttribute{}
-				newCtxAttribute.Name = k
+				newCtxAttribute.readAttributeFromNGSILD(k, value)
+				ce.Attributes = append(ce.Attributes, newCtxAttribute)
+				// fmt.Printf("      %s: %v\n", k, newCtxAttribute)
 
-				switch attrValue.(type) {
-				case int:
-					newCtxAttribute.Type = "integer"
-				case float64:
-					newCtxAttribute.Type = "float"
-				case string:
-					newCtxAttribute.Type = "string"
-				default:
-					newCtxAttribute.Type = "object"
-				}
-
-				newCtxAttribute.Value = attrValue
-
-				// dateObserved, dateObservedExist := attribute["dateObserved"]
-				// if dateObservedExist {
-				// 	newCtxMedata := ContextMetadata{}
-				// 	newCtxMedata.Name = "dateObserved"
-				// 	newCtxMedata.Type = "dateObserved"
-				// 	newCtxMedata.Value = dateObserved
-				// 	newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+				// for k, val := range value {
+				// 	fmt.Printf("    %s: %v\n", k, val)
 				// }
 
-				for key, element := range attribute {
-					if strings.ToLower(key) != "type" && strings.ToLower(key) != "value" {
-						newCtxMedata := ContextMetadata{}
-						newCtxMedata.Name = key
-						newCtxMedata.Type = key
-						newCtxMedata.Value = element
-						newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+				attribute := v.(map[string]interface{})
+				attrType := attribute["type"].(string)
+				attrValue := attribute["value"]
+
+				if strings.ToLower(k) == "location" {
+					domainMetadata := ContextMetadata{}
+					domainMetadata.Name = k
+
+					if strings.ToLower(attrType) == "geoproperty" {
+						domainMetadata.ReadGeoJSON(attrValue.(map[string]interface{}))
+					} else {
+						domainMetadata.Type = attrType
+						domainMetadata.Value = attrValue
 					}
-					//fmt.Println("Key:", key, "=>", "Element:", element)
+
+					ce.Metadata = append(ce.Metadata, domainMetadata)
 				}
 
-				ce.Attributes = append(ce.Attributes, newCtxAttribute)
-			} else if strings.ToLower(attrType) == "relationship" {
-				refObject := attribute["object"]
-				newCtxAttribute := ContextAttribute{}
-				newCtxAttribute.Name = k
-				newCtxAttribute.Type = "relationship"
-				newCtxAttribute.Value = refObject
+			case []interface{}:
+				// fmt.Println("  (Array of Objects)")
+				for _, item := range value {
+					// fmt.Printf("    Item %d:\n", i)
+					if obj, ok := item.(map[string]interface{}); ok {
 
-				ce.Attributes = append(ce.Attributes, newCtxAttribute)
-			}
+						newCtxAttribute := ContextAttribute{}
+						newCtxAttribute.readAttributeFromNGSILD(k, obj)
+						ce.Attributes = append(ce.Attributes, newCtxAttribute)
+						// fmt.Printf("      %s: %v\n", k, newCtxAttribute)
 
-			if strings.ToLower(k) == "location" {
-				domainMetadata := ContextMetadata{}
-				domainMetadata.Name = k
+						// for k, val := range obj {
+						// 	fmt.Printf("      %s: %v\n", k, val)
 
-				if strings.ToLower(attrType) == "geoproperty" {
-					domainMetadata.ReadGeoJSON(attrValue.(map[string]interface{}))
-				} else {
-					domainMetadata.Type = attrType
-					domainMetadata.Value = attrValue
+						// }
+					}
+					// else {
+					// 	fmt.Printf("      %v\n", item)
+					// }
 				}
 
-				ce.Metadata = append(ce.Metadata, domainMetadata)
+			default:
+				fmt.Printf("  Value: %v\n", v)
 			}
+
+			// // This is to handle an array of values
+			// if reflect.TypeOf(v).Kind() == reflect.Slice || reflect.TypeOf(v).Kind() == reflect.Array {
+
+			// 	fmt.Printf("v is an array or slice! %s, %s", reflect.TypeOf(v).Elem().Kind(), reflect.Map)
+
+			// 	if reflect.TypeOf(v).Elem().Kind() == reflect.Interface {
+
+			// 		fmt.Println("v is an array or slice of maps!")
+
+			// 		// Convert to reflect.Value to iterate
+			// 		val := reflect.ValueOf(v)
+			// 		for i := 0; i < val.Len(); i++ {
+			// 			fmt.Printf("Map index %d:\n", i)
+			// 			m := val.Index(i)
+			// 			for _, key := range m.MapKeys() {
+			// 				fmt.Printf("  Key: %v, Value: %v\n", key, m.MapIndex(key))
+			// 			}
+			// 		}
+
+			// 	}
+			// }
+
+			// if reflect.TypeOf(v).Kind() != reflect.Map {
+			// 	fmt.Println("v is not a map!")
+
+			// 	continue
+			// }
+
+			// attribute := v.(map[string]interface{})
+			// attrType := attribute["type"].(string)
+			// attrValue := attribute["value"]
+
+			// if strings.ToLower(attrType) == "property" {
+			// 	newCtxAttribute := ContextAttribute{}
+			// 	newCtxAttribute.Name = k
+
+			// 	switch attrValue.(type) {
+			// 	case int:
+			// 		newCtxAttribute.Type = "integer"
+			// 	case float64:
+			// 		newCtxAttribute.Type = "float"
+			// 	case string:
+			// 		newCtxAttribute.Type = "string"
+			// 	default:
+			// 		newCtxAttribute.Type = "object"
+			// 	}
+
+			// 	newCtxAttribute.Value = attrValue
+			// 	// var attributeArray []interface{}
+			// 	// newCtxAttribute.Value = attributeArray
+
+			// 	// dateObserved, dateObservedExist := attribute["dateObserved"]
+			// 	// if dateObservedExist {
+			// 	// 	newCtxMedata := ContextMetadata{}
+			// 	// 	newCtxMedata.Name = "dateObserved"
+			// 	// 	newCtxMedata.Type = "dateObserved"
+			// 	// 	newCtxMedata.Value = dateObserved
+			// 	// 	newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+			// 	// }
+
+			// 	for key, element := range attribute {
+			// 		if strings.ToLower(key) != "type" && strings.ToLower(key) != "value" {
+			// 			newCtxMedata := ContextMetadata{}
+			// 			newCtxMedata.Name = key
+			// 			newCtxMedata.Type = key
+			// 			newCtxMedata.Value = element
+			// 			newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+			// 		}
+			// 		//fmt.Println("Key:", key, "=>", "Element:", element)
+			// 	}
+
+			// 	ce.Attributes = append(ce.Attributes, newCtxAttribute)
+			// } else if strings.ToLower(attrType) == "relationship" {
+			// 	refObject := attribute["object"]
+			// 	newCtxAttribute := ContextAttribute{}
+			// 	newCtxAttribute.Name = k
+			// 	newCtxAttribute.Type = "relationship"
+			// 	newCtxAttribute.Value = refObject
+
+			// 	ce.Attributes = append(ce.Attributes, newCtxAttribute)
+			// }
+
+			// if strings.ToLower(k) == "location" {
+			// 	domainMetadata := ContextMetadata{}
+			// 	domainMetadata.Name = k
+
+			// 	if strings.ToLower(attrType) == "geoproperty" {
+			// 		domainMetadata.ReadGeoJSON(attrValue.(map[string]interface{}))
+			// 	} else {
+			// 		domainMetadata.Type = attrType
+			// 		domainMetadata.Value = attrValue
+			// 	}
+
+			// 	ce.Metadata = append(ce.Metadata, domainMetadata)
+			// }
 		}
+	}
+
+	return true
+}
+
+func (ca *ContextAttribute) readAttributeFromNGSILD(k string, v interface{}) bool {
+	attribute := v.(map[string]interface{})
+	attrType := attribute["type"].(string)
+	attrValue := attribute["value"]
+
+	if strings.ToLower(attrType) == "property" {
+		ca.Name = k
+
+		switch attrValue.(type) {
+		case int:
+			ca.Type = "integer"
+		case float64:
+			ca.Type = "float"
+		case string:
+			ca.Type = "string"
+		default:
+			ca.Type = "object"
+		}
+
+		ca.Value = attrValue
+		// var attributeArray []interface{}
+		// newCtxAttribute.Value = attributeArray
+
+		// dateObserved, dateObservedExist := attribute["dateObserved"]
+		// if dateObservedExist {
+		// 	newCtxMedata := ContextMetadata{}
+		// 	newCtxMedata.Name = "dateObserved"
+		// 	newCtxMedata.Type = "dateObserved"
+		// 	newCtxMedata.Value = dateObserved
+		// 	newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+		// }
+
+		for key, element := range attribute {
+			if strings.ToLower(key) != "type" && strings.ToLower(key) != "value" {
+				newCtxMedata := ContextMetadata{}
+				newCtxMedata.Name = key
+				newCtxMedata.Type = key
+				newCtxMedata.Value = element
+				ca.Metadata = append(ca.Metadata, newCtxMedata)
+			}
+			//fmt.Println("Key:", key, "=>", "Element:", element)
+		}
+
+	} else if strings.ToLower(attrType) == "relationship" {
+		refObject := attribute["object"]
+
+		ca.Name = k
+		ca.Type = "relationship"
+		ca.Value = refObject
+
+		for key, element := range attribute {
+			if strings.ToLower(key) != "type" && strings.ToLower(key) != "object" {
+				newCtxMedata := ContextMetadata{}
+				newCtxMedata.Name = key
+				newCtxMedata.Type = key
+				newCtxMedata.Value = element
+				ca.Metadata = append(ca.Metadata, newCtxMedata)
+			}
+			//fmt.Println("Key:", key, "=>", "Element:", element)
+		}
+
 	}
 
 	return true
@@ -523,7 +673,7 @@ func (ce *ContextElement) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) bo
 			newCtxAttribute.Value = attrValue
 
 			attributeMetadata, metadataExist := attribute["metadata"]
-			if metadataExist == true {
+			if metadataExist {
 				metadataMap := attributeMetadata.(map[string]interface{})
 
 				newCtxAttribute.Metadata = make([]ContextMetadata, 0)
@@ -624,7 +774,7 @@ func (ce *ContextElement) GetScope() OperationScope {
 		}
 	}
 
-	if isLocal == true {
+	if isLocal {
 		updateScope.Type = "local"
 	}
 
@@ -842,7 +992,7 @@ func (registredEntity *EntityRegistration) GetLocation() Point {
 }
 
 // used by master to group the received input
-func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
+func (registeredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
 	matched := true
 
 	for key, value := range restrictions {
@@ -852,17 +1002,17 @@ func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]int
 
 		switch key {
 		case "EntityID":
-			if registredEntity.ID != value {
+			if registeredEntity.ID != value {
 				matched = false
 				break
 			}
 		case "EntityType":
-			if registredEntity.Type != value {
+			if registeredEntity.Type != value {
 				matched = false
 				break
 			}
 		default:
-			if registredEntity.MetadataList[key] != value {
+			if registeredEntity.MetadataList[key] != value {
 				matched = false
 				break
 			}
