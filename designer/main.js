@@ -444,6 +444,7 @@ app.post('/operator', jsonParser, async function (req, res) {
     for (var i = 0; i < operators.length; i++) {
         var operator = operators[i];
         db.data.operators[operator.name] = operator
+        console.log("operator: ",JSON.stringify(operator))
     }
 
     await db.write();
@@ -945,7 +946,7 @@ function publishMetadata(dType, dObject) {
     };
 
     rabbitmq.Publish(jsonMsg);
-    //console.log("Published: ", JSON.stringify(jsonMsg));
+    console.log("Publishing metadata: ", JSON.stringify(jsonMsg));
 }
 
 

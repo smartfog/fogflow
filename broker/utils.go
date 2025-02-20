@@ -172,6 +172,7 @@ func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL stri
 	}
 
 	payload := toNGSILDPayload(ctxElems)
+	DEBUG.Println(payload)
 
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -179,14 +180,14 @@ func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL stri
 	}
 
 	brokerURL := URL + "/ngsi-ld/v1/entityOperations/upsert"
-	req, err := http.NewRequest("POST", brokerURL, bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", brokerURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("NGSILD-Tenant", tenant)
 	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
+	if strings.HasPrefix(URL, "https") {
 		transCfg := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
 		}
@@ -223,6 +224,9 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 		for _, attr := range elem.Attributes {
 
 			// fmt.Println("  attr: ", attr)
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("attribute to put into ngsi-ld entity: ", attr)
+			}
 
 			propertyValue := make(map[string]interface{})
 
@@ -258,15 +262,27 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 				if existingSlice, isSlice := existingValue.([]interface{}); isSlice {
 					// Append the new value to the existing slice
 					element[attr.Name] = append(existingSlice, propertyValue)
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Println("isSlice attribute to put into ngsi-ld entity: ", attr.Name, element[attr.Name], propertyValue)
+					}
 				} else {
-					tempValue := element[attr.Name]
+					// tempValue := element[attr.Name]
 					// If it's not a slice, create a new slice and append both the old and new values
-					element[attr.Name] = []interface{}{existingValue, propertyValue}
-					element[attr.Name] = append(existingSlice, tempValue)
-					element[attr.Name] = append(existingSlice, propertyValue)
+					// element[attr.Name] = []interface{}{existingValue, propertyValue}
+					// element[attr.Name] = append(existingSlice, tempValue)
+					// element[attr.Name] = append(existingSlice, propertyValue)
+					newSlice := []interface{}{existingValue, propertyValue}
+					element[attr.Name] = newSlice
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Println("and new propertyValue: ", attr.Name, propertyValue)
+						DEBUG.Println("so now is: ", attr.Name, element[attr.Name])
+					}
 				}
 			} else {
 				element[attr.Name] = propertyValue
+				if LoggerIsEnabled(DEBUG) {
+					DEBUG.Println("attribute to put into ngsi-ld entity: ", attr.Name, propertyValue)
+				}
 			}
 		}
 

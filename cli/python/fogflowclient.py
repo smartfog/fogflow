@@ -57,6 +57,7 @@ class WebSocketClient(Thread):
 
         self.sio.on('notify', self.onNotify)
 
+        print("url: "+self.url)
         self.sio.connect(self.url)
         self.sio.wait()
 
@@ -126,11 +127,20 @@ class ContextEntity:
 class FogFlowClient:
     def __init__(self, url):
         self.fogflowURL = url
-        self.wsclient = WebSocketClient(url)
-        self.wsclient.start()
+        self.correlatorId = ''
+        print("FogFlowClient url: "+self.fogflowURL)
 
     def __del__(self):
         self.wsclient.stop()
+
+    def setCorrelatorId(self, correlatorId):
+        self.correlatorId = correlatorId
+
+    def startWebSocketClient(self):
+        global wsclient
+        print("url: "+self.fogflowURL)
+        wsclient = WebSocketClient(self.fogflowURL)
+        wsclient.start()
 
     # synchronized remote call
     def remoteCall(self, serviceTopology):
@@ -200,6 +210,11 @@ class FogFlowClient:
     def put(self, ctxEntity):
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
+        
+        # Let's add the correlator, if available, to avoid loops
+        if self.correlatorId != '':
+            headers['Fiware-Correlator'] = self.correlatorId
+
 
         updateCtxReq = {}
         updateCtxReq['contextElements'] = []
@@ -208,6 +223,29 @@ class FogFlowClient:
 
         response = requests.post(self.fogflowURL + '/ngsi10/updateContext',
                                  data=json.dumps(updateCtxReq), headers=headers)
+        if response.status_code != 200:
+            print('failed to update context')
+            print(response.text)
+            return False
+        else:
+            return True
+        
+    def put_ngsild(self, entity):
+        headers = {'Accept': 'application/ld+json',
+                   'Content-Type': 'application/ld+json'}
+        
+        # Let's add the correlator, if available, to avoid loops
+        if self.correlatorId != '':
+            headers['Fiware-Correlator'] = self.correlatorId
+        
+        url = self.fogflowURL
+        if not url.startswith(("http://", "https://")):
+            url = "http://" + url
+        print(f'url to send ngsild: {url + '/ngsi-ld/v1/entities'}')
+
+        response = requests.post(url + '/ngsi-ld/v1/entities',
+                                 data=entity.toJSON(), headers=headers)
+        print(f'response: {response.status_code}')
         if response.status_code != 200:
             print('failed to update context')
             print(response.text)

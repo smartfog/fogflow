@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -91,7 +91,7 @@ func (tb *ThinBroker) NGSIV1_QueryContext(w rest.ResponseWriter, r *rest.Request
 
 func (tb *ThinBroker) NGSIV1_NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 
-	content, _ := ioutil.ReadAll(r.Body)
+	content, _ := io.ReadAll(r.Body)
 	r.Body.Close()
 	// DEBUG.Println(string(content))
 
@@ -181,8 +181,14 @@ func (tb *ThinBroker) NGSIV1_SubscribeContext(w rest.ResponseWriter, r *rest.Req
 
 		for _, entity := range subReq.Entities {
 			tb.e2sub_lock.Lock()
-			if tb.subscriptions[subID].IsSimpleByType() {
-				tb.entityId2Subcriptions["*"] = append(tb.entityId2Subcriptions["*"], subID)
+			if subReq.IsSimplyByType() {
+
+				// add a wildcard per type into the map entity to subscription
+				// The wildcard looks like *<Type>
+				wildCards := subReq.GetTypeWildCards(nil)
+				for _, wildCard := range wildCards {
+					tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], subID)
+				}
 			} else {
 				tb.entityId2Subcriptions[entity.ID] = append(tb.entityId2Subcriptions[entity.ID], subID)
 			}

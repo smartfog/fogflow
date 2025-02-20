@@ -53,10 +53,11 @@ func (taskCfg *TaskConfig) removeInput(entityID string) {
 }
 
 type InputEntity struct {
-	ID            string
-	Type          string
-	AttributeList []string
-	Location      Point
+	ID               string
+	Type             string
+	AttributeList    []string
+	Location         Point
+	InformationModel string
 }
 
 type InputSubscription struct {
@@ -162,6 +163,10 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 	}
 
 	inputSubscription := flow.Subscriptions[subID]
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Printf("[inputSubscription] %v", inputSubscription)
+		DEBUG.Printf("[inputSubscription.InputSelector] %v", inputSubscription.InputSelector)
+	}
 	entityID := registeredEntity.ID
 	if inputSubscription.InputSelector.IsSimpleByType() {
 		// This check is to see if the selection is only type (no entityId, no scope)
@@ -177,6 +182,7 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 			if !inputSubscription.InputSelector.IsSimpleByType() {
 				// This check is to see if the selection is only type (no entityId, no scope)
 				// if it is not the case, then the registeredEntity is important
+				// because we need to check if the id is matching or it is within the geoscope
 				existEntityRegistration := inputSubscription.ReceivedEntityRegistrations[entityID]
 				existEntityRegistration.Update(registeredEntity)
 			}
@@ -186,6 +192,10 @@ func (flow *FogFlow) MetadataDrivenTaskOrchestration(subID string, entityAction 
 
 		//update the group key-value table for orchestration
 		flow.updateGroupedKeyValueTable(inputSubscription, entityID)
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Printf("[inputSubscription] %v", inputSubscription)
+		}
 
 		//check what needs to be instantiated when all required inputs are available
 		if flow.checkInputAvailability() {
@@ -292,8 +302,12 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 					inputEntity.Type = entity.Type
 					inputEntity.Location = entity.Location
 					inputEntity.AttributeList = inputSubscription.InputSelector.SelectedAttributes
+					inputEntity.InformationModel = inputSubscription.InputSelector.InformationModel
 
 					task.Inputs = append(task.Inputs, inputEntity)
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Printf("expanded task %+v\r\n", task)
+					}
 
 					//generate a deployment action
 					flowInfo := FlowInfo{}
@@ -301,6 +315,7 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 					flowInfo.InputStream.ID = inputEntity.ID
 					flowInfo.InputStream.Type = inputEntity.Type
 					flowInfo.InputStream.AttributeList = inputEntity.AttributeList
+					flowInfo.InputStream.InformationModel = inputEntity.InformationModel
 
 					flowInfo.TaskInstanceID = task.TaskID
 					flowInfo.WorkerID = flow.DeploymentPlan[task.TaskID].WorkerID
@@ -310,6 +325,9 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 					deploymentAction.ActionInfo = flowInfo
 
 					deploymentActions = append(deploymentActions, &deploymentAction)
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Printf("deploymentActions %+v\r\n", deploymentActions)
+					}
 				} else {
 					// check if the location in this input entity is changed
 					locationChanged := false
@@ -371,13 +389,21 @@ func (flow *FogFlow) expandExecutionPlan(entityID string, inputSubscription *Inp
 			flow.ExecutionPlan[hashID] = &task
 
 			if LoggerIsEnabled(DEBUG) {
-				DEBUG.Printf("new task %+v, hashID %s, taskID %s\r\n", task, hashID, task.TaskID)
+				DEBUG.Printf("[new task:] %+v, [hashID:] %s, [taskID:] %s\r\n", task, hashID, task.TaskID)
 			}
 
 			//generate a deployment action
 			deploymentAction := flow.addNewTask(&task)
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Printf("[deploymentAction] %+v\r\n", deploymentAction)
+			}
+
 			deploymentActions = append(deploymentActions, deploymentAction)
 		}
+	}
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Printf("deploymentActions %+v\r\n", deploymentActions)
 	}
 
 	return deploymentActions
@@ -404,6 +430,7 @@ func (flow *FogFlow) addNewTask(task *TaskConfig) *DeploymentAction {
 		instream.Type = inputEntity.Type
 		instream.ID = inputEntity.ID
 		instream.AttributeList = inputEntity.AttributeList
+		instream.InformationModel = inputEntity.InformationModel
 
 		taskInstance.Inputs = append(taskInstance.Inputs, instream)
 	}
@@ -706,6 +733,12 @@ func (flow *FogFlow) searchRelevantEntities(group *GroupInfo, updatedEntityID st
 				//the location metadata will be used later to decide where to deploy the fog function instance
 				inputEntity.Location = entityRegistration.GetLocation()
 
+				inputEntity.InformationModel = selector.InformationModel
+
+				if LoggerIsEnabled(DEBUG) {
+					DEBUG.Println("[inputEntity]: ", inputEntity)
+				}
+
 				entities = append(entities, inputEntity)
 			}
 		}
@@ -959,6 +992,10 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 		return
 	}
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Printf("[DeploymentActions]: %v", deploymentActions)
+	}
+
 	// schedule and send out the deployment actions
 	for _, deploymentAction := range deploymentActions {
 		if LoggerIsEnabled(DEBUG) {
@@ -989,7 +1026,10 @@ func (tMgr *TaskMgr) HandleContextAvailabilityUpdate(subID string, entityAction 
 			scheduledTaskInstance.DockerImage = tMgr.master.DetermineDockerImage(operator, workerID)
 
 			// carry the paramemters associated with this operator
-			scheduledTaskInstance.Parameters = tMgr.master.GetOperatorParamters(operator)
+			scheduledTaskInstance.Parameters = tMgr.master.GetOperatorParameters(operator)
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("[scheduledTaskInstance.Parameters]: ", scheduledTaskInstance.Parameters)
+			}
 
 			if scheduledTaskInstance.WorkerID != "" {
 				tMgr.master.DeployTask(&scheduledTaskInstance)

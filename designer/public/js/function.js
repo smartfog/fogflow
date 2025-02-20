@@ -287,6 +287,7 @@ $(function() {
 
                             inputstream.groupby = block.values['groupby'];
                             inputstream.scoped = true;
+                            inputstream.information_model = block.values['informationmodel'];
 
                             inputstreams.push(inputstream)
                         } else if (block.type == 'EntityStream') {
@@ -302,7 +303,7 @@ $(function() {
 
                             inputstream.groupby = block.values['groupby'];
                             inputstream.scoped = block.values['scoped'];
-                            inputstream.informationmodel = block.values['informationmodel'];
+                            inputstream.information_model = block.values['informationmodel'];
 
 
                             inputstreams.push(inputstream)

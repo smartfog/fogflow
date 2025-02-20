@@ -378,7 +378,7 @@ func (tb *ThinBroker) queryOwnerOfEntity(eid string) string {
 	inLocalBroker = exist
 	tb.entities_lock.RUnlock()
 
-	if inLocalBroker == true {
+	if inLocalBroker {
 		return tb.myProfile.MyURL
 	}
 
@@ -402,7 +402,7 @@ func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, correlato
 	hasUpdatedMetadata := hasUpdatedMetadata(ctxElem, tb.entities[eid])
 	tb.entities_lock.Unlock()
 
-	if hasUpdatedMetadata == true {
+	if hasUpdatedMetadata {
 		tb.registerContextElement(ctxElem)
 	}
 
@@ -430,14 +430,20 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 	eid := ctxElem.Entity.ID
 
 	if LoggerIsEnabled(DEBUG) {
-		DEBUG.Println("elements to check against subscription", ctxElem)
+		DEBUG.Println("elements to check against subscriptions: ", ctxElem, ", checkSelectedAttributes: ", checkSelectedAttributes)
 	}
 
 	tb.e2sub_lock.RLock()
 	defer tb.e2sub_lock.RUnlock()
 	subscriberList := tb.entityId2Subcriptions[eid]
+	subscriberList = append(subscriberList, tb.entityId2Subcriptions[ctxElem.GetTypeWildCard()]...)
 	//send this context element to the subscriber
 	for _, sid := range subscriberList {
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("elements to check against subscription:", sid, ", checkSelectedAttributes: ", checkSelectedAttributes)
+		}
+
 		elements := make([]ContextElement, 0)
 
 		beTheSame := false
@@ -463,6 +469,11 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 		}
 
 		if checkSelectedAttributes {
+
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("subscription to check: ", sid, " against attribute: ", tb.subscriptions[sid].Attributes)
+			}
+
 			selectedAttributes := make([]string, 0)
 
 			tb.subscriptions_lock.RLock()
@@ -685,11 +696,16 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		action = "DELETE"
 	}
 
+	tb.subscriptions_lock.RLock()
+	contextSubscription := tb.subscriptions[mainSubID]
+	tb.subscriptions_lock.RUnlock()
+
 	if LoggerIsEnabled(DEBUG) {
-		DEBUG.Println(action, " subID ", mainSubID, " subscription isSimpleByType ", tb.subscriptions[mainSubID].IsSimpleByType())
+		DEBUG.Println(action, " subID ", mainSubID, " subscription isSimplyByType ", contextSubscription.IsSimplyByType())
 		DEBUG.Println(tb.entityId2Subcriptions)
 	}
 
+	// In this loop we associate the entityIds (or a wildcard) to the subscription
 	for _, registrationResp := range notifyContextAvailabilityReq.ContextRegistrationResponseList {
 		registration := registrationResp.ContextRegistration
 		for _, eid := range registration.EntityIdList {
@@ -701,9 +717,12 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 			tb.e2sub_lock.Lock()
 
 			if action == "CREATE" {
-				if tb.subscriptions[mainSubID].IsSimpleByType() {
-					if !stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
-						tb.entityId2Subcriptions["*"] = append(tb.entityId2Subcriptions["*"], mainSubID)
+				if contextSubscription.IsSimplyByType() {
+					wildCards := contextSubscription.GetTypeWildCards(&eid)
+					for _, wildCard := range wildCards {
+						if !stringsContains(tb.entityId2Subcriptions[wildCard], mainSubID) {
+							tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], mainSubID)
+						}
 					}
 				} else {
 					tb.entityId2Subcriptions[eid.ID] = append(tb.entityId2Subcriptions[eid.ID], mainSubID)
@@ -717,9 +736,12 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 					}
 				}
 			} else if action == "UPDATE" {
-				if tb.subscriptions[mainSubID].IsSimpleByType() {
-					if !stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
-						tb.entityId2Subcriptions["*"] = append(tb.entityId2Subcriptions["*"], mainSubID)
+				if contextSubscription.IsSimplyByType() {
+					wildCards := contextSubscription.GetTypeWildCards(&eid)
+					for _, wildCard := range wildCards {
+						if !stringsContains(tb.entityId2Subcriptions[wildCard], mainSubID) {
+							tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], mainSubID)
+						}
 					}
 				} else {
 					if !stringsContains(tb.entityId2Subcriptions[eid.ID], mainSubID) {
@@ -736,6 +758,7 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		// INFO.Println("TO ngsi10 subscription, ", mainSubID)
 		// INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
 
+		// Here we send out the subscription to the context provider
 		if registration.ProvidingApplication == tb.MyURL {
 			//for matched entities provided by myself
 			if action == "CREATE" || action == "UPDATE" {
@@ -744,13 +767,20 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		} else {
 
 			// this check is to subscribe to the data only for complex subscription
-			if !tb.subscriptions[mainSubID].IsSimpleByType() || stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
+			if !contextSubscription.IsSimplyByType() || stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
 
 				//for matched entities provided by other IoT Brokers
 				newSubscription := SubscribeContextRequest{}
-				if tb.subscriptions[mainSubID].IsSimpleByType() {
-					entity := tb.subscriptions[mainSubID].Entities[0]
-					newSubscription.Entities = append(newSubscription.Entities, entity)
+				if contextSubscription.IsSimplyByType() {
+					// This loop is to only get pattern entity request (by Type) of the actual matching types
+					for _, subEntity := range contextSubscription.Entities {
+						for _, regEntity := range registration.EntityIdList {
+							if subEntity.Type == regEntity.Type {
+								newSubscription.Entities = append(newSubscription.Entities, subEntity)
+								break
+							}
+						}
+					}
 				} else {
 					newSubscription.Entities = registration.EntityIdList
 				}

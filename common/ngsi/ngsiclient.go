@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -335,19 +336,23 @@ func (nc *NGSI10Client) InternalQueryContext(query *QueryContextRequest) ([]Cont
 	return ctxElements, nil
 }
 
-func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, correlatorID string, requireReliability bool) (string, error) {
+func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, correlatorID string, requireReliability bool, informationModel string) (string, error) {
 	body, err := json.Marshal(*sub)
 	if err != nil {
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", nc.IoTBrokerURL+"/subscribeContext", bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", nc.IoTBrokerURL+"/subscribeContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Fiware-Correlator", correlatorID)
 
-	if requireReliability == true {
+	if requireReliability {
 		req.Header.Add("Require-Reliability", "true")
+	}
+
+	if informationModel == "NGSI-LD" {
+		req.Header.Add("Destination", "NGSI-LD")
 	}
 
 	client := nc.SecurityCfg.GetHTTPClient()
@@ -360,7 +365,7 @@ func (nc *NGSI10Client) SubscribeContext(sub *SubscribeContextRequest, correlato
 		return "", err
 	}
 
-	text, _ := ioutil.ReadAll(resp.Body)
+	text, _ := io.ReadAll(resp.Body)
 
 	subscribeCtxResp := SubscribeContextResponse{}
 	err = json.Unmarshal(text, &subscribeCtxResp)

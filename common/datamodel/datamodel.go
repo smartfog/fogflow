@@ -104,6 +104,7 @@ type InputStreamConfig struct {
 	SelectedAttributes []string `json:"selected_attributes"`
 	GroupBy            string   `json:"groupby"`
 	Scoped             bool     `json:"scoped"`
+	InformationModel   string   `json:"information_model"`
 }
 
 // This is to state that we do not need to save all registrations if the subscription is simply by type
@@ -194,13 +195,14 @@ type DockerImage struct {
 }
 
 type InputStream struct {
-	Type          string
-	ID            string
-	AttributeList []string
+	Type             string
+	ID               string
+	AttributeList    []string
+	InformationModel string
 }
 
 func (myInputStream *InputStream) Equal(otherInputStream *InputStream) bool {
-	if myInputStream.Type == otherInputStream.Type && myInputStream.ID == myInputStream.ID {
+	if myInputStream.Type == otherInputStream.Type && myInputStream.ID == otherInputStream.ID {
 		return true
 	} else {
 		return false
@@ -235,13 +237,13 @@ func (myInstance *TaskInstance) Equal(otherInstance *TaskInstance) bool {
 	for _, myInputStream := range myInstance.Inputs {
 		var exist = false
 		for _, otherInputStream := range otherInstance.Inputs {
-			if myInputStream.Equal(&otherInputStream) == true {
+			if myInputStream.Equal(&otherInputStream) {
 				exist = true
 				break
 			}
 		}
 
-		if exist == false {
+		if !exist {
 			return false
 		}
 	}

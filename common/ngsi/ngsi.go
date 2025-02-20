@@ -709,6 +709,10 @@ func (ce *ContextElement) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) bo
 func (ce *ContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *ContextElement {
 	preparedCopy := ContextElement{}
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("selected atttributes to copy", selectedAttributes)
+	}
+
 	preparedCopy.Entity = ce.Entity
 
 	if len(selectedAttributes) == 0 {
@@ -727,6 +731,10 @@ func (ce *ContextElement) CloneWithSelectedAttributes(selectedAttributes []strin
 
 	preparedCopy.Metadata = make([]ContextMetadata, len(ce.Metadata))
 	copy(preparedCopy.Metadata, ce.Metadata)
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("copied attributes", preparedCopy)
+	}
 
 	return &preparedCopy
 }
@@ -1092,18 +1100,47 @@ type SubscribeContextRequest struct {
 	Subscriber       Subscriber
 }
 
-func (subscribeContextRequest *SubscribeContextRequest) IsSimpleByType() bool {
+func (subscribeContextRequest *SubscribeContextRequest) IsSimplyByType() bool {
 	var flag = true
 
 	if len(subscribeContextRequest.Restriction.Scopes) == 0 {
-		if len(subscribeContextRequest.Entities) == 1 {
-			if subscribeContextRequest.Entities[0].ID == "" {
-				flag = true
+		for _, entity := range subscribeContextRequest.Entities {
+			if entity.ID != "" {
+				flag = false
+				break
 			}
 		}
+	} else {
+		flag = false
 	}
 
 	return flag
+}
+
+// Passing entityId as nil will return all the wildcards
+func (subscribeContextRequest *SubscribeContextRequest) GetTypeWildCards(entityId *EntityId) []string {
+	var typeWildCards []string
+
+	for _, entity := range subscribeContextRequest.Entities {
+		if entityId != nil {
+			if entityId.Type == entity.Type {
+				typeWildCards = append(typeWildCards, "*"+entity.Type)
+			}
+		} else {
+			typeWildCards = append(typeWildCards, "*"+entity.Type)
+		}
+	}
+	return typeWildCards
+}
+
+// Passing entityId as nil will return all the wildcards
+func (contextElement *ContextElement) GetTypeWildCard() string {
+
+	if contextElement.Type != "" {
+		return "*" + contextElement.Type
+	} else {
+		return "*" + contextElement.Entity.Type
+	}
 }
 
 type SubscriptionRequest struct {

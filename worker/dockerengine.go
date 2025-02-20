@@ -217,6 +217,13 @@ func (dockerengine *DockerEngine) StartTask(task *ScheduledTaskInstance, brokerU
 			}
 			// DEBUG.Printf("hostConfig: %v", hostConfig)
 		}
+
+		// If notthing of the above let pass it as it is
+		setParameterCmd := make(map[string]interface{})
+		setParameterCmd["name"] = parameter.Name
+		setParameterCmd["value"] = parameter.Value
+		commands = append(commands, setParameterCmd)
+
 	}
 
 	// prepare the configuration for a docker container, host mode for the container network
