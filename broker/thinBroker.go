@@ -705,9 +705,106 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		DEBUG.Println(tb.entityId2Subcriptions)
 	}
 
-	// In this loop we associate the entityIds (or a wildcard) to the subscription
 	for _, registrationResp := range notifyContextAvailabilityReq.ContextRegistrationResponseList {
 		registration := registrationResp.ContextRegistration
+
+		// INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
+		// INFO.Println("TO ngsi10 subscription, ", mainSubID)
+		// INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
+
+		//
+		// Here we send out the subscription to the context provider
+		//
+		if registration.ProvidingApplication == tb.MyURL {
+			//for matched entities provided by myself
+			if action == "CREATE" || action == "UPDATE" {
+				tb.notifyOneSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
+			}
+		} else {
+
+			// // this check is to subscribe to the data only for complex subscription (i.e., not simply by type)
+			// if !contextSubscription.IsSimplyByType() || stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
+
+			// 	//for matched entities provided by other IoT Brokers
+			// 	newSubscription := SubscribeContextRequest{}
+			// 	if contextSubscription.IsSimplyByType() {
+			// 		// This loop is to only get pattern entity request (by Type) of the actual matching types
+			// 		for _, subEntity := range contextSubscription.Entities {
+			// 			for _, regEntity := range registration.EntityIdList {
+			// 				if subEntity.Type == regEntity.Type {
+			// 					newSubscription.Entities = append(newSubscription.Entities, subEntity)
+			// 					break
+			// 				}
+			// 			}
+			// 		}
+			// 	} else {
+			// 		newSubscription.Entities = registration.EntityIdList
+			// 	}
+			// 	newSubscription.Reference = tb.MyURL
+			// 	newSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
+
+			// 	if action == "CREATE" || action == "UPDATE" {
+			// 		sid, err := subscribeContextProvider(&newSubscription, registration.ProvidingApplication, tb.SecurityCfg)
+			// 		if err == nil {
+			// 			// INFO.Println("issue a new subscription ", sid)
+
+			// 			tb.subscriptions_lock.Lock()
+			// 			tb.subscriptions[sid] = &newSubscription
+			// 			tb.subscriptions_lock.Unlock()
+
+			// 			tb.subLinks_lock.Lock()
+			// 			tb.main2Other[mainSubID] = append(tb.main2Other[mainSubID], sid)
+			// 			tb.subLinks_lock.Unlock()
+			// 		}
+			// 	}
+			// }
+
+			newSubscription := SubscribeContextRequest{}
+			// this check is to subscribe to the data only for complex subscription (i.e., not simply by type)
+			if contextSubscription.IsSimplyByType() {
+
+				// This loop is to only get pattern entity request (by Type) of the actual matching types
+				for _, subEntity := range contextSubscription.Entities {
+					for _, regEntity := range registration.EntityIdList {
+						if subEntity.Type == regEntity.Type {
+							// Let's make the subscription only if there was not another subscription by Type for the same type
+							if !stringsContains(tb.entityId2Subcriptions[regEntity.GetTypeWildCard()], mainSubID) {
+								newSubscription.Entities = append(newSubscription.Entities, subEntity)
+							}
+							break
+						}
+					}
+				}
+
+			} else {
+				newSubscription.Entities = registration.EntityIdList
+			}
+
+			if len(newSubscription.Entities) > 0 {
+				newSubscription.Reference = tb.MyURL
+				newSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
+
+				if action == "CREATE" || action == "UPDATE" {
+					// Send the subscription
+					sid, err := subscribeContextProvider(&newSubscription, registration.ProvidingApplication, tb.SecurityCfg)
+					if err == nil {
+						// INFO.Println("issue a new subscription ", sid)
+
+						tb.subscriptions_lock.Lock()
+						tb.subscriptions[sid] = &newSubscription
+						tb.subscriptions_lock.Unlock()
+
+						tb.subLinks_lock.Lock()
+						tb.main2Other[mainSubID] = append(tb.main2Other[mainSubID], sid)
+						tb.subLinks_lock.Unlock()
+					}
+				}
+			}
+		}
+
+		//
+		// In this loop we associate the entityIds (or a wildcard) to the subscription
+		//
 		for _, eid := range registration.EntityIdList {
 
 			if LoggerIsEnabled(DEBUG) {
@@ -752,56 +849,6 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 			}
 
 			tb.e2sub_lock.Unlock()
-		}
-
-		// INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
-		// INFO.Println("TO ngsi10 subscription, ", mainSubID)
-		// INFO.Printf("entity list: %+v\r\n", registration.EntityIdList)
-
-		// Here we send out the subscription to the context provider
-		if registration.ProvidingApplication == tb.MyURL {
-			//for matched entities provided by myself
-			if action == "CREATE" || action == "UPDATE" {
-				tb.notifyOneSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
-			}
-		} else {
-
-			// this check is to subscribe to the data only for complex subscription
-			if !contextSubscription.IsSimplyByType() || stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
-
-				//for matched entities provided by other IoT Brokers
-				newSubscription := SubscribeContextRequest{}
-				if contextSubscription.IsSimplyByType() {
-					// This loop is to only get pattern entity request (by Type) of the actual matching types
-					for _, subEntity := range contextSubscription.Entities {
-						for _, regEntity := range registration.EntityIdList {
-							if subEntity.Type == regEntity.Type {
-								newSubscription.Entities = append(newSubscription.Entities, subEntity)
-								break
-							}
-						}
-					}
-				} else {
-					newSubscription.Entities = registration.EntityIdList
-				}
-				newSubscription.Reference = tb.MyURL
-				newSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
-
-				if action == "CREATE" || action == "UPDATE" {
-					sid, err := subscribeContextProvider(&newSubscription, registration.ProvidingApplication, tb.SecurityCfg)
-					if err == nil {
-						// INFO.Println("issue a new subscription ", sid)
-
-						tb.subscriptions_lock.Lock()
-						tb.subscriptions[sid] = &newSubscription
-						tb.subscriptions_lock.Unlock()
-
-						tb.subLinks_lock.Lock()
-						tb.main2Other[mainSubID] = append(tb.main2Other[mainSubID], sid)
-						tb.subLinks_lock.Unlock()
-					}
-				}
-			}
 		}
 	}
 }

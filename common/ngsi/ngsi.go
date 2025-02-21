@@ -1124,10 +1124,10 @@ func (subscribeContextRequest *SubscribeContextRequest) GetTypeWildCards(entityI
 	for _, entity := range subscribeContextRequest.Entities {
 		if entityId != nil {
 			if entityId.Type == entity.Type {
-				typeWildCards = append(typeWildCards, "*"+entity.Type)
+				typeWildCards = append(typeWildCards, genWildCard(entity.Type))
 			}
 		} else {
-			typeWildCards = append(typeWildCards, "*"+entity.Type)
+			typeWildCards = append(typeWildCards, genWildCard(entity.Type))
 		}
 	}
 	return typeWildCards
@@ -1137,10 +1137,21 @@ func (subscribeContextRequest *SubscribeContextRequest) GetTypeWildCards(entityI
 func (contextElement *ContextElement) GetTypeWildCard() string {
 
 	if contextElement.Type != "" {
-		return "*" + contextElement.Type
+		return genWildCard(contextElement.Type)
 	} else {
-		return "*" + contextElement.Entity.Type
+		return genWildCard(contextElement.Entity.Type)
 	}
+}
+
+// Passing entityId as nil will return all the wildcards
+func (entityId *EntityId) GetTypeWildCard() string {
+
+	return genWildCard(entityId.Type)
+}
+
+func genWildCard(Type string) string {
+
+	return "*" + Type
 }
 
 type SubscriptionRequest struct {
