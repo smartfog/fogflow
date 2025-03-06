@@ -406,8 +406,15 @@ func (tb *ThinBroker) UpdateContext2LocalSite(ctxElem *ContextElement, correlato
 		tb.registerContextElement(ctxElem)
 	}
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("before updating ctxElem: ", ctxElem)
+	}
 	// apply the new update to the entity in the entity map
 	tb.updateContextElement(ctxElem)
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("after updating ctxElem: ", ctxElem)
+	}
 
 	// propogate this update to its subscribers
 	tb.notifySubscribers(ctxElem, correlator, true)
@@ -437,11 +444,22 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 	defer tb.e2sub_lock.RUnlock()
 	subscriberList := tb.entityId2Subcriptions[eid]
 	subscriberList = append(subscriberList, tb.entityId2Subcriptions[ctxElem.GetTypeWildCard()]...)
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("subscriberList: ", subscriberList)
+	}
 	//send this context element to the subscriber
 	for _, sid := range subscriberList {
 
+		if isProsumerSubscription(correlator, sid) {
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("notification comes from the prosumer, thus I avoid to notify back the prosumer, sid", sid, ", correlator ", correlator)
+			}
+			continue
+		}
+
 		if LoggerIsEnabled(DEBUG) {
-			DEBUG.Println("elements to check against subscription:", sid, ", checkSelectedAttributes: ", checkSelectedAttributes)
+			DEBUG.Println("elements to check against subscription:", sid, ", checkSelectedAttributes: ", checkSelectedAttributes, "correlator", correlator)
 		}
 
 		elements := make([]ContextElement, 0)
@@ -454,9 +472,9 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 			originator := subscription.Subscriber.Correlator
 			if correlator != "" && originator != "" && correlator == originator {
 				beTheSame = true
-				if LoggerIsEnabled(DEBUG) {
-					DEBUG.Println("session ID from producer ", correlator, ", subscriber ", originator)
-				}
+			}
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("session ID from producer ", correlator, ", subscriber ", originator, "beTheSame ", beTheSame)
 			}
 		}
 		tb.subscriptions_lock.RUnlock()
@@ -485,6 +503,9 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 			tb.subscriptions_lock.RUnlock()
 
 			tb.entities_lock.RLock()
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("context Entity: ", tb.entities[eid])
+			}
 			element := tb.entities[eid].CloneWithSelectedAttributes(selectedAttributes)
 			tb.entities_lock.RUnlock()
 
@@ -494,7 +515,7 @@ func (tb *ThinBroker) notifySubscribers(ctxElem *ContextElement, correlator stri
 		}
 
 		if LoggerIsEnabled(DEBUG) {
-			DEBUG.Println("elements", elements)
+			DEBUG.Println("elements", elements, "sid", sid)
 		}
 		go tb.sendReliableNotify(elements, sid)
 	}
@@ -506,7 +527,7 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatus(entities []EntityId, 
 	tb.subscriptions_lock.RLock()
 
 	subscription, ok := tb.subscriptions[sid]
-	if ok == false {
+	if !ok {
 		tb.subscriptions_lock.RUnlock()
 		return
 	}
@@ -544,14 +565,17 @@ func (tb *ThinBroker) notifyOneSubscriberWithCurrentStatusOfV1(entities []Entity
 */
 
 func (tb *ThinBroker) sendReliableNotifyToSubscriber(elements []ContextElement, sid string) {
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("elements", elements, "sid", sid)
+	}
 	tb.subscriptions_lock.Lock()
 	subscription, ok := tb.subscriptions[sid]
-	if ok == false {
+	if !ok {
 		tb.subscriptions_lock.Unlock()
 	}
 	subscriberURL := subscription.Reference
 
-	DestinationBroker := subscription.Subscriber.DestinationType
+	notifyVersion := subscription.Subscriber.DestinationType
 	Tenant := subscription.Subscriber.Tenant
 
 	if subscription.Subscriber.RequireReliability && len(subscription.Subscriber.NotifyCache) > 0 {
@@ -568,24 +592,31 @@ func (tb *ThinBroker) sendReliableNotifyToSubscriber(elements []ContextElement, 
 	//INFO.Println("NOTIFY: ", len(elements), ", ", sid, ", ", subscriberURL, ", ", DestinationBroker)
 	// DEBUG.Println(elements)
 
-	err := postNotifyContext(elements, sid, subscriberURL, DestinationBroker, Tenant, tb.SecurityCfg)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("elements:", elements, "sid:", sid, "subscriberURL:", subscriberURL, "DestinationBroker:", notifyVersion, "Tenant,", Tenant)
+	}
 
-	if err != nil {
-		if LoggerIsEnabled(DEBUG) {
-			DEBUG.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
-		}
+	if len(elements) > 0 {
 
-		tb.subscriptions_lock.Lock()
-		if subscription, exist := tb.subscriptions[sid]; exist {
-			if subscription.Subscriber.RequireReliability == true {
-				for _, ctxElem := range elements {
-					subscription.Subscriber.NotifyCache = append(subscription.Subscriber.NotifyCache, &ctxElem)
-				}
+		err := postNotifyContext(elements, sid, subscriberURL, notifyVersion, Tenant, tb.SecurityCfg)
 
-				tb.tmpNGSI10NotifyCache = append(tb.tmpNGSI10NotifyCache, sid)
+		if err != nil {
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("NOTIFY is not received by the subscriber, ", subscriberURL)
 			}
+
+			tb.subscriptions_lock.Lock()
+			if subscription, exist := tb.subscriptions[sid]; exist {
+				if subscription.Subscriber.RequireReliability {
+					for _, ctxElem := range elements {
+						subscription.Subscriber.NotifyCache = append(subscription.Subscriber.NotifyCache, &ctxElem)
+					}
+
+					tb.tmpNGSI10NotifyCache = append(tb.tmpNGSI10NotifyCache, sid)
+				}
+			}
+			tb.subscriptions_lock.Unlock()
 		}
-		tb.subscriptions_lock.Unlock()
 	}
 
 }
@@ -595,15 +626,32 @@ func (tb *ThinBroker) sendReliableNotifyToSubscriber(elements []ContextElement, 
 */
 
 func (tb *ThinBroker) sendReliableNotify(elements []ContextElement, sid string) {
-	// DEBUG.Println(elements)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("elements", elements, "sid", sid)
+	}
 	tb.subscriptions_lock.Lock()
 	_, ok := tb.subscriptions[sid]
-	if ok == true {
+	if ok {
 		tb.subscriptions_lock.Unlock()
 		tb.sendReliableNotifyToSubscriber(elements, sid)
 	} else {
 		tb.subscriptions_lock.Unlock()
 	}
+}
+
+func createSet() map[string]struct{} {
+	return make(map[string]struct{}) // we use this as a set of string
+}
+
+func addToSet(set map[string]struct{}, key string) {
+	if !setContains(set, key) {
+		set[key] = struct{}{} //Add element to the set. We use struct{}{} as value in the map because it takes up 0 memory
+	}
+}
+
+func setContains(set map[string]struct{}, key string) bool {
+	_, exists := set[key]
+	return exists
 }
 
 func (tb *ThinBroker) updateContextElement(ctxElem *ContextElement) {
@@ -615,16 +663,35 @@ func (tb *ThinBroker) updateContextElement(ctxElem *ContextElement) {
 
 	// update its value in the entity map
 	if curElement, exist := tb.entities[eid]; exist {
-		for _, attr := range ctxElem.Attributes {
-			updateAttribute(&attr, curElement)
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("curElement: ", curElement)
+		}
+		updateAttributes(&curElement.Attributes, ctxElem.Attributes)
+		// updatedAttributeNames := createSet()
+		// for _, attr := range ctxElem.Attributes {
+		// 	if setContains(updatedAttributeNames, attr.Name) { //if already updated once
+		// 		curElement.Attributes = append(curElement.Attributes, attr)
+		// 	} else {
+		// 		addToSet(updatedAttributeNames, attr.Name)
+		// 		updateAttribute(&attr, curElement)
+		// 	}
+		// }
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("curElement after updating attribute: ", curElement)
 		}
 
 		for _, metadata := range ctxElem.Metadata {
 			updateDomainMetadata(&metadata, curElement)
 		}
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("tb.entities[", eid, "], ", tb.entities[eid])
+		}
 	} else {
 		newContextElement := *ctxElem
 		tb.entities[eid] = &newContextElement
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("tb.entities[", eid, "], ", tb.entities[eid])
+		}
 	}
 }
 
@@ -646,15 +713,19 @@ func (tb *ThinBroker) SubscribeContextAvailability(sid string) error {
 
 	client := NGSI9Client{IoTDiscoveryURL: tb.IoTDiscoveryURL, SecurityCfg: tb.SecurityCfg}
 	subscriptionId, err := client.SubscribeContextAvailability(&availabilitySubscription)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("ngsi9sub ", subscriptionId, " availabilitySubscription ", availabilitySubscription)
+		DEBUG.Println(tb.entityId2Subcriptions)
+	}
 	if subscriptionId != "" {
 		tb.subLinks_lock.Lock()
 		tb.main2Other[sid] = append(tb.main2Other[sid], subscriptionId)
 		tb.availabilitySub2MainSub[subscriptionId] = sid
 		notifyMessage, alreadyBack := tb.tmpNGSI9NotifyCache[subscriptionId]
 		tb.subLinks_lock.Unlock()
-		if alreadyBack == true {
+		if alreadyBack {
 			INFO.Println("========forward the availability notify that arrive earlier===========")
-			tb.handleNGSI9Notify(sid, notifyMessage)
+			tb.handleNGSI9Notify(sid, notifyMessage, false)
 
 			tb.subLinks_lock.Lock()
 			delete(tb.tmpNGSI9NotifyCache, subscriptionId)
@@ -683,10 +754,9 @@ func stringsContains(slice []string, e string) bool {
 	return false
 }
 
-func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabilityReq *NotifyContextAvailabilityRequest) {
+func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabilityReq *NotifyContextAvailabilityRequest, isProsumer bool) {
 
 	var action string
-	notifyContextAvailabilityReq.ErrorCode.Code = 301
 	switch notifyContextAvailabilityReq.ErrorCode.Code {
 	case 201:
 		action = "CREATE"
@@ -694,19 +764,33 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 		action = "UPDATE"
 	case 410:
 		action = "DELETE"
+	default:
+		action = "UPDATE" //often the status code is 200
 	}
 
-	tb.subscriptions_lock.RLock()
-	contextSubscription := tb.subscriptions[mainSubID]
-	tb.subscriptions_lock.RUnlock()
+	var contextSubscription *SubscribeContextRequest
+	if !isProsumer {
+		tb.subscriptions_lock.RLock()
+		contextSubscription = tb.subscriptions[mainSubID]
+		tb.subscriptions_lock.RUnlock()
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println(action, " subID ", mainSubID, " subscription", contextSubscription, "isSimplyByType ", contextSubscription.IsSimplyByType())
+			DEBUG.Println(tb.entityId2Subcriptions)
+		}
+	}
 
 	if LoggerIsEnabled(DEBUG) {
-		DEBUG.Println(action, " subID ", mainSubID, " subscription isSimplyByType ", contextSubscription.IsSimplyByType())
+		DEBUG.Println(action, " subID ", mainSubID, " subscription", contextSubscription)
 		DEBUG.Println(tb.entityId2Subcriptions)
 	}
 
 	for _, registrationResp := range notifyContextAvailabilityReq.ContextRegistrationResponseList {
 		registration := registrationResp.ContextRegistration
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("registration ", registration, "isProsumer", isProsumer)
+		}
 
 		// INFO.Println(registration.ProvidingApplication, ", ", tb.MyURL)
 		// INFO.Println("TO ngsi10 subscription, ", mainSubID)
@@ -721,6 +805,8 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 				tb.notifyOneSubscriberWithCurrentStatus(registration.EntityIdList, mainSubID)
 			}
 		} else {
+
+			// Here we subscribe for data to the providing application
 
 			// // this check is to subscribe to the data only for complex subscription (i.e., not simply by type)
 			// if !contextSubscription.IsSimplyByType() || stringsContains(tb.entityId2Subcriptions["*"], mainSubID) {
@@ -759,14 +845,24 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 			// 	}
 			// }
 
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("contextSubscription", contextSubscription, "| registration ", registration)
+			}
+
 			newSubscription := SubscribeContextRequest{}
 			// this check is to subscribe to the data only for complex subscription (i.e., not simply by type)
-			if contextSubscription.IsSimplyByType() {
+			if !isProsumer && contextSubscription.IsSimplyByType() {
 
 				// This loop is to only get pattern entity request (by Type) of the actual matching types
 				for _, subEntity := range contextSubscription.Entities {
 					for _, regEntity := range registration.EntityIdList {
+						if LoggerIsEnabled(DEBUG) {
+							DEBUG.Println("subEntity.Type", subEntity.Type, "| regEntity.Type ", regEntity.Type)
+						}
 						if subEntity.Type == regEntity.Type {
+							if LoggerIsEnabled(DEBUG) {
+								DEBUG.Println("regEntity.GetTypeWildCard() ", regEntity.GetTypeWildCard(), "tb.entityId2Subcriptions", tb.entityId2Subcriptions[regEntity.GetTypeWildCard()], "| mainSubID ", mainSubID)
+							}
 							// Let's make the subscription only if there was not another subscription by Type for the same type
 							if !stringsContains(tb.entityId2Subcriptions[regEntity.GetTypeWildCard()], mainSubID) {
 								newSubscription.Entities = append(newSubscription.Entities, subEntity)
@@ -780,13 +876,27 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 				newSubscription.Entities = registration.EntityIdList
 			}
 
+			ngsi_version := checkNGSIversion(registration.Metadata)
+
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("newSubscription.Entities ", len(newSubscription.Entities), newSubscription.Entities, ngsi_version)
+			}
+
 			if len(newSubscription.Entities) > 0 {
 				newSubscription.Reference = tb.MyURL
 				newSubscription.Subscriber.BrokerURL = registration.ProvidingApplication
 
 				if action == "CREATE" || action == "UPDATE" {
+					// #########################
 					// Send the subscription
-					sid, err := subscribeContextProvider(&newSubscription, registration.ProvidingApplication, tb.SecurityCfg)
+					// ########################
+					var sid string
+					var err error
+					if ngsi_version == "NGSI-LD" {
+						sid, err = subscribeContextProviderNGSILD(&newSubscription, registration.ProvidingApplication, notifyContextAvailabilityReq.SubscriptionId, tb.SecurityCfg)
+					} else {
+						sid, err = subscribeContextProvider(&newSubscription, registration.ProvidingApplication, tb.SecurityCfg)
+					}
 					if err == nil {
 						// INFO.Println("issue a new subscription ", sid)
 
@@ -797,6 +907,11 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 						tb.subLinks_lock.Lock()
 						tb.main2Other[mainSubID] = append(tb.main2Other[mainSubID], sid)
 						tb.subLinks_lock.Unlock()
+
+						if LoggerIsEnabled(DEBUG) {
+							DEBUG.Println("tb.subscriptions ", tb.subscriptions)
+							DEBUG.Println("tb.main2Other ", tb.main2Other)
+						}
 					}
 				}
 			}
@@ -813,16 +928,32 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 
 			tb.e2sub_lock.Lock()
 
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("action ", action)
+			}
+
 			if action == "CREATE" {
-				if contextSubscription.IsSimplyByType() {
-					wildCards := contextSubscription.GetTypeWildCards(&eid)
-					for _, wildCard := range wildCards {
-						if !stringsContains(tb.entityId2Subcriptions[wildCard], mainSubID) {
-							tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], mainSubID)
-						}
+				if isProsumer {
+					var id string
+					if eid.IsSimplyByType() {
+						id = eid.GetTypeWildCard()
+					} else {
+						id = eid.ID
+					}
+					if !stringsContains(tb.entityId2Subcriptions[id], mainSubID) {
+						tb.entityId2Subcriptions[id] = append(tb.entityId2Subcriptions[id], mainSubID)
 					}
 				} else {
-					tb.entityId2Subcriptions[eid.ID] = append(tb.entityId2Subcriptions[eid.ID], mainSubID)
+					if contextSubscription.IsSimplyByType() {
+						wildCards := contextSubscription.GetTypeWildCards(&eid)
+						for _, wildCard := range wildCards {
+							if !stringsContains(tb.entityId2Subcriptions[wildCard], mainSubID) {
+								tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], mainSubID)
+							}
+						}
+					} else {
+						tb.entityId2Subcriptions[eid.ID] = append(tb.entityId2Subcriptions[eid.ID], mainSubID)
+					}
 				}
 			} else if action == "DELETE" {
 				subList := tb.entityId2Subcriptions[eid.ID]
@@ -833,24 +964,165 @@ func (tb *ThinBroker) handleNGSI9Notify(mainSubID string, notifyContextAvailabil
 					}
 				}
 			} else if action == "UPDATE" {
-				if contextSubscription.IsSimplyByType() {
-					wildCards := contextSubscription.GetTypeWildCards(&eid)
-					for _, wildCard := range wildCards {
-						if !stringsContains(tb.entityId2Subcriptions[wildCard], mainSubID) {
-							tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], mainSubID)
+
+				if isProsumer {
+
+					var id string
+					if eid.IsSimplyByType() {
+						id = eid.GetTypeWildCard()
+					} else {
+						id = eid.ID
+					}
+					if !stringsContains(tb.entityId2Subcriptions[id], mainSubID) {
+						tb.entityId2Subcriptions[id] = append(tb.entityId2Subcriptions[id], mainSubID)
+					}
+					// if eid.IsSimplyByType() {
+					// 	if !stringsContains(tb.entityId2Subcriptions[eid.GetTypeWildCard()], mainSubID) {
+					// 		tb.entityId2Subcriptions[eid.GetTypeWildCard()] = append(tb.entityId2Subcriptions[eid.GetTypeWildCard()], mainSubID)
+					// 	}
+					// } else {
+					// 	if !stringsContains(tb.entityId2Subcriptions[eid.ID], mainSubID) {
+					// 		tb.entityId2Subcriptions[eid.ID] = append(tb.entityId2Subcriptions[eid.ID], mainSubID)
+					// 	}
+					// }
+				} else {
+					if contextSubscription.IsSimplyByType() {
+						wildCards := contextSubscription.GetTypeWildCards(&eid)
+						if LoggerIsEnabled(DEBUG) {
+							DEBUG.Println("wildCards:", wildCards, "contextSubscription:", contextSubscription, "eid:", eid)
+						}
+						for _, wildCard := range wildCards {
+							if !stringsContains(tb.entityId2Subcriptions[wildCard], mainSubID) {
+								tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], mainSubID)
+							}
+							if LoggerIsEnabled(DEBUG) {
+								DEBUG.Println("wildCard", wildCard, "tb.entityId2Subcriptions[wildCard] ", tb.entityId2Subcriptions[wildCard], "mainSubID", mainSubID)
+							}
+						}
+					} else {
+						if !stringsContains(tb.entityId2Subcriptions[eid.ID], mainSubID) {
+							tb.entityId2Subcriptions[eid.ID] = append(tb.entityId2Subcriptions[eid.ID], mainSubID)
 						}
 					}
-				} else {
-					if !stringsContains(tb.entityId2Subcriptions[eid.ID], mainSubID) {
-						tb.entityId2Subcriptions[eid.ID] = append(tb.entityId2Subcriptions[eid.ID], mainSubID)
-					}
 				}
+			}
 
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("tb.entityId2Subcriptions ", tb.entityId2Subcriptions)
 			}
 
 			tb.e2sub_lock.Unlock()
 		}
+
 	}
+}
+
+func checkNGSIversion(metadataList []ContextMetadata) string {
+
+	for _, metadata := range metadataList {
+		if strings.ToLower(metadata.Name) == "ngsiversion" || strings.ToLower(metadata.Type) == "ngsiversion" {
+			if str, ok := metadata.Value.(string); ok {
+				switch ver := strings.ToLower(str); ver {
+				case "ngsild", "ngsi-ld":
+					return "NGSI-LD"
+				case "ngsiv1", "ngsi":
+					return "NGSIv1"
+				default:
+					return "NGSIv1"
+				}
+			}
+		}
+	}
+	return "NGSIv1"
+}
+
+const SUBID_INTERNAL_PROSUMER_SUFFIX = ":ffinternal"
+
+func genProsumerSubID(subID string) string {
+	return subID + SUBID_INTERNAL_PROSUMER_SUFFIX
+}
+
+func isProsumerSubscription(correlator string, subID string) bool {
+	return strings.Replace(correlator, SUBID_INTERNAL_PROSUMER_SUFFIX, "", 1) == strings.Replace(subID, SUBID_INTERNAL_PROSUMER_SUFFIX, "", 1)
+}
+
+func (tb *ThinBroker) handleProsumerRegistration(notifyAvail *NotifyContextAvailabilityRequest) {
+
+	subID := notifyAvail.SubscriptionId
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("Handle prosumer subscription ", subID)
+	}
+
+	//
+	// First subscribe to myself
+	//
+	subIDInternal := genProsumerSubID(subID)
+	for _, registration := range notifyAvail.ContextRegistrationResponseList {
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("First subscribe to myself", subIDInternal)
+		}
+
+		var subscribeRequest SubscribeContextRequest
+		subscribeRequest.Entities = registration.ContextRegistration.EntityIdList
+		subscribeRequest.Reference = registration.ContextRegistration.ProvidingApplication
+
+		for _, metadata := range registration.ContextRegistration.Metadata {
+			switch name := metadata.Name; name {
+			case "ngsiversion":
+				value, ok := metadata.Value.(string)
+				if ok {
+					subscribeRequest.Subscriber.DestinationType = value
+				}
+			case "Ngsild-Tenant":
+				value, ok := metadata.Value.(string)
+				if ok {
+					subscribeRequest.Subscriber.Tenant = value
+				}
+			case "Fiware-Correlator":
+				value, ok := metadata.Value.(string)
+				if ok {
+					subscribeRequest.Subscriber.Correlator = value
+				}
+			case "Require-Reliability":
+				value, ok := metadata.Value.(bool)
+				if ok {
+					subscribeRequest.Subscriber.RequireReliability = value
+					subscribeRequest.Subscriber.NotifyCache = make([]*ContextElement, 0)
+				}
+			default:
+				continue
+			}
+
+			// if r.Header.Get("User-Agent") == "lightweight-iot-broker" {
+			// 	subReq.Subscriber.IsInternal = true
+			// } else {
+			// 	subReq.Subscriber.IsInternal = false
+			// }
+
+			//subscribeRequest.Subscriber.BrokerURL = registration.ContextRegistration.ProvidingApplication
+			subscribeRequest.Subscriber.BrokerURL = tb.MyURL
+			subscribeRequest.Subscriber.IsInternal = true
+
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("SubscribeContext ", subIDInternal, " to myself for the prosumer ", subscribeRequest)
+			}
+
+			// Here I subscribe to myself on behalf of the providingApplication
+			tb.subscribeContext(&subscribeRequest, subIDInternal)
+
+		}
+	}
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("Then subscribe to the providing application", subID)
+	}
+	//
+	// Then subscribe to the providing application
+	//
+	tb.handleNGSI9Notify(subID, notifyAvail, true)
+
 }
 
 func (tb *ThinBroker) registerContextElement(element *ContextElement) {
@@ -883,6 +1155,14 @@ func (tb *ThinBroker) registerContextElement(element *ContextElement) {
 		ERROR.Println(err)
 	}
 }
+
+// func (tb *ThinBroker) handleStream2Self(notifyContextAvailabilityReq *NotifyContextAvailabilityRequest) {
+// 	for _, ctxRegResp := range notifyContextAvailabilityReq.ContextRegistrationResponseList{
+// 		ctxReg := ctxRegResp.ContextRegistration
+
+// 	}
+
+// }
 
 func (tb *ThinBroker) deregisterContextElements(ContextElements []ContextElement) {
 	registrationList := make([]ContextRegistration, 0)

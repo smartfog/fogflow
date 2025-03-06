@@ -125,10 +125,35 @@ class ContextEntity:
 
 
 class FogFlowClient:
-    def __init__(self, url):
-        self.fogflowURL = url
+
+    def __init__(self, fogflowUrl):
+        
+        self.fogflowUrl = fogflowUrl
+        self.brokerUrl = fogflowUrl
+
+        self.brokerUrl = self.brokerUrl.replace("/ngsi10", "") if "/ngsi10" in self.brokerUrl else self.brokerUrl
+
+
         self.correlatorId = ''
-        print("FogFlowClient url: "+self.fogflowURL)
+        print("FogFlowClient url: "+self.fogflowUrl)
+        print("Broker url: "+self.brokerUrl)
+
+
+    def __init__(self, fogflowUrl, brokerUrl):
+        
+        self.fogflowUrl = fogflowUrl
+        self.brokerUrl = brokerUrl
+        
+        if self.fogflowUrl == "":
+            self.fogflowUrl = brokerUrl
+        if self.brokerUrl == "":
+            self.brokerUrl = fogflowUrl
+
+        self.brokerUrl = self.brokerUrl.replace("/ngsi10", "") if "/ngsi10" in self.brokerUrl else self.brokerUrl
+
+        self.correlatorId = ''
+        print("FogFlowClient url: "+self.fogflowUrl)
+        print("Broker url: "+self.brokerUrl)
 
     def __del__(self):
         self.wsclient.stop()
@@ -138,14 +163,14 @@ class FogFlowClient:
 
     def startWebSocketClient(self):
         global wsclient
-        print("url: "+self.fogflowURL)
-        wsclient = WebSocketClient(self.fogflowURL)
+        print("url: "+self.fogflowUrl)
+        wsclient = WebSocketClient(self.fogflowUrl)
         wsclient.start()
 
     # synchronized remote call
     def remoteCall(self, serviceTopology):
         response = requests.get(
-            self.fogflowURL + '/remoteCall?serviceTopology=' + serviceTopology)
+            self.fogflowUrl + '/remoteCall?serviceTopology=' + serviceTopology)
         print(response.text)
 
     # asynchronize way to trigger a service topology
@@ -184,7 +209,7 @@ class FogFlowClient:
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
         response = requests.post(
-            self.fogflowURL + '/intent', data=json.dumps(intent), headers=headers)
+            self.fogflowUrl + '/intent', data=json.dumps(intent), headers=headers)
         if response.status_code != 200:
             print('failed to update context')
             print(response.text)
@@ -198,7 +223,7 @@ class FogFlowClient:
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
         response = requests.delete(
-            self.fogflowURL + '/intent', data=json.dumps(paramter), headers=headers)
+            self.fogflowUrl + '/intent', data=json.dumps(paramter), headers=headers)
         if response.status_code != 200:
             print('failed to remove intent')
             print(response.text)
@@ -221,7 +246,7 @@ class FogFlowClient:
         updateCtxReq['contextElements'].append(ctxEntity.toContextElement())
         updateCtxReq['updateAction'] = 'UPDATE'
 
-        response = requests.post(self.fogflowURL + '/ngsi10/updateContext',
+        response = requests.post(self.brokerUrl + '/ngsi10/updateContext',
                                  data=json.dumps(updateCtxReq), headers=headers)
         if response.status_code != 200:
             print('failed to update context')
@@ -238,10 +263,11 @@ class FogFlowClient:
         if self.correlatorId != '':
             headers['Fiware-Correlator'] = self.correlatorId
         
-        url = self.fogflowURL
+        url = self.brokerUrl
         if not url.startswith(("http://", "https://")):
             url = "http://" + url
-        print(f'url to send ngsild: {url + '/ngsi-ld/v1/entities'}')
+
+        print(f'url to send ngsild: {url + '/ngsi-ld/v1/entities'} with data {entity.toJSON()}')
 
         response = requests.post(url + '/ngsi-ld/v1/entities',
                                  data=entity.toJSON(), headers=headers)
@@ -265,7 +291,7 @@ class FogFlowClient:
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
         response = requests.post(
-            self.fogflowURL + '/ngsi10/queryContext', data=json.dumps(queryReq), headers=headers)
+            self.brokerUrl + '/ngsi10/queryContext', data=json.dumps(queryReq), headers=headers)
 
         entityList = []
 
@@ -293,7 +319,7 @@ class FogFlowClient:
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
         response = requests.post(
-            self.fogflowURL + '/ngsi10/queryContext', data=json.dumps(queryReq), headers=headers)
+            self.brokerUrl + '/ngsi10/queryContext', data=json.dumps(queryReq), headers=headers)
 
         entityList = []
 
@@ -324,7 +350,7 @@ class FogFlowClient:
 
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
-        response = requests.post(self.fogflowURL + '/ngsi10/updateContext',
+        response = requests.post(self.brokerUrl + '/ngsi10/updateContext',
                                  data=json.dumps(updateCtxReq), headers=headers)
         if response.status_code != 200:
             print('failed to delete context entity ' + entityId)
@@ -347,7 +373,7 @@ class FogFlowClient:
 
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json'}
-        response = requests.post(self.fogflowURL + '/ngsi10/subscribeContext',
+        response = requests.post(self.brokerUrl + '/ngsi10/subscribeContext',
                                  data=json.dumps(subscribeCtxReq), headers=headers)
 
         if response.status_code != 200:

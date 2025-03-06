@@ -110,6 +110,9 @@ func (fd *FastDiscovery) RegisterContext(w rest.ResponseWriter, r *rest.Request)
 		registrationID := u1.String()
 		registerCtxReq.RegistrationId = registrationID
 	}
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("RegisterContextRequest: ", registerCtxReq)
+	}
 	// update context registration
 	go fd.updateRegistration(&registerCtxReq)
 
@@ -137,7 +140,7 @@ func (fd *FastDiscovery) notifySubscribers(registration *EntityRegistration, upd
 	providerURL := registration.ProvidingApplication
 	for _, subscription := range fd.subscriptions {
 		// find out the updated entities matched with this subscription
-		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction) == true {
+		if matchingWithFilters(registration, subscription.Entities, subscription.Attributes, subscription.Restriction) {
 			subscriberURL := subscription.Reference
 			subID := subscription.SubscriptionId
 			entities := make([]EntityId, 0)
@@ -370,7 +373,7 @@ func (fd *FastDiscovery) sendNotify(subID string, subscriberURL string, entityMa
 
 	//send the current notify
 	done := fd.postNotify(subscriberURL, &notifyReq)
-	if done == false { // put it into the tmpCache
+	if !done { // put it into the tmpCache
 		fd.cache_lock.Lock()
 		item := CacheItem{}
 		item.SubscriberURL = subscriberURL
@@ -391,7 +394,7 @@ func (fd *FastDiscovery) resendCachedItems() {
 
 	for _, item := range cachedItem {
 		err := fd.postNotify(item.SubscriberURL, item.Notify)
-		if err == false {
+		if !err {
 			newCache = append(newCache, item)
 		}
 	}
