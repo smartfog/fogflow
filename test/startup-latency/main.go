@@ -114,7 +114,7 @@ func subscribe(config *Config) string {
 	subscription.Reference = "http://" + config.MyIP + ":" + strconv.Itoa(config.MyPort)
 
 	client := NGSI10Client{IoTBrokerURL: config.SubscribeBrokerURL}
-	sid, err := client.SubscribeContext(&subscription, true)
+	sid, err := client.SubscribeContext(&subscription, "", true, "NGSIv1")
 	if err != nil {
 		fmt.Println(err)
 	}

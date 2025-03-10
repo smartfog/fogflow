@@ -24,6 +24,8 @@ var (
 	DEBUG    *log.Logger
 )
 
+const NGSILD_CORE_CONTEXT = "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+
 func LoggerIsEnabled(l *log.Logger) bool {
 	return (fmt.Sprintf("%T", l.Writer()) != "io.discard")
 }
@@ -148,7 +150,9 @@ func (metadata *ContextMetadata) ReadGeoJSON(geojson map[string]interface{}) {
 		point.Latitude = coordinates[1].(float64)
 
 		metadata.Value = point
+		metadata.Cordinates = point
 	}
+	//TOFIX add more geoJSON types
 }
 
 /*
@@ -334,7 +338,12 @@ func (pAttr *ContextAttribute) UnmarshalJSON(b []byte) error {
 type EntityId struct {
 	Type      string `json:"type,omitempty"`
 	IsPattern bool   `json:"isPattern,omitempty"`
-	ID        string `json:"id"`
+	ID        string `json:"id,omitempty"`
+}
+
+type EntityIdLD struct {
+	Type string `json:"type,omitempty"`
+	ID   string `json:"id,omitempty"`
 }
 
 type Conditions struct {
@@ -404,87 +413,138 @@ func (ce *ContextElement) ReadFromNGSILD(ngsildEntity map[string]interface{}) bo
 	_, typeExist := ngsildEntity["type"]
 
 	if !(idExist && typeExist) {
-		// ignore this entity if the required keys [id, type] are missing
+		// ignore this entity since the required keys [id, type] are missing
 		return false
 	}
 
 	for k, v := range ngsildEntity {
+
 		switch strings.ToLower(k) {
 		case "id":
 			ce.Entity.ID = v.(string)
 		case "type":
 			ce.Entity.Type = v.(string)
 		default:
-			if reflect.TypeOf(v).Kind() != reflect.Map {
-				continue
-			}
 
-			attribute := v.(map[string]interface{})
-			attrType := attribute["type"].(string)
-			attrValue := attribute["value"]
+			switch value := v.(type) {
+			case map[string]interface{}:
+				// fmt.Println("  (Map Object)")
 
-			if strings.ToLower(attrType) == "property" {
 				newCtxAttribute := ContextAttribute{}
-				newCtxAttribute.Name = k
-
-				switch attrValue.(type) {
-				case int:
-					newCtxAttribute.Type = "integer"
-				case float64:
-					newCtxAttribute.Type = "float"
-				case string:
-					newCtxAttribute.Type = "string"
-				default:
-					newCtxAttribute.Type = "object"
+				newCtxAttribute.readAttributeFromNGSILD(k, value)
+				if newCtxAttribute.Name != "" && newCtxAttribute.Type != "" && newCtxAttribute.Value != nil {
+					ce.Attributes = append(ce.Attributes, newCtxAttribute)
+				} else {
+					fmt.Printf("  invalid newCtxAttribute: %v from value: %v\n", newCtxAttribute, value)
 				}
+				// fmt.Printf("      %s: %v\n", k, newCtxAttribute)
 
-				newCtxAttribute.Value = attrValue
-
-				// dateObserved, dateObservedExist := attribute["dateObserved"]
-				// if dateObservedExist {
-				// 	newCtxMedata := ContextMetadata{}
-				// 	newCtxMedata.Name = "dateObserved"
-				// 	newCtxMedata.Type = "dateObserved"
-				// 	newCtxMedata.Value = dateObserved
-				// 	newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+				// for k, val := range value {
+				// 	fmt.Printf("    %s: %v\n", k, val)
 				// }
 
-				for key, element := range attribute {
-					if strings.ToLower(key) != "type" && strings.ToLower(key) != "value" {
-						newCtxMedata := ContextMetadata{}
-						newCtxMedata.Name = key
-						newCtxMedata.Type = key
-						newCtxMedata.Value = element
-						newCtxAttribute.Metadata = append(newCtxAttribute.Metadata, newCtxMedata)
+				attribute := v.(map[string]interface{})
+				attrType := attribute["type"].(string)
+				attrValue := attribute["value"]
+
+				if strings.ToLower(k) == "location" {
+					domainMetadata := ContextMetadata{}
+					domainMetadata.Name = k
+
+					if strings.ToLower(attrType) == "geoproperty" {
+						domainMetadata.ReadGeoJSON(attrValue.(map[string]interface{}))
+					} else {
+						domainMetadata.Type = attrType
+						domainMetadata.Value = attrValue
 					}
-					//fmt.Println("Key:", key, "=>", "Element:", element)
+
+					ce.Metadata = append(ce.Metadata, domainMetadata)
 				}
 
-				ce.Attributes = append(ce.Attributes, newCtxAttribute)
-			} else if strings.ToLower(attrType) == "relationship" {
-				refObject := attribute["object"]
-				newCtxAttribute := ContextAttribute{}
-				newCtxAttribute.Name = k
-				newCtxAttribute.Type = "relationship"
-				newCtxAttribute.Value = refObject
+			case []interface{}:
+				// fmt.Println("  (Array of Objects)")
+				for _, item := range value {
+					// fmt.Printf("    Item %d:\n", i)
+					if obj, ok := item.(map[string]interface{}); ok {
 
-				ce.Attributes = append(ce.Attributes, newCtxAttribute)
-			}
+						newCtxAttribute := ContextAttribute{}
+						newCtxAttribute.readAttributeFromNGSILD(k, obj)
 
-			if strings.ToLower(k) == "location" {
-				domainMetadata := ContextMetadata{}
-				domainMetadata.Name = k
+						if newCtxAttribute.Name != "" && newCtxAttribute.Type != "" && newCtxAttribute.Value != nil {
+							ce.Attributes = append(ce.Attributes, newCtxAttribute)
+						} else {
+							fmt.Printf("  empty newCtxAttribute: %v from value: %v\n", newCtxAttribute, obj)
+						}
+						// fmt.Printf("      %s: %v\n", k, newCtxAttribute)
 
-				if strings.ToLower(attrType) == "geoproperty" {
-					domainMetadata.ReadGeoJSON(attrValue.(map[string]interface{}))
-				} else {
-					domainMetadata.Type = attrType
-					domainMetadata.Value = attrValue
+						// for k, val := range obj {
+						// 	fmt.Printf("      %s: %v\n", k, val)
+
+						// }
+					}
+					// else {
+					// 	fmt.Printf("      %v\n", item)
+					// }
 				}
 
-				ce.Metadata = append(ce.Metadata, domainMetadata)
+			default:
+				fmt.Printf("  Value: %v\n", v)
 			}
 		}
+	}
+
+	return true
+}
+
+func (ca *ContextAttribute) readAttributeFromNGSILD(k string, v interface{}) bool {
+	attribute := v.(map[string]interface{})
+	attrType := attribute["type"].(string)
+	attrValue := attribute["value"]
+
+	if strings.ToLower(attrType) == "property" {
+		ca.Name = k
+
+		switch attrValue.(type) {
+		case int:
+			ca.Type = "integer"
+		case float64:
+			ca.Type = "float"
+		case string:
+			ca.Type = "string"
+		default:
+			ca.Type = "object"
+		}
+
+		ca.Value = attrValue
+		for key, element := range attribute {
+			if strings.ToLower(key) != "type" && strings.ToLower(key) != "value" {
+				newCtxMedata := ContextMetadata{}
+				newCtxMedata.Name = key
+				newCtxMedata.Type = key
+				newCtxMedata.Value = element
+				ca.Metadata = append(ca.Metadata, newCtxMedata)
+			}
+			//fmt.Println("Key:", key, "=>", "Element:", element)
+		}
+
+	} else if strings.ToLower(attrType) == "relationship" {
+		refObject := attribute["object"]
+
+		ca.Name = k
+		ca.Type = "relationship"
+		ca.Value = refObject
+
+		for key, element := range attribute {
+			if strings.ToLower(key) != "type" && strings.ToLower(key) != "object" {
+				newCtxMedata := ContextMetadata{}
+				newCtxMedata.Name = key
+				newCtxMedata.Type = key
+				newCtxMedata.Value = element
+				ca.Metadata = append(ca.Metadata, newCtxMedata)
+			}
+			//fmt.Println("Key:", key, "=>", "Element:", element)
+		}
+
 	}
 
 	return true
@@ -523,7 +583,7 @@ func (ce *ContextElement) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) bo
 			newCtxAttribute.Value = attrValue
 
 			attributeMetadata, metadataExist := attribute["metadata"]
-			if metadataExist == true {
+			if metadataExist {
 				metadataMap := attributeMetadata.(map[string]interface{})
 
 				newCtxAttribute.Metadata = make([]ContextMetadata, 0)
@@ -559,17 +619,37 @@ func (ce *ContextElement) ReadFromNGSIv2(ngsiv2Entity map[string]interface{}) bo
 func (ce *ContextElement) CloneWithSelectedAttributes(selectedAttributes []string) *ContextElement {
 	preparedCopy := ContextElement{}
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("selected attributes to copy", selectedAttributes)
+		DEBUG.Println("attributes to check to copy", ce.Attributes)
+	}
+
 	preparedCopy.Entity = ce.Entity
 
 	if len(selectedAttributes) == 0 {
-		preparedCopy.Attributes = make([]ContextAttribute, len(ce.Attributes))
-		copy(preparedCopy.Attributes, ce.Attributes)
+		// preparedCopy.Attributes = make([]ContextAttribute, len(ce.Attributes))
+		// copy(preparedCopy.Attributes, ce.Attributes)
+		for _, ctxAttr := range ce.Attributes {
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("copying ctxAttr: ", ctxAttr)
+			}
+			preparedCopy.Attributes = append(preparedCopy.Attributes, ctxAttr)
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("preparedCopy.Attribute ", preparedCopy.Attributes)
+			}
+		}
 	} else {
 		preparedCopy.Attributes = make([]ContextAttribute, 0)
 		for _, requiredAttrName := range selectedAttributes {
 			for _, ctxAttr := range ce.Attributes {
 				if ctxAttr.Name == requiredAttrName {
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Println("copying ctxAttr: ", ctxAttr)
+					}
 					preparedCopy.Attributes = append(preparedCopy.Attributes, ctxAttr)
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Println("preparedCopy.Attribute ", preparedCopy.Attributes)
+					}
 				}
 			}
 		}
@@ -577,6 +657,10 @@ func (ce *ContextElement) CloneWithSelectedAttributes(selectedAttributes []strin
 
 	preparedCopy.Metadata = make([]ContextMetadata, len(ce.Metadata))
 	copy(preparedCopy.Metadata, ce.Metadata)
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("copied attributes", preparedCopy)
+	}
 
 	return &preparedCopy
 }
@@ -624,7 +708,7 @@ func (ce *ContextElement) GetScope() OperationScope {
 		}
 	}
 
-	if isLocal == true {
+	if isLocal {
 		updateScope.Type = "local"
 	}
 
@@ -780,7 +864,7 @@ func (restriction *Restriction) GetScope() OperationScope {
 		}
 	}
 
-	if isLocal == true {
+	if isLocal {
 		myscope.Type = "local"
 	}
 
@@ -818,7 +902,7 @@ type SubscriptionResponse struct {
 type ContextRegistrationAttribute struct {
 	Name     string            `json:"name"`
 	Type     string            `json:"type,omitempty"`
-	IsDomain bool              `json:"isDomain"`
+	IsDomain bool              `json:"isDomain,omitempty"`
 	Metadata []ContextMetadata `json:"metadata,omitempty"`
 }
 
@@ -842,7 +926,7 @@ func (registredEntity *EntityRegistration) GetLocation() Point {
 }
 
 // used by master to group the received input
-func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
+func (registeredEntity *EntityRegistration) IsMatched(restrictions map[string]interface{}) bool {
 	matched := true
 
 	for key, value := range restrictions {
@@ -852,17 +936,17 @@ func (registredEntity *EntityRegistration) IsMatched(restrictions map[string]int
 
 		switch key {
 		case "EntityID":
-			if registredEntity.ID != value {
+			if registeredEntity.ID != value {
 				matched = false
 				break
 			}
 		case "EntityType":
-			if registredEntity.Type != value {
+			if registeredEntity.Type != value {
 				matched = false
 				break
 			}
 		default:
-			if registredEntity.MetadataList[key] != value {
+			if registeredEntity.MetadataList[key] != value {
 				matched = false
 				break
 			}
@@ -942,18 +1026,122 @@ type SubscribeContextRequest struct {
 	Subscriber       Subscriber
 }
 
-func (subscribeContextRequest *SubscribeContextRequest) IsSimpleByType() bool {
+type NotificationNGSILD struct {
+	Endpoint EndpointNGSILD `json:"endpoint"`
+}
+
+type EndpointNGSILD struct {
+	Uri    string `json:"uri"`
+	Accept string `json:"accept"`
+}
+
+type SubscribeContextRequestNGSILD struct {
+	Context             []string           `json:"@context"`
+	ID                  string             `json:"id"`
+	Type                string             `json:"type"`
+	Entities            []EntityIdLD       `json:"entities"`
+	Notification        NotificationNGSILD `json:"notification"`
+	NotificationTrigger []string           `json:"notificationTrigger"`
+	Subscriber          Subscriber         `json:"-"`
+}
+
+func (subscribeContextRequest *SubscribeContextRequest) ToNGSILD(subId string) SubscribeContextRequestNGSILD {
+	var subNGSILD SubscribeContextRequestNGSILD
+
+	for _, entity := range subscribeContextRequest.Entities {
+		var ldEntity EntityIdLD
+		if entity.IsPattern {
+			if entity.ID == ".*" {
+				ldEntity.ID = ""
+			} else {
+				ldEntity.ID = entity.ID
+			}
+		}
+		ldEntity.Type = entity.Type
+		subNGSILD.Entities = append(subNGSILD.Entities, ldEntity)
+	}
+	subNGSILD.Subscriber = subscribeContextRequest.Subscriber
+
+	subNGSILD.Context = append(subNGSILD.Context, NGSILD_CORE_CONTEXT)
+
+	subNGSILD.ID = subId
+	subNGSILD.Type = "Subscription"
+
+	subNGSILD.NotificationTrigger = []string{"entityCreated", "entityUpdated"}
+
+	subNGSILD.Notification.Endpoint.Uri = strings.Replace(subscribeContextRequest.Reference, "ngsi10", "ngsi-ld/v1/notifyContext", 1)
+	subNGSILD.Notification.Endpoint.Accept = "application/json"
+
+	return subNGSILD
+
+}
+
+func (subscribeContextRequest *SubscribeContextRequest) IsSimplyByType() bool {
 	var flag = true
 
 	if len(subscribeContextRequest.Restriction.Scopes) == 0 {
-		if len(subscribeContextRequest.Entities) == 1 {
-			if subscribeContextRequest.Entities[0].ID == "" {
-				flag = true
+		for _, entity := range subscribeContextRequest.Entities {
+			if entity.ID != "" && entity.ID != ".*" {
+				flag = false
+				break
 			}
 		}
+	} else {
+		flag = false
+	}
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("IsSimplyByType ", flag)
 	}
 
 	return flag
+}
+
+// Passing entityId as nil will return all the wildcards
+func (subscribeContextRequest *SubscribeContextRequest) GetTypeWildCards(entityId *EntityId) []string {
+	var typeWildCards []string
+
+	for _, entity := range subscribeContextRequest.Entities {
+		if entityId != nil {
+			if entityId.Type == entity.Type {
+				typeWildCards = append(typeWildCards, genWildCard(entity.Type))
+			}
+		} else {
+			typeWildCards = append(typeWildCards, genWildCard(entity.Type))
+		}
+	}
+	return typeWildCards
+}
+
+// Passing entityId as nil will return all the wildcards
+func (contextElement *ContextElement) GetTypeWildCard() string {
+
+	if contextElement.Type != "" {
+		return genWildCard(contextElement.Type)
+	} else {
+		return genWildCard(contextElement.Entity.Type)
+	}
+}
+
+// Passing entityId as nil will return all the wildcards
+func (entityId *EntityId) GetTypeWildCard() string {
+
+	return genWildCard(entityId.Type)
+}
+
+// Passing entityId as nil will return all the wildcards
+func (entityId *EntityId) IsSimplyByType() bool {
+
+	if entityId.ID == "" || entityId.ID == ".*" {
+		return true
+	}
+
+	return false
+}
+
+func genWildCard(Type string) string {
+
+	return "*" + Type
 }
 
 type SubscriptionRequest struct {
@@ -1298,6 +1486,20 @@ type NotifyContextAvailabilityRequest struct {
 	ErrorCode                       StatusCode                    `json:"errorCode,omitempty"`
 }
 
+func (notifyCtxAvail *NotifyContextAvailabilityRequest) IsProsumerRegistration() bool {
+	for _, registration := range notifyCtxAvail.ContextRegistrationResponseList {
+		for _, metadata := range registration.ContextRegistration.Metadata {
+			if strings.ToLower(metadata.Name) == "keepproviderupdated" || strings.ToLower(metadata.Type) == "keepproviderupdated" {
+				if val, ok := metadata.Value.(bool); ok && val {
+					return true
+				}
+
+			}
+		}
+	}
+	return false
+}
+
 type Notifyv2ContextAvailabilityRequest struct {
 	SubscriptionId                  string                        `json:"subscribeId"`
 	ContextRegistrationResponseList []ContextRegistrationResponse `json:"contextRegistrationResponses,omitempty"`
@@ -1322,7 +1524,7 @@ type HTTPS struct {
 }
 
 func (cfg *HTTPS) LoadConfig() bool {
-	if cfg.Enabled == false {
+	if !cfg.Enabled {
 		return true
 	}
 
@@ -1348,7 +1550,7 @@ func (cfg *HTTPS) LoadConfig() bool {
 }
 
 func (cfg *HTTPS) GetHTTPClient() *http.Client {
-	if cfg.Enabled == false {
+	if !cfg.Enabled {
 		return &http.Client{}
 	}
 
@@ -1422,22 +1624,22 @@ type FiwareData struct {
 // NGSI-LD starts here.
 
 type LDContextElement struct {
-	Id               string         `json:"id, omitemtpy"`
-	Type             string         `json:"type, omitemtpy"`
-	Properties       []Property     `json:"properties, omitempty"`
-	Relationships    []Relationship `json:"relationships, omitempty"`
-	CreatedAt        string         `json:"createdAt",omitemtpy`
-	Location         LDLocation     `json:"location",omitempty`
-	ObservationSpace GeoProperty    `json:"observationSpace",omitempty`
-	OperationSpace   GeoProperty    `json:"operationSpace",omitempty`
+	Id               string         `json:"id,omitempty"`
+	Type             string         `json:"type,omitempty"`
+	Properties       []Property     `json:"properties,omitempty"`
+	Relationships    []Relationship `json:"relationships,omitempty"`
+	CreatedAt        string         `json:"createdAt,omitempty"`
+	Location         LDLocation     `json:"location,omitempty"`
+	ObservationSpace GeoProperty    `json:"observationSpace,omitempty"`
+	OperationSpace   GeoProperty    `json:"operationSpace,omitempty"`
 	ModifiedAt       string         `json:"modifiedAt"`
 }
 
 type GeoProperty struct {
-	Type       string      `json:"type",omitemtpy`
-	Value      interface{} `json:"value"omitemtpy`
-	ObservedAt string      `json:"observedAt", omitemtpy`
-	DatasetId  string      `json:"datasetId", omitempty`
+	Type       string      `json:"type,omitempty"`
+	Value      interface{} `json:"value,omitempty"`
+	ObservedAt string      `json:"observedAt,omitempty"`
+	DatasetId  string      `json:"datasetId,omitempty"`
 }
 
 type LDContextElementResponse struct {
@@ -1452,9 +1654,9 @@ type LDContextElementResponse struct {
 }*/
 
 type LDNotifyContextRequest struct {
-	SubscriptionId string        `json:"subscriptionId",omitemtpy`
-	Type           string        `json:"type",omitemtpy`
-	Id             string        `json:"id",omitemtpy`
+	SubscriptionId string        `json:"subscriptionId,omitempty"`
+	Type           string        `json:"type,omitempty"`
+	Id             string        `json:"id,omitempty"`
 	Data           []interface{} `json:"data,omitempty"`
 	NotifyAt       string        `json:"notifiedAt,omitempty"`
 }
@@ -1562,42 +1764,42 @@ type Geometry struct {
 }
 
 type Property struct {
-	Name          string      `json:"name",omitemtpy`
-	Type          string      `json:"type",omitemtpy`
-	Value         interface{} `json:"value",omitemtpy` // Can also be a string or a JSON object
-	ObservedAt    string      `json:"observedAt",omitempty`
-	DatasetId     string      `json:"DatasetId",omitempty`  //<<URI>>, Optional.
-	InstanceId    string      `json:"InstanceId",omitempty` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
-	CreatedAt     string      `json:"createdAt",omitemtpy`
-	ModifiedAt    string      `json:"modifiedAt",omitemtpy`
-	UnitCode      string      `json:"UnitCode",omitempty`
-	ProvidedBy    ProvidedBy  `json:"providedBy",omitempty`
+	Name          string      `json:"name,omitempty"`
+	Type          string      `json:"type,omitempty"`
+	Value         interface{} `json:"value,omitempty"` // Can also be a string or a JSON object
+	ObservedAt    string      `json:"observedAt,omitempty"`
+	DatasetId     string      `json:"DatasetId,omitempty"`  //<<URI>>, Optional.
+	InstanceId    string      `json:"InstanceId,omitempty"` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
+	CreatedAt     string      `json:"createdAt,omitempty"`
+	ModifiedAt    string      `json:"modifiedAt,omitempty"`
+	UnitCode      string      `json:"UnitCode,omitempty"`
+	ProvidedBy    ProvidedBy  `json:"providedBy,omitempty"`
 	Properties    []Property
 	Relationships []Relationship
 }
 
 type Relationship struct {
-	Name          string     `json:"name,omitemtpy"`
-	Type          string     `json:"type,omitemtpy"`
-	Object        string     `json:"object,omitemtpy"` //<<URI>>, Mandatory
+	Name          string     `json:"name,omitempty"`
+	Type          string     `json:"type,omitempty"`
+	Object        string     `json:"object,omitempty"` //<<URI>>, Mandatory
 	ObservedAt    string     `json:"observedAt,omitempty"`
 	ProvidedBy    ProvidedBy `json:"providedBy,omitempty"`
 	DatasetId     string     `json:"DatasetId,omitempty"`  //<<URI>>, Optional.
 	InstanceId    string     `json:"InstanceId,omitempty"` //<<URI>> uniquely identifying a relationship instance. System Generated, Optional.
-	CreatedAt     string     `json:"createdAt,omitemtpy"`
-	ModifiedAt    string     `json:"modifiedAt,omitemtpy"`
+	CreatedAt     string     `json:"createdAt,omitempty"`
+	ModifiedAt    string     `json:"modifiedAt,omitempty"`
 	Properties    []Property
 	Relationships []Relationship
 }
 
 type ProvidedBy struct {
-	Type   string `json:"type",omitemtpy`
-	Object string `json:"object",omitemtpy`
+	Type   string `json:"type,omitempty"`
+	Object string `json:"object,omitempty"`
 }
 
 type LDSubscriptionRequest struct {
 	Id                string             `json:"id,omitempty"`   //URI, if missing, will be assigned during subscription phase and returned to client
-	Type              interface{}        `json:"type,omitemtpy"` //should be equal to "Subscription"
+	Type              interface{}        `json:"type,omitempty"` //should be equal to "Subscription"
 	Name              string             `json:"name,omitempty"`
 	Description       string             `json:"description,omitempty"`
 	Entities          []EntityId         `json:"entities,omitempty"`
@@ -1613,73 +1815,73 @@ type LDSubscriptionRequest struct {
 	TemporalQ         TemporalQuery      `json:"temporalQ,omitempty"`
 	Status            string             `json:"status,omitempty"`
 	Subscriber        Subscriber         `json:"subscriber,omitempty"`
-	CreatedAt         interface{}        `json:"createdAt,omitemtpy"`
-	ModifiedAt        interface{}        `json:"modifiedAt,omitemtpy"`
+	CreatedAt         interface{}        `json:"createdAt,omitempty"`
+	ModifiedAt        interface{}        `json:"modifiedAt,omitempty"`
 	Restriction       Restriction        `json:"restriction,omitempty"`
 }
 
 type GeoQuery struct {
-	Geometry    string `json:"geometry,omitemtpy"`
-	Coordinates string `json:"coordinates,omitemtpy"` // string or JSON Array
-	GeoRel      string `json:"georel,omitemtpy"`
+	Geometry    string `json:"geometry,omitempty"`
+	Coordinates string `json:"coordinates,omitempty"` // string or JSON Array
+	GeoRel      string `json:"georel,omitempty"`
 	GeoProperty string `json:"geoproperty,omitempty"`
 }
 
 type NotificationParams struct {
-	Attributes       []string `json:"attributes",omitempty`
-	Format           string   `json:"format",omitempty`
-	Endpoint         Endpoint `json:"endpoint",omitemtpy`
-	Status           string   `json:"status",omitempty`
-	TimeSent         uint     `json:"timeSent",omitempty`
-	LastNotification string   `json:"lastNotification",omitempty`
-	LastFailure      string   `json:"lastFailure",omitempty`
-	LastSuccess      string   `json:"lastSuccess",omitempty`
+	Attributes       []string `json:"attributes,omitempty"`
+	Format           string   `json:"format,omitempty"`
+	Endpoint         Endpoint `json:"endpoint,omitempty"`
+	Status           string   `json:"status,omitempty"`
+	TimeSent         uint     `json:"timeSentomitempty"`
+	LastNotification string   `json:"lastNotification,omitempty"`
+	LastFailure      string   `json:"lastFailure,omitempty"`
+	LastSuccess      string   `json:"lastSuccess,omitempty"`
 }
 
 type Endpoint struct {
-	URI    string `json:"uri",omitemtpy` // URI
-	Accept string `json:"accept",omitempty`
+	URI    string `json:"uri,omitempty"` // URI
+	Accept string `json:"accept,omitempty"`
 }
 
 type TemporalQuery struct {
-	TimeRel      string `json:"timerel",omitemtpy`
-	Time         string `json:"time",omitemtpy`
-	EndTime      string `json:"endTime",omitempty`
-	TimeProperty string `json:"timeproperty",omitempty`
+	TimeRel      string `json:"timerel,omitempty"`
+	Time         string `json:"time,omitempty"`
+	EndTime      string `json:"endTime,omitempty"`
+	TimeProperty string `json:"timeproperty,omitempty"`
 }
 
 type CSourceRegistrationRequest struct {
-	Id                  string             `json:"id",omitempty` //URI
-	Type                string             `json:"type",omitemtpy`
-	Name                string             `json:"name",omitempty`
-	Description         string             `json:"description",omitempty`
-	Information         []RegistrationInfo `json:"information",omitemtpy`
-	ObservationInterval TimeInterval       `json:"observationInterval",omitempty`
-	ManagementInterval  TimeInterval       `json:"managementInterval",omitempty`
-	Location            string             `json:"location",omitempty`
+	Id                  string             `json:"id,omitempty"` //URI
+	Type                string             `json:"type,omitempty"`
+	Name                string             `json:"name,omitempty"`
+	Description         string             `json:"description,omitempty"`
+	Information         []RegistrationInfo `json:"information,omitempty"`
+	ObservationInterval TimeInterval       `json:"observationInterval,omitempty"`
+	ManagementInterval  TimeInterval       `json:"managementInterval,omitempty"`
+	Location            string             `json:"location,omitempty"`
 	ObservationSpace    interface{}        `json:"observationSpace,omitempty"` // Type = GeoJSON Geometry
 	OperationSpace      interface{}        `json:"operationSpace,omitempty"`   // Type = GeoJSON Geometry
-	Expires             string             `json:expires,omitempty`
-	Endpoint            string             `json:"endpoint",omitemtpy` //URI
-	CreatedAt           string             `json:"createdAt",omitemtpy`
-	ModifiedAt          string             `json:"modifiedAt",omitemtpy`
+	Expires             string             `json:"expires,omitempty"`
+	Endpoint            string             `json:"endpoint,omitempty"` //URI
+	CreatedAt           string             `json:"createdAt,omitempty"`
+	ModifiedAt          string             `json:"modifiedAt,omitempty"`
 	//<CSourceProperty Name>
 }
 
 type RegistrationInfo struct {
-	Entities      []EntityId `json:"entities",omitempty`
+	Entities      []EntityId `json:"entities,omitempty"`
 	Properties    []string   `json:"properties,omitempty"`
 	Relationships []string   `json:"relationships,omitempty"`
 }
 
 type TimeInterval struct {
-	Start string `json:"start",omitemtpy` //DateTime value
-	End   string `json:"end",omitempty`   //DateTime value
+	Start string `json:"start,omitempty"` //DateTime value
+	End   string `json:"end,omitempty"`   //DateTime value
 }
 
 type CSourceRegistrationResponse struct {
-	RegistrationID string     `json: "registrationID",omitemtpy`
-	ErrorCode      StatusCode `json:"errorCode,omitempty",omitemtpy`
+	RegistrationID string     `json: "registrationID,omitempty"`
+	ErrorCode      StatusCode `json:"errorCode,omitempty"`
 }
 
 type ProblemDetails struct {
@@ -1707,7 +1909,7 @@ type ResponseError struct {
 }
 
 func FiwareId(id string) (string, string) {
-	if strings.Contains(id, "@") == true {
+	if strings.Contains(id, "@") {
 		idsplit := strings.Split(id, "@")
 		return idsplit[0], idsplit[1]
 	}
@@ -1745,14 +1947,14 @@ func resolveMultipont(location interface{}) interface{} {
 func GetNGSIV1DomainMetaData(typ string, location interface{}) (string, interface{}) {
 	var valuetyp string
 	var points interface{}
-	if strings.HasSuffix(typ, "Point") == true && strings.HasSuffix(typ, "MultiPoint") == false {
+	if strings.HasSuffix(typ, "Point") && !strings.HasSuffix(typ, "MultiPoint") {
 		valuetyp = "point"
 		cordinates := location.([]interface{})
 		points = changeInv1cordinates(cordinates[0], cordinates[1])
-	} else if strings.HasSuffix(typ, "Polygon") == true {
+	} else if strings.HasSuffix(typ, "Polygon") {
 		valuetyp = "polygon"
-		points = resolvePolygon(location.(interface{}))
-	} else if strings.HasSuffix(typ, "MultiPoint") == true {
+		points = resolvePolygon(location)
+	} else if strings.HasSuffix(typ, "MultiPoint") {
 		valuetyp = "multiPoint"
 		points = resolveMultipont(location)
 	} else {

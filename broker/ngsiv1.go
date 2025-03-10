@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -91,12 +91,20 @@ func (tb *ThinBroker) NGSIV1_QueryContext(w rest.ResponseWriter, r *rest.Request
 
 func (tb *ThinBroker) NGSIV1_NotifyContext(w rest.ResponseWriter, r *rest.Request) {
 
-	content, _ := ioutil.ReadAll(r.Body)
+	content, _ := io.ReadAll(r.Body)
 	r.Body.Close()
 	// DEBUG.Println(string(content))
 
 	notifyCtxReq := NotifyContextRequest{}
 	notifyCtxReq.ParseNotifyContextRequest_HybridNGSI_NGSILD(content)
+
+	var correlator string
+	// check and add the "Fiware-Correlator" header into the update message
+	correlator = r.Header.Get("Fiware-Correlator")
+	if correlator == "" {
+		correlator = notifyCtxReq.SubscriptionId
+
+	}
 
 	// err := r.DecodeJsonPayload(&notifyCtxReq)
 	// if err != nil {
@@ -112,7 +120,7 @@ func (tb *ThinBroker) NGSIV1_NotifyContext(w rest.ResponseWriter, r *rest.Reques
 
 	// inform its subscribers
 	for _, ctxResp := range notifyCtxReq.ContextResponses {
-		go tb.notifySubscribers(&ctxResp.ContextElement, "", false)
+		go tb.notifySubscribers(&ctxResp.ContextElement, correlator, false)
 	}
 }
 
@@ -169,11 +177,46 @@ func (tb *ThinBroker) NGSIV1_SubscribeContext(w rest.ResponseWriter, r *rest.Req
 	}
 	subReq.Subscriber.BrokerURL = tb.MyURL
 
-	INFO.Printf("NEW subscription: %v\n", subReq)
+	tb.subscribeContext(&subReq, subID)
+
+	// INFO.Printf("NEW subscription: %v\n", subReq)
+
+	// // add it into the subscription map
+	// tb.subscriptions_lock.Lock()
+	// tb.subscriptions[subID] = &subReq
+	// tb.subscriptions_lock.Unlock()
+	// // take actions
+	// if subReq.Subscriber.IsInternal {
+	// 	INFO.Println("internal subscription coming from another broker")
+
+	// 	for _, entity := range subReq.Entities {
+	// 		tb.e2sub_lock.Lock()
+	// 		if subReq.IsSimplyByType() {
+
+	// 			// add a wildcard per type into the map entity to subscription
+	// 			// The wildcard looks like *<Type>
+	// 			wildCards := subReq.GetTypeWildCards(nil)
+	// 			for _, wildCard := range wildCards {
+	// 				tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], subID)
+	// 			}
+	// 		} else {
+	// 			tb.entityId2Subcriptions[entity.ID] = append(tb.entityId2Subcriptions[entity.ID], subID)
+	// 		}
+	// 		tb.e2sub_lock.Unlock()
+	// 	}
+	// 	tb.notifyOneSubscriberWithCurrentStatus(subReq.Entities, subID)
+	// } else {
+	// 	tb.SubscribeContextAvailability(subID)
+	// }
+}
+
+func (tb *ThinBroker) subscribeContext(subReq *SubscribeContextRequest, subID string) {
+
+	INFO.Printf("NEW subscription: %v with subId %v\n", subReq, subID)
 
 	// add it into the subscription map
 	tb.subscriptions_lock.Lock()
-	tb.subscriptions[subID] = &subReq
+	tb.subscriptions[subID] = subReq
 	tb.subscriptions_lock.Unlock()
 	// take actions
 	if subReq.Subscriber.IsInternal {
@@ -181,10 +224,20 @@ func (tb *ThinBroker) NGSIV1_SubscribeContext(w rest.ResponseWriter, r *rest.Req
 
 		for _, entity := range subReq.Entities {
 			tb.e2sub_lock.Lock()
-			if tb.subscriptions[subID].IsSimpleByType() {
-				tb.entityId2Subcriptions["*"] = append(tb.entityId2Subcriptions["*"], subID)
+			if subReq.IsSimplyByType() {
+
+				// add a wildcard per type into the map entity to subscription
+				// The wildcard looks like *<Type>
+				wildCards := subReq.GetTypeWildCards(nil)
+				for _, wildCard := range wildCards {
+					if !stringsContains(tb.entityId2Subcriptions[wildCard], subID) {
+						tb.entityId2Subcriptions[wildCard] = append(tb.entityId2Subcriptions[wildCard], subID)
+					}
+				}
 			} else {
-				tb.entityId2Subcriptions[entity.ID] = append(tb.entityId2Subcriptions[entity.ID], subID)
+				if !stringsContains(tb.entityId2Subcriptions[entity.ID], subID) {
+					tb.entityId2Subcriptions[entity.ID] = append(tb.entityId2Subcriptions[entity.ID], subID)
+				}
 			}
 			tb.e2sub_lock.Unlock()
 		}
@@ -192,6 +245,7 @@ func (tb *ThinBroker) NGSIV1_SubscribeContext(w rest.ResponseWriter, r *rest.Req
 	} else {
 		tb.SubscribeContextAvailability(subID)
 	}
+
 }
 
 func (tb *ThinBroker) NGSIV1_UnsubscribeContext(w rest.ResponseWriter, r *rest.Request) {
@@ -245,6 +299,9 @@ func (tb *ThinBroker) NGSIV1_NotifyContextAvailability(w rest.ResponseWriter, r 
 		rest.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NotifyContextAvailabilityRequest: ", notifyContextAvailabilityReq)
+	}
 	// send out the response
 	notifyContextAvailabilityResp := NotifyContextAvailabilityResponse{}
 	notifyContextAvailabilityResp.ResponseCode.Code = 200
@@ -253,18 +310,32 @@ func (tb *ThinBroker) NGSIV1_NotifyContextAvailability(w rest.ResponseWriter, r 
 
 	subID := notifyContextAvailabilityReq.SubscriptionId
 
-	//map it to the main subscription
-	tb.subLinks_lock.Lock()
-	mainSubID, exist := tb.availabilitySub2MainSub[subID]
-	if !exist {
-		if LoggerIsEnabled(DEBUG) {
-			DEBUG.Println("put it into the tempCache and handle it later")
-		}
-		tb.tmpNGSI9NotifyCache[subID] = &notifyContextAvailabilityReq
-	}
-	tb.subLinks_lock.Unlock()
+	if notifyContextAvailabilityReq.IsProsumerRegistration() {
 
-	if exist {
-		tb.handleNGSI9Notify(mainSubID, &notifyContextAvailabilityReq)
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("Prosumer request: ", notifyContextAvailabilityReq)
+		}
+		tb.handleProsumerRegistration(&notifyContextAvailabilityReq)
+
+	} else {
+
+		//map it to the main subscription
+		tb.subLinks_lock.Lock()
+		mainSubID, exist := tb.availabilitySub2MainSub[subID]
+		if !exist {
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("put it into the tempCache and handle it later")
+			}
+			tb.tmpNGSI9NotifyCache[subID] = &notifyContextAvailabilityReq
+		}
+		tb.subLinks_lock.Unlock()
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println(" Handle normal NGSI9 ", mainSubID, " subID ", subID, "notifyContextAvailabilityReq", notifyContextAvailabilityReq)
+		}
+
+		if exist {
+			tb.handleNGSI9Notify(mainSubID, &notifyContextAvailabilityReq, false)
+		}
 	}
 }

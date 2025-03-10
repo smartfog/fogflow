@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"math"
 	"net/http"
 	"strconv"
@@ -422,6 +422,10 @@ func (master *Master) DeployTask(taskInstance *ScheduledTaskInstance) {
 	master.curNumOfTasks = master.curNumOfTasks + 1
 	master.counter_lock.Unlock()
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("[taskInstance]: ", taskInstance)
+	}
+
 	taskMsg := SendMessage{Type: "ADD_TASK", RoutingKey: taskInstance.WorkerID + ".", From: master.id, PayLoad: *taskInstance}
 	INFO.Println(taskMsg)
 
@@ -555,7 +559,9 @@ func (master *Master) SelectWorker(locations []Point) string {
 // query the topology from Designer based on the given name
 func (master *Master) getTopologyByName(name string) *Topology {
 	designerURL := fmt.Sprintf("%s/topology/%s", master.cfg.GetDesignerURL(), name)
-	fmt.Println(designerURL)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("[designerURL]: ", designerURL)
+	}
 
 	req, err1 := http.NewRequest(http.MethodGet, designerURL, nil)
 	if err1 != nil {
@@ -574,7 +580,10 @@ func (master *Master) getTopologyByName(name string) *Topology {
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("operators: ", string(body))
+	}
 
 	topology := Topology{}
 	jsonErr := json.Unmarshal(body, &topology)
@@ -587,6 +596,9 @@ func (master *Master) getTopologyByName(name string) *Topology {
 	master.operatorList_lock.Lock()
 	for _, operator := range topology.Operators {
 		master.operatorList[operator.Name] = operator
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("operators: ", topology)
+		}
 	}
 	master.operatorList_lock.Unlock()
 
@@ -635,7 +647,7 @@ func (master *Master) DetermineDockerImage(operatorName string, wID string) stri
 	return selectedDockerImageName
 }
 
-func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
+func (master *Master) GetOperatorParameters(operatorName string) []Parameter {
 	master.operatorList_lock.RLock()
 
 	operator := master.operatorList[operatorName]
@@ -647,22 +659,22 @@ func (master *Master) GetOperatorParamters(operatorName string) []Parameter {
 	return parameters
 }
 
-func (master *Master) subscribeContextEntity(entityType string) {
-	subscription := SubscribeContextRequest{}
+// func (master *Master) subscribeContextEntity(entityType string) {
+// 	subscription := SubscribeContextRequest{}
 
-	newEntity := EntityId{}
-	newEntity.Type = entityType
-	newEntity.IsPattern = true
-	subscription.Entities = make([]EntityId, 0)
-	subscription.Entities = append(subscription.Entities, newEntity)
-	subscription.Reference = master.myURL
+// 	newEntity := EntityId{}
+// 	newEntity.Type = entityType
+// 	newEntity.IsPattern = true
+// 	subscription.Entities = make([]EntityId, 0)
+// 	subscription.Entities = append(subscription.Entities, newEntity)
+// 	subscription.Reference = master.myURL
 
-	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
-	sid, err := client.SubscribeContext(&subscription, "", true)
-	if err != nil {
-		ERROR.Println(err)
-	}
-	INFO.Println(sid)
+// 	client := NGSI10Client{IoTBrokerURL: master.BrokerURL, SecurityCfg: &master.cfg.HTTPS}
+// 	sid, err := client.SubscribeContext(&subscription, "", true)
+// 	if err != nil {
+// 		ERROR.Println(err)
+// 	}
+// 	INFO.Println(sid)
 
-	master.subID2Type[sid] = entityType
-}
+// 	master.subID2Type[sid] = entityType
+// }

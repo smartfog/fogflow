@@ -48,10 +48,8 @@ func (er *EntityRepository) Init(config *Config) {
 	}
 }
 
-//
 // update the registration in the repository and also
 // return a flag to indicate if there is anything in the repository before
-//
 func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextRegistration) *EntityRegistration {
 	updatedRegistration := er.updateRegistrationInMemory(entity, registration)
 
@@ -64,9 +62,7 @@ func (er *EntityRepository) updateEntity(entity EntityId, registration *ContextR
 	return updatedRegistration
 }
 
-//
 // return all available entity types
-//
 func (er *EntityRepository) GetEntityTypes() []string {
 	er.ctxRegistrationList_lock.RLock()
 	defer er.ctxRegistrationList_lock.RUnlock()
@@ -87,9 +83,7 @@ func (er *EntityRepository) GetEntityTypes() []string {
 	return typeList
 }
 
-//
 // for the performance purpose, we still keep the latest view of all registrations
-//
 func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registration *ContextRegistration) *EntityRegistration {
 	er.ctxRegistrationList_lock.Lock()
 	defer er.ctxRegistrationList_lock.Unlock()
@@ -116,7 +110,7 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 					break
 				}
 			}
-			if found == false {
+			if !found {
 				delete(existRegistration.AttributesList, attributeOld.Name)
 			}
 		}
@@ -131,29 +125,29 @@ func (er *EntityRepository) updateRegistrationInMemory(entity EntityId, registra
 			existRegistration.ProvidingApplication = registration.ProvidingApplication
 		}
 	} else {
-		entityRegistry := EntityRegistration{}
+		entityRegistration := EntityRegistration{}
 
-		entityRegistry.ID = eid
-		entityRegistry.Type = entity.Type
+		entityRegistration.ID = eid
+		entityRegistration.Type = entity.Type
 
-		entityRegistry.AttributesList = make(map[string]ContextRegistrationAttribute)
-		entityRegistry.MetadataList = make(map[string]ContextMetadata)
+		entityRegistration.AttributesList = make(map[string]ContextRegistrationAttribute)
+		entityRegistration.MetadataList = make(map[string]ContextMetadata)
 
 		for _, attr := range registration.ContextRegistrationAttributes {
-			entityRegistry.AttributesList[attr.Name] = attr
+			entityRegistration.AttributesList[attr.Name] = attr
 		}
 
 		// update existing metadata table
 		for _, meta := range registration.Metadata {
-			entityRegistry.MetadataList[meta.Name] = meta
+			entityRegistration.MetadataList[meta.Name] = meta
 		}
 
 		// update existing providerURL
 		if len(registration.ProvidingApplication) > 0 {
-			entityRegistry.ProvidingApplication = registration.ProvidingApplication
+			entityRegistration.ProvidingApplication = registration.ProvidingApplication
 		}
 
-		er.ctxRegistrationList[eid] = &entityRegistry
+		er.ctxRegistrationList[eid] = &entityRegistration
 	}
 	return er.ctxRegistrationList[eid]
 }
@@ -168,7 +162,7 @@ func (er *EntityRepository) queryEntitiesInMemory(entities []EntityId, attribute
 	nearby := restriction.GetNearbyFilter()
 	candidates := make([]Candidate, 0)
 	for _, registration := range er.ctxRegistrationList {
-		if matchingWithFilters(registration, entities, attributes, restriction) == true {
+		if matchingWithFilters(registration, entities, attributes, restriction) {
 			candidate := Candidate{}
 			candidate.ID = registration.ID
 			candidate.Type = registration.Type

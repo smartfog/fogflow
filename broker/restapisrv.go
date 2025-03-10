@@ -105,7 +105,7 @@ func (apisrv *RestApiSrv) Start(cfg *Config, broker *ThinBroker) {
 
 	// for external HTTPS-based communication
 	go func() {
-		if cfg.HTTPS.Enabled == true {
+		if cfg.HTTPS.Enabled {
 			// Create a CA certificate pool and add cert.pem to it
 			caCert, err := ioutil.ReadFile(cfg.HTTPS.CA)
 			if err != nil {

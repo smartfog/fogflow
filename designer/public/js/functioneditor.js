@@ -43,6 +43,12 @@ function registerAllBlocks(blocks, operators, dtypes) {
         description: "To define an entity stream",
         fields: [
             {
+                name: "InformationModel",
+                choices: ["NGSIv1", "NGSI-LD"],
+                defaultValue: "NGSI-LD",
+                attrs: "editable"
+            },
+            {
                 name: "SelectedType",
                 type: "string",
 //                choices: dtypes,                

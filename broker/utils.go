@@ -5,7 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"reflect"
 	"strings"
@@ -13,13 +13,13 @@ import (
 	. "fogflow/common/ngsi"
 )
 
-func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, DestinationBrokerType string, tenant string, httpsCfg *HTTPS) error {
+func postNotifyContext(ctxElems []ContextElement, subscriptionId string, URL string, ConsumerNGSIVersion string, tenant string, httpsCfg *HTTPS) error {
 	//INFO.Println("destination protocol: ", DestinationBrokerType)
 	// INFO.Println("ctxElems: ", ctxElems)
 
-	switch DestinationBrokerType {
+	switch ConsumerNGSIVersion {
 	case "NGSI-LD":
-		return postNGSILDUpsert(ctxElems, subscriptionId, URL, tenant)
+		return postNGSILDUpsert(ctxElems, URL, tenant)
 	case "NGSIv2":
 		return postNGSIV2NotifyContext(ctxElems, subscriptionId, URL, tenant)
 	default:
@@ -43,12 +43,12 @@ func postNGSIV1NotifyContext(ctxElems []ContextElement, subscriptionId string, U
 		return err
 	}
 
-	req, err := http.NewRequest("POST", URL+"/notifyContext", bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", URL+"/notifyContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
 	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
+	if strings.HasPrefix(URL, "https") {
 		client = httpsCfg.GetHTTPClient()
 	}
 
@@ -60,7 +60,7 @@ func postNGSIV1NotifyContext(ctxElems []ContextElement, subscriptionId string, U
 		return err
 	}
 
-	ioutil.ReadAll(resp.Body)
+	io.ReadAll(resp.Body)
 
 	return nil
 }
@@ -98,12 +98,12 @@ func postNGSIV2NotifyContext(ctxElems []ContextElement, subscriptionId string, U
 
 	// INFO.Println(string(body))
 
-	req, err := http.NewRequest("POST", URL, bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", URL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 
 	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
+	if strings.HasPrefix(URL, "https") {
 		transCfg := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
 		}
@@ -164,30 +164,42 @@ func toNGSIv2Payload(ctxElems []ContextElement) []map[string]interface{} {
 }
 
 // for NGSI-LD consumer
-func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL string, tenant string) error {
-	//INFO.Println("NGSI-LD NOTIFY: ", URL)
-	// DEBUG.Println(ctxElems)
+func postNGSILDUpsert(ctxElems []ContextElement, URL string, tenant string) error {
 
-	payload := toNGSILDPayload(ctxElems)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI-LD NOTIFY: ", URL, ctxElems)
+	}
+
+	payload := toNGSILDPayload(ctxElems, false)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI-LD elements: ", payload)
+	}
 
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI-LD body: ", string(body))
+	}
 
-	brokerURL := URL + "/ngsi-ld/v1/entityOperations/upsert"
-	req, err := http.NewRequest("POST", brokerURL, bytes.NewBuffer(body))
+	ngsildConsumerURL := URL + "/ngsi-ld/v1/entityOperations/upsert"
+	req, _ := http.NewRequest("POST", ngsildConsumerURL, bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("NGSILD-Tenant", tenant)
 	req.Header.Add("Link", "<https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context-v1.3.jsonld>; rel=\"http://www.w3.org/ns/json-ld#context\"; type=\"application/ld+json\"")
 
 	client := &http.Client{}
-	if strings.HasPrefix(URL, "https") == true {
+	if strings.HasPrefix(URL, "https") {
 		transCfg := &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true}, // ignore expired SSL certificates
 		}
 		client = &http.Client{Transport: transCfg}
+	}
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI-LD req: ", req)
 	}
 
 	resp, err := client.Do(req)
@@ -198,26 +210,56 @@ func postNGSILDUpsert(ctxElems []ContextElement, subscriptionId string, URL stri
 		ERROR.Println(err)
 		return err
 	}
+	// Check if status code is 300 or greater
+	if resp.StatusCode >= 300 {
+		// Read response body
+		responseBody, err := io.ReadAll(resp.Body)
+		if err != nil {
+			INFO.Println("Error reading response body:", err)
+		}
+		ERROR.Println(
+			"Error: Request failed\nStatus Code:", resp.StatusCode,
+			"\nDestination URL:", req.URL.String(),
+			"\nRequest Body:", string(body),
+			"\nResponse Body: ", string(responseBody))
+	}
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("NGSI-LD resp: ", resp)
+	}
 
 	return nil
 }
 
-func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
-	elementList := make([]map[string]interface{}, 0)
+func toNGSILDPayload(ctxElems []ContextElement, addAtContext bool) []map[string]interface{} {
+	elementListLD := make([]map[string]interface{}, 0)
 	for _, elem := range ctxElems {
 		// convert it to NGSI-LD
-		element := make(map[string]interface{})
+		elementLD := make(map[string]interface{})
 
 		if strings.HasPrefix(elem.Entity.ID, "urn:") || strings.HasPrefix(elem.Entity.ID, "URN:") {
-			element["id"] = elem.Entity.ID
+			elementLD["id"] = elem.Entity.ID
 		} else {
-			element["id"] = "urn:" + elem.Entity.ID
+			elementLD["id"] = "urn:" + elem.Entity.ID
 		}
 
-		element["type"] = elem.Entity.Type
+		elementLD["type"] = elem.Entity.Type
+
+		if addAtContext {
+			elementLD["@context"] = NGSILD_CORE_CONTEXT
+		}
 
 		// include all attributes from the ngsi v1 entity
 		for _, attr := range elem.Attributes {
+
+			// fmt.Println("  attr: ", attr)
+			if LoggerIsEnabled(DEBUG) {
+				DEBUG.Println("attribute to put into ngsi-ld entity: ", attr)
+			}
+			if (attr.Name == "") || (attr.Type == "") || (attr.Value == nil) {
+				continue
+			}
+
 			propertyValue := make(map[string]interface{})
 
 			switch strings.ToLower(attr.Type) {
@@ -240,7 +282,40 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 				}
 			}
 
-			element[attr.Name] = propertyValue
+			if len(attr.Metadata) > 0 {
+				for _, metadata := range attr.Metadata {
+					propertyValue[metadata.Name] = metadata.Value
+				}
+
+			}
+
+			if existingValue, ok := elementLD[attr.Name]; ok {
+
+				if existingSlice, isSlice := existingValue.([]interface{}); isSlice {
+					// Append the new value to the existing slice
+					elementLD[attr.Name] = append(existingSlice, propertyValue)
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Println("isSlice attribute to put into ngsi-ld entity: ", attr.Name, elementLD[attr.Name], propertyValue)
+					}
+				} else {
+					// tempValue := element[attr.Name]
+					// If it's not a slice, create a new slice and append both the old and new values
+					// element[attr.Name] = []interface{}{existingValue, propertyValue}
+					// element[attr.Name] = append(existingSlice, tempValue)
+					// element[attr.Name] = append(existingSlice, propertyValue)
+					newSlice := []interface{}{existingValue, propertyValue}
+					elementLD[attr.Name] = newSlice
+					if LoggerIsEnabled(DEBUG) {
+						DEBUG.Println("add new propertyValue: ", attr.Name, propertyValue)
+						DEBUG.Println("so now is: ", attr.Name, elementLD[attr.Name])
+					}
+				}
+			} else {
+				elementLD[attr.Name] = propertyValue
+				if LoggerIsEnabled(DEBUG) {
+					DEBUG.Println("attribute to put into ngsi-ld entity: ", attr.Name, propertyValue)
+				}
+			}
 		}
 
 		// include all domain metadata from the ngsi v1 entity as extra properities
@@ -269,13 +344,13 @@ func toNGSILDPayload(ctxElems []ContextElement) []map[string]interface{} {
 				propertyValue["value"] = meta.Value
 			}
 
-			element[meta.Name] = propertyValue
+			elementLD[meta.Name] = propertyValue
 		}
 
-		elementList = append(elementList, element)
+		elementListLD = append(elementListLD, elementLD)
 	}
 
-	return elementList
+	return elementListLD
 }
 
 type OrionV2NotifyContextRequest struct {
@@ -300,7 +375,7 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 		return "", err
 	}
 
-	req, err := http.NewRequest("POST", ProviderURL+"/subscribeContext", bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", ProviderURL+"/subscribeContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
@@ -315,7 +390,7 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 		return "", err
 	}
 
-	text, _ := ioutil.ReadAll(resp.Body)
+	text, _ := io.ReadAll(resp.Body)
 
 	subscribeCtxResp := SubscribeContextResponse{}
 	err = json.Unmarshal(text, &subscribeCtxResp)
@@ -331,6 +406,45 @@ func subscribeContextProvider(sub *SubscribeContextRequest, ProviderURL string, 
 	}
 }
 
+func subscribeContextProviderNGSILD(sub *SubscribeContextRequest, ProviderURL string, subID string, httpsCfg *HTTPS) (string, error) {
+
+	// u1, err := uuid.NewUUID()
+	// if err != nil {
+	// 	return "", err
+	// }
+	// subID := "urn:subscription:" + u1.String()
+
+	subscribeContextProviderNGSILD := sub.ToNGSILD(subID)
+
+	body, err := json.Marshal(subscribeContextProviderNGSILD)
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("body ", string(body), "| err ", err)
+	}
+	if err != nil {
+		return "", err
+	}
+
+	req, _ := http.NewRequest("POST", ProviderURL+"/ngsi-ld/v1/subscriptions", bytes.NewBuffer(body))
+	req.Header.Add("Content-Type", "application/ld+json")
+	req.Header.Add("User-Agent", "lightweight-iot-broker")
+
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("req", req)
+	}
+
+	client := httpsCfg.GetHTTPClient()
+	resp, err := client.Do(req)
+	if resp != nil {
+		defer resp.Body.Close()
+	}
+	if err != nil {
+		return "", err
+	}
+
+	return subID, nil
+
+}
+
 func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS) error {
 	unsubscription := &UnsubscribeContextRequest{
 		SubscriptionId: sid,
@@ -341,7 +455,7 @@ func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS)
 		return err
 	}
 
-	req, err := http.NewRequest("POST", ProviderURL+"/unsubscribeContext", bytes.NewBuffer(body))
+	req, _ := http.NewRequest("POST", ProviderURL+"/unsubscribeContext", bytes.NewBuffer(body))
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("User-Agent", "lightweight-iot-broker")
@@ -355,7 +469,7 @@ func unsubscribeContextProvider(sid string, ProviderURL string, httpsCfg *HTTPS)
 		return err
 	}
 
-	text, _ := ioutil.ReadAll(resp.Body)
+	text, _ := io.ReadAll(resp.Body)
 
 	unsubscribeCtxResp := UnsubscribeContextResponse{}
 	err = json.Unmarshal(text, &unsubscribeCtxResp)
@@ -385,8 +499,11 @@ func hasMetadataChange(curMetadata *ContextMetadata, ctxElement *ContextElement)
 	for _, meta := range (*ctxElement).Metadata {
 		sameName := (meta.Name == curMetadata.Name)
 		sameValue := reflect.DeepEqual(meta.Value, curMetadata.Value)
-		DEBUG.Println(curMetadata.Name, "Domain metadata name is the same: ", sameName)
-		DEBUG.Println(curMetadata.Value, "Domain metadata value is the same: ", sameValue)
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println(curMetadata.Name, "Domain metadata name is the same: ", sameName)
+			DEBUG.Println(curMetadata.Value, "Domain metadata value is the same: ", sameValue)
+		}
 
 		if sameName && sameValue {
 			return false
@@ -407,14 +524,14 @@ func hasUpdatedMetadata(recvElement *ContextElement, curElement *ContextElement)
 
 	// check if there is any new attribute name, no check for the change of attribute values
 	for _, attr := range recvElement.Attributes {
-		if isNewAttribute(attr.Name, curElement) == true {
+		if isNewAttribute(attr.Name, curElement) {
 			return true
 		}
 	}
 
 	// check if there is any update on the domain metadata, including the change of metadata values
 	for _, metadata := range recvElement.Metadata {
-		if hasMetadataChange(&metadata, curElement) == true {
+		if hasMetadataChange(&metadata, curElement) {
 			return true
 		}
 	}
@@ -422,40 +539,89 @@ func hasUpdatedMetadata(recvElement *ContextElement, curElement *ContextElement)
 	return false
 }
 
-func updateAttribute(attr *ContextAttribute, ctxElement *ContextElement) {
-	for i := range (*ctxElement).Attributes {
-		pCurAttr := &(*ctxElement).Attributes[i]
-		if pCurAttr.Name == attr.Name {
-			//update the value of existing attribute
-			pCurAttr.Value = attr.Value
+// func updateAttributes(currentAttributes []ContextAttribute, newAttributes []ContextAttribute) {
+// 	attributeNames := createSet()
+// 	for _, newAttribute := range newAttributes {
+// 		addToSet(attributeNames, newAttribute.Name)
+// 	}
 
-			//update the metadata list for the existing attribute
-			for _, metadata := range attr.Metadata {
-				updateAttributeMetadata(&metadata, pCurAttr)
-			}
+// 	for i := range currentAttributes {
+// 		if setContains(attributeNames, currentAttributes[i].Name) {
+// 			// Remove element at index 'i'
+// 			currentAttributes = append(currentAttributes[:i], currentAttributes[i+1:]...)
+// 			i-- // Adjust index to prevent skipping the next element
+// 		}
+// 	}
 
-			return
+// 	currentAttributes = append(currentAttributes, newAttributes)
+
+// }
+
+func updateAttributes(currentAttributes *[]ContextAttribute, newAttributes []ContextAttribute) {
+	attributeNames := createSet()
+	for _, newAttribute := range newAttributes {
+		addToSet(attributeNames, newAttribute.Name)
+	}
+
+	// Create a new slice for filtered attributes
+	filteredAttributes := (*currentAttributes)[:0] // Keeps same capacity, avoids new allocation
+
+	for _, attr := range *currentAttributes {
+		if !setContains(attributeNames, attr.Name) {
+			filteredAttributes = append(filteredAttributes, attr) // Keep only non-matching attributes
 		}
 	}
 
-	// add it as new attribute
-	(*ctxElement).Attributes = append((*ctxElement).Attributes, *attr)
+	// Append new attributes
+	*currentAttributes = append(filteredAttributes, newAttributes...)
 }
 
-func updateAttributeMetadata(metadata *ContextMetadata, attr *ContextAttribute) {
-	for i := range (*attr).Metadata {
-		pCurMetadata := &(*attr).Metadata[i]
-		if pCurMetadata.Name == metadata.Name {
-			// update the value of existing metadata
-			pCurMetadata.Value = metadata.Value
-			return
-		}
-	}
+// func updateAttribute(attr *ContextAttribute, curElement *ContextElement) {
+// 	attrNameSeen := false
+// 	for i := range (*curElement).Attributes { //we need to keep this for to cleanup all the other instances of the same attribute.Name
+// 		pCurAttr := &(*curElement).Attributes[i]
+// 		if pCurAttr.Name == attr.Name {
+// 			if attrNameSeen {
+// 				// Remove element at index 'i'
+// 				(*curElement).Attributes = append((*curElement).Attributes[:i], (*curElement).Attributes[i+1:]...)
+// 				i-- // Adjust index to prevent skipping the next element
+// 			} else {
+// 				if LoggerIsEnabled(DEBUG) {
+// 					DEBUG.Println("currentAttribute: ", pCurAttr, " to be update with attribute: ", attr)
+// 				}
+// 				//update the value of existing attribute
+// 				pCurAttr.Value = attr.Value
 
-	// add it as new metadata
-	(*attr).Metadata = append((*attr).Metadata, *metadata)
-}
+// 				//update the metadata list for the existing attribute
+// 				for _, metadata := range attr.Metadata {
+// 					updateAttributeMetadata(&metadata, pCurAttr)
+// 				}
+// 				attrNameSeen = true
+// 			}
+// 		}
+// 	}
 
+// 	// if same attibute name not found: add it as new attribute
+// 	if !attrNameSeen {
+// 		(*curElement).Attributes = append((*curElement).Attributes, *attr)
+// 	}
+// }
+
+// func updateAttributeMetadata(metadata *ContextMetadata, attr *ContextAttribute) {
+// 	for i := range (*attr).Metadata {
+// 		pCurMetadata := &(*attr).Metadata[i]
+// 		if pCurMetadata.Name == metadata.Name {
+// 			// update the value of existing metadata
+// 			pCurMetadata.Value = metadata.Value
+// 			return
+// 		}
+// 	}
+
+// 	// add it as new metadata
+// 	(*attr).Metadata = append((*attr).Metadata, *metadata)
+// }
+
+// TOFIX implement this function similar to updateAttributes function above
 func updateDomainMetadata(metadata *ContextMetadata, ctxElement *ContextElement) {
 	for i := range (*ctxElement).Metadata {
 		pCurMetadata := &(*ctxElement).Metadata[i]

@@ -127,7 +127,7 @@ func (tb *ThinBroker) NGSILD_QueryById(w rest.ResponseWriter, r *rest.Request) {
 
 	// send out the matched context elements in the form of NGSI-LD
 	if len(matchedCtxElement) > 0 {
-		w.WriteJson(toNGSILDPayload(matchedCtxElement)[0])
+		w.WriteJson(toNGSILDPayload(matchedCtxElement, true)[0])
 	} else {
 		message := map[string]interface{}{
 			"error":       "NotFound",
@@ -157,6 +157,10 @@ func (tb *ThinBroker) NGSILD_NotifyContext(w rest.ResponseWriter, r *rest.Reques
 		return
 	}
 
+	if LoggerIsEnabled(DEBUG) {
+		DEBUG.Println("msg[\"data\"]", msg["data"])
+	}
+
 	if data, exist := msg["data"]; exist {
 		updateList := data.([]interface{})
 
@@ -166,11 +170,26 @@ func (tb *ThinBroker) NGSILD_NotifyContext(w rest.ResponseWriter, r *rest.Reques
 			ngsildUpsert = append(ngsildUpsert, entity)
 		}
 
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("ngsildUpsert", ngsildUpsert)
+		}
+
 		updateCtxReq := UpdateContextRequest{}
 		numUpdates := updateCtxReq.ReadFromNGSILD(ngsildUpsert)
 
 		// check and add the "Fiware-Correlator" header into the update message
 		updateCtxReq.Correlator = r.Header.Get("Fiware-Correlator")
+
+		if updateCtxReq.Correlator == "" {
+			// This might be helpful in case of prosumers that provides and gets data from this broker
+			if subId, exist := msg["subscriptionId"]; exist {
+				updateCtxReq.Correlator = subId.(string)
+			}
+		}
+
+		if LoggerIsEnabled(DEBUG) {
+			DEBUG.Println("NGSI-LD notification transformed to NGSI updateCtxReq: ", updateCtxReq)
+		}
 
 		if numUpdates > 0 {
 			tb.handleInternalUpdateContext(&updateCtxReq)
