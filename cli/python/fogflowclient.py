@@ -267,7 +267,7 @@ class FogFlowClient:
         if not url.startswith(("http://", "https://")):
             url = "http://" + url
 
-        print(f'url to send ngsild: {url + '/ngsi-ld/v1/entities'} with data {entity.toJSON()}')
+        print(f'url to send ngsild: {url + '/ngsi-ld/v1/entities'} with headers {headers} and with data {entity.toJSON()}')
 
         response = requests.post(url + '/ngsi-ld/v1/entities',
                                  data=entity.toJSON(), headers=headers)
