@@ -3,7 +3,7 @@ on:
   push:
     branches: "fogflow-release/**"
 jobs:
-  build-java-aaio:
+  build-fogflow:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
