@@ -28,10 +28,10 @@ jobs:
       - name: docker tag #for making latest
         run: |
           docker tag fogflow/master:latest fogflow/master:${{steps.get-id.outputs.id}}
-          docker tag fogflow/broker:latest fogflow/master:${{steps.get-id.outputs.id}}
-          docker tag fogflow/discovery:latest fogflow/master:${{steps.get-id.outputs.id}}
-          docker tag fogflow/designer:latest fogflow/master:${{steps.get-id.outputs.id}}
-          docker tag fogflow/worker:latest fogflow/master:${{steps.get-id.outputs.id}}
+          docker tag fogflow/broker:latest fogflow/broker:${{steps.get-id.outputs.id}}
+          docker tag fogflow/discovery:latest fogflow/discovery:${{steps.get-id.outputs.id}}
+          docker tag fogflow/designer:latest fogflow/designer:${{steps.get-id.outputs.id}}
+          docker tag fogflow/worker:latest fogflow/worker:${{steps.get-id.outputs.id}}
           docker images
           
       - name: docker-login #docker login setup a secret with a token
